@@ -63,24 +63,18 @@ class EnsayoController extends Controller
             $query->orderBy('id', 'asc'); // fallback permanent anchor
         }
 
-        // 1. Fetch Values from Static Catalogs Master
+        // 1. Fetch Pure Values exclusively from Static Master Catalogs (Preserving accurate casing)
         $staticCatalogs = \App\Models\Catalogo::all()->groupBy('categoria');
 
-        // 2. Fetch Dynamic Values present in existing Ensayos records
-        $existingProy = Ensayo::distinct('proyecto')->pluck('proyecto')->filter()->toArray();
-        $existingIng = Ensayo::distinct('ingenio')->pluck('ingenio')->filter()->toArray();
-        $existingAmb = Ensayo::distinct('amb_seleccion')->pluck('amb_seleccion')->filter()->toArray();
-
-        // 3. Merge and finalize Master Set sent to frontend
         $catalogos = [
             'PROYECTO' => collect($staticCatalogs->get('PROYECTO')?->pluck('valor')->toArray() ?? [])
-                ->concat($existingProy)->map(fn($v) => strtoupper(trim($v)))->filter()->unique()->sort()->values()->all(),
+                ->map(fn($v) => trim($v))->filter()->unique()->sort()->values()->all(),
             
             'INGENIO' => collect($staticCatalogs->get('INGENIO')?->pluck('valor')->toArray() ?? [])
-                ->concat($existingIng)->map(fn($v) => strtoupper(trim($v)))->filter()->unique()->sort()->values()->all(),
+                ->map(fn($v) => trim($v))->filter()->unique()->sort()->values()->all(),
             
             'AMBIENTE' => collect($staticCatalogs->get('AMBIENTE')?->pluck('valor')->toArray() ?? [])
-                ->concat($existingAmb)->map(fn($v) => strtoupper(trim($v)))->filter()->unique()->sort()->values()->all(),
+                ->map(fn($v) => trim($v))->filter()->unique()->sort()->values()->all(),
         ];
 
         $usersList = \App\Models\User::select('id', 'name')->orderBy('name')->get();
