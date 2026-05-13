@@ -20,6 +20,46 @@ const catalogMap = {
     amb_evaluacion: 'AMBIENTE'
 };
 
+// Elegant Parser for Bulk Excel Duplicate Validation Errors
+const parsedFileError = computed(() => {
+    const raw = usePage().props.errors?.file || props.errors?.file;
+    if (!raw) return null;
+    
+    // Detect duplicate block formatting
+    if (raw.includes('NO SE PUEDE DUPLICAR') && raw.includes('(con ortografía similar):')) {
+        const parts = raw.split('(con ortografía similar):');
+        const headerText = "🚫 NO SE PUEDE DUPLICAR INFORMACIÓN";
+        const subHeaderText = "Los siguientes ensayos ya existen en la base de datos (con ortografía similar):";
+        const listRaw = (parts[1] || '').trim();
+        
+        // Parenthesis-safe custom string splitter
+        const cleanedItems = [];
+        let buffer = '';
+        let openParen = false;
+        for (let i = 0; i < listRaw.length; i++) {
+            const char = listRaw[i];
+            if (char === '(') openParen = true;
+            if (char === ')') openParen = false;
+            
+            if (char === ',' && !openParen) {
+                if (buffer.trim()) cleanedItems.push(buffer.trim());
+                buffer = '';
+            } else {
+                buffer += char;
+            }
+        }
+        if (buffer.trim()) cleanedItems.push(buffer.trim());
+
+        return {
+            type: 'DUPLICATE_ERROR',
+            header: headerText,
+            subHeader: subHeaderText,
+            items: cleanedItems
+        };
+    }
+    return { type: 'GENERIC_ERROR', message: raw };
+});
+
 // Editing State Management
 const editingCell = ref({ rowId: null, field: null });
 const editValue = ref('');
@@ -539,9 +579,34 @@ const formatFecha = (dateString) => {
                     {{ $page.props.flash.success }}
                 </div>
 
-                <div v-if="$page.props.errors?.file" class="p-4 bg-red-50 border-l-4 border-red-500 text-red-800 rounded shadow-sm font-bold flex items-center gap-2 animate-pulse-once">
-                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    {{ $page.props.errors.file }}
+                <!-- 🌟 Premium Dynamic Error Reporter (Scrollable & Responsive) -->
+                <div v-if="parsedFileError" class="mb-6 p-5 bg-red-50 border-l-4 border-red-500 text-red-800 rounded-xl shadow-md flex flex-col gap-3 animate-pulse-once">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        
+                        <div class="flex-1 min-w-0">
+                            <template v-if="parsedFileError.type === 'DUPLICATE_ERROR'">
+                                <h3 class="text-base font-extrabold text-red-900 uppercase tracking-tight mb-1 leading-none">{{ parsedFileError.header }}</h3>
+                                <p class="text-xs md:text-sm font-bold text-red-800 mb-3">{{ parsedFileError.subHeader }}</p>
+                                
+                                <!-- Highly optimized scrolling grid for 100+ items -->
+                                <div class="max-h-44 overflow-y-auto bg-white/70 backdrop-blur border border-red-200 rounded-lg p-3 shadow-inner grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-[11px] font-mono custom-scrollbar">
+                                    <div 
+                                        v-for="(item, idx) in parsedFileError.items" 
+                                        :key="idx"
+                                        class="flex items-center gap-2 bg-red-100/60 hover:bg-red-100 border border-red-200 px-2 py-1 rounded text-red-900 transition-all duration-150 select-all"
+                                        :title="item"
+                                    >
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0"></span>
+                                        <span class="truncate flex-1">{{ item }}</span>
+                                    </div>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <p class="text-sm font-bold text-red-900 leading-relaxed">{{ parsedFileError.message }}</p>
+                            </template>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Compact Top Form section -->
@@ -608,7 +673,10 @@ const formatFecha = (dateString) => {
                             </template>
                         </button>
                     </form>
-                    <p v-if="uploadForm.errors.file" class="mt-2 text-xs text-red-600 font-semibold">❌ {{ uploadForm.errors.file }}</p>
+                    <p v-if="uploadForm.errors.file" class="mt-2 text-xs text-red-600 font-bold bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5 shadow-sm animate-bounce-once">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span>Error de duplicados detectado. Revisa el reporte de errores arriba. ☝️</span>
+                    </p>
                     <p v-if="uploadForm.errors.ambiente" class="mt-2 text-xs text-red-600 font-semibold">❌ Selecciona un ambiente.</p>
                     <!-- Mini Progress -->
                     <div v-if="uploadForm.progress" class="mt-3 w-full bg-gray-100 rounded-full h-1 overflow-hidden">
