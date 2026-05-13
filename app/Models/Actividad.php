@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 class Actividad extends Model
 {
     protected $table = 'actividads';
-    protected $guarded = [];
+    protected $fillable = ['user_id', 'accion', 'descripcion', 'detalles'];
 
     protected $casts = [
         'detalles' => 'array',

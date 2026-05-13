@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Catalogo;
 use Illuminate\Http\Request;
+use App\Http\Requests\UpdateUserRequest;
 use Inertia\Inertia;
 
 class UserController extends Controller
@@ -34,19 +35,8 @@ class UserController extends Controller
         ]);
     }
 
-    public function update(Request $request, User $user)
+    public function update(UpdateUserRequest $request, User $user)
     {
-        $this->authorizeJefe();
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'role' => 'required|in:JEFE,LIDER',
-            'ambiente' => 'nullable|array',
-            'ambiente.*' => 'string',
-            'password' => 'nullable|string|min:8',
-        ]);
-
         $data = [
             'name' => $request->name,
             'email' => $request->email,

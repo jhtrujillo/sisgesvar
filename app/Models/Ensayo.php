@@ -6,10 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Ensayo extends Model
 {
-    /**
-     * The attributes that aren't mass assignable.
-     */
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'nombre_ensayo', 'nombre_env', 'proyecto', 'estado_seleccion', 
+        'serie', 'amb_seleccion', 'amb_evaluacion', 'objetivo', 
+        'ingenio', 'hacienda', 'suerte', 'zona_agroecologia', 'consociacion', 
+        'corte', 'entradas', 'testigos', 'clones', 'total_parcelas', 
+        'diseno', 'surcos', 'longitud_surco', 'longitud_callejon', 
+        'distancia_surco', 'area_total', 'red_meteorologica', 
+        'fecha_siembra', 'fecha_cosecha_final', 'fecha_evaluacion', 
+        'meses_evaluacion', 'fecha_cosecha_programada', 'estado_actual', 
+        'ano_siembra', 'mes_siembra', 'tipo_cosecha', 'comentarios', 
+        'ubicacion_fisica', 'nombre_reporte', 'investigador', 'user_id'
+    ];
 
     /**
      * The attributes that should be cast.

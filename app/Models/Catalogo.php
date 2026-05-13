@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class Catalogo extends Model
 {
-    protected $guarded = [];
+    protected $fillable = ['categoria', 'valor', 'alias'];
 }

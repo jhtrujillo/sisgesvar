@@ -6,6 +6,10 @@ use App\Models\Ensayo;
 use App\Imports\EnsayoImport;
 use App\Exports\EnsayoExport;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreEnsayoRequest;
+use App\Http\Requests\ConfirmImportEnsayoRequest;
+use App\Http\Requests\UpdateCellEnsayoRequest;
+use App\Http\Requests\ExecuteStandardizationRequest;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -102,13 +106,8 @@ class EnsayoController extends Controller
         return Excel::download(new EnsayoExport($filters, $user), $filename);
     }
 
-    public function store(Request $request)
+    public function store(StoreEnsayoRequest $request)
     {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:10240',
-            'ambiente' => 'required|string|max:100',
-        ]);
-
         $file = $request->file('file');
         $ambiente = $request->ambiente;
 
@@ -184,14 +183,8 @@ class EnsayoController extends Controller
     /**
      * Endpoint to process the resolved mappings and final insertion
      */
-    public function confirmImport(Request $request)
+    public function confirmImport(ConfirmImportEnsayoRequest $request)
     {
-        $request->validate([
-            'tempPath' => 'required|string',
-            'ambiente' => 'required|string',
-            'mappings' => 'required|array' // Example: {'old val': 'new val' or '__NEW__'}
-        ]);
-
         try {
             // Update Catalogo for any '__NEW__' designations nested by category
             foreach ($request->mappings as $category => $subMappings) {
@@ -238,17 +231,12 @@ class EnsayoController extends Controller
     /**
      * Handle single field inline editing from the UI data grid.
      */
-    public function update(Request $request, Ensayo $ensayo)
+    public function update(UpdateCellEnsayoRequest $request, Ensayo $ensayo)
     {
         // DEBUG LOGGING to track what user passes
         file_put_contents(base_path('storage/logs/debug_save.log'), "[" . date('Y-m-d H:i:s') . "] Request: " . json_encode($request->all()) . " Ensayo ID: " . $ensayo->id . "\n", FILE_APPEND);
 
         try {
-            $request->validate([
-                'field' => 'required|string',
-                'value' => 'nullable'
-            ]);
-
             $field = $request->field;
             // Sanitize empty inputs to NULL to prevent SQL strict typing failures (especially on Postgres numbers/dates)
             $value = ($request->value === '' || $request->value === null) ? null : $request->value;
@@ -561,15 +549,8 @@ class EnsayoController extends Controller
     /**
      * Executes a bulk transaction to re-map standardized items across all historical records.
      */
-    public function standardizationExecute(\Illuminate\Http\Request $request)
+    public function standardizationExecute(ExecuteStandardizationRequest $request)
     {
-        $request->validate([
-            'correcciones' => 'required|array',
-            'correcciones.*.field' => 'required|string',
-            'correcciones.*.valor_origen' => 'required|string',
-            'correcciones.*.valor_destino' => 'required|string'
-        ]);
-
         \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             $totalAfectado = 0;

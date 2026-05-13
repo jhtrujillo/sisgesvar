@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Catalogo;
 use App\Models\Ensayo;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreCatalogoRequest;
+use App\Http\Requests\UpdateCatalogoRequest;
+use App\Http\Requests\MergeCatalogoRequest;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 
@@ -65,15 +68,8 @@ class CatalogoController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreCatalogoRequest $request)
     {
-        $this->authorizeAdmin();
-
-        $request->validate([
-            'categoria' => 'required|string|in:PROYECTO,INGENIO,AMBIENTE',
-            'valor' => 'required|string|max:255',
-        ]);
-
         $trimmed = trim($request->valor);
 
         // Avoid duplicates
@@ -94,14 +90,8 @@ class CatalogoController extends Controller
             ->with('success', 'Elemento agregado exitosamente al catálogo.');
     }
 
-    public function update(Request $request, Catalogo $catalogo)
+    public function update(UpdateCatalogoRequest $request, Catalogo $catalogo)
     {
-        $this->authorizeAdmin();
-
-        $request->validate([
-            'valor' => 'required|string|max:255',
-        ]);
-
         $oldValue = $catalogo->valor;
         $newValue = trim($request->valor);
         $category = $catalogo->categoria;
@@ -157,15 +147,8 @@ class CatalogoController extends Controller
      * Highly advanced tool to MERGE duplicate catalog entries into one master.
      * E.g. Merge "Humedo" (source) into "Húmedo" (target).
      */
-    public function merge(Request $request)
+    public function merge(MergeCatalogoRequest $request)
     {
-        $this->authorizeAdmin();
-
-        $request->validate([
-            'source_id' => 'required|exists:catalogos,id',
-            'target_id' => 'required|exists:catalogos,id|different:source_id',
-        ]);
-
         $source = Catalogo::findOrFail($request->source_id);
         $target = Catalogo::findOrFail($request->target_id);
 

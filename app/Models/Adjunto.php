@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Adjunto extends Model
 {
     protected $table = 'adjuntos';
-    protected $guarded = [];
+    protected $fillable = ['ensayo_id', 'nombre_archivo', 'ruta', 'mime_type', 'size', 'user_id'];
 
     public function ensayo()
     {
