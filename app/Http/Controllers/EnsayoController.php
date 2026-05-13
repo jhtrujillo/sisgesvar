@@ -132,17 +132,17 @@ class EnsayoController extends Controller
                 }
                 $excelVals = $excelVals->filter()->unique()->map(fn($x) => trim($x))->values();
 
-                // Fetch master Catalogo values from Database
-                $dbVals = \App\Models\Catalogo::where('categoria', $catName)->pluck('valor')->toArray();
-
-                // Enrich corrections dictionary with both Database items AND unique Excel items
-                $combinedVals = collect(array_merge($dbVals, $excelVals->toArray()))
+                // Fetch master Catalogo values from Database cleanly
+                $dbVals = \App\Models\Catalogo::where('categoria', $catName)
+                    ->orderBy('valor')
+                    ->pluck('valor')
+                    ->map(fn($v) => trim($v))
+                    ->filter()
                     ->unique()
-                    ->sort()
                     ->values()
                     ->toArray();
                 
-                $fullCatalogo[$catName] = $combinedVals;
+                $fullCatalogo[$catName] = $dbVals;
 
                 // Find those missing in master Catalogo
                 $conflicts = $excelVals->reject(fn($v) => in_array($v, $dbVals))->values()->toArray();
