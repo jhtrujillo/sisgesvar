@@ -1561,6 +1561,11 @@ WHERE variedad = '$variedad'"));
             $cruzamiento_auto->id_ponderados = $idPonderado;
             $cruzamiento_auto->save();
         }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cruzamiento guardado con éxito'
+        ]);
     }
     public function obtenerIdFlorCruzamiento($proyecto, $vrdad, $caracter)
     {
