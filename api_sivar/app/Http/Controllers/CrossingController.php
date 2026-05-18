@@ -385,17 +385,62 @@ class CrossingController extends Controller
 
     public function calcularViabilidad($flores, $flores_PR, $flores_EIII, $ponderados, $testigo)
     {
+        // 1. Clasificar variedades según la regla biológica y de polen de Cenicaña
+        $mothers = [];
+        $fathers = [];
+
+        foreach ($flores as $flor) {
+            $polen = isset($flor->polen) ? floatval($flor->polen) : null;
+            $sxo = $flor->sxo;
+
+            // Macho biológico si el polen > 20 o si está catalogado como Macho/MD/MF
+            $esMacho = ($sxo == "Macho" || $sxo == "MD" || $sxo == "MF" || ($polen !== null && $polen > 20));
+            // Hembra biológica si el polen <= 20 o si está catalogada como Hembra/HD/HF o sin polen definido
+            $esHembra = ($sxo == "Hembra" || $sxo == "HD" || $sxo == "HF" || $polen === null || $polen <= 20);
+
+            if ($esHembra) {
+                $mothers[] = $flor;
+            }
+            if ($esMacho) {
+                $fathers[] = $flor;
+            }
+        }
+
+        // Fallbacks por seguridad si alguna lista queda vacía
+        if (empty($mothers)) {
+            $mothers = $flores;
+        }
+        if (empty($fathers)) {
+            $fathers = $flores;
+        }
+
+        // Indexar las flores regionales por nombre de variedad para una búsqueda exacta libre de bugs
+        $floresPRMap = [];
+        if ($flores_PR) {
+            foreach ($flores_PR as $fPR) {
+                $floresPRMap[$fPR->vrdad] = $fPR;
+            }
+        }
+
+        $floresEIIIMap = [];
+        if ($flores_EIII) {
+            foreach ($flores_EIII as $fEIII) {
+                $floresEIIIMap[$fEIII->vrdad] = $fEIII;
+            }
+        }
+
         $arreglo = array();
-        for ($i = 0; $i < sizeof($flores); $i++) {
-            $florA = $flores[$i];
-            $florA_PR = isset($flores_PR[$i]) ? $flores_PR[$i] : null;
-            $florA_EIII = isset($flores_EIII[$i]) ? $flores_EIII[$i] : null;
+        for ($i = 0; $i < sizeof($mothers); $i++) {
+            $florA = $mothers[$i];
+            $florA_PR = isset($floresPRMap[$florA->vrdad]) ? $floresPRMap[$florA->vrdad] : null;
+            $florA_EIII = isset($floresEIIIMap[$florA->vrdad]) ? $floresEIIIMap[$florA->vrdad] : null;
             $arregloFlorA = array();
 
-            for ($j = 0; $j < sizeof($flores); $j++) {
-                $florB = $flores[$j];
-                $florB_PR = isset($flores_PR[$j]) ? $flores_PR[$j] : null;
-                $florB_EIII = isset($flores_EIII[$j]) ? $flores_EIII[$j] : null;
+            for ($j = 0; $j < sizeof($fathers); $j++) {
+                $florB = $fathers[$j];
+                $florB_PR = isset($floresPRMap[$florB->vrdad]) ? $floresPRMap[$florB->vrdad] : null;
+                $florB_EIII = isset($floresEIIIMap[$florB->vrdad]) ? $floresEIIIMap[$florB->vrdad] : null;
+
                 $viabilidad = array(
                     'varA' => $florA->vrdad,
                     'varB' => $florB->vrdad,
@@ -413,33 +458,37 @@ class CrossingController extends Controller
                     'id_caracter' => $florA->id_caracter ?? null,
                     'id_caracter2' => $florB->id_caracter ?? null
                 );
+                
                 $vm = 0;
                 $vm2 = 0;
 
                 foreach ($ponderados as $key => $ponderado) {
                     $caracteristica = $ponderado->equivalente;
 
-                    //aqui evaluamos en cada uno de los estados los datos ->PR->EIII
-                    if ($florA && empty($florA->$caracteristica)) {
-                        $florA = $florA_PR;
+                    // Crear copias locales para evitar la reasignación silenciosa en el bucle de ponderados
+                    $florA_eval = $florA;
+                    $florB_eval = $florB;
+
+                    if ($florA_eval && empty($florA_eval->$caracteristica)) {
+                        $florA_eval = $florA_PR;
                         if (!$florA_PR || empty($florA_PR->$caracteristica)) {
-                            $florA = $florA_EIII;
+                            $florA_eval = $florA_EIII;
                         }
                     }
-                    if ($florB && empty($florB->$caracteristica)) {
-                        $florB = $florB_PR;
+                    if ($florB_eval && empty($florB_eval->$caracteristica)) {
+                        $florB_eval = $florB_PR;
                         if (!$florB_PR || empty($florB_PR->$caracteristica)) {
-                            $florB = $florB_EIII;
+                            $florB_eval = $florB_EIII;
                         }
                     }
 
                     if ($ponderado->ponderado > 0) {
-                        if ($florA && !empty($florA->$caracteristica) && $testigo != null && !empty($testigo->$caracteristica)) {
-                            $vm += ($this->calcularValorMerito($caracteristica, $florA, $ponderado->ponderado, $testigo->$caracteristica)) / 100;
-                            if ($florB && !empty($florB->$caracteristica)) {
-                                $vm2 += ($this->calcularValorMerito($caracteristica, $florB, $ponderado->ponderado, $testigo->$caracteristica)) / 100;
+                        if ($florA_eval && !empty($florA_eval->$caracteristica) && $testigo != null && !empty($testigo->$caracteristica)) {
+                            $vm += ($this->calcularValorMerito($caracteristica, $florA_eval, $ponderado->ponderado, $testigo->$caracteristica)) / 100;
+                            if ($florB_eval && !empty($florB_eval->$caracteristica)) {
+                                $vm2 += ($this->calcularValorMerito($caracteristica, $florB_eval, $ponderado->ponderado, $testigo->$caracteristica)) / 100;
 
-                                if (!$this->calcularViabilidadCaracteristica($caracteristica, $florA, $florB, $ponderado, $testigo->$caracteristica)) {
+                                if (!$this->calcularViabilidadCaracteristica($caracteristica, $florA_eval, $florB_eval, $ponderado, $testigo->$caracteristica)) {
                                     $viabilidad['viabilidad'] = false;
                                     break;
                                 }
@@ -448,11 +497,22 @@ class CrossingController extends Controller
                     }
                 }
 
-                //Otras condiciones 
-                if (($florB->sxo == "Hembra" || $florB->sxo == "HD" || $florB->sxo == "HF")) {
+                // Controles adicionales de sexo como medida de doble seguridad
+                $polenB_val = isset($florB->polen) ? floatval($florB->polen) : null;
+                $sxoB = $florB->sxo;
+                if ($polenB_val !== null) {
+                    $sxoB = ($polenB_val > 20) ? "Macho" : "Hembra";
+                }
+                if (($sxoB == "Hembra" || $sxoB == "HD" || $sxoB == "HF")) {
                     $viabilidad['viabilidad'] = false;
                 }
-                if (($florA->sxo == "Macho" || $florA->sxo == "MD" || $florA->sxo == "MF")) {
+
+                $polenA_val = isset($florA->polen) ? floatval($florA->polen) : null;
+                $sxoA = $florA->sxo;
+                if ($polenA_val !== null) {
+                    $sxoA = ($polenA_val > 20) ? "Macho" : "Hembra";
+                }
+                if (($sxoA == "Macho" || $sxoA == "MD" || $sxoA == "MF")) {
                     $viabilidad['viabilidad'] = false;
                 }
 
@@ -462,7 +522,12 @@ class CrossingController extends Controller
             }
             array_push($arreglo, $arregloFlorA);
         }
-        return $arreglo;
+
+        return [
+            'matrix' => $arreglo,
+            'mothers' => $mothers,
+            'fathers' => $fathers
+        ];
     }
 
     public function obtenerDistanciaGenetica($florA, $florB)
@@ -625,7 +690,9 @@ class CrossingController extends Controller
             ->groupBy("variedad")
             ->first();
 
-        $arreglo = $this->calcularViabilidad($flores_BG, $flores_PR, $flores_EIII, $ponderados, $variedad_testigo);
+        $resViabilidad = $this->calcularViabilidad($flores_BG, $flores_PR, $flores_EIII, $ponderados, $variedad_testigo);
+        $arreglo = $resViabilidad['matrix'];
+        $fathers = $resViabilidad['fathers'];
         $distancias = $this->obtenerDistanciaGeneticaConjunto($flores_BG);
 
         return response()->json([
@@ -633,7 +700,7 @@ class CrossingController extends Controller
             'proyecto' => $proyecto,
             'fecha_i' => $fechai,
             'fecha_f' => $fechaf,
-            'flores' => $flores_BG,
+            'flores' => $fathers,
             'viabilidad' => $arreglo,
             'distancias' => $distancias,
             'testigo' => $testigo,
@@ -880,11 +947,23 @@ class CrossingController extends Controller
                 ->first();
 
 
-            $arreglo = $this->calcularViabilidad($flores_BG, $flores_PR, $flores_EIII, $ponderados, $variedad_testigo);
-
+            $resViabilidad = $this->calcularViabilidad($flores_BG, $flores_PR, $flores_EIII, $ponderados, $variedad_testigo);
+            $arreglo = $resViabilidad['matrix'];
 
             array_push($viabilidad, $arreglo);
-            //echo var_dump($arreglo)."<br>";
+        }
+
+        $overallFathers = [];
+        foreach ($flores as $flor) {
+            $polen = isset($flor->polen) ? floatval($flor->polen) : null;
+            $sxo = $flor->sxo;
+            $esMacho = ($sxo == "Macho" || $sxo == "MD" || $sxo == "MF" || ($polen !== null && $polen > 20));
+            if ($esMacho) {
+                $overallFathers[] = $flor;
+            }
+        }
+        if (empty($overallFathers)) {
+            $overallFathers = $flores;
         }
 
         return response()->json([
@@ -892,7 +971,7 @@ class CrossingController extends Controller
             'proyecto' => $proyecto,
             'fecha_i' => $fechai,
             'fecha_f' => $fechaf,
-            'flores' => $flores,
+            'flores' => $overallFathers,
             'testigo' => $testigo,
             'viabilidades' => $viabilidad,
             'distancias' => $distancias,
@@ -1082,13 +1161,25 @@ class CrossingController extends Controller
             ->first();
 
 
-        $arreglo = $this->calcularViabilidad($flores_BG, $flores_PR, $flores_EIII, $ponderados, $variedad_testigo);
-
-
+        $resViabilidad = $this->calcularViabilidad($flores_BG, $flores_PR, $flores_EIII, $ponderados, $variedad_testigo);
+        $arreglo = $resViabilidad['matrix'];
         $distancias = $this->obtenerDistanciaGeneticaConjunto($flores);
 
+        $overallFathers = [];
+        foreach ($flores as $flor) {
+            $polen = isset($flor->polen) ? floatval($flor->polen) : null;
+            $sxo = $flor->sxo;
+            $esMacho = ($sxo == "Macho" || $sxo == "MD" || $sxo == "MF" || ($polen !== null && $polen > 20));
+            if ($esMacho) {
+                $overallFathers[] = $flor;
+            }
+        }
+        if (empty($overallFathers)) {
+            $overallFathers = $flores;
+        }
+
         return response()->json([
-            'flores' => $flores,
+            'flores' => $overallFathers,
             'viabilidades' => $arreglo,
             'distancias' => $distancias,
         ]);
@@ -1272,13 +1363,25 @@ class CrossingController extends Controller
             ->first();
 
 
-        $arreglo = $this->calcularViabilidad($flores_BG, $flores_PR, $flores_EIII, $ponderados, $variedad_testigo);
-
-
+        $resViabilidad = $this->calcularViabilidad($flores_BG, $flores_PR, $flores_EIII, $ponderados, $variedad_testigo);
+        $arreglo = $resViabilidad['matrix'];
         $distancias = $this->obtenerDistanciaGeneticaConjunto($flores);
 
+        $overallFathers = [];
+        foreach ($flores as $flor) {
+            $polen = isset($flor->polen) ? floatval($flor->polen) : null;
+            $sxo = $flor->sxo;
+            $esMacho = ($sxo == "Macho" || $sxo == "MD" || $sxo == "MF" || ($polen !== null && $polen > 20));
+            if ($esMacho) {
+                $overallFathers[] = $flor;
+            }
+        }
+        if (empty($overallFathers)) {
+            $overallFathers = $flores;
+        }
+
         return response()->json([
-            'flores' => $flores,
+            'flores' => $overallFathers,
             'viabilidades' => $arreglo,
             'distancias' => $distancias,
         ]);
