@@ -135,118 +135,184 @@ class CrossingController extends Controller
 
     public function calcularViabilidadCaracteristica($caracteristica, $florA, $florB, $ponderado, $testigo)
     {
-        // 1. Si no hay valor en el testigo, no se puede evaluar (no se descarta por desconocimiento)
-        if (is_null($testigo) || $testigo === '') {
-            return true;
-        }
-
-        $valA = $florA->$caracteristica ?? null;
-        $valB = $florB->$caracteristica ?? null;
-
-        // Si alguna de las flores no tiene registro para la característica, no se descarta por desconocimiento
-        if (is_null($valA) || $valA === '' || is_null($valB) || $valB === '') {
-            return true;
-        }
+        // Cálculos para determinar los niveles de viabilidad
+        // $nivel_florA = $this->calcularNivel($florA, $caracteristica, $testigo);
+        // $nivel_florB = $this->calcularNivel($florB, $caracteristica, $testigo);
 
         $nivel_florA = 999;
         $nivel_florB = 999;
 
-        // 2. Clasificación para Mosaico o Carbón
-        if ($caracteristica == "msco_r" || $caracteristica == "carbon") {
-            // Flor A
-            if ($valA <= 2) $nivel_florA = 1;
-            else if ($valA <= 3) $nivel_florA = 2;
-            else if ($valA <= 5) $nivel_florA = 3;
-            else if ($valA <= 8) $nivel_florA = 4;
-            else if ($valA <= 11) $nivel_florA = 5;
-            else if ($valA <= 15) $nivel_florA = 6;
-            else if ($valA <= 22) $nivel_florA = 7;
-            else if ($valA <= 30) $nivel_florA = 8;
-            else $nivel_florA = 9;
-
-            // Flor B
-            if ($valB <= 2) $nivel_florB = 1;
-            else if ($valB <= 3) $nivel_florB = 2;
-            else if ($valB <= 5) $nivel_florB = 3;
-            else if ($valB <= 8) $nivel_florB = 4;
-            else if ($valB <= 11) $nivel_florB = 5;
-            else if ($valB <= 15) $nivel_florB = 6;
-            else if ($valB <= 22) $nivel_florB = 7;
-            else if ($valB <= 30) $nivel_florB = 8;
-            else $nivel_florB = 9;
+        if ($caracteristica == "msco_r" or $caracteristica == "carbon") {
+            //Clasificación niveles mosaico flor A
+            if ($florA->$caracteristica <= 2) {
+                $nivel_florA = 1;
+            } else if ($florA->$caracteristica > 2 && $florA->$caracteristica <= 3) {
+                $nivel_florA = 2;
+            } else if ($florA->$caracteristica > 3 && $florA->$caracteristica <= 5) {
+                $nivel_florA = 3;
+            } else if ($florA->$caracteristica > 5 && $florA->$caracteristica <= 8) {
+                $nivel_florA = 4;
+            } else if ($florA->$caracteristica > 8 && $florA->$caracteristica <= 11) {
+                $nivel_florA = 5;
+            } else if ($florA->$caracteristica > 11 && $florA->$caracteristica <= 15) {
+                $nivel_florA = 6;
+            } else if ($florA->$caracteristica > 15 && $florA->$caracteristica <= 22) {
+                $nivel_florA = 7;
+            } else if ($florA->$caracteristica > 22 && $florA->$caracteristica <= 30) {
+                $nivel_florA = 8;
+            } else {
+                $nivel_florA = 9;
+            }
+            //Clasificación niveles mosaico flor B
+            if ($florB->$caracteristica <= 2) {
+                $nivel_florB = 1;
+            } else if ($florB->$caracteristica > 2 && $florB->$caracteristica <= 3) {
+                $nivel_florB = 2;
+            } else if ($florB->$caracteristica > 3 && $florB->$caracteristica <= 5) {
+                $nivel_florB = 3;
+            } else if ($florB->$caracteristica > 5 && $florB->$caracteristica <= 8) {
+                $nivel_florB = 4;
+            } else if ($florB->$caracteristica > 8 && $florB->$caracteristica <= 11) {
+                $nivel_florB = 5;
+            } else if ($florB->$caracteristica > 11 && $florB->$caracteristica <= 15) {
+                $nivel_florB = 6;
+            } else if ($florB->$caracteristica > 15 && $florB->$caracteristica <= 22) {
+                $nivel_florB = 7;
+            } else if ($florB->$caracteristica > 22 && $florB->$caracteristica <= 30) {
+                $nivel_florB = 8;
+            } else if ($florB->$caracteristica > 30) {
+                $nivel_florB = 9;
+            }
+        } else if ($caracteristica == "tchm") {
+            if ($testigo != null) {
+                $porcentajeA = ($florA->$caracteristica * 100) / $testigo;
+                if ($porcentajeA > 120) {
+                    $nivel_florA = 1;
+                } else if ($porcentajeA < 120 && $porcentajeA >= 110) {
+                    $nivel_florA = 2;
+                } else if ($porcentajeA < 110 && $porcentajeA >= 95) {
+                    $nivel_florA = 3;
+                } else if ($porcentajeA < 95 && $porcentajeA >= 85) {
+                    $nivel_florA = 4;
+                } else {
+                    $nivel_florA = 5;
+                }
+                $porcentajeB = ($florB->$caracteristica * 100) / $testigo;
+                if ($porcentajeB > 120) {
+                    $nivel_florB = 1;
+                } else if ($porcentajeB < 120 && $porcentajeB >= 110) {
+                    $nivel_florB = 2;
+                } else if ($porcentajeB < 110 && $porcentajeB >= 95) {
+                    $nivel_florB = 3;
+                } else if ($porcentajeB < 95 && $porcentajeB >= 85) {
+                    $nivel_florB = 4;
+                } else {
+                    $nivel_florB = 5;
+                }
+            } else {
+                //No se descarta por desconocimiento
+                $nivel_florA = 0;
+                $nivel_florB = 0;
+            }
+        } else if ($caracteristica == "scrsa") {
+            if ($testigo != null) {
+                $porcentajeA = ($florA->$caracteristica * 100) / $testigo;
+                if ($porcentajeA > 120) {
+                    $nivel_florA = 1;
+                } else if ($porcentajeA < 120 && $porcentajeA >= 100) {
+                    $nivel_florA = 2;
+                } else if ($porcentajeA < 100 && $porcentajeA >= 90) {
+                    $nivel_florA = 3;
+                } else if ($porcentajeA < 90 && $porcentajeA >= 80) {
+                    $nivel_florA = 4;
+                } else {
+                    $nivel_florA = 5;
+                }
+                $porcentajeB = ($florB->$caracteristica * 100) / $testigo;
+                if ($porcentajeB > 120) {
+                    $nivel_florB = 1;
+                } else if ($porcentajeB < 120 && $porcentajeB >= 100) {
+                    $nivel_florB = 2;
+                } else if ($porcentajeB < 100 && $porcentajeB >= 90) {
+                    $nivel_florB = 3;
+                } else if ($porcentajeB < 90 && $porcentajeB >= 80) {
+                    $nivel_florB = 4;
+                } else {
+                    $nivel_florB = 5;
+                }
+            } else {
+                //No se descarta por desconocimiento
+                $nivel_florA = 0;
+                $nivel_florB = 0;
+            }
+        } else if ($caracteristica == "dmtro_tllo" || $caracteristica == "altura_planta" || $caracteristica == "poblacion") {
+            if ($testigo != null) {
+                $porcentajeA = ($florA->$caracteristica * 100) / $testigo;
+                if ($porcentajeA > 120) {
+                    $nivel_florA = 1;
+                } else if ($porcentajeA < 120 && $porcentajeA >= 100) {
+                    $nivel_florA = 2;
+                } else if ($porcentajeA < 100 && $porcentajeA >= 90) {
+                    $nivel_florA = 3;
+                } else if ($porcentajeA < 90 && $porcentajeA >= 80) {
+                    $nivel_florA = 4;
+                } else {
+                    $nivel_florA = 5;
+                }
+                $porcentajeB = ($florB->$caracteristica * 100) / $testigo;
+                if ($porcentajeB > 120) {
+                    $nivel_florB = 1;
+                } else if ($porcentajeB < 120 && $porcentajeB >= 100) {
+                    $nivel_florB = 2;
+                } else if ($porcentajeB < 100 && $porcentajeB >= 90) {
+                    $nivel_florB = 3;
+                } else if ($porcentajeB < 90 && $porcentajeB >= 80) {
+                    $nivel_florB = 4;
+                } else {
+                    $nivel_florB = 5;
+                }
+            } else {
+                //No se descarta por desconocimiento
+                $nivel_florA = 0;
+                $nivel_florB = 0;
+            }
+        } else if ($caracteristica == "volcamiento") {
+            if ($testigo != null) {
+                $porcentajeA = ($florA->$caracteristica * 100) / $testigo;
+                if ($porcentajeA < 10) {
+                    $nivel_florA = 1;
+                } else if ($porcentajeA < 20 && $porcentajeA >= 11) {
+                    $nivel_florA = 2;
+                } else if ($porcentajeA < 30 && $porcentajeA >= 21) {
+                    $nivel_florA = 3;
+                } else if ($porcentajeA < 49 && $porcentajeA >= 31) {
+                    $nivel_florA = 4;
+                } else {
+                    $nivel_florA = 5;
+                }
+                $porcentajeB = ($florB->$caracteristica * 100) / $testigo;
+                if ($porcentajeB < 10) {
+                    $nivel_florB = 1;
+                } else if ($porcentajeB < 20 && $porcentajeB >= 11) {
+                    $nivel_florB = 2;
+                } else if ($porcentajeB < 30 && $porcentajeB >= 21) {
+                    $nivel_florB = 3;
+                } else if ($porcentajeB < 49 && $porcentajeB >= 31) {
+                    $nivel_florB = 4;
+                } else {
+                    $nivel_florB = 5;
+                }
+            } else {
+                //No se descarta por desconocimiento
+                $nivel_florA = 0;
+                $nivel_florB = 0;
+            }
         }
-        // 3. Agronómicos con porcentaje respecto al testigo (TCHM)
-        else if ($caracteristica == "tchm") {
-            $porcentajeA = ($valA * 100) / $testigo;
-            if ($porcentajeA > 120) $nivel_florA = 1;
-            else if ($porcentajeA >= 110) $nivel_florA = 2;
-            else if ($porcentajeA >= 95) $nivel_florA = 3;
-            else if ($porcentajeA >= 85) $nivel_florA = 4;
-            else $nivel_florA = 5;
-
-            $porcentajeB = ($valB * 100) / $testigo;
-            if ($porcentajeB > 120) $nivel_florB = 1;
-            else if ($porcentajeB >= 110) $nivel_florB = 2;
-            else if ($porcentajeB >= 95) $nivel_florB = 3;
-            else if ($porcentajeB >= 85) $nivel_florB = 4;
-            else $nivel_florB = 5;
+        if ($caracteristica == "rya_cfe_r" or $caracteristica == "roya_naranja") {
+            $nivel_florA = $florA->$caracteristica;
+            $nivel_florB = $florB->$caracteristica;
         }
-        // 4. Sacarosa
-        else if ($caracteristica == "scrsa") {
-            $porcentajeA = ($valA * 100) / $testigo;
-            if ($porcentajeA > 120) $nivel_florA = 1;
-            else if ($porcentajeA >= 100) $nivel_florA = 2;
-            else if ($porcentajeA >= 90) $nivel_florA = 3;
-            else if ($porcentajeA >= 80) $nivel_florA = 4;
-            else $nivel_florA = 5;
-
-            $porcentajeB = ($valB * 100) / $testigo;
-            if ($porcentajeB > 120) $nivel_florB = 1;
-            else if ($porcentajeB >= 100) $nivel_florB = 2;
-            else if ($porcentajeB >= 90) $nivel_florB = 3;
-            else if ($porcentajeB >= 80) $nivel_florB = 4;
-            else $nivel_florB = 5;
-        }
-        // 5. Diámetro, Altura Planta, Población
-        else if ($caracteristica == "dmtro_tllo" || $caracteristica == "altura_planta" || $caracteristica == "poblacion") {
-            $porcentajeA = ($valA * 100) / $testigo;
-            if ($porcentajeA > 120) $nivel_florA = 1;
-            else if ($porcentajeA >= 100) $nivel_florA = 2;
-            else if ($porcentajeA >= 90) $nivel_florA = 3;
-            else if ($porcentajeA >= 80) $nivel_florA = 4;
-            else $nivel_florA = 5;
-
-            $porcentajeB = ($valB * 100) / $testigo;
-            if ($porcentajeB > 120) $nivel_florB = 1;
-            else if ($porcentajeB >= 100) $nivel_florB = 2;
-            else if ($porcentajeB >= 90) $nivel_florB = 3;
-            else if ($porcentajeB >= 80) $nivel_florB = 4;
-            else $nivel_florB = 5;
-        }
-        // 6. Volcamiento
-        else if ($caracteristica == "volcamiento") {
-            $porcentajeA = ($valA * 100) / $testigo;
-            if ($porcentajeA < 10) $nivel_florA = 1;
-            else if ($porcentajeA < 20) $nivel_florA = 2;
-            else if ($porcentajeA < 30) $nivel_florA = 3;
-            else if ($porcentajeA < 49) $nivel_florA = 4;
-            else $nivel_florA = 5;
-
-            $porcentajeB = ($valB * 100) / $testigo;
-            if ($porcentajeB < 10) $nivel_florB = 1;
-            else if ($porcentajeB < 20) $nivel_florB = 2;
-            else if ($porcentajeB < 30) $nivel_florB = 3;
-            else if ($porcentajeB < 49) $nivel_florB = 4;
-            else $nivel_florB = 5;
-        }
-        // 7. Royas
-        else if ($caracteristica == "rya_cfe_r" || $caracteristica == "roya_naranja") {
-            $nivel_florA = $valA;
-            $nivel_florB = $valB;
-        }
-
-        // 8. Validación de viabilidad: ¿Excede alguno de los padres el umbral máximo configurado?
-        if ($nivel_florA > $ponderado->nivel || $nivel_florB > $ponderado->nivel) {
+        if (($nivel_florA + $nivel_florB) > $ponderado->nivel) {
             return false;
         }
 
@@ -319,35 +385,6 @@ class CrossingController extends Controller
 
     public function calcularViabilidad($flores, $flores_PR, $flores_EIII, $ponderados, $testigo)
     {
-        // 1. Clasificar variedades según la regla biológica y de polen de Cenicaña
-        $mothers = [];
-        $fathers = [];
-
-        foreach ($flores as $flor) {
-            $polen = isset($flor->polen) ? floatval($flor->polen) : null;
-            $sxo = $flor->sxo;
-
-            // Macho biológico si el polen > 20 o si está catalogado como Macho/MD/MF
-            $esMacho = ($sxo == "Macho" || $sxo == "MD" || $sxo == "MF" || ($polen !== null && $polen > 20));
-            // Hembra biológica si el polen <= 20 o si está catalogada como Hembra/HD/HF o sin polen definido
-            $esHembra = ($sxo == "Hembra" || $sxo == "HD" || $sxo == "HF" || $polen === null || $polen <= 20);
-
-            if ($esHembra) {
-                $mothers[] = $flor;
-            }
-            if ($esMacho) {
-                $fathers[] = $flor;
-            }
-        }
-
-        // Fallbacks por seguridad si alguna lista queda vacía
-        if (empty($mothers)) {
-            $mothers = $flores;
-        }
-        if (empty($fathers)) {
-            $fathers = $flores;
-        }
-
         // Indexar las flores regionales por nombre de variedad para una búsqueda exacta libre de bugs
         $floresPRMap = [];
         if ($flores_PR) {
@@ -364,17 +401,17 @@ class CrossingController extends Controller
         }
 
         $arreglo = array();
-        for ($i = 0; $i < sizeof($mothers); $i++) {
-            $florA = $mothers[$i];
+        for ($i = 0; $i < sizeof($flores); $i++) {
+            $florA = $flores[$i];
             $florA_PR = isset($floresPRMap[$florA->vrdad]) ? $floresPRMap[$florA->vrdad] : null;
             $florA_EIII = isset($floresEIIIMap[$florA->vrdad]) ? $floresEIIIMap[$florA->vrdad] : null;
             $arregloFlorA = array();
 
-            for ($j = 0; $j < sizeof($fathers); $j++) {
-                $florB = $fathers[$j];
+            for ($j = 0; $j < sizeof($flores); $j++) {
+                $florB = $flores[$j];
                 $florB_PR = isset($floresPRMap[$florB->vrdad]) ? $floresPRMap[$florB->vrdad] : null;
                 $florB_EIII = isset($floresEIIIMap[$florB->vrdad]) ? $floresEIIIMap[$florB->vrdad] : null;
-
+                
                 $viabilidad = array(
                     'varA' => $florA->vrdad,
                     'varB' => $florB->vrdad,
@@ -392,7 +429,6 @@ class CrossingController extends Controller
                     'id_caracter' => $florA->id_caracter ?? null,
                     'id_caracter2' => $florB->id_caracter ?? null
                 );
-                
                 $vm = 0;
                 $vm2 = 0;
 
@@ -434,22 +470,11 @@ class CrossingController extends Controller
                     }
                 }
 
-                // Controles adicionales de sexo como medida de doble seguridad
-                $polenB_val = isset($florB->polen) ? floatval($florB->polen) : null;
-                $sxoB = $florB->sxo;
-                if ($polenB_val !== null) {
-                    $sxoB = ($polenB_val > 20) ? "Macho" : "Hembra";
-                }
-                if (($sxoB == "Hembra" || $sxoB == "HD" || $sxoB == "HF")) {
+                // Otras condiciones 
+                if (($florB->sxo == "Hembra" || $florB->sxo == "HD" || $florB->sxo == "HF")) {
                     $viabilidad['viabilidad'] = false;
                 }
-
-                $polenA_val = isset($florA->polen) ? floatval($florA->polen) : null;
-                $sxoA = $florA->sxo;
-                if ($polenA_val !== null) {
-                    $sxoA = ($polenA_val > 20) ? "Macho" : "Hembra";
-                }
-                if (($sxoA == "Macho" || $sxoA == "MD" || $sxoA == "MF")) {
+                if (($florA->sxo == "Macho" || $florA->sxo == "MD" || $florA->sxo == "MF")) {
                     $viabilidad['viabilidad'] = false;
                 }
 
@@ -459,12 +484,7 @@ class CrossingController extends Controller
             }
             array_push($arreglo, $arregloFlorA);
         }
-
-        return [
-            'matrix' => $arreglo,
-            'mothers' => $mothers,
-            'fathers' => $fathers
-        ];
+        return $arreglo;
     }
 
     public function obtenerDistanciaGenetica($florA, $florB)
@@ -627,9 +647,7 @@ class CrossingController extends Controller
             ->groupBy("variedad")
             ->first();
 
-        $resViabilidad = $this->calcularViabilidad($flores_BG, $flores_PR, $flores_EIII, $ponderados, $variedad_testigo);
-        $arreglo = $resViabilidad['matrix'];
-        $fathers = $resViabilidad['fathers'];
+        $arreglo = $this->calcularViabilidad($flores_BG, $flores_PR, $flores_EIII, $ponderados, $variedad_testigo);
         $distancias = $this->obtenerDistanciaGeneticaConjunto($flores_BG);
 
         return response()->json([
@@ -637,7 +655,7 @@ class CrossingController extends Controller
             'proyecto' => $proyecto,
             'fecha_i' => $fechai,
             'fecha_f' => $fechaf,
-            'flores' => $fathers,
+            'flores' => $flores_BG,
             'viabilidad' => $arreglo,
             'distancias' => $distancias,
             'testigo' => $testigo,
@@ -884,23 +902,11 @@ class CrossingController extends Controller
                 ->first();
 
 
-            $resViabilidad = $this->calcularViabilidad($flores_BG, $flores_PR, $flores_EIII, $ponderados, $variedad_testigo);
-            $arreglo = $resViabilidad['matrix'];
+            $arreglo = $this->calcularViabilidad($flores_BG, $flores_PR, $flores_EIII, $ponderados, $variedad_testigo);
+
 
             array_push($viabilidad, $arreglo);
-        }
-
-        $overallFathers = [];
-        foreach ($flores as $flor) {
-            $polen = isset($flor->polen) ? floatval($flor->polen) : null;
-            $sxo = $flor->sxo;
-            $esMacho = ($sxo == "Macho" || $sxo == "MD" || $sxo == "MF" || ($polen !== null && $polen > 20));
-            if ($esMacho) {
-                $overallFathers[] = $flor;
-            }
-        }
-        if (empty($overallFathers)) {
-            $overallFathers = $flores;
+            //echo var_dump($arreglo)."<br>";
         }
 
         return response()->json([
@@ -908,7 +914,7 @@ class CrossingController extends Controller
             'proyecto' => $proyecto,
             'fecha_i' => $fechai,
             'fecha_f' => $fechaf,
-            'flores' => $overallFathers,
+            'flores' => $flores,
             'testigo' => $testigo,
             'viabilidades' => $viabilidad,
             'distancias' => $distancias,
@@ -1098,25 +1104,13 @@ class CrossingController extends Controller
             ->first();
 
 
-        $resViabilidad = $this->calcularViabilidad($flores_BG, $flores_PR, $flores_EIII, $ponderados, $variedad_testigo);
-        $arreglo = $resViabilidad['matrix'];
+        $arreglo = $this->calcularViabilidad($flores_BG, $flores_PR, $flores_EIII, $ponderados, $variedad_testigo);
+
+
         $distancias = $this->obtenerDistanciaGeneticaConjunto($flores);
 
-        $overallFathers = [];
-        foreach ($flores as $flor) {
-            $polen = isset($flor->polen) ? floatval($flor->polen) : null;
-            $sxo = $flor->sxo;
-            $esMacho = ($sxo == "Macho" || $sxo == "MD" || $sxo == "MF" || ($polen !== null && $polen > 20));
-            if ($esMacho) {
-                $overallFathers[] = $flor;
-            }
-        }
-        if (empty($overallFathers)) {
-            $overallFathers = $flores;
-        }
-
         return response()->json([
-            'flores' => $overallFathers,
+            'flores' => $flores,
             'viabilidades' => $arreglo,
             'distancias' => $distancias,
         ]);
@@ -1300,25 +1294,13 @@ class CrossingController extends Controller
             ->first();
 
 
-        $resViabilidad = $this->calcularViabilidad($flores_BG, $flores_PR, $flores_EIII, $ponderados, $variedad_testigo);
-        $arreglo = $resViabilidad['matrix'];
+        $arreglo = $this->calcularViabilidad($flores_BG, $flores_PR, $flores_EIII, $ponderados, $variedad_testigo);
+
+
         $distancias = $this->obtenerDistanciaGeneticaConjunto($flores);
 
-        $overallFathers = [];
-        foreach ($flores as $flor) {
-            $polen = isset($flor->polen) ? floatval($flor->polen) : null;
-            $sxo = $flor->sxo;
-            $esMacho = ($sxo == "Macho" || $sxo == "MD" || $sxo == "MF" || ($polen !== null && $polen > 20));
-            if ($esMacho) {
-                $overallFathers[] = $flor;
-            }
-        }
-        if (empty($overallFathers)) {
-            $overallFathers = $flores;
-        }
-
         return response()->json([
-            'flores' => $overallFathers,
+            'flores' => $flores,
             'viabilidades' => $arreglo,
             'distancias' => $distancias,
         ]);
