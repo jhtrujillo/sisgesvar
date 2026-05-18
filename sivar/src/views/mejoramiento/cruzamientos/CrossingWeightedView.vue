@@ -303,7 +303,7 @@ const fetchVarietyProfile = async (varName: string) => {
   try {
     const response = await api.get(`${urls.API_VARIETY_PROFILE}/${encodeURIComponent(varName)}`, {});
     if (response && response.data) {
-      varietyProfileData.value = response.data;
+      varietyProfileData.value = response.data.traits || null;
     } else {
       varietyProfileData.value = null;
     }
