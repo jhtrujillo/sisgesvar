@@ -345,25 +345,25 @@
                 <div class="bg-white border border-emerald-200/50 rounded-2xl p-3 text-center shadow-xs">
                   <span class="text-[9px] font-bold text-slate-400 block uppercase">Sacarosa Estimada</span>
                   <span class="text-base font-black text-emerald-700 mt-1 block">
-                    {{ formatNumber((Number(motherProfile.traits?.sacarosa || 0) + Number(fatherProfile.traits?.sacarosa || 0)) / 2) }}%
+                    {{ getF1Value('sacarosa', true) }}
                   </span>
                 </div>
                 <div class="bg-white border border-emerald-200/50 rounded-2xl p-3 text-center shadow-xs">
                   <span class="text-[9px] font-bold text-slate-400 block uppercase">TCHM Estimado</span>
                   <span class="text-base font-black text-emerald-700 mt-1 block">
-                    {{ formatNumber((Number(motherProfile.traits?.tchm || 0) + Number(fatherProfile.traits?.tchm || 0)) / 2) }}
+                    {{ getF1Value('tchm', false) }}
                   </span>
                 </div>
                 <div class="bg-white border border-emerald-200/50 rounded-2xl p-3 text-center shadow-xs">
                   <span class="text-[9px] font-bold text-slate-400 block uppercase">Fibra Estimada</span>
                   <span class="text-base font-black text-emerald-700 mt-1 block">
-                    {{ formatNumber((Number(motherProfile.traits?.fibra || 0) + Number(fatherProfile.traits?.fibra || 0)) / 2) }}%
+                    {{ getF1Value('fibra', true) }}
                   </span>
                 </div>
                 <div class="bg-white border border-emerald-200/50 rounded-2xl p-3 text-center shadow-xs">
                   <span class="text-[9px] font-bold text-slate-400 block uppercase">Pureza Estimada</span>
                   <span class="text-base font-black text-emerald-700 mt-1 block">
-                    {{ formatNumber((Number(motherProfile.traits?.pureza || 0) + Number(fatherProfile.traits?.pureza || 0)) / 2) }}%
+                    {{ getF1Value('pureza', true) }}
                   </span>
                 </div>
               </div>
@@ -522,6 +522,26 @@ const closeModal = () => {
 const formatNumber = (val: any) => {
   if (val === undefined || val === null || isNaN(Number(val))) return "N/D";
   return Number(val).toFixed(1);
+};
+
+const getF1Value = (traitName: string, showPercentage: boolean = false) => {
+  const valA = motherProfile.value.traits?.[traitName];
+  const valB = fatherProfile.value.traits?.[traitName];
+
+  if (valA === undefined || valA === null || valA === "" || valA === "N/D" || valA === "N/A" ||
+      valB === undefined || valB === null || valB === "" || valB === "N/D" || valB === "N/A") {
+    return "N/D";
+  }
+
+  const numA = Number(valA);
+  const numB = Number(valB);
+
+  if (isNaN(numA) || isNaN(numB)) {
+    return "N/D";
+  }
+
+  const average = (numA + numB) / 2;
+  return showPercentage ? `${average.toFixed(1)}%` : average.toFixed(1);
 };
 
 const formatScale = (val: any) => {
