@@ -1495,9 +1495,9 @@ WHERE variedad = '$variedad'"));
 
         // Crea un nuevo objeto Crossing
         $cruzamiento = new Crossing;
-        $cruzamiento->pais_de_procedencia = "Colombia";
-        $cruzamiento->sitio_de_cruzamiento = "CNC";
-        $cruzamiento->estacion_experimental = "EESA";
+        $cruzamiento->{"pias de procedencia"} = "Colombia";
+        $cruzamiento->{"Sitio de cruzamiento"} = "CNC";
+        $cruzamiento->{"Estacion_Experimental"} = "EESA";
         $cruzamiento->vrdad_mdre = $florMadre[0];
         $cruzamiento->id_pr_mdre = $proyectoMadre;
         $cruzamiento->usuario_creacion = $usuario ? $usuario->id_usrio : null;
