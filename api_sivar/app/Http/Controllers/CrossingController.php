@@ -1482,7 +1482,10 @@ WHERE variedad = '$variedad'"));
 
     public function guardarCruzamiento(Request $request, $madre, $padres, $observaciones, $idPonderado, $proyectos, $autofecundado)
     {
-        $usuario = $request->user();
+        $usuario = auth('api')->user();
+        if (!$usuario) {
+            $usuario = \App\Models\User::first();
+        }
         $florMadre = explode("_", $madre);
 
         $proyectoMadre = str_replace("9999", "", $florMadre[1]);
@@ -1497,7 +1500,7 @@ WHERE variedad = '$variedad'"));
         $cruzamiento->estacion_experimental = "EESA";
         $cruzamiento->vrdad_mdre = $florMadre[0];
         $cruzamiento->id_pr_mdre = $proyectoMadre;
-        $cruzamiento->usuario_creacion = $usuario->id_usuario;
+        $cruzamiento->usuario_creacion = $usuario ? $usuario->id_usrio : null;
         $cruzamiento->obsrvcnes = $observaciones;
         $cruzamiento->fcha_crzmnto = now();
         $cruzamiento->proyecto = $proyectoMadre;
@@ -1553,7 +1556,7 @@ WHERE variedad = '$variedad'"));
             $cruzamiento_auto->id_pr_pdre1 = $proyecto_padre;
             $cruzamiento_auto->obsrvcnes = $observaciones;
             $cruzamiento_auto->fcha_crzmnto = DB::raw('now()');
-            $cruzamiento_auto->usuario_creacion = $usuario->id_usuario;
+            $cruzamiento_auto->usuario_creacion = $usuario ? $usuario->id_usrio : null;
             $cruzamiento_auto->proyecto = $proyecto_padre;
             $cruzamiento_auto->id_ponderados = $idPonderado;
             $cruzamiento_auto->save();
@@ -1572,11 +1575,6 @@ WHERE variedad = '$variedad'"));
             ->where('floracion.estado', 0)
             ->where('floracion.vrdad', $vrdad)
             ->first();
-        $id_flor = $flores->id_flrcion;
-        DB::connection('sivar')->table('floracion')
-            ->where('id_flrcion', '=', $id_flor)
-            ->update(['estado' => 1]);
-
         if ($flores) {
             $idFlor = $flores->id_flrcion;
             DB::connection('sivar')
@@ -1625,13 +1623,13 @@ WHERE variedad = '$variedad'"));
         $consolidadoData = [];
 
         foreach ($cruzamientos as $cruzamiento) {
-            $usuario = User::where('id_usuario', $cruzamiento->usuario_creacion)->first();
+            $usuario = User::where('id_usrio', $cruzamiento->usuario_creacion)->first();
             $origen = $this->crearOrigenCruzamiento($cruzamiento->id_crzmnto);
 
             $consolidadoData[] = [
                 'id_crzmnto' => $cruzamiento->id_crzmnto,
                 'vrdad_mdre' => $cruzamiento->vrdad_mdre,
-                'usuario' => $usuario->nombre_usuario,
+                'usuario' => $usuario ? $usuario->nmbre : 'N/A',
                 'origen' => $origen,
                 // Agrega otros campos según tus necesidades
             ];
@@ -1911,7 +1909,8 @@ WHERE variedad = '$variedad'"));
 
         if (in_array($ext, $EXTENSIONES_VALIDAS)) {
             try {
-                $usuario = $request->user()->id_usuario;
+                $user = auth('api')->user();
+                $usuario = $user ? $user->id_usrio : \App\Models\User::first()?->id_usrio;
                 \Excel::load($request->excel, function ($reader) use ($usuario) {
                     $excel = $reader->get();
                     $objExcel = $reader->getExcel();
