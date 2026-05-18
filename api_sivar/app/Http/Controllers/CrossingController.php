@@ -449,10 +449,10 @@ class CrossingController extends Controller
                 }
 
                 //Otras condiciones 
-                if (($florB->sxo == "Hembra" || $florB->sxo == "HD" || $florB->sxo == "HF") && ($florA->sxo == "Hembra" || $florA->sxo == "HD" || $florA->sxo == "HF")) {
+                if (($florB->sxo == "Hembra" || $florB->sxo == "HD" || $florB->sxo == "HF")) {
                     $viabilidad['viabilidad'] = false;
                 }
-                if (($florB->sxo == "Hembra" || $florB->sxo == "HD" || $florB->sxo == "HF")) {
+                if (($florA->sxo == "Macho" || $florA->sxo == "MD" || $florA->sxo == "MF")) {
                     $viabilidad['viabilidad'] = false;
                 }
 
