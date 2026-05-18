@@ -52,6 +52,70 @@
         </div>
       </div>
 
+      <!-- Ficha Técnica del Testigo -->
+      <Transition name="fade">
+        <div v-if="varietyProfileData" class="mt-2 mb-6 p-5 bg-gradient-to-br from-emerald-50/40 to-teal-50/10 border border-emerald-100/70 rounded-2xl shadow-sm">
+          <div class="flex items-center space-x-2.5 mb-4 border-b border-emerald-100/50 pb-3">
+            <div class="p-1.5 bg-emerald-500 text-white rounded-lg shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Ficha del Testigo: {{ selectedVariety }}</h4>
+              <p class="text-[10px] text-slate-500 font-medium">Valores históricos de rendimiento y sanidad extraídos del Banco de Germoplasma</p>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <!-- TCHM -->
+            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between">
+              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">TCHM</span>
+              <span class="text-xl font-extrabold text-slate-800 mt-1">
+                {{ varietyProfileData.tchm !== null && varietyProfileData.tchm !== undefined ? varietyProfileData.tchm.toFixed(1) : 'N/A' }}
+              </span>
+              <span class="text-[8px] text-slate-400 font-semibold mt-0.5">Ton. Caña / Ha</span>
+            </div>
+
+            <!-- Sacarosa -->
+            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between">
+              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Sacarosa</span>
+              <span class="text-xl font-extrabold text-slate-800 mt-1">
+                {{ varietyProfileData.sacarosa !== null && varietyProfileData.sacarosa !== undefined ? varietyProfileData.sacarosa.toFixed(2) : 'N/A' }}%
+              </span>
+              <span class="text-[8px] text-slate-400 font-semibold mt-0.5">Concentración %</span>
+            </div>
+
+            <!-- Mosaico -->
+            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between">
+              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Mosaico</span>
+              <span class="text-xl font-extrabold mt-1" :class="varietyProfileData.mosaico_p > 3 ? 'text-amber-600' : 'text-emerald-700'">
+                {{ varietyProfileData.mosaico_p !== null && varietyProfileData.mosaico_p !== undefined ? varietyProfileData.mosaico_p.toFixed(1) : 'N/A' }}
+              </span>
+              <span class="text-[8px] text-slate-400 font-semibold mt-0.5">Grado susceptibilidad</span>
+            </div>
+
+            <!-- Carbón -->
+            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between">
+              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Carbón</span>
+              <span class="text-xl font-extrabold mt-1" :class="varietyProfileData.carbon_p > 3 ? 'text-amber-600' : 'text-emerald-700'">
+                {{ varietyProfileData.carbon_p !== null && varietyProfileData.carbon_p !== undefined ? varietyProfileData.carbon_p.toFixed(1) : 'N/A' }}
+              </span>
+              <span class="text-[8px] text-slate-400 font-semibold mt-0.5">Grado susceptibilidad</span>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Spinner de Carga de Ficha -->
+      <div v-else-if="isFetchingProfile" class="mt-2 mb-6 p-6 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-center justify-center space-x-2">
+        <svg class="animate-spin h-5 w-5 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span class="text-xs font-bold text-slate-500 animate-pulse">Obteniendo datos de variedad testigo...</span>
+      </div>
+
       <!-- Tabla de Ponderados -->
       <div v-if="selectedVariety && selectedMegaAmbiente" class="mt-8 space-y-3">
         <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Ponderados de Características para la Matriz</h3>
@@ -194,6 +258,8 @@ import { useModifyFeaturesCrossingStore } from "@/stores/crossignmodifyfeatures"
 import { useToast } from "vue-toastification";
 import { useMainStore } from "@/stores/main";
 import ComboBoxMultiple from "@/components/ComboBoxMultiple.vue";
+import api from "@/services/api";
+import urls from "@/services/urls";
 
 // Declaración de variables
 const varietyStore = useVarietyStore();
@@ -210,6 +276,9 @@ const dataListVariedades = varietyStore.Variety;
 const columnValueVariedades = "nm_vrdad";
 const columnToShowVariedades = "nm_vrdad";
 
+const varietyProfileData = ref<any>(null);
+const isFetchingProfile = ref(false);
+
 // Computed para almacenar y recuperar los valores desde localStorage
 const storedVariety = computed(() => localStorage.getItem("selectedVariety"));
 const storedMegaAmbiente = computed(() => localStorage.getItem("selectedMegaAmbiente"));
@@ -225,12 +294,36 @@ const id_caracteristica = ref("");
 const nuevo = ref("");
 const errorMessage = ref<string | null>(null);
 
+const fetchVarietyProfile = async (varName: string) => {
+  if (!varName) {
+    varietyProfileData.value = null;
+    return;
+  }
+  isFetchingProfile.value = true;
+  try {
+    const response = await api.get(`${urls.API_VARIETY_PROFILE}/${encodeURIComponent(varName)}`, {});
+    if (response && response.data) {
+      varietyProfileData.value = response.data;
+    } else {
+      varietyProfileData.value = null;
+    }
+  } catch (err) {
+    console.error("Error fetching variety profile:", err);
+    varietyProfileData.value = null;
+  } finally {
+    isFetchingProfile.value = false;
+  }
+};
+
 // OnMounted para cargar datos y recuperar valores de localStorage
 onMounted(async () => {
   await varietyStore.getVariety();
 
   // Cargar valores desde el localStorage si existen
-  if (storedVariety.value) selectedVariety.value = storedVariety.value;
+  if (storedVariety.value) {
+    selectedVariety.value = storedVariety.value;
+    fetchVarietyProfile(storedVariety.value);
+  }
   if (storedMegaAmbiente.value) selectedMegaAmbiente.value = storedMegaAmbiente.value;
 });
 
@@ -238,7 +331,12 @@ onMounted(async () => {
 watch(
   () => selectedVariety.value,
   (newVariety) => {
-    if (newVariety) localStorage.setItem("selectedVariety", newVariety);
+    if (newVariety) {
+      localStorage.setItem("selectedVariety", newVariety);
+      fetchVarietyProfile(newVariety);
+    } else {
+      varietyProfileData.value = null;
+    }
   }
 );
 
