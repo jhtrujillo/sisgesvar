@@ -1,0 +1,37 @@
+# macOS
+.DS_Store
+*.DS_Store
+
+# ---- Backend (api_sivar - Laravel) ----
+api_sivar/.phpunit.cache
+api_sivar/node_modules
+api_sivar/public/build
+api_sivar/public/hot
+api_sivar/public/storage
+api_sivar/storage/*.key
+api_sivar/vendor
+api_sivar/.env
+api_sivar/.env.backup
+api_sivar/.env.production
+api_sivar/.phpunit.result.cache
+api_sivar/Homestead.json
+api_sivar/Homestead.yaml
+api_sivar/auth.json
+api_sivar/npm-debug.log
+api_sivar/yarn-error.log
+api_sivar/.fleet
+api_sivar/.idea
+api_sivar/.vscode
+
+# ---- Frontend (sivar - Vue/Vite) ----
+sivar/node_modules
+sivar/dist
+sivar/dist-ssr
+sivar/coverage
+sivar/*.local
+sivar/cypress/videos/
+sivar/cypress/screenshots/
+sivar/.idea
+sivar/.env
+sivar/logs
+sivar/*.log
