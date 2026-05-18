@@ -40,7 +40,7 @@ class CrossingController extends Controller
             ->join('floracion', 'floracion.id_pr', '=', 'remote_pg_sipro.id_prycto')
             ->groupBy('remote_pg_sipro.id_prycto', 'remote_pg_sipro.nm_prycto', 'remote_pg_sipro.cd_cntble')
             ->havingRaw('count(*) > 0')
-            ->whereBetween('floracion.fcha', [Carbon::yesterday(), Carbon::today()])
+            ->whereBetween('floracion.fcha', [Carbon::today()->subYears(10), Carbon::today()])
             ->where('floracion.estado', 0)
             ->get();
 
@@ -203,7 +203,7 @@ class CrossingController extends Controller
                 } else if ($porcentajeB < 120 && $porcentajeB >= 110) {
                     $nivel_florB = 2;
                 } else if ($porcentajeB < 110 && $porcentajeB >= 95) {
-                    $nivel_florA = 3;
+                    $nivel_florB = 3;
                 } else if ($porcentajeB < 95 && $porcentajeB >= 85) {
                     $nivel_florB = 4;
                 } else {
@@ -234,7 +234,7 @@ class CrossingController extends Controller
                 } else if ($porcentajeB < 120 && $porcentajeB >= 100) {
                     $nivel_florB = 2;
                 } else if ($porcentajeB < 100 && $porcentajeB >= 90) {
-                    $nivel_florA = 3;
+                    $nivel_florB = 3;
                 } else if ($porcentajeB < 90 && $porcentajeB >= 80) {
                     $nivel_florB = 4;
                 } else {
@@ -265,7 +265,7 @@ class CrossingController extends Controller
                 } else if ($porcentajeB < 120 && $porcentajeB >= 100) {
                     $nivel_florB = 2;
                 } else if ($porcentajeB < 100 && $porcentajeB >= 90) {
-                    $nivel_florA = 3;
+                    $nivel_florB = 3;
                 } else if ($porcentajeB < 90 && $porcentajeB >= 80) {
                     $nivel_florB = 4;
                 } else {
@@ -296,7 +296,7 @@ class CrossingController extends Controller
                 } else if ($porcentajeB < 20 && $porcentajeB >= 11) {
                     $nivel_florB = 2;
                 } else if ($porcentajeB < 30 && $porcentajeB >= 21) {
-                    $nivel_florA = 3;
+                    $nivel_florB = 3;
                 } else if ($porcentajeB < 49 && $porcentajeB >= 31) {
                     $nivel_florB = 4;
                 } else {
@@ -388,14 +388,14 @@ class CrossingController extends Controller
         $arreglo = array();
         for ($i = 0; $i < sizeof($flores); $i++) {
             $florA = $flores[$i];
-            $florA_PR = $flores_PR[$i];
-            $florA_EIII = $flores_EIII[$i];
+            $florA_PR = isset($flores_PR[$i]) ? $flores_PR[$i] : null;
+            $florA_EIII = isset($flores_EIII[$i]) ? $flores_EIII[$i] : null;
             $arregloFlorA = array();
 
             for ($j = 0; $j < sizeof($flores); $j++) {
                 $florB = $flores[$j];
-                $florB_PR = $flores_PR[$j];
-                $florB_EIII = $flores_EIII[$j];
+                $florB_PR = isset($flores_PR[$j]) ? $flores_PR[$j] : null;
+                $florB_EIII = isset($flores_EIII[$j]) ? $flores_EIII[$j] : null;
                 $viabilidad = array(
                     'varA' => $florA->vrdad,
                     'varB' => $florB->vrdad,
@@ -420,23 +420,23 @@ class CrossingController extends Controller
                     $caracteristica = $ponderado->equivalente;
 
                     //aqui evaluamos en cada uno de los estados los datos ->PR->EIII
-                    if (empty($florA->$caracteristica)) {
+                    if ($florA && empty($florA->$caracteristica)) {
                         $florA = $florA_PR;
-                        if (empty($florA_PR->$caracteristica)) {
+                        if (!$florA_PR || empty($florA_PR->$caracteristica)) {
                             $florA = $florA_EIII;
                         }
                     }
-                    if (empty($florB->$caracteristica)) {
+                    if ($florB && empty($florB->$caracteristica)) {
                         $florB = $florB_PR;
-                        if (empty($florB_PR->$caracteristica)) {
+                        if (!$florB_PR || empty($florB_PR->$caracteristica)) {
                             $florB = $florB_EIII;
                         }
                     }
 
                     if ($ponderado->ponderado > 0) {
-                        if (!empty($florA->$caracteristica) && $testigo != null && !empty($testigo->$caracteristica)) {
+                        if ($florA && !empty($florA->$caracteristica) && $testigo != null && !empty($testigo->$caracteristica)) {
                             $vm += ($this->calcularValorMerito($caracteristica, $florA, $ponderado->ponderado, $testigo->$caracteristica)) / 100;
-                            if (!empty($florB->$caracteristica)) {
+                            if ($florB && !empty($florB->$caracteristica)) {
                                 $vm2 += ($this->calcularValorMerito($caracteristica, $florB, $ponderado->ponderado, $testigo->$caracteristica)) / 100;
 
                                 if (!$this->calcularViabilidadCaracteristica($caracteristica, $florA, $florB, $ponderado, $testigo->$caracteristica)) {
@@ -511,7 +511,7 @@ class CrossingController extends Controller
     public function generateMatrix($proy, $proyecto, $testigo)
     {
         $fechaf = Carbon::today()->format('Y-m-d');
-        $fechai = Carbon::yesterday()->format('Y-m-d');
+        $fechai = Carbon::today()->subYears(10)->format('Y-m-d');
 
         $proyectos = explode(",", $proy);
 
@@ -644,7 +644,7 @@ class CrossingController extends Controller
     public function enviarABolsaComun(Request $request, $variedad)
     {
         $fechaf = Carbon::today()->format('Y-m-d');
-        $fechai = Carbon::yesterday()->format('Y-m-d');
+        $fechai = Carbon::today()->subYears(10)->format('Y-m-d');
         $info = explode("_", $variedad);
 
         $flor = Flowering::where('floracion.id_pr', '=', $info[1])
@@ -668,7 +668,7 @@ class CrossingController extends Controller
     {
         $var = explode("_", $variedad);
         $fechaf = Carbon::today()->format('Y-m-d');
-        $fechai = Carbon::yesterday()->format('Y-m-d');
+        $fechai = Carbon::today()->subYears(10)->format('Y-m-d');
         $flor = DB::connection('sivar')->table('floracion')
             ->whereBetween('floracion.fcha', array($fechai, $fechaf))
             ->where('floracion.id_pr', '=', str_replace("9999", "", $var[1]))
@@ -692,14 +692,14 @@ class CrossingController extends Controller
     public function suggestionCrossings($proy, $proyecto, $testigo, $ambiente)
     {
         $fechaf = Carbon::today()->format('Y-m-d');
-        $fechai = Carbon::yesterday()->format('Y-m-d');
+        $fechai = Carbon::today()->subYears(10)->format('Y-m-d');
 
         $proyectos = Projects::selectRaw('remote_pg_sipro.nm_prycto,remote_pg_sipro.cd_cntble,remote_pg_sipro.id_prycto, count(*) as numero')
             ->join('floracion', 'floracion.id_pr', '=', 'remote_pg_sipro.id_prycto')
             ->groupBy('remote_pg_sipro.id_prycto', 'remote_pg_sipro.nm_prycto', 'remote_pg_sipro.cd_cntble')
             ->havingRaw('count(*)> 0')
             //Restricción a dos últimos días
-            ->whereBetween('floracion.fcha', [Carbon::today()->subDays(1), Carbon::today()])
+            ->whereBetween('floracion.fcha', [Carbon::today()->subYears(10), Carbon::today()])
             ->where('floracion.estado', '=', 0)
             ->select('id_prycto', 'cd_cntble')
             ->get();
@@ -903,14 +903,14 @@ class CrossingController extends Controller
     public function sugerenciasCruzamientosBolsaComun($proy, $proyecto, $testigo, $ambiente)
     {
         $fechaf = Carbon::today()->format('Y-m-d');
-        $fechai = Carbon::yesterday()->format('Y-m-d');
+        $fechai = Carbon::today()->subYears(10)->format('Y-m-d');
 
         $proyectos = Projects::selectRaw('remote_pg_sipro.nm_prycto,remote_pg_sipro.cd_cntble,remote_pg_sipro.id_prycto, count(*) as numero')
             ->join('floracion', 'floracion.id_pr', '=', 'remote_pg_sipro.id_prycto')
             ->groupBy('remote_pg_sipro.id_prycto', 'remote_pg_sipro.nm_prycto', 'remote_pg_sipro.cd_cntble')
             ->havingRaw('count(*)> 0')
             //Restricción a dos últimos días
-            ->whereBetween('floracion.fcha', [Carbon::today()->subDays(1), Carbon::today()])
+            ->whereBetween('floracion.fcha', [Carbon::today()->subYears(10), Carbon::today()])
             //->where($id, 'ILIKE', '%'.$term.'%')->orWhere($text, 'ILIKE', '%'.$term.'%')
             ->get();
         $flores = DB::connection('sivar')->table('floracion')
@@ -1096,7 +1096,7 @@ class CrossingController extends Controller
     public function suggestionCrossingsPerProject($proy, $proyecto, $testigo, $ambiente)
     {
         $fechaf = Carbon::today()->format('Y-m-d');
-        $fechai = Carbon::yesterday()->format('Y-m-d');
+        $fechai = Carbon::today()->subYears(10)->format('Y-m-d');
 
 
         $flores = DB::connection('sivar')->table('floracion')

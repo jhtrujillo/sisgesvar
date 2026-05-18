@@ -16,6 +16,7 @@ const API_ALIGNMENTSLIST = API_URL + "processesList";
 const API_FLOWERINGLIST = API_URL + "floweringList";
 const API_VARIETYSLIST = API_URL + "varietysList";
 const API_VARIETY = API_URL + "variety";
+const API_VARIETY_PROFILE = API_URL + "varietyProfile";
 const API_VARIETY_HISTORY = API_URL + "historyDatatable";
 const API_GERMOPLASM_BANK = API_URL + "germoplasmBankList";
 const API_PARENTS_DIAGRAM = API_URL + "getParents";
@@ -55,6 +56,7 @@ export default {
   API_VARIETYSLIST,
   API_VARIETY_HISTORY,
   API_VARIETY,
+  API_VARIETY_PROFILE,
   API_GERMOPLASM_BANK,
   API_PARENTS_DIAGRAM_LEVEL,
   API_PARENTS_DIAGRAM,

@@ -261,25 +261,28 @@
                         >
                           Polen: {{ car.polen2 }} | VM: {{ car.vm2 }}
                         </div>
-                        <span 
-                          class="text-[9px] font-extrabold tracking-tight leading-none"
-                          :class="[mostrarMapaCalor && isHighDg(car.varA, car.varB) ? 'text-white' : 'text-slate-700']"
-                        >
-                          DG: {{ getDistancia(car.varA, car.varB) || "NA" }}
-                        </span>
-                        <!-- Botón Comparador Lado a Lado -->
-                        <button 
-                          @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad)"
-                          class="text-[8px] font-black px-1.5 py-0.5 rounded border transition-all duration-150 mt-1"
-                          :class="[
-                            mostrarMapaCalor && isHighDg(car.varA, car.varB)
-                              ? 'bg-emerald-700/60 hover:bg-emerald-800 text-white border-emerald-500/50'
-                              : 'bg-slate-50 hover:bg-emerald-50 text-slate-500 hover:text-emerald-700 border-slate-200/65 hover:border-emerald-200'
-                          ]"
-                          title="Comparar Progenitores Lado a Lado"
-                        >
-                          Comparar
-                        </button>
+                        <div class="flex items-center justify-between w-full border-t border-slate-100/50 pt-1 mt-1">
+                          <span 
+                            class="text-[9px] font-extrabold tracking-tight leading-none"
+                            :class="[mostrarMapaCalor && isHighDg(car.varA, car.varB) ? 'text-white' : 'text-slate-700']"
+                          >
+                            DG: {{ getDistancia(car.varA, car.varB) || "NA" }}
+                          </span>
+                          <!-- Botón Comparador Lado a Lado -->
+                          <button 
+                            @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad)"
+                            class="text-[8px] font-bold px-1.5 py-0.5 rounded transition-all duration-150 flex items-center space-x-0.5 border"
+                            :class="[
+                              mostrarMapaCalor && isHighDg(car.varA, car.varB)
+                                ? 'bg-white/20 hover:bg-white/30 text-white border-white/25'
+                                : 'bg-slate-100 hover:bg-emerald-50 text-slate-650 hover:text-emerald-700 border-slate-200/60 hover:border-emerald-200'
+                            ]"
+                            title="Comparar Progenitores Lado a Lado"
+                          >
+                            <i class="fa fa-balance-scale"></i>
+                            <span>VS</span>
+                          </button>
+                        </div>
                       </div>
                     </td>
                   </template>

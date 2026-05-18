@@ -453,4 +453,123 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
             return response()->json(['error' => $ex->getMessage()], 500);
         }
     }    
+
+    public function getVarietyProfile(Request $request, $var)
+    {
+        try {
+            $variety = Variety::where("nm_vrdad", $var)->first();
+            
+            // Construir la consulta de promedios para la variedad individual (para unir múltiples ensayos y ensayos incompletos)
+            $columnsToAverage = [
+                'mosaico_p' => 'mosaico_p',
+                'roya_cafe_r' => 'roya_cafe_r',
+                'roya_naranja_r' => 'roya_naranja_r',
+                'carbon_p' => 'carbon_p',
+                'sacarosa' => 'sacarosa',
+                'brix' => 'brix',
+                'fibra' => 'fibra',
+                'pureza' => 'pureza',
+                'tchm' => 'tchm',
+                'altura_planta' => 'altura_planta',
+                'diametro_tallo' => 'diametro_tallo',
+                'aspecto_planta' => 'aspecto_planta',
+                'spad' => 'spad'
+            ];
+
+            $selectParts = [];
+            foreach ($columnsToAverage as $col => $alias) {
+                $selectParts[] = "AVG(CASE WHEN TRIM(REPLACE($col::text, ',', '.')) ~ '^\d+(\.\d+)?$' THEN TRIM(REPLACE($col::text, ',', '.'))::double precision ELSE NULL END) as $alias";
+            }
+            $selectParts[] = "MAX(procedencia) as procedencia";
+            $selectParts[] = "MAX(estacion) as estacion";
+            
+            $traitsSelectRaw = implode(",\n", $selectParts);
+
+            // Intentar obtener la caracterización agregada por el nombre exacto de la variedad
+            $traits = DB::connection('sivar')->table('caracterizacion_banco_germoplasma')
+                ->where('variedad', $var)
+                ->selectRaw($traitsSelectRaw)
+                ->first();
+
+            // Si es completamente nulo o no tiene datos de sacarosa/pureza/tchm, intentar buscar con LIKE
+            $hasAnyData = false;
+            if ($traits) {
+                foreach (['sacarosa', 'pureza', 'fibra', 'tchm', 'mosaico_p', 'carbon_p'] as $key) {
+                    if (isset($traits->$key) && !is_null($traits->$key)) {
+                        $hasAnyData = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!$hasAnyData) {
+                // Intentar búsqueda LIKE
+                $traits = DB::connection('sivar')->table('caracterizacion_banco_germoplasma')
+                    ->where('variedad', 'LIKE', '%' . $var . '%')
+                    ->selectRaw($traitsSelectRaw)
+                    ->first();
+                
+                // Volver a verificar si la búsqueda LIKE arrojó algún dato válido
+                $hasAnyData = false;
+                if ($traits) {
+                    foreach (['sacarosa', 'pureza', 'fibra', 'tchm', 'mosaico_p', 'carbon_p'] as $key) {
+                        if (isset($traits->$key) && !is_null($traits->$key)) {
+                            $hasAnyData = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Si al final no se obtuvieron datos válidos, se deja como null para que el frontend muestre la tarjeta vacía
+            if (!$hasAnyData) {
+                $traits = null;
+            } else {
+                // Convertir todos los floats a números PHP para evitar que vayan como strings en el JSON
+                $traitsArray = (array)$traits;
+                foreach ($traitsArray as $key => $value) {
+                    if (is_numeric($value)) {
+                        $traitsArray[$key] = (float)$value;
+                    }
+                }
+                $traits = $traitsArray;
+            }
+
+            // También podemos obtener el promedio global de la población para comparar las características en gráficos de radar/barras!
+            // Para evitar errores por representación no válida de texto (p. ej. "0,0") en PostgreSQL:
+            $globalColumns = [
+                'mosaico_p' => 'mosaico',
+                'roya_cafe_r' => 'roya_cafe',
+                'roya_naranja_r' => 'roya_naranja',
+                'carbon_p' => 'carbon',
+                'sacarosa' => 'sacarosa',
+                'brix' => 'brix',
+                'fibra' => 'fibra',
+                'pureza' => 'pureza',
+                'tchm' => 'tchm',
+                'altura_planta' => 'altura_planta',
+                'diametro_tallo' => 'diametro_tallo',
+                'spad' => 'spad'
+            ];
+
+            $globalParts = [];
+            foreach ($globalColumns as $col => $alias) {
+                $globalParts[] = "AVG(CASE WHEN TRIM(REPLACE($col::text, ',', '.')) ~ '^\d+(\.\d+)?$' THEN TRIM(REPLACE($col::text, ',', '.'))::double precision ELSE NULL END) as $alias";
+            }
+            $globalRawStr = implode(",\n", $globalParts);
+
+            $globalAverages = DB::connection('sivar')->table('caracterizacion_banco_germoplasma')
+                ->selectRaw($globalRawStr)
+                ->first();
+
+            return response()->json([
+                'success' => true,
+                'variety' => $variety,
+                'traits' => $traits,
+                'globalAverages' => $globalAverages
+            ]);
+        } catch (\Exception $ex) {
+            return response()->json(['success' => false, 'error' => $ex->getMessage()], 500);
+        }
+    }
 }

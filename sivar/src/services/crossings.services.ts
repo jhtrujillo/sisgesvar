@@ -31,6 +31,23 @@ async function GetSuggestionCrossingsPerProject(proyectos: string, proyecto: str
   return await api.get(url, {}, true);
 }
 
+async function saveWeight(proyecto: string): Promise<any> {
+  const url = `${urls.API_URL}crossing/programming/save_weight/${proyecto}`;
+  return await api.get(url, {}, true);
+}
+
+async function saveCrossing(
+  madre: string,
+  padres: string,
+  observaciones: string,
+  idPonderados: string,
+  proyectos: string,
+  autofecundado: number
+): Promise<any> {
+  const url = `${urls.API_URL}crossing/programming/save_crossing/${madre}/${padres}/${observaciones}/${idPonderados}/${proyectos}/${autofecundado}`;
+  return await api.get(url, {}, true);
+}
+
 const CrossingsService = {
   getCrossingsList,
   getCrossingInitialData,
@@ -38,7 +55,9 @@ const CrossingsService = {
   modifyFeatures,
   getMatrix,
   GetSuggestionCrossings,
-  GetSuggestionCrossingsPerProject
+  GetSuggestionCrossingsPerProject,
+  saveWeight,
+  saveCrossing
 };
 
 export default CrossingsService;
