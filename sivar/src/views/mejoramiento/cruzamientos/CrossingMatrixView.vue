@@ -144,12 +144,11 @@
                       :class="[
                         car?.viabilidad 
                           ? 'bg-emerald-50/50 hover:bg-emerald-100/50 border-r border-emerald-100/50 text-emerald-800' 
-                          : (ocultarInviables ? 'bg-transparent border-r border-slate-100/40' : 'bg-slate-50/50 hover:bg-slate-100/50 border-r border-slate-100 text-slate-400 opacity-60')
+                          : 'bg-slate-50/50 hover:bg-slate-100/50 border-r border-slate-100 text-slate-400 opacity-60'
                       ]"
                       class="p-1.5 text-center border-b border-slate-100 transition-all duration-200 min-w-[75px]"
                     >
                       <div 
-                        v-show="car?.viabilidad || !ocultarInviables"
                         class="flex flex-col items-center justify-center space-y-1"
                       >
                         <input 
@@ -159,17 +158,20 @@
                           :disabled="!car?.viabilidad"
                           class="h-3.5 w-3.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-100 transition cursor-pointer"
                         />
-                        <span class="text-[9px] font-extrabold tracking-tight mt-0.5 leading-none text-slate-700">
-                          DG: {{ getDistancia(car?.varA, car?.varB) || "NA" }}
-                        </span>
-                        <!-- Botón Comparador Lado a Lado -->
-                        <button 
-                          @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad)"
-                          class="text-[8px] font-black px-1.5 py-0.5 bg-slate-50 hover:bg-emerald-50 text-slate-500 hover:text-emerald-700 rounded border border-slate-200/65 hover:border-emerald-200 transition-all duration-150 mt-1"
-                          title="Comparar Progenitores Lado a Lado"
-                        >
-                          Comparar
-                        </button>
+                        <div class="flex items-center justify-between w-full border-t border-slate-100/50 pt-1 mt-1">
+                          <span class="text-[9px] font-extrabold tracking-tight leading-none text-slate-700">
+                            DG: {{ getDistancia(car?.varA, car?.varB) || "NA" }}
+                          </span>
+                          <!-- Botón Comparador Lado a Lado -->
+                          <button 
+                            @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad)"
+                            class="text-[8px] font-bold px-1.5 py-0.5 bg-slate-100 hover:bg-emerald-50 text-slate-650 hover:text-emerald-700 rounded border border-slate-200/60 hover:border-emerald-200 transition-all duration-150 flex items-center space-x-0.5"
+                            title="Comparar Progenitores Lado a Lado"
+                          >
+                            <i class="fa fa-balance-scale"></i>
+                            <span>VS</span>
+                          </button>
+                        </div>
                       </div>
                     </td>
                   </template>
