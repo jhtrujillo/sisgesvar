@@ -1480,8 +1480,15 @@ WHERE variedad = '$variedad'"));
         return response()->json($formattedTags);
     }
 
-    public function guardarCruzamiento(Request $request, $madre, $padres, $observaciones, $idPonderado, $proyectos, $autofecundado)
+    public function guardarCruzamiento(Request $request, $madre = null, $padres = null, $observaciones = null, $idPonderado = null, $proyectos = null, $autofecundado = null)
     {
+        $madre = $madre ?? $request->input('madre');
+        $padres = $padres ?? $request->input('padres');
+        $observaciones = $observaciones ?? $request->input('observaciones');
+        $idPonderado = $idPonderado ?? $request->input('id_ponderados') ?? $request->input('id_ponderado');
+        $proyectos = $proyectos ?? $request->input('proyectos');
+        $autofecundado = $autofecundado ?? $request->input('autofecundado');
+
         $usuario = auth('api')->user();
         if (!$usuario) {
             $usuario = \App\Models\User::first();

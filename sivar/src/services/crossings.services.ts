@@ -44,8 +44,15 @@ async function saveCrossing(
   proyectos: string,
   autofecundado: number
 ): Promise<any> {
-  const url = `${urls.API_URL}crossing/programming/save_crossing/${madre}/${padres}/${observaciones}/${idPonderados}/${proyectos}/${autofecundado}`;
-  return await api.get(url, {}, true);
+  const url = `${urls.API_URL}crossing/programming/save_crossing`;
+  return await api.post(url, {
+    madre,
+    padres,
+    observaciones,
+    id_ponderados: idPonderados,
+    proyectos,
+    autofecundado
+  }, true);
 }
 
 const CrossingsService = {

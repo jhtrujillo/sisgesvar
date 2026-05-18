@@ -61,7 +61,7 @@ Route::group([
     Route::get('/crossing/programming/criteria/', [\App\Http\Controllers\CrossingController::class, 'criteriosBancoGermoplasma']);
     Route::get('criteriosBancoGermoplasmaPorVariedad/{variedad}', [\App\Http\Controllers\CrossingController::class, 'criteriosBancoGermoplasmaPorVariedad']);
     Route::get('proyectosConFlores', [\App\Http\Controllers\CrossingController::class, 'proyectosConFlores']);
-    Route::get('/crossing/programming/save_crossing/{madre}/{padres}/{observaciones}/{id_ponderados}/{proyectos}/{autofecundado}', [\App\Http\Controllers\CrossingController::class, 'guardarCruzamiento']);
+    Route::post('/crossing/programming/save_crossing', [\App\Http\Controllers\CrossingController::class, 'guardarCruzamiento']);
     Route::get('consultarHistoricoCruzamiento/{madre}/{padres}', [\App\Http\Controllers\CrossingController::class, 'consultarHistoricoCruzamiento']);
     Route::get('/crossing/programming/save_weight/{proyecto}', [\App\Http\Controllers\CrossingController::class, 'guardarPonderados']);
     Route::get('/crossing/consolidated', [\App\Http\Controllers\CrossingController::class, 'consolidado']);
