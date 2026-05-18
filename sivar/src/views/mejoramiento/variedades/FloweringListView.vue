@@ -1,21 +1,56 @@
 <!-- Vista para mostrar en una lista los procesos que han sido completados -->
 <template>
-  <div class="w-full flex-col pt-5 grid place-content-center">
-    <div>
-      <button
-        type="button"
-        class="block mb-4 px-4 py-2 mt-2 text-sm font-semibold bg-transparent rounded-lg dark-mode:bg-transparent dark-mode:hover:bg-gray-600 dark-mode:focus:bg-gray-600 dark-mode:focus:text-white dark-mode:hover:text-white dark-mode:text-gray-200 md:mt-0 focus:outline-none focus:shadow-outline"
-      >
+  <div class="min-h-screen bg-slate-50/50 flex flex-col p-4 sm:p-8 font-sans">
+    <!-- Premium Header Area -->
+    <div class="w-full mx-auto mb-6 bg-white/80 backdrop-blur-xl rounded-2xl p-5 shadow-sm border border-slate-200/60 flex flex-col sm:flex-row items-center justify-between transition-all duration-300">
+      <div class="flex items-center gap-5">
+        <div class="p-3 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-xl shadow-lg shadow-violet-500/30">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-900 to-fuchsia-700 tracking-tight">
+            Tabla de Floración
+          </h1>
+          <p class="text-sm text-slate-500 font-medium">Registros detallados de campo</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-6 mt-4 sm:mt-0">
+        <!-- Switch Histórico -->
+        <label class="relative inline-flex items-center cursor-pointer group" title="Visualizar todos los registros de floración de los últimos 10 años">
+          <input type="checkbox" v-model="verHistorico" class="sr-only peer">
+          <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
+          <span class="ml-3 text-sm font-bold text-slate-600 group-hover:text-violet-700 transition-colors">Modo Histórico</span>
+        </label>
+
         <router-link
-          class="text-violet-800 group border border-violet-800 flex items-center px-2 py-2 font-medium rounded-md pt-1 pb-1 pr-2 pl-2 hover:text-white hover:bg-violet-800"
+          class="group relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-bold text-white transition-all duration-300 bg-slate-900 border border-transparent rounded-full hover:bg-violet-700 hover:scale-105 hover:shadow-lg hover:shadow-violet-500/25 focus:outline-none"
           :to="{ name: 'mejoramiento.show' }"
         >
-          Volver</router-link
-        >
-      </button>
+          <svg class="w-4 h-4 mr-2 transition-transform duration-300 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Volver
+        </router-link>
+      </div>
     </div>
-    <h1 class="text-center font-bold text-4xl mb-6 text-violet-800">Floración</h1>
-    <div class="overflow-hidden">
+
+    <!-- Table Container -->
+    <div class="w-full bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 flex-1 relative z-10 p-2 sm:p-6 overflow-hidden min-h-[400px]">
+      
+      <!-- Overlay Loading State -->
+      <div v-if="isLoading" class="absolute inset-0 z-50 bg-white/70 backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-300">
+        <div class="p-4 bg-white rounded-2xl shadow-xl flex flex-col items-center gap-3 border border-violet-100">
+          <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-violet-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span class="text-violet-800 font-bold tracking-wide animate-pulse">Sincronizando registros...</span>
+        </div>
+      </div>
+
       <TableComponent
         :rows="floweringListsStore.FloweringList"
         :have-search="true"
@@ -29,344 +64,146 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useFloweringStore } from "@/stores/flowering";
 import TableComponent from "../../../components/app-table/TableComponent.vue";
 import type { Column } from "../../../components/app-table/models";
 
 const floweringListsStore = useFloweringStore();
+const verHistorico = ref(false);
+const isLoading = ref(false);
 
 onMounted(async () => {
-  console.log("carga los flowering");
-  await floweringListsStore.getFlowering();
-  console.log(floweringListsStore.FloweringList);
+  isLoading.value = true;
+  await floweringListsStore.getFlowering(verHistorico.value);
+  isLoading.value = false;
 });
 
+// Recargar los datos cuando el usuario active o desactive el modo histórico
+watch(verHistorico, async (nuevoValor) => {
+  isLoading.value = true;
+  await floweringListsStore.getFlowering(nuevoValor);
+  isLoading.value = false;
+});
+
+/**
+ * Modificación realizada por: Jhon Henry Trujillo PhD
+ * Fecha: 2026-05-16
+ * Propósito: Refactorizar y agrupar las columnas de la tabla usando formatFromRow y la 
+ * nueva propiedad hiddenByDefault. Esto resuelve el problema de la tabla excesivamente ancha,
+ * mostrando solo las columnas más críticas de inicio y ocultando el resto para visualización posterior.
+ */
 const conlumnsInfo: Array<Column> = [
-  {
-    keyName: "id_flrcion",
-    text: "Id"
+  // ==========================================
+  // COLUMNAS VISIBLES POR DEFECTO (AGRUPADAS)
+  // ==========================================
+
+  // Identificador único de la floración en la base de datos
+  { keyName: "id_flrcion", text: "Id" },
+
+  // Nombre de la variedad de la planta o especie botánica recolectada
+  { keyName: "vrdad", text: "Variedad" },
+
+  // Columna combinada que muestra el día y la hora exacta en que se registró la floración
+  { 
+    keyName: "fecha_hora", 
+    text: "Fecha y Hora", 
+    formatFromRow: (row) => `${row.fcha || ''} ${row.hra || ''}`.trim() 
   },
-  {
-    keyName: "hcnda",
-    text: "Hacienda"
+
+  // Columna combinada que resume la localización geográfica y parcelaria (Hacienda, Lote, Parcela, Surco)
+  { 
+    keyName: "ubicacion", 
+    text: "Ubicación", 
+    formatFromRow: (row) => `${row.hcnda || ''} (L${row.lte || '-'} P${row.prcla || '-'} S${row.srco || '-'})` 
   },
-  {
-    keyName: "fcha",
-    text: "Fecha"
+
+  // Columna combinada que muestra el sexo original de la planta y, si hubo una mutación/cambio inducido, lo indica con una flecha
+  { 
+    keyName: "sexo_comp", 
+    text: "Sexo", 
+    formatFromRow: (row) => row.cmbio_sxo ? `${row.sxo} ➝ ${row.cmbio_sxo}` : (row.sxo || 'N/A') 
   },
-  {
-    keyName: "hra",
-    text: "Hora"
+
+  // Porcentaje de viabilidad o cantidad del polen disponible en la flor
+  { 
+    keyName: "polen_comp", 
+    text: "Polen", 
+    formatFromRow: (row) => row.polen ? `${row.polen}%` : 'N/A' 
   },
-  {
-    keyName: "lte",
-    text: "Lote"
-  },
-  {
-    keyName: "prcla",
-    text: "Parcela"
-  },
-  {
-    keyName: "srco",
-    text: "Surco"
-  },
-  {
-    keyName: "vrdad",
-    text: "Variedad"
-  },
-  {
-    keyName: "flrcion",
-    text: "Floración"
-  },
-  {
-    keyName: "grpo",
-    text: "Grupo"
-  },
-  {
-    keyName: "polen",
-    text: "Polen"
-  },
-  {
-    keyName: "grnos_vbles1",
-    text: "Granos Viables 1"
-  },
-  {
-    keyName: "ttal_grnos1",
-    text: "Total Granos 1"
-  },
-  {
-    keyName: "grnos_vbles2",
-    text: "Granos Viables 2"
-  },
-  {
-    keyName: "ttal_grnos2",
-    text: "Total Granos 2"
-  },
-  {
-    keyName: "grnos_vbles3",
-    text: "Granos Viables 3"
-  },
-  {
-    keyName: "ttal_grnos3",
-    text: "Total Granos 3"
-  },
-  {
-    keyName: "grnos_vbles4",
-    text: "Granos Viables 4"
-  },
-  {
-    keyName: "ttal_grnos4",
-    text: "Total Granos 4"
-  },
-  {
-    keyName: "grnos_vbles5",
-    text: "Granos Viables 5"
-  },
-  {
-    keyName: "ttal_grnos5",
-    text: "Total Granos 5"
-  },
-  {
-    keyName: "sxo",
-    text: "Sexo"
-  },
-  {
-    keyName: "slcciondo",
-    text: "Seleccionado"
-  },
-  {
-    keyName: "cmbio_sxo",
-    text: "Cambio de Sexo"
-  },
-  {
-    keyName: "nm_prycto",
-    text: "Nombre de proyecto"
-  },
-  {
-    keyName: "nmbre_crcter",
-    text: "Caracter"
-  },
-  {
-    keyName: "vivero",
-    text: "Vivero"
-  },
-  {
-    keyName: "obsrvcn",
-    text: "Observación"
-  },
-  {
-    keyName: "usuario",
-    text: "Usuario que Editó"
-  },
-  {
-    keyName: "ingnio",
-    text: "Ingenio"
-  },
-  {
-    keyName: "id_smbra_cmpo",
-    text: "Id Siembra de Campo"
-  }
+
+  // Nombre del proyecto de investigación genética al cual está asociada esta flor
+  { keyName: "nm_prycto", text: "Proyecto" },
+
+  // ==========================================
+  // COLUMNAS OCULTAS POR DEFECTO (DETALLADAS)
+  // Disponibles en el botón 'Columnas' y en Exportación Excel
+  // ==========================================
+
+  // Fecha bruta sin hora
+  { keyName: "fcha", text: "Fecha (Original)", hiddenByDefault: true },
+  
+  // Hora bruta sin fecha
+  { keyName: "hra", text: "Hora (Original)", hiddenByDefault: true },
+  
+  // Nombre de la hacienda o estación experimental
+  { keyName: "hcnda", text: "Hacienda (Original)", hiddenByDefault: true },
+  
+  // Número o identificador del lote en el campo
+  { keyName: "lte", text: "Lote (Original)", hiddenByDefault: true },
+  
+  // Número o identificador de la parcela específica
+  { keyName: "prcla", text: "Parcela (Original)", hiddenByDefault: true },
+  
+  // Número de surco donde está sembrada la planta
+  { keyName: "srco", text: "Surco (Original)", hiddenByDefault: true },
+  
+  // Sexo biológico base de la planta (Ej. Macho, Hembra, etc.)
+  { keyName: "sxo", text: "Sexo (Original)", hiddenByDefault: true },
+  
+  // Sexo secundario o modificado por inducción/químicos
+  { keyName: "cmbio_sxo", text: "Cambio de Sexo (Original)", hiddenByDefault: true },
+  
+  // Valor numérico crudo del polen
+  { keyName: "polen", text: "Polen (Original)", hiddenByDefault: true },
+  
+  // Estado fenológico o tipo de floración observada
+  { keyName: "flrcion", text: "Floración", hiddenByDefault: true },
+  
+  // Grupo de cruzamiento o familia al que pertenece
+  { keyName: "grpo", text: "Grupo", hiddenByDefault: true },
+  
+  // Conteos sucesivos de granos de polen viables vs totales en diferentes mediciones o muestras (1 a 5)
+  { keyName: "grnos_vbles1", text: "Granos Viables 1", hiddenByDefault: true },
+  { keyName: "ttal_grnos1", text: "Total Granos 1", hiddenByDefault: true },
+  { keyName: "grnos_vbles2", text: "Granos Viables 2", hiddenByDefault: true },
+  { keyName: "ttal_grnos2", text: "Total Granos 2", hiddenByDefault: true },
+  { keyName: "grnos_vbles3", text: "Granos Viables 3", hiddenByDefault: true },
+  { keyName: "ttal_grnos3", text: "Total Granos 3", hiddenByDefault: true },
+  { keyName: "grnos_vbles4", text: "Granos Viables 4", hiddenByDefault: true },
+  { keyName: "ttal_grnos4", text: "Total Granos 4", hiddenByDefault: true },
+  { keyName: "grnos_vbles5", text: "Granos Viables 5", hiddenByDefault: true },
+  { keyName: "ttal_grnos5", text: "Total Granos 5", hiddenByDefault: true },
+  
+  // Booleano o indicador si la flor fue seleccionada explícitamente para un cruce
+  { keyName: "slcciondo", text: "Seleccionado", hiddenByDefault: true },
+  
+  // Características morfológicas relevantes de la planta
+  { keyName: "nmbre_crcter", text: "Caracter", hiddenByDefault: true },
+  
+  // Nombre o id del vivero de aclimatación, si aplica
+  { keyName: "vivero", text: "Vivero", hiddenByDefault: true },
+  
+  // Notas textuales adicionales hechas por el investigador en el campo
+  { keyName: "obsrvcn", text: "Observación", hiddenByDefault: true },
+  
+  // Nombre o ID del usuario del sistema que ingresó o modificó este registro
+  { keyName: "usuario", text: "Usuario que Editó", hiddenByDefault: true },
+  
+  // Ingenio azucarero o institución primaria responsable
+  { keyName: "ingnio", text: "Ingenio", hiddenByDefault: true },
+  
+  // Identificador referencial a la tabla de siembras de campo
+  { keyName: "id_smbra_cmpo", text: "Id Siembra de Campo", hiddenByDefault: true }
 ];
 </script>
-<!-- <template>
-    <div class="w-full flex-col pt-2 grid place-content-center">
-        <div>
-            <button type="button"
-                class="block mb-4 px-4 py-2 mt-2 text-sm font-semibold bg-transparent rounded-lg dark-mode:bg-transparent dark-mode:hover:bg-gray-600 dark-mode:focus:bg-gray-600 dark-mode:focus:text-white dark-mode:hover:text-white dark-mode:text-gray-200 md:mt-0  focus:outline-none focus:shadow-outline"
-                href="#">
-                <router-link
-                    class="text-violet-800 group border border-violet-800 flex items-center px-2 py-2 font-medium rounded-md pt-1 pb-1 pr-2 pl-2 hover:text-white hover:bg-violet-800"
-                    :to="{
-                        name: 'variedades.show'
-                    }">Volver</router-link>
-            </button>
-        </div>
-        <h1 class="text-center font-bold text-4xl mb-4 text-violet-800">Floración</h1>
-
-        <div class=" w-full overflow-x-auto shadow-md sm:rounded-lg">
-            <template v-if="filteredFloweringList.length === 0">
-                <p class="text-center text-xl font-bold text-gray-500">No hay datos.</p>
-            </template>
-            <table v-else class="w-full  text-sm text-left text-gray-500 dark:text-gray-400">
-                <thead class="text-center">
-                    <tr class="bg-white border-b dark:bg-gray-900 dark:border-gray-700">
-                        <th class="p-3">Id</th>
-                        <th class="p-3">Hacienda</th>
-                        <th class="p-3">Fecha</th>
-                        <th class="p-3">Hora</th>
-                        <th class="p-3">Lote</th>
-                        <th class="p-3">Parcela</th>
-                        <th class="p-3">Surco</th>
-                        <th class="p-3">Variedad</th>
-                        <th class="p-3">Floración</th>
-                        <th class="p-3">Grupo</th>
-                        <th class="p-3">Polen</th>
-                        <th class="p-3">Granos Viables</th>
-                        <th class="p-3">Total Granos 1</th>
-                        <th class="p-3">Granos Viables 2</th>
-                        <th class="p-3">Total Granos 2</th>
-                        <th class="p-3">Granos Viables 3</th>
-                        <th class="p-3">Total Granos 3</th>
-                        <th class="p-3">Granos Viables 4</th>
-                        <th class="p-3">Total Granos 4</th>
-                        <th class="p-3">Granos Viables 5</th>
-                        <th class="p-3">Total Granos 5</th>
-                        <th class="p-3">Sexo</th>
-                        <th class="p-3">Seleccionado</th>
-                        <th class="p-3">Cambio de Sexo</th>
-                        <th class="p-3">Nombre de proyecto</th>
-                        <th class="p-3">Caracter</th>
-                        <th class="p-3">Vivero</th>
-                        <th class="p-3">Observación</th>
-                        <th class="p-3">Usuario que Editó</th>
-                        <th class="p-3">Ingenio</th>
-                        <th class="p-3">Id Siembra de Campo</th>
-                    </tr>
-                </thead>
-                <tbody v-for="flowering in filteredFloweringList" :key="flowering.id_flrcion" class="text-center">
-                    <tr class="bg-white border-b dark:bg-gray-900 dark:border-gray-700">
-                        <td class="p-3">
-                            {{ flowering.id_flrcion }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.hcnda }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.fcha }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.hra }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.lte }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.prcla }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.srco }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.vrdad }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.flrcion }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.grpo }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.polen }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.grnos_vbles1 }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.ttal_grnos1 }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.grnos_vbles2 }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.ttal_grnos2 }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.grnos_vbles3 }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.ttal_grnos3 }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.grnos_vbles4 }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.ttal_grnos4 }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.grnos_vbles5 }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.ttal_grnos5 }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.sxo }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.slcciondo }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.cmbio_sxo }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.nm_prycto }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.nmbre_crcter }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.vivero }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.obsrvcn }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.usuario }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.ingnio }}
-                        </td>
-                        <td class="p-3">
-                            {{ flowering.id_smbra_cmpo }}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <v-pagination v-model="currentPage" :total-visible="7" :total-pages="totalPages"
-                @input="paginate"></v-pagination>
-        </div>
-    </div>
-</template>
-<script setup lang="ts">
-import { ref, watchEffect, onMounted } from "vue";
-import type { FLowering } from "../services/types";
-import { useFloweringStore } from "@/stores/flowering";
-import { useUserStore } from "@/stores/user";
-
-const currentPage = ref(1);
-const itemsPerPage = 10;
-const totalPages = ref(0);
-const filteredFloweringList = ref<FLowering[]>([]);
-
-const userStore = useUserStore();
-const floweringListsStore = useFloweringStore();
-
-onMounted(async () => {
-    console.log("carga los flowering");
-    await floweringListsStore.getFlowering();
-    console.log(floweringListsStore.FloweringList);
-});
-
-// Lógica para paginar los datos
-function paginate(newPage: number) {
-    currentPage.value = newPage;
-    const start = (newPage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    filteredFloweringList.value = floweringListsStore.FloweringList.slice(start, end);
-    totalPages.value = calculateTotalPages();
-}
-
-// Obtiene el número total de páginas
-function calculateTotalPages() {
-    return Math.ceil(floweringListsStore.FloweringList.length / itemsPerPage);
-}
-
-// Observa los cambios en la lista de floraciones para reflejarlos en la paginación
-onMounted(() => {
-    watchEffect(() => {
-        filteredFloweringList.value = floweringListsStore.FloweringList.slice(0, itemsPerPage);
-        totalPages.value = calculateTotalPages();
-    });
-});
-</script> -->
-../stores/varietys
