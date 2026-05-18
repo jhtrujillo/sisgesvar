@@ -135,184 +135,118 @@ class CrossingController extends Controller
 
     public function calcularViabilidadCaracteristica($caracteristica, $florA, $florB, $ponderado, $testigo)
     {
-        // Cálculos para determinar los niveles de viabilidad
-        // $nivel_florA = $this->calcularNivel($florA, $caracteristica, $testigo);
-        // $nivel_florB = $this->calcularNivel($florB, $caracteristica, $testigo);
+        // 1. Si no hay valor en el testigo, no se puede evaluar (no se descarta por desconocimiento)
+        if (is_null($testigo) || $testigo === '') {
+            return true;
+        }
+
+        $valA = $florA->$caracteristica ?? null;
+        $valB = $florB->$caracteristica ?? null;
+
+        // Si alguna de las flores no tiene registro para la característica, no se descarta por desconocimiento
+        if (is_null($valA) || $valA === '' || is_null($valB) || $valB === '') {
+            return true;
+        }
 
         $nivel_florA = 999;
         $nivel_florB = 999;
 
-        if ($caracteristica == "msco_r" or $caracteristica == "carbon") {
-            //Clasificación niveles mosaico flor A
-            if ($florA->$caracteristica <= 2) {
-                $nivel_florA = 1;
-            } else if ($florA->$caracteristica > 2 && $florA->$caracteristica <= 3) {
-                $nivel_florA = 2;
-            } else if ($florA->$caracteristica > 3 && $florA->$caracteristica <= 5) {
-                $nivel_florA = 3;
-            } else if ($florA->$caracteristica > 5 && $florA->$caracteristica <= 8) {
-                $nivel_florA = 4;
-            } else if ($florA->$caracteristica > 8 && $florA->$caracteristica <= 11) {
-                $nivel_florA = 5;
-            } else if ($florA->$caracteristica > 11 && $florA->$caracteristica <= 15) {
-                $nivel_florA = 6;
-            } else if ($florA->$caracteristica > 15 && $florA->$caracteristica <= 22) {
-                $nivel_florA = 7;
-            } else if ($florA->$caracteristica > 22 && $florA->$caracteristica <= 30) {
-                $nivel_florA = 8;
-            } else {
-                $nivel_florA = 9;
-            }
-            //Clasificación niveles mosaico flor B
-            if ($florB->$caracteristica <= 2) {
-                $nivel_florB = 1;
-            } else if ($florB->$caracteristica > 2 && $florB->$caracteristica <= 3) {
-                $nivel_florB = 2;
-            } else if ($florB->$caracteristica > 3 && $florB->$caracteristica <= 5) {
-                $nivel_florB = 3;
-            } else if ($florB->$caracteristica > 5 && $florB->$caracteristica <= 8) {
-                $nivel_florB = 4;
-            } else if ($florB->$caracteristica > 8 && $florB->$caracteristica <= 11) {
-                $nivel_florB = 5;
-            } else if ($florB->$caracteristica > 11 && $florB->$caracteristica <= 15) {
-                $nivel_florB = 6;
-            } else if ($florB->$caracteristica > 15 && $florB->$caracteristica <= 22) {
-                $nivel_florB = 7;
-            } else if ($florB->$caracteristica > 22 && $florB->$caracteristica <= 30) {
-                $nivel_florB = 8;
-            } else if ($florB->$caracteristica > 30) {
-                $nivel_florB = 9;
-            }
-        } else if ($caracteristica == "tchm") {
-            if ($testigo != null) {
-                $porcentajeA = ($florA->$caracteristica * 100) / $testigo;
-                if ($porcentajeA > 120) {
-                    $nivel_florA = 1;
-                } else if ($porcentajeA < 120 && $porcentajeA >= 110) {
-                    $nivel_florA = 2;
-                } else if ($porcentajeA < 110 && $porcentajeA >= 95) {
-                    $nivel_florA = 3;
-                } else if ($porcentajeA < 95 && $porcentajeA >= 85) {
-                    $nivel_florA = 4;
-                } else {
-                    $nivel_florA = 5;
-                }
-                $porcentajeB = ($florB->$caracteristica * 100) / $testigo;
-                if ($porcentajeB > 120) {
-                    $nivel_florB = 1;
-                } else if ($porcentajeB < 120 && $porcentajeB >= 110) {
-                    $nivel_florB = 2;
-                } else if ($porcentajeB < 110 && $porcentajeB >= 95) {
-                    $nivel_florB = 3;
-                } else if ($porcentajeB < 95 && $porcentajeB >= 85) {
-                    $nivel_florB = 4;
-                } else {
-                    $nivel_florB = 5;
-                }
-            } else {
-                //No se descarta por desconocimiento
-                $nivel_florA = 0;
-                $nivel_florB = 0;
-            }
-        } else if ($caracteristica == "scrsa") {
-            if ($testigo != null) {
-                $porcentajeA = ($florA->$caracteristica * 100) / $testigo;
-                if ($porcentajeA > 120) {
-                    $nivel_florA = 1;
-                } else if ($porcentajeA < 120 && $porcentajeA >= 100) {
-                    $nivel_florA = 2;
-                } else if ($porcentajeA < 100 && $porcentajeA >= 90) {
-                    $nivel_florA = 3;
-                } else if ($porcentajeA < 90 && $porcentajeA >= 80) {
-                    $nivel_florA = 4;
-                } else {
-                    $nivel_florA = 5;
-                }
-                $porcentajeB = ($florB->$caracteristica * 100) / $testigo;
-                if ($porcentajeB > 120) {
-                    $nivel_florB = 1;
-                } else if ($porcentajeB < 120 && $porcentajeB >= 100) {
-                    $nivel_florB = 2;
-                } else if ($porcentajeB < 100 && $porcentajeB >= 90) {
-                    $nivel_florB = 3;
-                } else if ($porcentajeB < 90 && $porcentajeB >= 80) {
-                    $nivel_florB = 4;
-                } else {
-                    $nivel_florB = 5;
-                }
-            } else {
-                //No se descarta por desconocimiento
-                $nivel_florA = 0;
-                $nivel_florB = 0;
-            }
-        } else if ($caracteristica == "dmtro_tllo" || $caracteristica == "altura_planta" || $caracteristica == "poblacion") {
-            if ($testigo != null) {
-                $porcentajeA = ($florA->$caracteristica * 100) / $testigo;
-                if ($porcentajeA > 120) {
-                    $nivel_florA = 1;
-                } else if ($porcentajeA < 120 && $porcentajeA >= 100) {
-                    $nivel_florA = 2;
-                } else if ($porcentajeA < 100 && $porcentajeA >= 90) {
-                    $nivel_florA = 3;
-                } else if ($porcentajeA < 90 && $porcentajeA >= 80) {
-                    $nivel_florA = 4;
-                } else {
-                    $nivel_florA = 5;
-                }
-                $porcentajeB = ($florB->$caracteristica * 100) / $testigo;
-                if ($porcentajeB > 120) {
-                    $nivel_florB = 1;
-                } else if ($porcentajeB < 120 && $porcentajeB >= 100) {
-                    $nivel_florB = 2;
-                } else if ($porcentajeB < 100 && $porcentajeB >= 90) {
-                    $nivel_florB = 3;
-                } else if ($porcentajeB < 90 && $porcentajeB >= 80) {
-                    $nivel_florB = 4;
-                } else {
-                    $nivel_florB = 5;
-                }
-            } else {
-                //No se descarta por desconocimiento
-                $nivel_florA = 0;
-                $nivel_florB = 0;
-            }
-        } else if ($caracteristica == "volcamiento") {
-            if ($testigo != null) {
-                $porcentajeA = ($florA->$caracteristica * 100) / $testigo;
-                if ($porcentajeA < 10) {
-                    $nivel_florA = 1;
-                } else if ($porcentajeA < 20 && $porcentajeA >= 11) {
-                    $nivel_florA = 2;
-                } else if ($porcentajeA < 30 && $porcentajeA >= 21) {
-                    $nivel_florA = 3;
-                } else if ($porcentajeA < 49 && $porcentajeA >= 31) {
-                    $nivel_florA = 4;
-                } else {
-                    $nivel_florA = 5;
-                }
-                $porcentajeB = ($florB->$caracteristica * 100) / $testigo;
-                if ($porcentajeB < 10) {
-                    $nivel_florB = 1;
-                } else if ($porcentajeB < 20 && $porcentajeB >= 11) {
-                    $nivel_florB = 2;
-                } else if ($porcentajeB < 30 && $porcentajeB >= 21) {
-                    $nivel_florB = 3;
-                } else if ($porcentajeB < 49 && $porcentajeB >= 31) {
-                    $nivel_florB = 4;
-                } else {
-                    $nivel_florB = 5;
-                }
-            } else {
-                //No se descarta por desconocimiento
-                $nivel_florA = 0;
-                $nivel_florB = 0;
-            }
+        // 2. Clasificación para Mosaico o Carbón
+        if ($caracteristica == "msco_r" || $caracteristica == "carbon") {
+            // Flor A
+            if ($valA <= 2) $nivel_florA = 1;
+            else if ($valA <= 3) $nivel_florA = 2;
+            else if ($valA <= 5) $nivel_florA = 3;
+            else if ($valA <= 8) $nivel_florA = 4;
+            else if ($valA <= 11) $nivel_florA = 5;
+            else if ($valA <= 15) $nivel_florA = 6;
+            else if ($valA <= 22) $nivel_florA = 7;
+            else if ($valA <= 30) $nivel_florA = 8;
+            else $nivel_florA = 9;
+
+            // Flor B
+            if ($valB <= 2) $nivel_florB = 1;
+            else if ($valB <= 3) $nivel_florB = 2;
+            else if ($valB <= 5) $nivel_florB = 3;
+            else if ($valB <= 8) $nivel_florB = 4;
+            else if ($valB <= 11) $nivel_florB = 5;
+            else if ($valB <= 15) $nivel_florB = 6;
+            else if ($valB <= 22) $nivel_florB = 7;
+            else if ($valB <= 30) $nivel_florB = 8;
+            else $nivel_florB = 9;
         }
-        if ($caracteristica == "rya_cfe_r" or $caracteristica == "roya_naranja") {
-            $nivel_florA = $florA->$caracteristica;
-            $nivel_florB = $florB->$caracteristica;
+        // 3. Agronómicos con porcentaje respecto al testigo (TCHM)
+        else if ($caracteristica == "tchm") {
+            $porcentajeA = ($valA * 100) / $testigo;
+            if ($porcentajeA > 120) $nivel_florA = 1;
+            else if ($porcentajeA >= 110) $nivel_florA = 2;
+            else if ($porcentajeA >= 95) $nivel_florA = 3;
+            else if ($porcentajeA >= 85) $nivel_florA = 4;
+            else $nivel_florA = 5;
+
+            $porcentajeB = ($valB * 100) / $testigo;
+            if ($porcentajeB > 120) $nivel_florB = 1;
+            else if ($porcentajeB >= 110) $nivel_florB = 2;
+            else if ($porcentajeB >= 95) $nivel_florB = 3;
+            else if ($porcentajeB >= 85) $nivel_florB = 4;
+            else $nivel_florB = 5;
         }
-        if (($nivel_florA + $nivel_florB) > $ponderado->nivel) {
+        // 4. Sacarosa
+        else if ($caracteristica == "scrsa") {
+            $porcentajeA = ($valA * 100) / $testigo;
+            if ($porcentajeA > 120) $nivel_florA = 1;
+            else if ($porcentajeA >= 100) $nivel_florA = 2;
+            else if ($porcentajeA >= 90) $nivel_florA = 3;
+            else if ($porcentajeA >= 80) $nivel_florA = 4;
+            else $nivel_florA = 5;
+
+            $porcentajeB = ($valB * 100) / $testigo;
+            if ($porcentajeB > 120) $nivel_florB = 1;
+            else if ($porcentajeB >= 100) $nivel_florB = 2;
+            else if ($porcentajeB >= 90) $nivel_florB = 3;
+            else if ($porcentajeB >= 80) $nivel_florB = 4;
+            else $nivel_florB = 5;
+        }
+        // 5. Diámetro, Altura Planta, Población
+        else if ($caracteristica == "dmtro_tllo" || $caracteristica == "altura_planta" || $caracteristica == "poblacion") {
+            $porcentajeA = ($valA * 100) / $testigo;
+            if ($porcentajeA > 120) $nivel_florA = 1;
+            else if ($porcentajeA >= 100) $nivel_florA = 2;
+            else if ($porcentajeA >= 90) $nivel_florA = 3;
+            else if ($porcentajeA >= 80) $nivel_florA = 4;
+            else $nivel_florA = 5;
+
+            $porcentajeB = ($valB * 100) / $testigo;
+            if ($porcentajeB > 120) $nivel_florB = 1;
+            else if ($porcentajeB >= 100) $nivel_florB = 2;
+            else if ($porcentajeB >= 90) $nivel_florB = 3;
+            else if ($porcentajeB >= 80) $nivel_florB = 4;
+            else $nivel_florB = 5;
+        }
+        // 6. Volcamiento
+        else if ($caracteristica == "volcamiento") {
+            $porcentajeA = ($valA * 100) / $testigo;
+            if ($porcentajeA < 10) $nivel_florA = 1;
+            else if ($porcentajeA < 20) $nivel_florA = 2;
+            else if ($porcentajeA < 30) $nivel_florA = 3;
+            else if ($porcentajeA < 49) $nivel_florA = 4;
+            else $nivel_florA = 5;
+
+            $porcentajeB = ($valB * 100) / $testigo;
+            if ($porcentajeB < 10) $nivel_florB = 1;
+            else if ($porcentajeB < 20) $nivel_florB = 2;
+            else if ($porcentajeB < 30) $nivel_florB = 3;
+            else if ($porcentajeB < 49) $nivel_florB = 4;
+            else $nivel_florB = 5;
+        }
+        // 7. Royas
+        else if ($caracteristica == "rya_cfe_r" || $caracteristica == "roya_naranja") {
+            $nivel_florA = $valA;
+            $nivel_florB = $valB;
+        }
+
+        // 8. Validación de viabilidad: ¿Excede alguno de los padres el umbral máximo configurado?
+        if ($nivel_florA > $ponderado->nivel || $nivel_florB > $ponderado->nivel) {
             return false;
         }
 
@@ -469,23 +403,26 @@ class CrossingController extends Controller
                     $florA_eval = $florA;
                     $florB_eval = $florB;
 
-                    if ($florA_eval && empty($florA_eval->$caracteristica)) {
+                    if ($florA_eval && (!isset($florA_eval->$caracteristica) || is_null($florA_eval->$caracteristica) || $florA_eval->$caracteristica === '')) {
                         $florA_eval = $florA_PR;
-                        if (!$florA_PR || empty($florA_PR->$caracteristica)) {
+                        if (!$florA_PR || (!isset($florA_PR->$caracteristica) || is_null($florA_PR->$caracteristica) || $florA_PR->$caracteristica === '')) {
                             $florA_eval = $florA_EIII;
                         }
                     }
-                    if ($florB_eval && empty($florB_eval->$caracteristica)) {
+                    if ($florB_eval && (!isset($florB_eval->$caracteristica) || is_null($florB_eval->$caracteristica) || $florB_eval->$caracteristica === '')) {
                         $florB_eval = $florB_PR;
-                        if (!$florB_PR || empty($florB_PR->$caracteristica)) {
+                        if (!$florB_PR || (!isset($florB_PR->$caracteristica) || is_null($florB_PR->$caracteristica) || $florB_PR->$caracteristica === '')) {
                             $florB_eval = $florB_EIII;
                         }
                     }
 
                     if ($ponderado->ponderado > 0) {
-                        if ($florA_eval && !empty($florA_eval->$caracteristica) && $testigo != null && !empty($testigo->$caracteristica)) {
+                        $hasA = $florA_eval && isset($florA_eval->$caracteristica) && $florA_eval->$caracteristica !== '' && !is_null($florA_eval->$caracteristica);
+                        $hasT = $testigo != null && isset($testigo->$caracteristica) && $testigo->$caracteristica !== '' && !is_null($testigo->$caracteristica);
+                        if ($hasA && $hasT) {
                             $vm += ($this->calcularValorMerito($caracteristica, $florA_eval, $ponderado->ponderado, $testigo->$caracteristica)) / 100;
-                            if ($florB_eval && !empty($florB_eval->$caracteristica)) {
+                            $hasB = $florB_eval && isset($florB_eval->$caracteristica) && $florB_eval->$caracteristica !== '' && !is_null($florB_eval->$caracteristica);
+                            if ($hasB) {
                                 $vm2 += ($this->calcularValorMerito($caracteristica, $florB_eval, $ponderado->ponderado, $testigo->$caracteristica)) / 100;
 
                                 if (!$this->calcularViabilidadCaracteristica($caracteristica, $florA_eval, $florB_eval, $ponderado, $testigo->$caracteristica)) {

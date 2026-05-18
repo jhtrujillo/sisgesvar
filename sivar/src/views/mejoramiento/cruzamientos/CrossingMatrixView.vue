@@ -328,6 +328,13 @@ const hasAnyViableCrossing = computed(() => {
   return viabilidad.some((row: any) => row.some((car: any) => car?.viabilidad));
 });
 
+// Auto-desactivar "Ocultar Inviables" si no hay ninguna combinación viable
+watch(hasAnyViableCrossing, (newVal) => {
+  if (newVal === false) {
+    ocultarInviables.value = false;
+  }
+}, { immediate: true });
+
 // Helper para verificar si un índice de columna (Padre) tiene al menos un cruce viable
 const isColumnViable = (indexCol: number) => {
   const viabilidad = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];

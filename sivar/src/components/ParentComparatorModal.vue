@@ -553,10 +553,10 @@ const viabilityDiagnosis = computed(() => {
     }
   }
 
-  // Si no hay veto sanitario pero aun así no es viable, es por incompatibilidad sexual/biológica:
+  // Si no hay veto sanitario pero aun así no es viable, es por umbrales de calidad agronómica:
   return {
-    title: "DIAGNÓSTICO: INCOMPATIBILIDAD BIOLÓGICA DE SEXOS",
-    description: "Ambas variedades comparten el mismo rol reproductivo (ej. Hembra x Hembra) o tienen incompatibilidad floral en campo.",
+    title: "DIAGNÓSTICO: UMBRALES DE CALIDAD NO SATISFECHOS",
+    description: "Esta combinación no cumple con los umbrales mínimos de calidad agronómica (Sacarosa, TCHM, Volcamiento, etc.) configurados para este proyecto.",
     isViable: false
   };
 });
