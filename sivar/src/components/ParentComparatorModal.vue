@@ -376,9 +376,9 @@
             <div class="flex items-center space-x-3.5 w-full sm:w-auto">
               <div 
                 class="p-3 rounded-2xl shrink-0" 
-                :class="isViable ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'"
+                :class="viabilityDiagnosis.isViable ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'"
               >
-                <svg v-if="isViable" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <svg v-if="viabilityDiagnosis.isViable" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -386,14 +386,11 @@
                 </svg>
               </div>
               <div>
-                <h4 class="text-sm font-black" :class="isViable ? 'text-emerald-800' : 'text-rose-800'">
-                  {{ isViable ? 'DIAGNÓSTICO: COMBINACIÓN VIABLE' : 'DIAGNÓSTICO: CRUZAMIENTO CON VETO SANITARIO' }}
+                <h4 class="text-sm font-black" :class="viabilityDiagnosis.isViable ? 'text-emerald-800' : 'text-rose-800'">
+                  {{ viabilityDiagnosis.title }}
                 </h4>
                 <p class="text-xs text-slate-500 font-semibold mt-0.5">
-                  {{ isViable 
-                    ? 'Esta pareja progenitora cumple con los criterios sanitarios y de mérito para la polinización en campo.' 
-                    : 'La susceptibilidad acumulada en Royas, Mosaico o Carbón sobrepasa el umbral sanitario de seguridad.' 
-                  }}
+                  {{ viabilityDiagnosis.description }}
                 </p>
               </div>
             </div>
@@ -512,6 +509,56 @@ const isViable = computed(() => {
   if (sumaRoyaCafe > 11) return false;
 
   return props.initiallyViable;
+});
+
+const viabilityDiagnosis = computed(() => {
+  if (isViable.value) {
+    return {
+      title: "DIAGNÓSTICO: COMBINACIÓN VIABLE",
+      description: "Esta pareja progenitora cumple con los criterios sanitarios y de mérito para la polinización en campo.",
+      isViable: true
+    };
+  }
+
+  // Si no es viable, determinamos la causa exacta:
+  if (motherProfile.value.traits && fatherProfile.value.traits) {
+    const mTraits = motherProfile.value.traits;
+    const fTraits = fatherProfile.value.traits;
+
+    const sumaMosaico = Number(mTraits.mosaico_p || 0) + Number(fTraits.mosaico_p || 0);
+    if (sumaMosaico > 10) {
+      return {
+        title: "DIAGNÓSTICO: CRUZAMIENTO CON VETO SANITARIO (MOSAICO)",
+        description: `La susceptibilidad acumulada para Mosaico (${sumaMosaico.toFixed(1)}) sobrepasa el umbral sanitario de seguridad (10.0).`,
+        isViable: false
+      };
+    }
+
+    const sumaCarbon = Number(mTraits.carbon_p || 0) + Number(fTraits.carbon_p || 0);
+    if (sumaCarbon > 10) {
+      return {
+        title: "DIAGNÓSTICO: CRUZAMIENTO CON VETO SANITARIO (CARBÓN)",
+        description: `La susceptibilidad acumulada para Carbón (${sumaCarbon.toFixed(1)}) sobrepasa el umbral de seguridad (10.0).`,
+        isViable: false
+      };
+    }
+
+    const sumaRoyaCafe = Number(mTraits.roya_cafe_r || 0) + Number(fTraits.roya_cafe_r || 0);
+    if (sumaRoyaCafe > 11) {
+      return {
+        title: "DIAGNÓSTICO: CRUZAMIENTO CON VETO SANITARIO (ROYA CAFÉ)",
+        description: `La susceptibilidad acumulada para Roya Café (${sumaRoyaCafe.toFixed(1)}) sobrepasa el umbral de seguridad (11.0).`,
+        isViable: false
+      };
+    }
+  }
+
+  // Si no hay veto sanitario pero aun así no es viable, es por incompatibilidad sexual/biológica:
+  return {
+    title: "DIAGNÓSTICO: INCOMPATIBILIDAD BIOLÓGICA DE SEXOS",
+    description: "Ambas variedades comparten el mismo rol reproductivo (ej. Hembra x Hembra) o tienen incompatibilidad floral en campo.",
+    isViable: false
+  };
 });
 
 const closeModal = () => {
