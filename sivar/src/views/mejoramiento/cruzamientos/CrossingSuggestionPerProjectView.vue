@@ -239,7 +239,6 @@
                       class="p-2 text-center border-b border-slate-100 transition-all duration-200 min-w-[75px]"
                     >
                       <div 
-                        v-show="car?.viabilidad || !ocultarInviables"
                         class="flex flex-col items-center justify-center space-y-1"
                       >
                         <input 
@@ -407,9 +406,7 @@ function isHighDg(varA: string, varB: string) {
 
 function getHeatmapClass(varA: string, varB: string, viabilidad: boolean) {
   if (!viabilidad) {
-    return ocultarInviables.value 
-      ? 'bg-transparent border-r border-slate-100/40' 
-      : 'bg-slate-50/50 hover:bg-slate-100/50 border-r border-slate-100 text-slate-400 opacity-60';
+    return 'bg-slate-50/50 hover:bg-slate-100/50 border-r border-slate-100 text-slate-400 opacity-60';
   }
   if (!mostrarMapaCalor.value) {
     return 'bg-emerald-50/50 hover:bg-emerald-100/50 border-r border-emerald-100/50 text-emerald-800';
