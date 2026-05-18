@@ -128,7 +128,7 @@
                   <td class="whitespace-nowrap px-2 py-2 text-center text-[11px] font-bold text-slate-700 bg-white border-r border-slate-100 sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[110px]">
                     <span class="block font-extrabold text-slate-800 leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors" @click="openVarietyProfile(viabilidadRow[0]?.varA)">{{ viabilidadRow[0]?.varA || 'N/A' }}</span>
                     <span class="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-50 text-slate-500 border border-slate-100">
-                      VM: {{ viabilidadRow[0]?.vm || '0' }}
+                      VM: {{ getRowVm(viabilidadRow) }}
                     </span>
                     <span class="block text-[9px] text-slate-400 mt-0.5 font-semibold">Polen: {{ viabilidadRow[0]?.polen || '0' }}</span>
                   </td>
@@ -157,14 +157,14 @@
                           :disabled="!car?.viabilidad"
                           class="h-3.5 w-3.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-100 transition cursor-pointer"
                         />
-                        <div class="flex items-center justify-between w-full border-t border-slate-100/50 pt-1 mt-1">
-                          <span class="text-[9px] font-extrabold tracking-tight leading-none text-slate-700">
+                        <div class="flex flex-col items-center justify-center w-full border-t border-slate-100/50 pt-1 mt-1 space-y-1">
+                          <span class="text-[9px] font-extrabold tracking-tight leading-none text-slate-700 text-center">
                             DG: {{ getDistancia(car?.varA, car?.varB) || "NA" }}
                           </span>
                           <!-- Botón Comparador Lado a Lado -->
                           <button 
                             @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad)"
-                            class="text-[8px] font-bold px-1.5 py-0.5 bg-slate-100 hover:bg-emerald-50 text-slate-650 hover:text-emerald-700 rounded border border-slate-200/60 hover:border-emerald-200 transition-all duration-150 flex items-center space-x-0.5"
+                            class="text-[8px] font-bold px-1.5 py-0.5 bg-slate-100 hover:bg-emerald-50 text-slate-650 hover:text-emerald-700 rounded border border-slate-200/60 hover:border-emerald-200 transition-all duration-150 flex items-center justify-center space-x-0.5 mx-auto"
                             title="Comparar Progenitores Lado a Lado"
                           >
                             <i class="fa fa-balance-scale"></i>
@@ -251,6 +251,12 @@ const selectedCdCntble = ref("");
 const cruzamientos = ref(localStorage.getItem("cruzamientos") || "");
 const ocultarInviables = ref(true); // Vista compacta limpia por defecto
 const isLoading = ref(false); // Ref para spinner de carga
+
+const getRowVm = (row: any[]) => {
+  if (!row || row.length === 0) return "0";
+  const validCell = row.find(cell => cell && cell.vm !== 1 && cell.vm !== "1" && cell.vm !== 0 && cell.vm !== "0");
+  return validCell ? validCell.vm : (row[0]?.vm || "0");
+};
 
 // Estados para el Drawer de variedades
 const isDrawerOpen = ref(false);

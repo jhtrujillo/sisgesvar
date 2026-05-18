@@ -129,7 +129,7 @@
                   <td class="whitespace-nowrap px-2 py-2 text-center text-[11px] font-bold text-slate-700 bg-white border-r border-slate-100 sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[110px]">
                     <span class="block font-extrabold text-slate-800 leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors" @click="openVarietyProfile(viabilidadRow[0].varA)">{{ viabilidadRow[0].varA }}</span>
                     <span class="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-50 text-slate-500 border border-slate-100">
-                      VM: {{ viabilidadRow[0].vm }}
+                      VM: {{ getRowVm(viabilidadRow) }}
                     </span>
                     <span class="block text-[9px] text-slate-400 mt-0.5 font-semibold">Polen: {{ viabilidadRow[0].polen }}</span>
                   </td>
@@ -245,9 +245,15 @@ const selectedCdCntble = ref("");
 const ocultarInviables = ref(true); // Vista compacta limpia por defecto
 const isLoading = ref(false);
 
-// Estados para el Drawer de variedades
+// Refs for VarietyProfileDrawer
 const isDrawerOpen = ref(false);
 const selectedVarietyForDrawer = ref("");
+
+const getRowVm = (row: any[]) => {
+  if (!row || row.length === 0) return "0";
+  const validCell = row.find(cell => cell && cell.vm !== 1 && cell.vm !== "1" && cell.vm !== 0 && cell.vm !== "0");
+  return validCell ? validCell.vm : (row[0]?.vm || "0");
+};
 
 const openVarietyProfile = (name: string) => {
   if (name && name !== "null" && name !== "?") {

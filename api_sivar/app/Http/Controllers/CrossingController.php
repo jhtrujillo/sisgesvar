@@ -377,6 +377,10 @@ class CrossingController extends Controller
             } else {
                 $nivel_florA = 0;
             }
+        } else if ($caracteristica == "rya_cfe_r" || $caracteristica == "roya_naranja") {
+            $nivel_florA = $florA->$caracteristica ?? 0;
+        } else {
+            $nivel_florA = 0;
         }
 
         // Retornar siempre un valor numérico
@@ -453,15 +457,17 @@ class CrossingController extends Controller
                     }
 
                     if ($ponderado->ponderado > 0) {
+                        $isDisease = in_array($caracteristica, ['msco_r', 'carbon', 'rya_cfe_r', 'roya_naranja']);
                         $hasA = $florA_eval && isset($florA_eval->$caracteristica) && $florA_eval->$caracteristica !== '' && !is_null($florA_eval->$caracteristica);
-                        $hasT = $testigo != null && isset($testigo->$caracteristica) && $testigo->$caracteristica !== '' && !is_null($testigo->$caracteristica);
+                        $hasT = $isDisease || ($testigo != null && isset($testigo->$caracteristica) && $testigo->$caracteristica !== '' && !is_null($testigo->$caracteristica));
                         if ($hasA && $hasT) {
-                            $vm += ($this->calcularValorMerito($caracteristica, $florA_eval, $ponderado->ponderado, $testigo->$caracteristica)) / 100;
+                            $testigoVal = ($testigo != null && isset($testigo->$caracteristica)) ? $testigo->$caracteristica : null;
+                            $vm += ($this->calcularValorMerito($caracteristica, $florA_eval, $ponderado->ponderado, $testigoVal)) / 100;
                             $hasB = $florB_eval && isset($florB_eval->$caracteristica) && $florB_eval->$caracteristica !== '' && !is_null($florB_eval->$caracteristica);
                             if ($hasB) {
-                                $vm2 += ($this->calcularValorMerito($caracteristica, $florB_eval, $ponderado->ponderado, $testigo->$caracteristica)) / 100;
+                                $vm2 += ($this->calcularValorMerito($caracteristica, $florB_eval, $ponderado->ponderado, $testigoVal)) / 100;
 
-                                if (!$this->calcularViabilidadCaracteristica($caracteristica, $florA_eval, $florB_eval, $ponderado, $testigo->$caracteristica)) {
+                                if (!$this->calcularViabilidadCaracteristica($caracteristica, $florA_eval, $florB_eval, $ponderado, $testigoVal)) {
                                     $viabilidad['viabilidad'] = false;
                                     break;
                                 }
@@ -753,7 +759,7 @@ class CrossingController extends Controller
         $ambiente_sitio = "";
         $ambiente_estados = "";
 
-        if ($ambiente == 'Semiseco') {
+        if ($ambiente == 'Semiseco' || $ambiente == 'Seco Semiseco' || $ambiente == 'Seco-Semiseco') {
             $ambiente_sitio = 'Seco-Semiseco';
             $ambiente_estados = 'Caracterizacion 2005';
         } else if ($ambiente == 'Humedo') {
@@ -1149,7 +1155,7 @@ class CrossingController extends Controller
         $ambiente_sitio = "";
         $ambiente_estados = "";
 
-        if ($ambiente == "Semiseco") {
+        if ($ambiente == "Semiseco" || $ambiente == "Seco Semiseco" || $ambiente == "Seco-Semiseco") {
             $ambiente_sitio = "Seco-Semiseco";
             $ambiente_estados = "Caracterizacion 2005";
         } else if ($ambiente == "Humedo") {

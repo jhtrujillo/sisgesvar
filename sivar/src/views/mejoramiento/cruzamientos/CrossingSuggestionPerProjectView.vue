@@ -212,7 +212,7 @@
                       <span class="font-extrabold text-slate-800 leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors" @click="openVarietyProfile(viabilidadRow[0]?.varA)">{{ viabilidadRow[0]?.varA || 'N/A' }}</span>
                     </div>
                     <div class="flex items-center justify-center space-x-2 text-[9px] font-semibold text-slate-500">
-                      <span>VM: {{ viabilidadRow[0]?.vm || '0' }}</span>
+                      <span>VM: {{ getRowVm(viabilidadRow) }}</span>
                       <span>Polen: {{ viabilidadRow[0]?.polen || '0' }}</span>
                     </div>
                     <div class="text-[9px] text-slate-400 mt-0.5 font-semibold">Cant. Flores: {{ getCantidadFlores(viabilidadRow[0]?.varA) }}</div>
@@ -260,9 +260,9 @@
                         >
                           Polen: {{ car.polen2 }} | VM: {{ car.vm2 }}
                         </div>
-                        <div class="flex items-center justify-between w-full border-t border-slate-100/50 pt-1 mt-1">
+                        <div class="flex flex-col items-center justify-center w-full border-t border-slate-100/50 pt-1 mt-1 space-y-1">
                           <span 
-                            class="text-[9px] font-extrabold tracking-tight leading-none"
+                            class="text-[9px] font-extrabold tracking-tight leading-none text-center"
                             :class="[mostrarMapaCalor && isHighDg(car.varA, car.varB) ? 'text-white' : 'text-slate-700']"
                           >
                             DG: {{ getDistancia(car.varA, car.varB) || "NA" }}
@@ -270,7 +270,7 @@
                           <!-- Botón Comparador Lado a Lado -->
                           <button 
                             @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad)"
-                            class="text-[8px] font-bold px-1.5 py-0.5 rounded transition-all duration-150 flex items-center space-x-0.5 border"
+                            class="text-[8px] font-bold px-1.5 py-0.5 rounded transition-all duration-150 flex items-center justify-center space-x-0.5 border mx-auto"
                             :class="[
                               mostrarMapaCalor && isHighDg(car.varA, car.varB)
                                 ? 'bg-white/20 hover:bg-white/30 text-white border-white/25'
@@ -430,6 +430,12 @@ function getHeatmapClass(varA: string, varB: string, viabilidad: boolean) {
     return 'bg-rose-100 text-rose-900 font-semibold border-r border-rose-200/30 hover:bg-rose-200/50';
   }
 }
+
+const getRowVm = (row: any[]) => {
+  if (!row || row.length === 0) return "0";
+  const validCell = row.find(cell => cell && cell.vm !== 1 && cell.vm !== "1" && cell.vm !== 0 && cell.vm !== "0");
+  return validCell ? validCell.vm : (row[0]?.vm || "0");
+};
 
 // Estados para el Drawer de variedades
 const isDrawerOpen = ref(false);
