@@ -55,6 +55,11 @@ async function saveCrossing(
   }, true);
 }
 
+async function saveCrossingsBatch(crossings: any[]): Promise<any> {
+  const url = `${urls.API_URL}crossing/programming/save_crossing`;
+  return await api.post(url, { crossings }, true);
+}
+
 const CrossingsService = {
   getCrossingsList,
   getCrossingInitialData,
@@ -64,7 +69,8 @@ const CrossingsService = {
   GetSuggestionCrossings,
   GetSuggestionCrossingsPerProject,
   saveWeight,
-  saveCrossing
+  saveCrossing,
+  saveCrossingsBatch
 };
 
 export default CrossingsService;

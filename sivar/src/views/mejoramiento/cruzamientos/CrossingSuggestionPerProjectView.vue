@@ -1188,25 +1188,19 @@ async function finalizarProceso() {
       return;
     }
     
-    // 4. Guardar secuencialmente cada cruzamiento
-    // madre: vrdad_idPrMadre_caracterMadre
-    // padres: vrdad_idPrPadre_caracterPadre
-    for (const car of selectedCrossings) {
-      const madre = `${car.varA}_${car.proyecto}_${car.id_caracter}`;
-      const padres = `${car.varB}_${car.proyecto2}_${car.id_caracter2}`;
-      const observaciones = "Programacion de Cruzamientos desde Matriz por Proyecto";
-      const autofecundado = car.varA === car.varB ? 1 : 0;
-      const proyectos = `${car.proyecto}`;
-      
-      await CrossingsService.saveCrossing(
-        madre,
-        padres,
-        observaciones,
-        idPonderado,
-        proyectos,
-        autofecundado
-      );
-    }
+    // 4. Guardar todos los cruzamientos en lote (batch) para rendimiento óptimo e instantáneo
+    const batchPayload = selectedCrossings.map((car) => {
+      return {
+        madre: `${car.varA}_${car.proyecto}_${car.id_caracter}`,
+        padres: `${car.varB}_${car.proyecto2}_${car.id_caracter2}`,
+        observaciones: "Programacion de Cruzamientos desde Matriz por Proyecto",
+        id_ponderados: idPonderado,
+        proyectos: `${car.proyecto}`,
+        autofecundado: car.varA === car.varB ? 1 : 0
+      };
+    });
+
+    await CrossingsService.saveCrossingsBatch(batchPayload);
     
     // 5. Limpiar el borrador correspondiente al finalizar con éxito
     localStorage.removeItem(draftKey.value);
