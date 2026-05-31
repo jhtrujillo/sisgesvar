@@ -56,9 +56,9 @@
       </router-link>
 
       <!-- Programación de Cruzamientos Card -->
-      <router-link
-        class="group relative flex flex-col bg-white border border-slate-100 hover:border-emerald-100 rounded-2xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
-        :to="{ name: 'crossing_initial_data.show' }"
+      <div
+        class="group relative flex flex-col bg-white border border-slate-100 hover:border-emerald-100 rounded-2xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden cursor-pointer"
+        @click="iniciarProgramacion"
       >
         <div class="absolute top-0 left-0 w-full h-1 bg-emerald-400 group-hover:bg-cenicana transition-colors duration-300"></div>
         
@@ -81,7 +81,7 @@
             </svg>
           </span>
         </div>
-      </router-link>
+      </div>
 
       <!-- Consolidado de Cruzamientos Card -->
       <router-link
@@ -116,11 +116,40 @@
 
 <script setup lang="ts">
 import { onMounted } from "vue";
+import { useRouter } from "vue-router";
 import { useLinksStore } from "@/stores/links";
+import { useMatrixCrossingStore } from "@/stores/crossingmatrix";
 
+const router = useRouter();
 const linksStore = useLinksStore();
+const MatrixCrossingStore = useMatrixCrossingStore();
 
 onMounted(async () => {
   await linksStore.getLinks();
 });
+
+function iniciarProgramacion() {
+  // 1. Borrar todas las variables temporales de localStorage asociadas al asistente
+  localStorage.removeItem("selectedVariety");
+  localStorage.removeItem("selectedMegaAmbiente");
+  localStorage.removeItem("selectedCdCntble");
+  localStorage.removeItem("selectedIdProject");
+  localStorage.removeItem("cruzamientos");
+  
+  // Limpiar borradores guardados de sugerencias
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && (key.startsWith("suggestion_draft_") || key.startsWith("cruzamientos_draft_"))) {
+      localStorage.removeItem(key);
+      i--; // Disminuir el índice para no saltarse elementos tras remover
+    }
+  }
+
+  // 2. Reiniciar estados persistidos de Pinia para cruzamientos
+  MatrixCrossingStore.cruzamientosSeleccionados = [];
+  MatrixCrossingStore.matrixCrossingsFilter = [];
+
+  // 3. Redirigir al primer paso
+  router.push({ name: "crossing_initial_data.show" });
+}
 </script>
