@@ -35,3 +35,6 @@ sivar/.idea
 sivar/.env
 sivar/logs
 sivar/*.log
+
+# IDE / Agent configurations
+.claude/
