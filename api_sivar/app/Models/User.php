@@ -26,6 +26,43 @@ class User extends Authenticatable implements JWTSubject, AuthenticatableContrac
     protected $primaryKey = 'id_usrio';
     public $incrementing = false;
 
+    protected $appends = ['id', 'role', 'ambiente'];
+
+    /**
+     * Get the user's ID as 'id' for compatibility.
+     */
+    public function getIdAttribute()
+    {
+        return $this->id_usrio;
+    }
+
+    /**
+     * Get the user's role for SIVAR Registro Ensayos.
+     */
+    public function getRoleAttribute()
+    {
+        $email = strtolower($this->email ?? '');
+        if ($email === 'lolopez@cenicana.org' || $email === 'jhtrujillo@cenicana.org') {
+            return 'LIDER';
+        }
+        return 'JEFE';
+    }
+
+    /**
+     * Get the user's permitted environments.
+     */
+    public function getAmbienteAttribute()
+    {
+        $email = strtolower($this->email ?? '');
+        if ($email === 'lolopez@cenicana.org') {
+            return ['Pie de monte', 'PIEDEMONTE'];
+        }
+        if ($email === 'jhtrujillo@cenicana.org') {
+            return ['Húmedo'];
+        }
+        return [];
+    }
+
     /**
      * The attributes that are mass assignable.
      *

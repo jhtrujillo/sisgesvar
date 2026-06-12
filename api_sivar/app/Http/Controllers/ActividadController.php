@@ -11,12 +11,12 @@ class ActividadController extends Controller
     public function index(Request $request)
     {
         // Restrict to ADMIN/JEFE only
-        $user = auth()->user();
+        $user = auth('api')->user();
         if (!$user || !in_array($user->role, ['ADMIN', 'JEFE'])) {
             abort(403, 'No tienes permisos para auditar la plataforma.');
         }
 
-        $query = Actividad::with('user:id,name,role');
+        $query = Actividad::with('user');
 
         // Filter by term or description
         if ($request->has('search') && !empty($request->search)) {

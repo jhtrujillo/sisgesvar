@@ -16,7 +16,7 @@ class AdjuntoController extends Controller
     public function index(Ensayo $ensayo)
     {
         // Scope check just to be consistent (Optional but good practice)
-        $user = auth()->user();
+        $user = auth('api')->user();
         if ($user->role !== 'JEFE' && is_array($user->ambiente) && count($user->ambiente) > 0) {
             if (!in_array($ensayo->amb_seleccion, $user->ambiente)) {
                 return response()->json(['error' => 'Sin permisos'], 403);
@@ -88,7 +88,7 @@ class AdjuntoController extends Controller
      */
     public function destroy(Adjunto $adjunto)
     {
-        $user = auth()->user();
+        $user = auth('api')->user();
 
         // Ensure user owns the file or is Jefe/Admin
         if ($user->role !== 'JEFE' && $adjunto->user_id !== $user->id) {

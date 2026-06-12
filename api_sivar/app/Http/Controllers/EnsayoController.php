@@ -17,7 +17,7 @@ class EnsayoController extends Controller
 {
     public function index(Request $request)
     {
-        $user = auth()->user();
+        $user = auth('api')->user();
         $query = Ensayo::query()->with('user');
 
         // Mandatory Authorization Scoping
@@ -92,7 +92,7 @@ class EnsayoController extends Controller
      */
     public function export(Request $request)
     {
-        $user = auth()->user();
+        $user = auth('api')->user();
         $filters = $request->only(['search', 'ambiente', 'user_id']);
 
         $filename = 'SIVAR_Ensayos_Export_' . date('Ymd_His') . '.xlsx';
@@ -607,7 +607,7 @@ class EnsayoController extends Controller
      */
     public function dashboard()
     {
-        $user = auth()->user();
+        $user = auth('api')->user();
         
         // Strict Access Restriction Gate
         if (!in_array($user->role, ['JEFE', 'LIDER'])) {

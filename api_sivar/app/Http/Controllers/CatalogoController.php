@@ -18,7 +18,7 @@ class CatalogoController extends Controller
      */
     private function authorizeAdmin()
     {
-        $user = auth()->user();
+        $user = auth('api')->user();
         if (!$user || !in_array($user->role, ['ADMIN', 'JEFE'])) {
             abort(403, 'No tienes permisos para gestionar los Catálogos Maestros.');
         }
