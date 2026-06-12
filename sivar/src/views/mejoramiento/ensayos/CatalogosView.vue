@@ -206,7 +206,7 @@ const formatCatName = (cat) => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-slate-50/50 p-4 sm:p-8 font-sans">
+    <div class="min-h-screen bg-slate-50/50 p-4 sm:p-8 font-sans w-full max-w-full min-w-0 overflow-x-hidden">
         <!-- Overlay Loading State -->
         <div v-if="isLoading" class="absolute inset-0 z-50 bg-white/70 backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-300">
             <div class="p-4 bg-white rounded-2xl shadow-xl flex flex-col items-center gap-3 border border-indigo-100">
@@ -218,7 +218,7 @@ const formatCatName = (cat) => {
             </div>
         </div>
 
-        <div class="max-w-7xl mx-auto space-y-6">
+        <div class="max-w-7xl w-full mx-auto space-y-6 min-w-0">
             <!-- Shared Navigation tabs -->
             <EnsayosNavComponent />
 

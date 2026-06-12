@@ -624,7 +624,7 @@ const formatFecha = (dateString) => {
 </script>
 
 <template>
-    <div class="py-6 bg-slate-100 min-h-screen font-sans">
+    <div class="py-6 bg-slate-100 min-h-screen font-sans w-full max-w-full min-w-0 overflow-x-hidden">
         <!-- Overlay Loading State -->
         <div v-if="isLoading" class="fixed inset-0 z-50 bg-white/70 backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-300">
             <div class="p-4 bg-white rounded-2xl shadow-xl flex flex-col items-center gap-3 border border-emerald-100">
@@ -637,7 +637,7 @@ const formatFecha = (dateString) => {
         </div>
 
         <!-- Render Homologation View if conflicts occur -->
-        <div v-if="homologationData" class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div v-if="homologationData" class="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
             <HomologacionView 
                 :conflicts="homologationData.conflicts"
                 :catalogo="homologationData.catalogo"
@@ -648,7 +648,7 @@ const formatFecha = (dateString) => {
             />
         </div>
 
-        <div v-else class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div v-else class="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 space-y-6 min-w-0">
             <!-- Shared Navigation tabs -->
             <EnsayosNavComponent />
 
@@ -876,9 +876,8 @@ const formatFecha = (dateString) => {
                 </div>
             </div>
 
-            <!-- MAIN EXCEL-LIKE TABLE -->
-            <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
-                <div class="overflow-auto max-h-[calc(100vh-320px)] scroll-custom">
+            <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden w-full max-w-full min-w-0">
+                <div class="overflow-auto max-h-[calc(100vh-320px)] scroll-custom w-full max-w-full">
                     <table class="table-excel w-full border-collapse border-spacing-0">
                         <thead>
                             <tr>
