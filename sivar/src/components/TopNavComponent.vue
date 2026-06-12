@@ -61,6 +61,17 @@
                     <p class="text-sm font-semibold text-slate-700 truncate mt-0.5">{{ userStore.userInfo?.nmbre }}</p>
                   </div>
                 </MenuItem>
+                <MenuItem v-if="false" v-slot="{ active }">
+                  <router-link
+                    :to="{ name: 'about.show' }"
+                    :class="[active ? 'bg-emerald-50 text-emerald-800' : 'text-slate-600', 'w-full flex items-center px-4 py-2.5 text-sm font-medium transition-colors duration-150']"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 111.085 1.087l-.04.02-.041.02a.75.75 0 11-1.085-1.087l.04-.02zM12 22.5c5.799 0 10.5-4.701 10.5-10.5S17.299 1.5 12 1.5 1.5 6.201 1.5 12 6.201 22.5 12 22.5z" />
+                    </svg>
+                    About SIVAR
+                  </router-link>
+                </MenuItem>
                 <MenuItem v-slot="{ active }">
                   <button 
                     @click="logout" 

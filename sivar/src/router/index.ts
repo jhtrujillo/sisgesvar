@@ -23,7 +23,8 @@ import {
   ROUTE_CROSSING_MATRIX,
   ROUTE_CROSSING_SUGGESTION,
   ROUTE_CROSSING_SUGGESTION_PER_PROJECT,
-  ROUTE_EXPERIMENTS
+  ROUTE_EXPERIMENTS,
+  ROUTE_ABOUT
 } from "./routes";
 import { useUserStore } from "@/stores/user";
 
@@ -185,6 +186,12 @@ const routes = [
         path: ROUTE_EXPERIMENTS,
         name: "experiments.show",
         component: () => import("@/views/mejoramiento/experimentos/ParametersExperimentsView.vue"),
+        beforeEnter: authGuard
+      },
+      {
+        path: ROUTE_ABOUT,
+        name: "about.show",
+        component: () => import("@/views/AboutView.vue"),
         beforeEnter: authGuard
       }
     ]

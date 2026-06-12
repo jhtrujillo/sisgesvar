@@ -191,13 +191,13 @@
                       <div class="relative w-full h-3.5 bg-slate-100 rounded-full overflow-hidden shadow-inner border border-slate-200/50">
                         <div
                           class="h-full bg-gradient-to-r from-sky-400 to-sky-600 rounded-full transition-all duration-500"
-                          :style="{ width: getPercentageOf(profile.traits.tchm, 20) }"
+                          :style="{ width: getPercentageOf(profile.traits.tchm, 200) }"
                         ></div>
                         <!-- Marcador de promedio global -->
                         <div
                           v-if="profile.globalAverages?.tchm"
                           class="absolute top-0 h-full w-0.5 bg-rose-500 z-10 hover:scale-x-150 transition-transform group"
-                          :style="{ left: getPercentageOf(profile.globalAverages.tchm, 20) }"
+                          :style="{ left: getPercentageOf(profile.globalAverages.tchm, 200) }"
                           :title="'Promedio global: ' + formatNumber(profile.globalAverages.tchm)"
                         >
                           <span class="absolute -top-3.5 -left-4 text-[8px] font-black text-rose-600 bg-rose-50 border border-rose-200/60 rounded px-1 scale-0 group-hover:scale-100 transition-transform shadow-sm">

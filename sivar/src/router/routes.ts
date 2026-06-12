@@ -31,6 +31,8 @@ export const ROUTE_CROSSING_MATRIX = "mejoramiento/crossing_matrix/";
 //EXperimentos
 export const ROUTE_EXPERIMENTS = "mejoramiento/experimentos/";
 
+export const ROUTE_ABOUT = "about/";
+
 export const ERROR_404 = "";
 
 export const NON_SIGNIFICANT_ROUTES = [
@@ -60,5 +62,6 @@ export const NON_SIGNIFICANT_ROUTES = [
   ROUTE_CROSSING_SUGGESTION,
   ROUTE_CROSSING_SUGGESTION_PER_PROJECT,
   ROUTE_EXPERIMENTS,
+  ROUTE_ABOUT,
   ERROR_404
 ];

@@ -146,7 +146,7 @@
                       {{ formatNumber(motherProfile.traits?.tchm) }}
                     </span>
                     <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-2">
-                      <div class="h-full bg-rose-400 rounded-full transition-all" :style="{ width: getPercentageOf(motherProfile.traits?.tchm, 20), float: 'right' }"></div>
+                      <div class="h-full bg-rose-400 rounded-full transition-all" :style="{ width: getPercentageOf(motherProfile.traits?.tchm, 200), float: 'right' }"></div>
                     </div>
                   </div>
                   <!-- Nombre y Comparador -->
@@ -167,7 +167,7 @@
                       {{ formatNumber(fatherProfile.traits?.tchm) }}
                     </span>
                     <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-2">
-                      <div class="h-full bg-sky-400 rounded-full transition-all" :style="{ width: getPercentageOf(fatherProfile.traits?.tchm, 20) }"></div>
+                      <div class="h-full bg-sky-400 rounded-full transition-all" :style="{ width: getPercentageOf(fatherProfile.traits?.tchm, 200) }"></div>
                     </div>
                   </div>
                 </div>

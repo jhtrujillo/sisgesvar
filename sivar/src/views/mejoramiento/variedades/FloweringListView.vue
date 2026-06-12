@@ -37,6 +37,21 @@
       </div>
     </div>
 
+    <!-- English Presentation Summary Card -->
+    <div class="w-full mx-auto mb-6 bg-gradient-to-r from-violet-50/50 via-white to-fuchsia-50/30 border border-violet-100/70 rounded-2xl p-5 shadow-sm flex items-start gap-4">
+      <div class="p-2 bg-violet-100 text-violet-700 rounded-xl mt-0.5">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <div class="flex-1">
+        <h3 class="text-xs font-bold text-violet-900 uppercase tracking-wider mb-2">Module Presentation Overview (English)</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          This module manages the <strong>Flowering Registry (Floración)</strong>. It dynamically filters and displays only the active, available flowers associated with each research project registered within the last 24 hours. It serves as the primary interface to log, store, and quantify pollen viability metrics. During this crucial stage, breeders evaluate parent specimens to define which varieties will act as the <strong>maternal (female)</strong> and <strong>paternal (male)</strong> parents for the upcoming hybridization and crossing processes.
+        </p>
+      </div>
+    </div>
+
     <!-- Table Container -->
     <div class="w-full bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 flex-1 relative z-10 p-2 sm:p-6 overflow-hidden min-h-[400px]">
       
