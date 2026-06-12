@@ -94,4 +94,30 @@ Route::group([
     //Libro de Campo
     Route::get('getLibroCampo/{id_pr}/{srie}/{estdo}', [\App\Http\Controllers\LibroCampoController::class, 'getLibroCampo']);
     Route::post('crearLibroCampo', [\App\Http\Controllers\ExperimentosController::class, 'crearLibroCampo']);
+
+    // Módulo de Registro de Ensayos
+    Route::get('/ensayos/dashboard', [\App\Http\Controllers\EnsayoController::class, 'dashboard'])->name('ensayos.dashboard');
+    Route::get('/ensayos', [\App\Http\Controllers\EnsayoController::class, 'index'])->name('ensayos.index');
+    Route::get('/ensayos/export', [\App\Http\Controllers\EnsayoController::class, 'export'])->name('ensayos.export');
+    Route::post('/ensayos/import', [\App\Http\Controllers\EnsayoController::class, 'store'])->name('ensayos.import');
+    Route::post('/ensayos/import/confirm', [\App\Http\Controllers\EnsayoController::class, 'confirmImport'])->name('ensayos.confirm-import');
+    Route::patch('/ensayos/{ensayo}', [\App\Http\Controllers\EnsayoController::class, 'update'])->name('ensayos.update');
+    Route::get('/ensayos/standardization/preview', [\App\Http\Controllers\EnsayoController::class, 'standardizationPreview'])->name('ensayos.standardization.preview');
+    Route::post('/ensayos/standardization/execute', [\App\Http\Controllers\EnsayoController::class, 'standardizationExecute'])->name('ensayos.standardization.execute');
+
+    // Catálogos Maestros
+    Route::get('catalogos', [\App\Http\Controllers\CatalogoController::class, 'index'])->name('catalogos.index');
+    Route::post('catalogos', [\App\Http\Controllers\CatalogoController::class, 'store'])->name('catalogos.store');
+    Route::put('catalogos/{catalogo}', [\App\Http\Controllers\CatalogoController::class, 'update'])->name('catalogos.update');
+    Route::delete('catalogos/{catalogo}', [\App\Http\Controllers\CatalogoController::class, 'destroy'])->name('catalogos.destroy');
+    Route::post('catalogos/merge', [\App\Http\Controllers\CatalogoController::class, 'merge'])->name('catalogos.merge');
+
+    // Historial & Auditoría
+    Route::get('actividades', [\App\Http\Controllers\ActividadController::class, 'index'])->name('actividades.index');
+
+    // Módulo de Mapas y Adjuntos
+    Route::get('/ensayos/{ensayo}/adjuntos', [\App\Http\Controllers\AdjuntoController::class, 'index'])->name('adjuntos.index');
+    Route::post('/ensayos/{ensayo}/adjuntos', [\App\Http\Controllers\AdjuntoController::class, 'store'])->name('adjuntos.store');
+    Route::get('/adjuntos/{adjunto}/download', [\App\Http\Controllers\AdjuntoController::class, 'download'])->name('adjuntos.download');
+    Route::delete('/adjuntos/{adjunto}', [\App\Http\Controllers\AdjuntoController::class, 'destroy'])->name('adjuntos.destroy');
 });

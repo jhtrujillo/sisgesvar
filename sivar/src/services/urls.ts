@@ -40,6 +40,11 @@ const API_TREATMENTS_SEASON = API_URL + "getTreatmentsSeason";
 const API_TREATMENTS_EXPERIMENTS = API_URL + "getTreatmentsExperiments";
 const API_ADD_DESIGNS_DETAILS = API_URL + "addDesingsDetails";
 
+// URLS Registro Ensayos
+const API_ENSAYOS = API_URL + "ensayos";
+const API_CATALOGOS = API_URL + "catalogos";
+const API_ACTIVIDADES = API_URL + "actividades";
+
 export default {
   SERVER_URL,
   API_URL,
@@ -72,5 +77,8 @@ export default {
   API_EXPERIMENT,
   API_TREATMENTS_SEASON,
   API_TREATMENTS_EXPERIMENTS,
-  API_ADD_DESIGNS_DETAILS
+  API_ADD_DESIGNS_DETAILS,
+  API_ENSAYOS,
+  API_CATALOGOS,
+  API_ACTIVIDADES
 };
