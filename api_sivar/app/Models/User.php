@@ -41,6 +41,11 @@ class User extends Authenticatable implements JWTSubject, AuthenticatableContrac
      */
     public function getRoleAttribute()
     {
+        $lgin = strtolower($this->lgin ?? '');
+        if ($lgin === 'estuvar4') {
+            return 'JEFE';
+        }
+
         $email = strtolower($this->email ?? '');
         if ($email === 'lolopez@cenicana.org' || $email === 'jhtrujillo@cenicana.org') {
             return 'LIDER';
@@ -53,6 +58,11 @@ class User extends Authenticatable implements JWTSubject, AuthenticatableContrac
      */
     public function getAmbienteAttribute()
     {
+        $lgin = strtolower($this->lgin ?? '');
+        if ($lgin === 'estuvar4') {
+            return [];
+        }
+
         $email = strtolower($this->email ?? '');
         if ($email === 'lolopez@cenicana.org') {
             return ['Pie de monte', 'PIEDEMONTE'];
