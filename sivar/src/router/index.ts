@@ -24,6 +24,10 @@ import {
   ROUTE_CROSSING_SUGGESTION,
   ROUTE_CROSSING_SUGGESTION_PER_PROJECT,
   ROUTE_EXPERIMENTS,
+  ROUTE_ENSAYOS_INDEX,
+  ROUTE_ENSAYOS_DASHBOARD,
+  ROUTE_ENSAYOS_CATALOGOS,
+  ROUTE_ENSAYOS_ACTIVIDADES,
   ROUTE_ABOUT
 } from "./routes";
 import { useUserStore } from "@/stores/user";
@@ -186,6 +190,30 @@ const routes = [
         path: ROUTE_EXPERIMENTS,
         name: "experiments.show",
         component: () => import("@/views/mejoramiento/experimentos/ParametersExperimentsView.vue"),
+        beforeEnter: authGuard
+      },
+      {
+        path: ROUTE_ENSAYOS_INDEX,
+        name: "mejoramiento.ensayos.index",
+        component: () => import("@/views/mejoramiento/ensayos/IndexView.vue"),
+        beforeEnter: authGuard
+      },
+      {
+        path: ROUTE_ENSAYOS_DASHBOARD,
+        name: "mejoramiento.ensayos.dashboard",
+        component: () => import("@/views/mejoramiento/ensayos/DashboardView.vue"),
+        beforeEnter: authGuard
+      },
+      {
+        path: ROUTE_ENSAYOS_CATALOGOS,
+        name: "mejoramiento.ensayos.catalogos",
+        component: () => import("@/views/mejoramiento/ensayos/CatalogosView.vue"),
+        beforeEnter: authGuard
+      },
+      {
+        path: ROUTE_ENSAYOS_ACTIVIDADES,
+        name: "mejoramiento.ensayos.actividades",
+        component: () => import("@/views/mejoramiento/ensayos/ActividadesView.vue"),
         beforeEnter: authGuard
       },
       {

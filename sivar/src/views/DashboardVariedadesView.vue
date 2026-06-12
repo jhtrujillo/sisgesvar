@@ -166,6 +166,31 @@
           </span>
         </div>
       </router-link>
+
+      <!-- Registro de Ensayos Card -->
+      <router-link
+        class="group relative flex flex-col bg-white border border-slate-100 hover:border-emerald-100 rounded-2xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
+        :to="{ name: 'mejoramiento.ensayos.dashboard' }"
+      >
+        <div class="absolute top-0 left-0 w-full h-1 bg-emerald-400 group-hover:bg-cenicana transition-colors duration-300"></div>
+        
+        <div class="flex flex-col h-full items-center text-center">
+          <div class="p-3.5 bg-emerald-50 rounded-xl text-cenicana group-hover:bg-cenicana group-hover:text-white transition-all duration-300 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" class="transition-transform duration-500 group-hover:scale-105">
+              <path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 16H5v-4h7v4zm0-6H5V7h7v6zm7 6h-5v-4h5v4zm0-6h-5V7h5v6z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800 mb-2 group-hover:text-cenicana transition-colors">Registro de Ensayos</h3>
+          <p class="text-slate-500 text-xs leading-relaxed mb-4">Base de datos histórica de ensayos, mapas, croquis e informes agronómicos.</p>
+          
+          <span class="inline-flex items-center text-xs font-semibold text-emerald-600 mt-auto">
+            Abrir Ensayos
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 ml-1 transform transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </div>
+      </router-link>
     </div>
   </div>
 </template>

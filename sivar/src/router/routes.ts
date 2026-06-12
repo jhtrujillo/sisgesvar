@@ -31,6 +31,12 @@ export const ROUTE_CROSSING_MATRIX = "mejoramiento/crossing_matrix/";
 //EXperimentos
 export const ROUTE_EXPERIMENTS = "mejoramiento/experimentos/";
 
+// Registro Ensayos
+export const ROUTE_ENSAYOS_INDEX = "mejoramiento/ensayos/";
+export const ROUTE_ENSAYOS_DASHBOARD = "mejoramiento/ensayos/dashboard/";
+export const ROUTE_ENSAYOS_CATALOGOS = "mejoramiento/ensayos/catalogos/";
+export const ROUTE_ENSAYOS_ACTIVIDADES = "mejoramiento/ensayos/actividades/";
+
 export const ROUTE_ABOUT = "about/";
 
 export const ERROR_404 = "";
@@ -62,6 +68,10 @@ export const NON_SIGNIFICANT_ROUTES = [
   ROUTE_CROSSING_SUGGESTION,
   ROUTE_CROSSING_SUGGESTION_PER_PROJECT,
   ROUTE_EXPERIMENTS,
+  ROUTE_ENSAYOS_INDEX,
+  ROUTE_ENSAYOS_DASHBOARD,
+  ROUTE_ENSAYOS_CATALOGOS,
+  ROUTE_ENSAYOS_ACTIVIDADES,
   ROUTE_ABOUT,
   ERROR_404
 ];
