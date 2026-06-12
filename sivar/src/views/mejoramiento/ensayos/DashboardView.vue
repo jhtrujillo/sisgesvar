@@ -45,6 +45,9 @@ onMounted(async () => {
     }
 });
 
+let chartAmbienteInstance = null;
+let chartSiembraInstance = null;
+
 const renderCharts = () => {
     try {
         if (canvasAmbiente.value && stats.value.por_ambiente?.length > 0) {
@@ -52,7 +55,11 @@ const renderCharts = () => {
             const labels = items.map(i => i.amb_seleccion || 'S/N');
             const data = items.map(i => i.total);
 
-            new Chart(canvasAmbiente.value, {
+            if (chartAmbienteInstance) {
+                chartAmbienteInstance.destroy();
+            }
+
+            chartAmbienteInstance = new Chart(canvasAmbiente.value, {
                 type: 'doughnut',
                 data: {
                     labels: labels,
@@ -85,6 +92,7 @@ const renderCharts = () => {
         }
     } catch (e) {
         console.error("Error rendering environment chart:", e);
+        errorLog.value = "Error rendering environment chart: " + e.message;
     }
 
     try {
@@ -97,7 +105,11 @@ const renderCharts = () => {
             gradient.addColorStop(0, 'rgba(5, 150, 105, 0.85)');
             gradient.addColorStop(1, 'rgba(16, 185, 129, 0.15)');
 
-            new Chart(canvasSiembra.value, {
+            if (chartSiembraInstance) {
+                chartSiembraInstance.destroy();
+            }
+
+            chartSiembraInstance = new Chart(canvasSiembra.value, {
                 type: 'bar',
                 data: {
                     labels: anos,
@@ -128,6 +140,7 @@ const renderCharts = () => {
         }
     } catch (e) {
         console.error("Error rendering siembra chart:", e);
+        errorLog.value = "Error rendering siembra chart: " + e.message;
     }
 };
 
@@ -157,6 +170,11 @@ const getPercent = (total, current) => {
         <div v-else class="max-w-7xl w-full mx-auto space-y-6 min-w-0">
             <!-- Shared Navigation tabs -->
             <EnsayosNavComponent />
+
+            <!-- Global JS Error Banner -->
+            <div v-if="errorLog" class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl font-mono text-[11px] font-bold shadow-sm">
+                ⚠️ JS Error: {{ errorLog }}
+            </div>
 
             <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm">
                 <div class="flex items-center space-x-3">
@@ -207,10 +225,10 @@ const getPercent = (total, current) => {
                         </h4>
                     </div>
                     <div class="p-6 flex-grow flex items-center justify-center relative" style="min-height: 300px;">
-                        <div v-if="stats.por_ambiente?.length > 0" class="w-full h-64">
+                        <div v-show="stats.por_ambiente?.length > 0" class="w-full h-64">
                             <canvas ref="canvasAmbiente"></canvas>
                         </div>
-                        <div v-else class="flex flex-col items-center justify-center text-slate-400 italic text-sm h-full">
+                        <div v-show="!stats.por_ambiente?.length" class="flex flex-col items-center justify-center text-slate-400 italic text-sm h-full">
                             <div class="text-4xl mb-2">🍕</div> Sin datos para graficar.
                         </div>
                     </div>
@@ -224,10 +242,10 @@ const getPercent = (total, current) => {
                         </h4>
                     </div>
                     <div class="p-6 flex-grow relative" style="min-height: 300px;">
-                        <div v-if="stats.por_ano?.length > 0" class="w-full h-64">
+                        <div v-show="stats.por_ano?.length > 0" class="w-full h-64">
                             <canvas ref="canvasSiembra"></canvas>
                         </div>
-                        <div v-else class="flex flex-col items-center justify-center text-slate-400 italic text-sm h-full">
+                        <div v-show="!stats.por_ano?.length" class="flex flex-col items-center justify-center text-slate-400 italic text-sm h-full">
                             <div class="text-4xl mb-2">📊</div> Sin años registrados.
                         </div>
                     </div>
