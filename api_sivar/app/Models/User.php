@@ -26,7 +26,7 @@ class User extends Authenticatable implements JWTSubject, AuthenticatableContrac
     protected $primaryKey = 'id_usrio';
     public $incrementing = false;
 
-    protected $appends = ['id', 'role', 'ambiente'];
+    protected $appends = ['id', 'role', 'ambiente', 'name'];
 
     /**
      * Get the user's ID as 'id' for compatibility.
@@ -34,6 +34,14 @@ class User extends Authenticatable implements JWTSubject, AuthenticatableContrac
     public function getIdAttribute()
     {
         return $this->id_usrio;
+    }
+
+    /**
+     * Get the user's name as 'name' for compatibility.
+     */
+    public function getNameAttribute()
+    {
+        return $this->nmbre;
     }
 
     /**

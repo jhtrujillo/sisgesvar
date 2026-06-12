@@ -1,6 +1,6 @@
 <script setup>
 import { Chart, registerables } from 'chart.js';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, nextTick } from 'vue';
 import { EnsayosService } from "@/services/ensayos.services";
 
 Chart.register(...registerables);
@@ -23,6 +23,7 @@ onMounted(async () => {
         const response = await EnsayosService.getDashboard();
         stats.value = response.data.stats;
         
+        await nextTick();
         renderCharts();
     } catch (error) {
         console.error("Error loading dashboard stats:", error);
