@@ -5,6 +5,18 @@ import { EnsayosService } from "@/services/ensayos.services";
 
 Chart.register(...registerables);
 
+const errorLog = ref("");
+
+// Capture runtime javascript errors to display them in the UI for debugging
+if (typeof window !== 'undefined') {
+    window.addEventListener("error", (e) => {
+        errorLog.value = e.message + " (" + e.filename + ":" + e.lineno + ")";
+    });
+    window.addEventListener("unhandledrejection", (e) => {
+        errorLog.value = "Promise Rejected: " + (e.reason?.message || e.reason);
+    });
+}
+
 const stats = ref({
     total_ensayos: 0,
     total_ingenios: 0,
@@ -143,6 +155,11 @@ const getPercent = (total, current) => {
         </div>
 
         <div v-else class="max-w-7xl mx-auto space-y-8">
+            <!-- Global JS Error Banner -->
+            <div v-if="errorLog" class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl font-mono text-[11px] font-bold shadow-sm">
+                ⚠️ JS Error: {{ errorLog }}
+            </div>
+
             <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm">
                 <div class="flex items-center space-x-3">
                     <div class="p-2 bg-emerald-100 text-emerald-700 rounded-xl shadow-sm">
