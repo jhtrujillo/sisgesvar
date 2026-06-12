@@ -33,80 +33,88 @@ onMounted(async () => {
 });
 
 const renderCharts = () => {
-    if (canvasAmbiente.value && stats.value.por_ambiente?.length > 0) {
-        const items = [...stats.value.por_ambiente];
-        const labels = items.map(i => i.amb_seleccion || 'S/N');
-        const data = items.map(i => i.total);
+    try {
+        if (canvasAmbiente.value && stats.value.por_ambiente?.length > 0) {
+            const items = [...stats.value.por_ambiente];
+            const labels = items.map(i => i.amb_seleccion || 'S/N');
+            const data = items.map(i => i.total);
 
-        new Chart(canvasAmbiente.value, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: data,
-                    backgroundColor: ['#059669', '#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899', '#64748b'],
-                    borderWidth: 2,
-                    borderColor: '#ffffff',
-                    hoverOffset: 10
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            boxWidth: 12,
-                            padding: 15,
-                            font: { family: "'Inter', sans-serif", weight: 'bold', size: 11 },
-                            color: '#475569'
-                        }
-                    },
-                    tooltip: { backgroundColor: '#1e293b', titleFont: { weight: 'black' }, padding: 10, cornerRadius: 8 }
+            new Chart(canvasAmbiente.value, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: ['#059669', '#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899', '#64748b'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        hoverOffset: 10
+                    }]
                 },
-                cutout: '65%'
-            }
-        });
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15,
+                                font: { family: "'Inter', sans-serif", weight: 'bold', size: 11 },
+                                color: '#475569'
+                            }
+                        },
+                        tooltip: { backgroundColor: '#1e293b', titleFont: { weight: 'black' }, padding: 10, cornerRadius: 8 }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+    } catch (e) {
+        console.error("Error rendering environment chart:", e);
     }
 
-    if (canvasSiembra.value && stats.value.por_ano?.length > 0) {
-        const anos = stats.value.por_ano.map(i => i.ano_siembra);
-        const totales = stats.value.por_ano.map(i => i.total);
+    try {
+        if (canvasSiembra.value && stats.value.por_ano?.length > 0) {
+            const anos = stats.value.por_ano.map(i => i.ano_siembra);
+            const totales = stats.value.por_ano.map(i => i.total);
 
-        const ctx = canvasSiembra.value.getContext('2d');
-        const gradient = ctx.createLinearGradient(0, 0, 0, 250);
-        gradient.addColorStop(0, 'rgba(5, 150, 105, 0.85)');
-        gradient.addColorStop(1, 'rgba(16, 185, 129, 0.15)');
+            const ctx = canvasSiembra.value.getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+            gradient.addColorStop(0, 'rgba(5, 150, 105, 0.85)');
+            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.15)');
 
-        new Chart(canvasSiembra.value, {
-            type: 'bar',
-            data: {
-                labels: anos,
-                datasets: [{
-                    label: 'Ensayos Registrados',
-                    data: totales,
-                    backgroundColor: gradient,
-                    borderColor: '#059669',
-                    borderWidth: 2,
-                    borderRadius: 8,
-                    borderSkipped: false,
-                    barThickness: 24,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { backgroundColor: '#1e293b', padding: 10, cornerRadius: 8 }
+            new Chart(canvasSiembra.value, {
+                type: 'bar',
+                data: {
+                    labels: anos,
+                    datasets: [{
+                        label: 'Ensayos Registrados',
+                        data: totales,
+                        backgroundColor: gradient,
+                        borderColor: '#059669',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                        barThickness: 24,
+                    }]
                 },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 10 }, color: '#64748b' } },
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { precision: 0, font: { weight: 'bold', size: 10 }, color: '#64748b' } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { backgroundColor: '#1e293b', padding: 10, cornerRadius: 8 }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 10 }, color: '#64748b' } },
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false }, ticks: { precision: 0, font: { weight: 'bold', size: 10 }, color: '#64748b' } }
+                    }
                 }
-            }
-        });
+            });
+        }
+    } catch (e) {
+        console.error("Error rendering siembra chart:", e);
     }
 };
 
