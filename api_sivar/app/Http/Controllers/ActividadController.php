@@ -39,7 +39,7 @@ class ActividadController extends Controller
 
         $actividades = $query->latest()->paginate(25)->withQueryString();
 
-        $users = \App\Models\User::select('id', 'name')->orderBy('name')->get();
+        $users = \App\Models\User::select('id_usrio', 'nmbre')->orderBy('nmbre')->get();
 
         // --- 📊 CÁLCULO DE MÉTRICAS EN TIEMPO REAL PARA EL DASHBOARD ---
         $kpis = [

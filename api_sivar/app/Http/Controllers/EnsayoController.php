@@ -77,7 +77,7 @@ class EnsayoController extends Controller
                 ->map(fn($v) => trim($v))->filter()->unique()->sort()->values()->all(),
         ];
 
-        $usersList = \App\Models\User::select('id', 'name')->orderBy('name')->get();
+        $usersList = \App\Models\User::select('id_usrio', 'nmbre')->orderBy('nmbre')->get();
 
         return response()->json([
             'ensayos' => $query->withCount('adjuntos')->paginate($perPage)->withQueryString(),
