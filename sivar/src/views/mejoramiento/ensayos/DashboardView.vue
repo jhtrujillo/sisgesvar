@@ -2,6 +2,7 @@
 import { Chart, registerables } from 'chart.js';
 import { onMounted, ref, nextTick } from 'vue';
 import { EnsayosService } from "@/services/ensayos.services";
+import EnsayosNavComponent from "@/components/EnsayosNavComponent.vue";
 
 Chart.register(...registerables);
 
@@ -153,12 +154,9 @@ const getPercent = (total, current) => {
                 <span class="text-emerald-800 font-bold tracking-wide animate-pulse">Cargando métricas...</span>
             </div>
         </div>
-
-        <div v-else class="max-w-7xl mx-auto space-y-8">
-            <!-- Global JS Error Banner -->
-            <div v-if="errorLog" class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl font-mono text-[11px] font-bold shadow-sm">
-                ⚠️ JS Error: {{ errorLog }}
-            </div>
+        <div v-else class="max-w-7xl mx-auto space-y-6">
+            <!-- Shared Navigation tabs -->
+            <EnsayosNavComponent />
 
             <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm">
                 <div class="flex items-center space-x-3">
@@ -170,15 +168,6 @@ const getPercent = (total, current) => {
                         <p class="text-[11px] text-slate-500 font-semibold tracking-wide uppercase mt-0.5">Métricas analíticas del registro histórico</p>
                     </div>
                 </div>
-                
-                <router-link 
-                    :to="{ name: 'mejoramiento.ensayos.index' }"
-                    class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black px-6 py-3 rounded-2xl shadow-lg hover:shadow-emerald-700/20 hover:-translate-y-0.5 transition-all duration-200 group text-sm w-full md:w-auto"
-                >
-                    <svg class="w-5 h-5 text-emerald-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                    Ingresar a Ensayos
-                    <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
-                </router-link>
             </div>
 
             <!-- Row 1: Primary Quick KPIs -->

@@ -2,6 +2,7 @@
 import { ref, watch, onMounted } from 'vue';
 import debounce from 'lodash/debounce';
 import { EnsayosService } from "@/services/ensayos.services";
+import EnsayosNavComponent from "@/components/EnsayosNavComponent.vue";
 
 // Local State
 const actividades = ref({ data: [], links: [] });
@@ -137,6 +138,9 @@ const changePage = (url) => {
         </div>
 
         <div class="max-w-5xl mx-auto space-y-6">
+            <!-- Shared Navigation tabs -->
+            <EnsayosNavComponent />
+
             <div class="flex items-center space-x-3 bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm">
                 <div class="p-2.5 bg-slate-800 text-white rounded-xl shadow-inner">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>

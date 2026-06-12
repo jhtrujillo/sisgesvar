@@ -4,6 +4,7 @@ import { debounce } from 'lodash';
 import { useUserStore } from "@/stores/user";
 import { EnsayosService } from "@/services/ensayos.services";
 import HomologacionView from "./HomologacionView.vue";
+import EnsayosNavComponent from "@/components/EnsayosNavComponent.vue";
 
 const userStore = useUserStore();
 const authUser = computed(() => userStore.userInfo);
@@ -648,6 +649,9 @@ const formatFecha = (dateString) => {
         </div>
 
         <div v-else class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+            <!-- Shared Navigation tabs -->
+            <EnsayosNavComponent />
+
             <!-- Header Section -->
             <div class="flex flex-col items-start justify-between md:flex-row md:items-center bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                 <div>
@@ -661,14 +665,6 @@ const formatFecha = (dateString) => {
                         Visualización unificada estilo Hoja de Cálculo.
                     </p>
                 </div>
-                <!-- Optional Dashboard Navigation Link -->
-                <router-link 
-                    :to="{ name: 'mejoramiento.ensayos.dashboard' }" 
-                    class="mt-3 md:mt-0 px-4 py-2 border border-emerald-600 text-emerald-700 hover:bg-emerald-50 text-sm font-extrabold rounded-xl transition duration-200 flex items-center gap-2"
-                >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                    Ver Dashboard
-                </router-link>
             </div>
 
             <!-- Alerts -->
@@ -1099,7 +1095,7 @@ const formatFecha = (dateString) => {
                                 </button>
                             </div>
 
-                            <div class="border border-slate-100 rounded-xl max-h-48 overflow-y-auto bg-slate-50">
+                            <div class="border border-slate-100 rounded-xl max-h-48 overflow-auto bg-slate-50">
                                 <table class="w-full text-left border-collapse text-xs">
                                     <thead>
                                         <tr class="bg-slate-200/50 sticky top-0 font-black text-slate-500 border-b border-slate-200">

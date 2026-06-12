@@ -2,6 +2,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import debounce from 'lodash/debounce';
 import { EnsayosService } from "@/services/ensayos.services";
+import EnsayosNavComponent from "@/components/EnsayosNavComponent.vue";
 
 // Local State
 const catalogos = ref([]);
@@ -218,6 +219,9 @@ const formatCatName = (cat) => {
         </div>
 
         <div class="max-w-7xl mx-auto space-y-6">
+            <!-- Shared Navigation tabs -->
+            <EnsayosNavComponent />
+
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm">
                 <div class="flex items-center space-x-3">
                     <div class="p-2.5 bg-indigo-100 text-indigo-600 rounded-xl shadow-inner">
