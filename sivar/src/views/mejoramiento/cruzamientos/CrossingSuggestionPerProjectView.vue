@@ -185,14 +185,10 @@
                     >
                       {{ flor.variedad }}
                     </span>
-                    <span class="block text-[9px] text-slate-400 font-bold mt-0.5 mb-0.5">Cantidad: {{ flor.cantidad }}</span>
-                    <span 
-                      v-if="viabilidadesMatriz?.[0]?.[indexCol]?.vm2 !== undefined" 
-                      class="inline-block px-1.5 py-0.5 rounded border text-[9px] font-extrabold"
-                      :class="Number(viabilidadesMatriz[0][indexCol].vm2) > 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-50 text-slate-500 border-slate-200'"
-                    >
-                      VM: {{ viabilidadesMatriz[0][indexCol].vm2 }}
-                    </span>
+                    <div class="flex items-center justify-center space-x-2 text-[9px] font-semibold text-slate-500 mt-1 mb-0.5">
+                      <span v-if="viabilidadesMatriz?.[0]?.[indexCol]?.vm2 !== undefined">VM: {{ viabilidadesMatriz[0][indexCol].vm2 }}</span>
+                      <span>Cantidad: {{ flor.cantidad }}</span>
+                    </div>
                   </th>
                 </template>
               </tr>

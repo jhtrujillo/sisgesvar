@@ -107,14 +107,13 @@
                     <span class="block font-extrabold text-slate-800 leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors" @click="openVarietyProfile(flor.vrdad)">
                       {{ flor.vrdad }}
                     </span>
-                    <span class="block text-[9px] text-slate-400 font-bold mt-0.5 mb-0.5">Polen: {{ flor.polen }}</span>
                     <span 
                       v-if="MatrixCrossingStore.matrixCrossingsFilter.viabilidad?.[0]?.[indexCol]?.vm2 !== undefined" 
-                      class="inline-block px-1.5 py-0.5 rounded border text-[9px] font-extrabold"
-                      :class="Number(MatrixCrossingStore.matrixCrossingsFilter.viabilidad[0][indexCol].vm2) > 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-50 text-slate-500 border-slate-200'"
+                      class="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-50 text-slate-500 border border-slate-100"
                     >
                       VM: {{ MatrixCrossingStore.matrixCrossingsFilter.viabilidad[0][indexCol].vm2 }}
                     </span>
+                    <span class="block text-[9px] text-slate-400 font-semibold mt-0.5 mb-0.5">Polen: {{ flor.polen }}</span>
                   </th>
                 </template>
               </tr>
