@@ -104,13 +104,17 @@
                     v-if="!ocultarInviables || isColumnViable(indexCol)"
                     class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-650 bg-slate-50 border-r border-slate-100 sticky top-0 z-10 min-w-[75px]"
                   >
-                    <span 
-                      class="block text-slate-800 font-extrabold leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors"
-                      @click="openVarietyProfile(flor.vrdad)"
-                    >
+                    <span class="block font-extrabold text-slate-800 leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors" @click="openVarietyProfile(flor.vrdad)">
                       {{ flor.vrdad }}
                     </span>
-                    <span class="block text-[9px] text-slate-400 font-bold mt-0.5">Polen: {{ flor.polen }}</span>
+                    <span class="block text-[9px] text-slate-400 font-bold mt-0.5 mb-0.5">Polen: {{ flor.polen }}</span>
+                    <span 
+                      v-if="MatrixCrossingStore.matrixCrossingsFilter.viabilidad?.[0]?.[indexCol]?.vm2 !== undefined" 
+                      class="inline-block px-1.5 py-0.5 rounded border text-[9px] font-extrabold"
+                      :class="Number(MatrixCrossingStore.matrixCrossingsFilter.viabilidad[0][indexCol].vm2) > 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-50 text-slate-500 border-slate-200'"
+                    >
+                      VM: {{ MatrixCrossingStore.matrixCrossingsFilter.viabilidad[0][indexCol].vm2 }}
+                    </span>
                   </th>
                 </template>
               </tr>
