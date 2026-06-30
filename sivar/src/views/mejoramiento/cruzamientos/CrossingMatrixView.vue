@@ -339,7 +339,8 @@ const hasAnyViableCrossing = computed(() => {
 
 // Auto-desactivar "Ocultar Inviables" si no hay ninguna combinación viable
 watch(hasAnyViableCrossing, (newVal) => {
-  if (newVal === false) {
+  const viabilidad = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
+  if (newVal === false && viabilidad.length > 0) {
     ocultarInviables.value = false;
   }
 }, { immediate: true });
