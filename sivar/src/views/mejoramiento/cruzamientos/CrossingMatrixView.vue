@@ -44,7 +44,7 @@
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 border-b border-slate-100 pb-3">
         <div class="flex flex-wrap gap-3 text-[11px] font-semibold text-slate-500">
           <span class="flex items-center">
-            <span class="w-3 h-3 bg-emerald-100 border border-emerald-200 rounded mr-1"></span>
+            <span class="w-3 h-3 bg-blue-100 border border-blue-200 rounded mr-1"></span>
             Cruce Viable / Seguro
           </span>
           <span v-if="!ocultarInviables" class="flex items-center">
@@ -93,7 +93,7 @@
             <thead class="bg-slate-50">
               <tr>
                 <th class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-r border-slate-100 sticky top-0 left-0 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[110px]">
-                  Madres \ Padres
+                  PARENTALES
                 </th>
                 <!-- Envoltura <template> para evaluar v-if en el scope correcto de Vue 3 -->
                 <template 
@@ -143,7 +143,7 @@
                       v-if="!ocultarInviables || isColumnViable(indexCol)"
                       :class="[
                         car?.viabilidad 
-                          ? 'bg-emerald-50/50 hover:bg-emerald-100/50 border-r border-emerald-100/50 text-emerald-800' 
+                          ? 'bg-blue-50/50 hover:bg-blue-100/50 border-r border-blue-100/50 text-blue-800' 
                           : 'bg-slate-50/50 hover:bg-slate-100/50 border-r border-slate-100 text-slate-400 opacity-60'
                       ]"
                       class="p-1.5 text-center border-b border-slate-100 transition-all duration-200 min-w-[75px]"
@@ -155,7 +155,6 @@
                           type="checkbox" 
                           :checked="!!car?.viabilidad" 
                           @click="toggleCruzamiento(car)" 
-                          :disabled="!car?.viabilidad"
                           class="h-3.5 w-3.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-100 transition cursor-pointer"
                         />
                         <div class="flex flex-col items-center justify-center w-full border-t border-slate-100/50 pt-1.5 mt-1 space-y-1">

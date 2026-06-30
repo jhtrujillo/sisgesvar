@@ -519,6 +519,69 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
                         }
                     }
                 }
+                if ($hasAnyData) {
+                    $traits->origen_datos = 'BG';
+                }
+            } else {
+                $traits->origen_datos = 'BG';
+            }
+
+            if (!$hasAnyData) {
+                // FALLBACK 1: Pruebas Regionales (estdo_slccion = 5) en datos_campo_crudos
+                $prSelectRaw = "
+                    avg(CAST(REPLACE(CAST(mosaico AS TEXT), ',', '.') AS FLOAT)) as mosaico_p,
+                    avg(CAST(REPLACE(CAST(roya AS TEXT), ',', '.') AS FLOAT)) as roya_cafe_r,
+                    avg(CAST(REPLACE(CAST(\"179\" AS TEXT), ',', '.') AS FLOAT)) as roya_naranja_r,
+                    avg(CAST(REPLACE(CAST(carbon AS TEXT), ',', '.') AS FLOAT)) as carbon_p,
+                    avg(CAST(REPLACE(CAST(\"163\" AS TEXT), ',', '.') AS FLOAT)) as sacarosa,
+                    avg(CAST(REPLACE(CAST(\"173\" AS TEXT), ',', '.') AS FLOAT)) as tchm,
+                    avg(CAST(REPLACE(CAST(\"Tallo Altura (cm)\" AS TEXT), ',', '.') AS FLOAT)) as altura_planta,
+                    avg(CAST(REPLACE(CAST(\"DiametroTallo\" AS TEXT), ',', '.') AS FLOAT)) as diametro_tallo,
+                    MAX(CAST(estdo_slccion AS TEXT)) as procedencia
+                ";
+                
+                $traitsPR = DB::connection('sivar')->table('datos_campo_crudos')
+                    ->where('nm_vrdad', $var)
+                    ->where('estdo_slccion', '=', 5)
+                    ->selectRaw($prSelectRaw)
+                    ->first();
+                
+                if ($traitsPR) {
+                    foreach (['sacarosa', 'tchm', 'mosaico_p', 'carbon_p'] as $key) {
+                        if (isset($traitsPR->$key) && !is_null($traitsPR->$key)) {
+                            $hasAnyData = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if ($hasAnyData) {
+                    $traits = $traitsPR;
+                    $traits->origen_datos = 'PR';
+                }
+            }
+
+            if (!$hasAnyData) {
+                // FALLBACK 2: Estado III (estdo_slccion = 3) en datos_campo_crudos
+                $traitsEIII = DB::connection('sivar')->table('datos_campo_crudos')
+                    ->where('nm_vrdad', $var)
+                    ->where('estdo_slccion', '=', 3)
+                    ->selectRaw($prSelectRaw)
+                    ->first();
+                
+                if ($traitsEIII) {
+                    foreach (['sacarosa', 'tchm', 'mosaico_p', 'carbon_p'] as $key) {
+                        if (isset($traitsEIII->$key) && !is_null($traitsEIII->$key)) {
+                            $hasAnyData = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if ($hasAnyData) {
+                    $traits = $traitsEIII;
+                    $traits->origen_datos = 'ESTADO III';
+                }
             }
 
             // Si al final no se obtuvieron datos válidos, se deja como null para que el frontend muestre la tarjeta vacía

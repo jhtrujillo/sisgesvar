@@ -13,19 +13,41 @@ export const useCrossingsStore = defineStore("crossings", () => {
   const perPage = ref(10);
   const totalRecords = ref(0);
   const totalPages = ref(0);
+  const searchQuery = ref("");
+  const columnFilters = ref<Record<string, string>>({});
 
   const getCrossings = async () => {
     try {
-      const response: AxiosResponse<{ data: Crossings[]; total: number }> = await CrossingsService.getCrossingsList(currentPage.value, perPage.value);
+      const response: AxiosResponse<{ data: Crossings[]; total: number }> = await CrossingsService.getCrossingsList(
+        currentPage.value, 
+        perPage.value, 
+        searchQuery.value,
+        columnFilters.value
+      );
       const { data, total } = response.data;
 
       crossing.value = data;
-      console.log(crossing.value);
       totalRecords.value = total;
       totalPages.value = Math.ceil(totalRecords.value / perPage.value);
     } catch (error) {
       console.error("Error fetching crossings:", error);
     }
+  };
+
+  const setColumnFilter = async (column: string, value: string) => {
+    if (!value) {
+      delete columnFilters.value[column];
+    } else {
+      columnFilters.value[column] = value;
+    }
+    currentPage.value = 1;
+    await getCrossings();
+  };
+
+  const setSearchQuery = async (query: string) => {
+    searchQuery.value = query;
+    currentPage.value = 1; // Reset pagination on new search
+    await getCrossings();
   };
 
   const setCurrentPage = async (page: number) => {
@@ -47,6 +69,10 @@ export const useCrossingsStore = defineStore("crossings", () => {
     totalPages,
     perPage,
     setCurrentPage,
-    setPerPage
+    setPerPage,
+    searchQuery,
+    setSearchQuery,
+    columnFilters,
+    setColumnFilter
   };
 });

@@ -18,8 +18,10 @@
         <div><strong>Firma de Aprobación:</strong> ___________________________</div>
       </div>
     </div>
-    <!-- Encabezado con Indicador de Progreso -->
-    <div class="border-b border-slate-100 pb-4">
+    <!-- Wrapper de la Vista de Planeación -->
+    <div v-if="!isFinished" class="space-y-6">
+      <!-- Encabezado con Indicador de Progreso -->
+      <div class="border-b border-slate-100 pb-4">
       <div class="flex items-center justify-between mb-3">
         <h1 class="text-2xl font-extrabold text-slate-800 flex items-center">
           <div class="p-1.5 bg-emerald-50 text-cenicana rounded-lg mr-2">
@@ -100,24 +102,24 @@
           <span v-if="mostrarMapaCalor" class="flex flex-wrap items-center gap-2 border-l border-slate-200 pl-3">
             <span class="text-[9px] text-slate-400 font-extrabold uppercase mr-1">Mapa de Calor (DG):</span>
             <span class="flex items-center">
-              <span class="w-3.5 h-3.5 bg-emerald-600 rounded mr-1"></span>
-              <span class="text-[9px] font-bold text-emerald-800 mr-2">Exc (&ge;0.65)</span>
+              <span class="w-3.5 h-3.5 bg-blue-600 rounded mr-1"></span>
+              <span class="text-[9px] font-bold text-blue-800 mr-2">Exc (&ge;0.65)</span>
             </span>
             <span class="flex items-center">
-              <span class="w-3.5 h-3.5 bg-emerald-400/80 rounded mr-1"></span>
-              <span class="text-[9px] font-bold text-emerald-600 mr-2">Bueno (&ge;0.55)</span>
+              <span class="w-3.5 h-3.5 bg-sky-400/80 rounded mr-1"></span>
+              <span class="text-[9px] font-bold text-sky-700 mr-2">Bueno (&ge;0.55)</span>
             </span>
             <span class="flex items-center">
-              <span class="w-3.5 h-3.5 bg-emerald-200/50 rounded mr-1"></span>
-              <span class="text-[9px] font-bold text-emerald-500 mr-2">Acept (&ge;0.45)</span>
+              <span class="w-3.5 h-3.5 bg-slate-300 rounded mr-1"></span>
+              <span class="text-[9px] font-bold text-slate-600 mr-2">Acept (&ge;0.45)</span>
             </span>
             <span class="flex items-center">
-              <span class="w-3.5 h-3.5 bg-amber-100 rounded mr-1"></span>
-              <span class="text-[9px] font-bold text-amber-700 mr-2">Cerca (&ge;0.35)</span>
+              <span class="w-3.5 h-3.5 bg-amber-400 rounded mr-1"></span>
+              <span class="text-[9px] font-bold text-amber-800 mr-2">Cerca (&ge;0.35)</span>
             </span>
             <span class="flex items-center">
-              <span class="w-3.5 h-3.5 bg-rose-100 rounded mr-1"></span>
-              <span class="text-[9px] font-bold text-rose-700">Riesgo (&lt;0.35)</span>
+              <span class="w-3.5 h-3.5 bg-orange-600 rounded mr-1"></span>
+              <span class="text-[9px] font-bold text-orange-800">Riesgo (&lt;0.35)</span>
             </span>
           </span>
         </div>
@@ -166,7 +168,7 @@
             <thead class="bg-slate-50">
               <tr>
                 <th class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-r border-slate-100 sticky top-0 left-0 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[140px]">
-                  Hembra / Posibles Machos
+                  Hembra / Machos
                 </th>
                 <!-- Envoltura <template> para evaluar v-if en el scope correcto de Vue 3 -->
                 <template 
@@ -174,7 +176,7 @@
                   :key="indexCol"
                 >
                   <th
-                    v-if="!ocultarInviables || isColumnViable(indexCol)"
+                    v-if="(!ocultarInviables || isColumnViable(indexCol)) && Number(flor.polen) > 20"
                     class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-650 bg-slate-50 border-r border-slate-100 sticky top-0 z-10 min-w-[75px]"
                   >
                     <span 
@@ -195,7 +197,7 @@
                 :key="indexRow"
               >
                 <tr 
-                  v-if="!ocultarInviables || isRowViable(viabilidadRow)"
+                  v-if="(!ocultarInviables || isRowViable(viabilidadRow)) && Number(viabilidadRow[0]?.polen) <= 20"
                   class="hover:bg-slate-50/40 transition-colors"
                 >
                   <!-- Celda Madre Fija a la izquierda -->
@@ -221,6 +223,7 @@
                     <div class="mt-1.5 flex items-center justify-center space-x-1 bg-white/70 py-0.5 px-1.5 rounded-lg border border-slate-200/50 shadow-sm max-w-[120px] mx-auto">
                       <input 
                         type="checkbox" 
+                        :checked="autofecundacionesSeleccionadas.has(viabilidadRow[0]?.varA)"
                         @click="toggleAutofecundar(viabilidadRow)" 
                         class="h-3 w-3 rounded border-slate-350 text-emerald-600 focus:ring-emerald-100 cursor-pointer"
                       />
@@ -234,7 +237,7 @@
                     :key="indexCol"
                   >
                     <td 
-                      v-if="!ocultarInviables || isColumnViable(indexCol)"
+                      v-if="(!ocultarInviables || isColumnViable(indexCol)) && Number(car?.polen2) > 20"
                       :class="[getHeatmapClass(car?.varA, car?.varB, !!car?.viabilidad)]"
                       class="p-2 text-center border-b border-slate-100 transition-all duration-200 min-w-[75px]"
                     >
@@ -245,25 +248,24 @@
                           type="checkbox" 
                           :checked="!!car?.viabilidad" 
                           @click="toggleCruzamiento(car)" 
-                          :disabled="!car?.viabilidad"
                           class="h-3.5 w-3.5 rounded border-slate-350 text-emerald-600 focus:ring-emerald-100 transition cursor-pointer"
                         />
                         <div 
                           class="text-[9px] font-extrabold leading-tight"
-                          :class="[mostrarMapaCalor && isHighDg(car.varA, car.varB) ? 'text-white' : 'text-slate-800']"
+                          :class="[mostrarMapaCalor && isDarkBackground(car.varA, car.varB) ? 'text-white' : 'text-slate-900']"
                         >
                           {{ car.varB }}
                         </div>
                         <div 
                           class="text-[8px] font-semibold leading-tight"
-                          :class="[mostrarMapaCalor && isHighDg(car.varA, car.varB) ? 'text-emerald-100' : 'text-slate-400']"
+                          :class="[mostrarMapaCalor && isDarkBackground(car.varA, car.varB) ? 'text-emerald-100' : 'text-slate-700']"
                         >
                           Polen: {{ car.polen2 }} | VM: {{ car.vm2 }}
                         </div>
                         <div class="flex flex-col items-center justify-center w-full border-t border-slate-100/50 pt-1 mt-1 space-y-1">
                           <span 
                             class="text-[9px] font-extrabold tracking-tight leading-none text-center"
-                            :class="[mostrarMapaCalor && isHighDg(car.varA, car.varB) ? 'text-white' : 'text-slate-700']"
+                            :class="[mostrarMapaCalor && isDarkBackground(car.varA, car.varB) ? 'text-white' : 'text-slate-900']"
                           >
                             DG: {{ getDistancia(car.varA, car.varB) || "NA" }}
                           </span>
@@ -272,9 +274,9 @@
                             @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad)"
                             class="text-[8px] font-bold px-1.5 py-0.5 rounded transition-all duration-150 flex items-center justify-center space-x-0.5 border mx-auto"
                             :class="[
-                              mostrarMapaCalor && isHighDg(car.varA, car.varB)
+                              mostrarMapaCalor && isDarkBackground(car.varA, car.varB)
                                 ? 'bg-white/20 hover:bg-white/30 text-white border-white/25'
-                                : 'bg-slate-100 hover:bg-emerald-50 text-slate-650 hover:text-emerald-700 border-slate-200/60 hover:border-emerald-200'
+                                : 'bg-slate-100 hover:bg-emerald-50 text-slate-900 hover:text-emerald-700 border-slate-300 hover:border-emerald-300'
                             ]"
                             title="Comparar Progenitores Lado a Lado"
                           >
@@ -355,6 +357,71 @@
         </button>
       </div>
     </div>
+    </div>
+  <div v-else class="bg-white border border-emerald-100 rounded-2xl shadow-xl p-8 max-w-4xl mx-auto my-8 animate-fade-in-up">
+    <div class="flex flex-col items-center text-center">
+      <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
+        <svg class="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <h2 class="text-3xl font-extrabold text-slate-800 mb-2">¡Cruzamientos Programados Exitosamente!</h2>
+      <p class="text-slate-500 mb-8 max-w-lg">
+        Se han guardado y oficializado <strong class="text-emerald-700">{{ resumenCrucesGuardados.length }} cruzamientos</strong> para el proyecto <strong class="text-emerald-700">{{ selectedCdCntble }}</strong>. Ahora forman parte del historial de Cenicaña.
+      </p>
+
+      <!-- Tabla Resumen -->
+      <div class="w-full bg-slate-50 border border-slate-200 rounded-xl overflow-hidden mb-8">
+        <div class="max-h-[300px] overflow-y-auto scrollbar-custom">
+          <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-100 sticky top-0 z-10">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Madre (Hembra)</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Padre (Macho)</th>
+                <th class="px-6 py-3 text-center text-xs font-bold text-slate-600 uppercase tracking-wider">Autofecundado</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-slate-100">
+              <tr v-for="(cruce, index) in resumenCrucesGuardados" :key="index" class="hover:bg-slate-50 transition-colors">
+                <td class="px-6 py-3 whitespace-nowrap text-sm font-bold text-slate-800">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-100">
+                    {{ cruce.varA }}
+                  </span>
+                </td>
+                <td class="px-6 py-3 whitespace-nowrap text-sm font-bold text-slate-800">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-sky-50 text-sky-800 border border-sky-100">
+                    {{ cruce.varB }}
+                  </span>
+                </td>
+                <td class="px-6 py-3 whitespace-nowrap text-center text-sm text-slate-500 font-semibold">
+                  <span v-if="cruce.autofecundado" class="px-2 py-1 rounded bg-amber-100 text-amber-800 text-xs font-bold">SÍ</span>
+                  <span v-else class="text-slate-300">—</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+        <button
+          @click="router.push({ name: 'crossing_list.show' })"
+          class="w-full sm:w-auto px-6 py-3 text-sm font-bold text-white bg-cenicana hover:bg-cenicana-800 rounded-xl shadow-md transition-all duration-200 flex items-center justify-center"
+        >
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+          Ver Historial Completo
+        </button>
+        <button
+          @click="router.push({ name: 'crossing_initial_data.show' })"
+          class="w-full sm:w-auto px-6 py-3 text-sm font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:text-slate-900 rounded-xl shadow-sm transition-all duration-200 flex items-center justify-center"
+        >
+          <svg class="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+          Programar Nuevo Proyecto
+        </button>
+      </div>
+    </div>
+  </div>
   </div>
 
   <!-- Drawer de Hoja de Vida de la Variedad (Quick Drawer) -->
@@ -389,19 +456,24 @@ const router = useRouter();
 const toast = useToast();
 const selectedCdCntble = ref(localStorage.getItem("selectedCdCntble") || "");
 const selectedMegaAmbiente = ref(localStorage.getItem("selectedMegaAmbiente") || "");
+
+const autofecundacionesSeleccionadas = ref<Set<string>>(new Set());
 const selectedVariety = ref(localStorage.getItem("selectedVariety") || "");
 const selectedIdProject = ref(localStorage.getItem("selectedIdProject") || "");
 const draftKey = computed(() => `sivarcc_draft_crossings_${selectedCdCntble.value}_${selectedMegaAmbiente.value}`);
 const isSaving = ref(false);
+const isFinished = ref(false);
+const resumenCrucesGuardados = ref<any[]>([]);
 
 const ocultarInviables = ref(true); // Vista compacta limpia por defecto
 const isLoading = ref(false); // Ref para spinner de carga
 const mostrarMapaCalor = ref(true); // Vista con mapa de calor por defecto
 
-function isHighDg(varA: string, varB: string) {
+function isDarkBackground(varA: string, varB: string) {
   const dgVal = getDistancia(varA, varB);
   const val = Number(dgVal);
-  return !isNaN(val) && val >= 0.65;
+  // Es oscuro si es azul (>= 0.65) o naranja (< 0.35)
+  return !isNaN(val) && (val >= 0.65 || val < 0.35);
 }
 
 function getHeatmapClass(varA: string, varB: string, viabilidad: boolean) {
@@ -419,15 +491,15 @@ function getHeatmapClass(varA: string, varB: string, viabilidad: boolean) {
   }
   
   if (val >= 0.65) {
-    return 'bg-emerald-600/90 text-white font-black border-r border-emerald-700/50 shadow-inner hover:bg-emerald-700';
+    return 'bg-blue-600/90 text-white font-black border-r border-blue-700/50 shadow-inner hover:bg-blue-700';
   } else if (val >= 0.55) {
-    return 'bg-emerald-400/60 text-slate-900 font-extrabold border-r border-emerald-500/30 hover:bg-emerald-500/50';
+    return 'bg-sky-400/60 text-slate-900 font-extrabold border-r border-sky-500/30 hover:bg-sky-500/50';
   } else if (val >= 0.45) {
-    return 'bg-emerald-200/40 text-slate-800 font-bold border-r border-emerald-300/30 hover:bg-emerald-300/40';
+    return 'bg-slate-200/60 text-slate-800 font-bold border-r border-slate-300/30 hover:bg-slate-300/40';
   } else if (val >= 0.35) {
-    return 'bg-amber-100 text-amber-900 font-semibold border-r border-amber-200/30 hover:bg-amber-200/50';
+    return 'bg-amber-300/80 text-amber-900 font-semibold border-r border-amber-400/30 hover:bg-amber-400/50';
   } else {
-    return 'bg-rose-100 text-rose-900 font-semibold border-r border-rose-200/30 hover:bg-rose-200/50';
+    return 'bg-orange-500/90 text-white font-semibold border-r border-orange-600/30 hover:bg-orange-600/80';
   }
 }
 
@@ -521,7 +593,8 @@ const floresSeleccionadas = computed(() => {
   if (rows.length > 0 && rows[0]) {
     return rows[0].map((cell: any) => ({
       variedad: cell.varB,
-      cantidad: cantidadesMap.value[cell.varB] || 0
+      cantidad: cantidadesMap.value[cell.varB] || 0,
+      polen: cell.polen2
     }));
   }
   
@@ -529,7 +602,8 @@ const floresSeleccionadas = computed(() => {
   const rawFlores = SuggestionCrossingPerProjectStore.suggestionCrossingsPerProjectFilter?.flores || [];
   return rawFlores.map((flor: any) => ({
     variedad: flor.vrdad,
-    cantidad: flor.numero
+    cantidad: flor.numero,
+    polen: flor.polen || 0
   }));
 });
 
@@ -587,7 +661,14 @@ function toggleCruzamiento(car: any) {
 }
 
 function toggleAutofecundar(viabilidadRow: any) {
-  console.info(`Autofecundación seleccionada para ${viabilidadRow.varA}`);
+  const varA = viabilidadRow[0]?.varA;
+  if (!varA) return;
+  
+  if (autofecundacionesSeleccionadas.value.has(varA)) {
+    autofecundacionesSeleccionadas.value.delete(varA);
+  } else {
+    autofecundacionesSeleccionadas.value.add(varA);
+  }
 }
 
 function getDistancia(varA: string, varB: string) {
@@ -746,7 +827,7 @@ function getCausaInviabilidad(cell: any): string {
  */
 function exportarExcel() {
   try {
-    const headers = ["Hembra / Macho", ...floresSeleccionadas.value.map(f => f.variedad)];
+    const headers = ["Hembra / Macho", ...floresSeleccionadas.value.map(f => f.variedad), "Autofecundación"];
     const rows: any[][] = [];
     
     // Añadir metadatos en la cabecera
@@ -773,10 +854,16 @@ function exportarExcel() {
               const causa = getCausaInviabilidad(cell);
               excelRow.push(`NO - ${causa}`);
             }
-          } else {
-            excelRow.push("-");
           }
         });
+        
+        // Agregar si la madre tiene autofecundación activada
+        if (autofecundacionesSeleccionadas.value.has(varA)) {
+          excelRow.push("SÍ");
+        } else {
+          excelRow.push("NO");
+        }
+        
         rows.push(excelRow);
       }
     });
@@ -896,7 +983,7 @@ async function exportarMemoriaCalculos() {
             // 1. Agregar a Hoja 1: Resumen de Cruzamientos
             const isViable = cell.viabilidad === true;
             const dgValue = getDistancia(cell.varA, cell.varB);
-            const autofecundado = cell.varA && cell.varB && cell.varA.trim() === cell.varB.trim() ? "SÍ" : "NO";
+            const autofecundado = (cell.varA && cell.varB && cell.varA.trim() === cell.varB.trim()) || autofecundacionesSeleccionadas.value.has(cell.varA) ? "SÍ" : "NO";
             
             // Buscar motivos de inviabilidad
             let motivoInviabilidad = "-";
@@ -1179,6 +1266,25 @@ async function finalizarProceso() {
             selectedCrossings.push(cell);
           }
         });
+        
+        // Integrar Autofecundación solicitada explícitamente para esta variedad madre
+        const motherCell = row[0];
+        if (motherCell && autofecundacionesSeleccionadas.value.has(motherCell.varA)) {
+          // Verificar si ya existe en selectedCrossings (por si varA == varB y ya era viable)
+          const alreadyExists = selectedCrossings.some(c => c.varA === motherCell.varA && c.varB === motherCell.varA);
+          if (!alreadyExists) {
+            // Inyectar un cruce simulado consigo misma
+            selectedCrossings.push({
+              varA: motherCell.varA,
+              varB: motherCell.varA,
+              proyecto: motherCell.proyecto,
+              proyecto2: motherCell.proyecto, // Mismo proyecto
+              id_caracter: motherCell.id_caracter,
+              id_caracter2: motherCell.id_caracter, // Mismo caracter
+              viabilidad: true
+            });
+          }
+        }
       }
     });
     
@@ -1190,13 +1296,17 @@ async function finalizarProceso() {
     
     // 4. Guardar todos los cruzamientos en lote (batch) para rendimiento óptimo e instantáneo
     const batchPayload = selectedCrossings.map((car) => {
+      const autofecundado = car.varA === car.varB ? 1 : 0;
       return {
         madre: `${car.varA}_${car.proyecto}_${car.id_caracter}`,
         padres: `${car.varB}_${car.proyecto2}_${car.id_caracter2}`,
         observaciones: "Programacion de Cruzamientos desde Matriz por Proyecto",
         id_ponderados: idPonderado,
         proyectos: `${car.proyecto}`,
-        autofecundado: car.varA === car.varB ? 1 : 0
+        autofecundado: autofecundado,
+        // Añadimos estas variables para mostrarlas en el UI del Resumen
+        varA: car.varA,
+        varB: car.varB
       };
     });
 
@@ -1207,7 +1317,11 @@ async function finalizarProceso() {
     localStorage.removeItem("cruzamientos");
     
     toast.success("¡Programación de cruzamientos guardada y finalizada con éxito!");
-    router.push({ name: "crossing_list.show" });
+    
+    // 6. En lugar de redirigir a History directamente, mostrar el resumen
+    resumenCrucesGuardados.value = batchPayload;
+    isFinished.value = true;
+    
   } catch (error) {
     console.error("Error al guardar la programación de cruzamientos:", error);
     toast.error("Ocurrió un error al guardar la programación de cruzamientos en la base de datos.");

@@ -118,21 +118,43 @@
 
       <!-- Tabla de Ponderados -->
       <div v-if="selectedVariety && selectedMegaAmbiente" class="mt-8 space-y-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Ponderados de Características para la Matriz</h3>
-        <div class="overflow-hidden border border-slate-100 rounded-xl shadow-sm">
+        <div class="flex items-center space-x-2">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Ponderados de Características para la Matriz</h3>
+          <button @click="isHelpModalOpen = true" class="text-emerald-500 hover:text-emerald-700 transition" title="Ver ayuda sobre el cálculo de ponderados">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
+        </div>
+        <div class="border border-slate-100 rounded-xl shadow-sm">
           <table class="table-auto w-full divide-y divide-slate-100">
             <thead class="bg-slate-50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Nombre de la Característica</th>
+                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-500 rounded-tl-xl">Nombre de la Característica</th>
                 <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-500">Nivel de Entrada</th>
                 <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-500">Valor Individual</th>
                 <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-500">Porcentaje (%)</th>
-                <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wide text-slate-500">Acción</th>
+                <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wide text-slate-500 rounded-tr-xl">Acción</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 bg-white">
               <tr v-for="(item, index) in ponderadosFiltrados" :key="index" class="hover:bg-emerald-50/20 transition-colors duration-150">
-                <td class="whitespace-nowrap px-6 py-4 text-sm font-bold text-slate-700">{{ item.nombre }}</td>
+                <td class="whitespace-nowrap px-6 py-4 text-sm font-bold text-slate-700">
+                  <div class="flex items-center">
+                    {{ item.nombre }}
+                    <div class="relative group ml-2 flex items-center justify-center">
+                      <span class="text-slate-400 hover:text-emerald-600 cursor-help transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </span>
+                      <div class="absolute bottom-full left-0 mb-2 w-72 p-3 bg-slate-800 text-white text-xs font-medium leading-relaxed rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-pre-wrap text-left z-[100]">
+                        {{ getTooltipText(item.nombre) }}
+                        <div class="absolute top-full left-3 border-4 border-transparent border-t-slate-800"></div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
                 <td class="whitespace-nowrap px-6 py-4 text-center text-sm font-semibold text-slate-600">{{ item.nivel || "-" }}</td>
                 <td class="whitespace-nowrap px-6 py-4 text-center text-sm text-slate-600 font-medium">{{ item.ponderado || 0 }}</td>
                 <td class="whitespace-nowrap px-6 py-4 text-center text-sm font-bold text-emerald-600 bg-emerald-50/30">{{ calcularPonderado(item) }}%</td>
@@ -247,6 +269,52 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de Ayuda de Ponderados -->
+    <div v-if="isHelpModalOpen" class="fixed inset-0 flex items-center justify-center bg-slate-900/60 z-50 transition-opacity duration-300">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 overflow-hidden border border-slate-100">
+        <!-- Header del modal -->
+        <div class="flex justify-between items-center border-b border-slate-100 p-5 bg-slate-50">
+          <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Guía de Ponderados
+          </h4>
+          <button @click="isHelpModalOpen = false" class="text-slate-400 hover:text-slate-600 transition-colors text-2xl">&times;</button>
+        </div>
+
+        <!-- Cuerpo del modal -->
+        <div class="p-6 space-y-4 text-sm text-slate-600 leading-relaxed">
+          <p>
+            Esta tabla permite configurar los parámetros que calcularán el <strong>Valor de Mérito</strong> de cada cruzamiento. 
+          </p>
+          <ul class="space-y-3 mt-3">
+            <li class="flex items-start">
+              <span class="font-bold text-slate-700 min-w-[120px] mr-2">Nivel de Entrada:</span>
+              <span>El límite máximo (tolerancia) de la enfermedad u observación. Se utilizará para aplicar vetos fitosanitarios.</span>
+            </li>
+            <li class="flex items-start">
+              <span class="font-bold text-slate-700 min-w-[120px] mr-2">Valor Individual:</span>
+              <span>El peso o importancia base que el programa de mejoramiento asigna a esta característica.</span>
+            </li>
+            <li class="flex items-start">
+              <span class="font-bold text-slate-700 min-w-[120px] mr-2">Porcentaje (%):</span>
+              <span>
+                Es el impacto real relativo de la característica. Se calcula automáticamente dividiendo el <strong>Valor Individual</strong> de esta característica entre la <strong>Suma Total</strong> de los valores individuales de toda la tabla.
+              </span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Footer del modal -->
+        <div class="flex justify-end items-center border-t border-slate-100 p-5 bg-slate-50">
+          <button @click="isHelpModalOpen = false" class="px-5 py-2 text-xs font-bold text-white bg-cenicana hover:bg-cenicana-800 rounded-xl shadow-md transition-all duration-200">
+            Entendido
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -286,6 +354,7 @@ const storedCdCntble = computed(() => localStorage.getItem("selectedCdCntble"));
 
 // Variables y estado para manejar el modal
 const isModalOpen = ref(false);
+const isHelpModalOpen = ref(false);
 const proyecto = ref("");
 const nombre = ref("");
 const ponderado = ref("");
@@ -386,6 +455,28 @@ const validateNumber = (field: "ponderado" | "nivel") => {
 const ponderadosFiltrados = computed(() => {
   return parametizeWeightedCrossignStore.parametizeWeightedCrossingFilter.ponderados || [];
 });
+
+// Función para obtener la ayuda (tooltip) de cada característica según su lógica en el backend
+const getTooltipText = (nombre: string) => {
+  const n = (nombre || "").toLowerCase();
+  
+  const isEnfermedad = n.includes("roya") || n.includes("carb") || n.includes("mosaico") || n.includes("enfermedad");
+  const isRendimiento = n.includes("tchm") || n.includes("sacarosa") || n.includes("diámetro") || n.includes("altura") || n.includes("poblaci") || n.includes("volcamiento");
+
+  if (isEnfermedad) {
+    return `Enfermedad (Doble Filtro de Sanidad):
+• ¿Qué significa el Nivel?: Es el "presupuesto" máximo de susceptibilidad permitido.
+• ¿Cómo se usa en el código?:
+  1. Individual: Si la Madre o el Padre superan solos este Nivel, se alerta con un Veto Fitosanitario.
+  2. Sumatoria: Internamente, si (Valor Madre + Valor Padre > Nivel), el cruce entero se marca como INVIABLE y se oculta. Esto evita cruzar dos parentales mediocres.`;
+  } else if (isRendimiento) {
+    return `Rendimiento (Viabilidad):
+• ¿Qué significa el Nivel?: Es el límite máximo de "deficiencia combinada" tolerada.
+• ¿Cómo se usa en el código?: El sistema compara a la Madre y al Padre contra el Testigo y les pone una nota interna (1=Excelente a 5=Malo). Luego suma ambas notas.
+Si (Nota Madre + Nota Padre > Nivel asignado), el cruce entero se marca como INVIABLE y se oculta. Por ej: Si pones 4, obligas a que no haya padres mediocres.`;
+  }
+  return "Característica evaluable.\nEl Nivel define el umbral requerido para considerar el cruce viable.";
+};
 
 // Cálculo del porcentaje ponderado
 const calcularPonderado = (item: any) => {

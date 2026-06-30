@@ -2,9 +2,13 @@ import api from "@/services/api";
 import urls from "@/services/urls";
 
 // Servicio de los alineamientos petición GET (para traer el array de cada una de las herramientas que serán embebidas)
-export async function getCrossingsList(currentPage: number, perPage: number) {
+export async function getCrossingsList(currentPage: number, perPage: number, search?: string, filters?: any) {
   const url = `${urls.API_CROSSING_LIST}?page=${currentPage}`;
-  return await api.get(url, { params: { perPage, currentPage } }, true);
+  const params: any = { perPage, currentPage, search };
+  if (filters && Object.keys(filters).length > 0) {
+    params.filters = JSON.stringify(filters);
+  }
+  return await api.get(url, { params }, true);
 }
 
 async function getCrossingInitialData() {

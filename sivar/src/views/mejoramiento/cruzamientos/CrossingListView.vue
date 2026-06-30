@@ -71,9 +71,18 @@
                 <th 
                   v-if="columnsToShow.includes(column.key)" 
                   scope="col" 
-                  class="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100"
+                  class="px-5 py-3 text-left border-b border-slate-100"
                 >
-                  {{ column.text }}
+                  <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                    {{ column.text }}
+                  </div>
+                  <!-- Input de filtro por columna -->
+                  <input
+                    type="text"
+                    :placeholder="'Filtrar ' + column.text.toLowerCase() + '...'"
+                    class="block w-full min-w-[100px] px-2 py-1.5 border border-slate-200 rounded-lg text-[10px] text-slate-700 placeholder-slate-400 focus:ring-1 focus:ring-emerald-200 focus:border-cenicana transition-all bg-white shadow-inner"
+                    @input="updateColumnFilter(column.key, ($event.target as HTMLInputElement).value)"
+                  />
                 </th>
               </template>
             </tr>
@@ -232,16 +241,31 @@ const lastPage = async () => {
   }
 };
 
-// Filtrar la lista de jornales según el texto de búsqueda
-const filteredJornalesList = computed(() => {
-  const normalizedSearchText = searchText.value.trim().toLowerCase();
-  return CrossingsListsStore.crossing.filter((crossing) =>
-    Object.values(crossing).some((value) => typeof value === "string" && value.toLowerCase().includes(normalizedSearchText))
-  );
-});
+let searchTimeout: any = null;
 const updateFilteredCrossings = () => {
-  CrossingsListsStore.crossing = filteredJornalesList.value;
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(async () => {
+    await CrossingsListsStore.setSearchQuery(searchText.value);
+  }, 500); // 500ms debounce
 };
+
+const columnTimeouts: Record<string, any> = {};
+const updateColumnFilter = (columnKey: string, value: string) => {
+  if (columnTimeouts[columnKey]) clearTimeout(columnTimeouts[columnKey]);
+  
+  // Agrupar todos los padres en un solo filtro si es necesario, 
+  // pero el backend ya lo maneja genéricamente para padres o usa el key específico
+  let backendCol = columnKey;
+  if (columnKey.startsWith('vrdad_pdre')) {
+      backendCol = 'padres'; 
+      // El backend buscará en cualquiera de los padres si mandamos 'padres'
+  }
+
+  columnTimeouts[columnKey] = setTimeout(async () => {
+    await CrossingsListsStore.setColumnFilter(backendCol, value);
+  }, 500);
+};
+
 // Función para obtener la clave válida para el jornal en el v-for
 const getCrossingsKey = (crossing: any) => crossing.id_crzmnto.toString(); // Asegurar que la clave sea un string válido
 // Función para generar el archivo Excel con todos los datos

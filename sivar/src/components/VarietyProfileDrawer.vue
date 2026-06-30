@@ -80,7 +80,7 @@
                 <div class="flex items-center gap-3">
                   <h2 class="text-3xl font-black tracking-tight drop-shadow-sm">{{ currentVarietyName }}</h2>
                   <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-white/20 text-white border border-white/30 uppercase tracking-wider backdrop-blur-sm">
-                    {{ profile.variety?.tpo || 'BG' }}
+                    {{ profile.traits?.origen_datos || 'BG' }}
                   </span>
                 </div>
                 <p class="mt-2 text-xs text-emerald-100 font-semibold max-w-xs">Hoja de Vida Agronómica de Banco de Germoplasma.</p>
@@ -321,7 +321,7 @@
                     </div>
                     <div>
                       <span class="text-[10px] font-bold text-slate-400 block uppercase mb-0.5">Procedencia</span>
-                      <span class="font-extrabold text-slate-800">{{ profile.traits.procedencia || 'Colombia' }}</span>
+                      <span class="font-extrabold text-slate-800">{{ profile.traits.procedencia || '-' }}</span>
                     </div>
                   </div>
                 </div>

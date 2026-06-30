@@ -20,16 +20,63 @@ class CrossingController extends Controller
     public function crossingList(Request $request)
     {
         try {
-            $model = DB::connection('sivar')->table('cruzamientos')->paginate(10);
+            $perPage = $request->input('perPage', 10);
+            $search = $request->input('search');
+            $filtersJson = $request->input('filters');
+
+            $query = DB::connection('sivar')->table('cruzamientos');
+
+            // Búsqueda Global
+            if (!empty($search)) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('vrdad_mdre', 'ilike', '%' . $search . '%')
+                      ->orWhere('vrdad_pdre1', 'ilike', '%' . $search . '%')
+                      ->orWhere('vrdad_pdre2', 'ilike', '%' . $search . '%')
+                      ->orWhere('vrdad_pdre3', 'ilike', '%' . $search . '%')
+                      ->orWhere('vrdad_pdre4', 'ilike', '%' . $search . '%')
+                      ->orWhere('vrdad_pdre5', 'ilike', '%' . $search . '%')
+                      ->orWhere('pdgree', 'ilike', '%' . $search . '%')
+                      ->orWhere('id_crzmnto', 'like', '%' . $search . '%');
+                });
+            }
+
+            // Filtros por Columna (Tabla Dinámica)
+            if (!empty($filtersJson)) {
+                $filters = json_decode($filtersJson, true);
+                if (is_array($filters)) {
+                    foreach ($filters as $col => $val) {
+                        if (!empty($val)) {
+                            if ($col === 'padres') {
+                                // Buscar en cualquiera de las 5 columnas de padre
+                                $query->where(function ($q) use ($val) {
+                                    $q->where('vrdad_pdre1', 'ilike', '%' . $val . '%')
+                                      ->orWhere('vrdad_pdre2', 'ilike', '%' . $val . '%')
+                                      ->orWhere('vrdad_pdre3', 'ilike', '%' . $val . '%')
+                                      ->orWhere('vrdad_pdre4', 'ilike', '%' . $val . '%')
+                                      ->orWhere('vrdad_pdre5', 'ilike', '%' . $val . '%');
+                                });
+                            } else if ($col === 'id_crzmnto') {
+                                // Búsqueda exacta o parcial numérica
+                                $query->where('id_crzmnto', 'like', '%' . $val . '%');
+                            } else {
+                                // Búsqueda ilike genérica para madre o pedigree
+                                $query->where($col, 'ilike', '%' . $val . '%');
+                            }
+                        }
+                    }
+                }
+            }
+
+            $query->orderBy('id_crzmnto', 'desc');
+            
+            $model = $query->paginate($perPage);
 
             if ($model->isNotEmpty()) {
                 return response()->json($model);
             }
 
-            // Return response if no records are found
             return response("No hay registros", 400);
         } catch (Exception $ex) {
-            // Return response in case of an exception
             return response($ex->getMessage(), 500);
         }
     }
