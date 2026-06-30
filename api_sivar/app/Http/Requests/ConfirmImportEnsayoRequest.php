@@ -8,7 +8,7 @@ class ConfirmImportEnsayoRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        return true; // Security is enforced inside EnsayoController via auth('api')->user()
     }
 
     public function rules(): array

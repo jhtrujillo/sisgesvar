@@ -4,7 +4,8 @@ import urls from "./urls";
 // AUTH y parametrización de peticiones get, post, put, delete, head; con su respectiva lógica de errores
 import { useUserStore } from "@/stores/user";
 
-axios.defaults.headers.post["Content-Type"] = "application/json";
+// Note: Do NOT set a global Content-Type default for POST — it breaks multipart/form-data (FormData) uploads.
+// Each function sets its own Content-Type as needed.
 axios.defaults.xsrfHeaderName = "X-CSRFToken";
 axios.defaults.xsrfCookieName = "csrftoken";
 
@@ -83,12 +84,20 @@ async function performAxios(url: string, request: unknown, method: string, secur
   }
 
   try {
-    const response = await axios({
+    const config: any = {
       method: method,
       url: url,
-      data: request,
       headers: headers
-    });
+    };
+
+    // GET requests need params (query string), other methods need data (body)
+    if (method.toLowerCase() === 'get') {
+      config.params = (request as any)?.params || request;
+    } else {
+      config.data = request;
+    }
+
+    const response = await axios(config);
     return await Promise.resolve(response);
   } catch (error) {
     return await Promise.reject(error);
@@ -119,22 +128,18 @@ function _delete(url: string, request: unknown, secured = true) {
   return performAxios(url, request, "delete", secured);
 }
 
-async function postWithImages(url: string, request: { _boundary: any }, secured = true) {
+async function postWithImages(url: string, request: any, secured = true) {
   const userStore = useUserStore();
 
-  let headers = {
-    "Content-Type": "application/json",
-    Authorization: ""
+  // Start with no Content-Type — Axios will auto-set multipart/form-data + boundary for FormData
+  const headers: Record<string, any> = {
+    "Content-Type": undefined  // Explicitly unset so Axios/browser generates correct multipart boundary
   };
 
   if (secured) {
     const token = userStore.token;
-
     if (token) {
-      headers = {
-        Authorization: "Bearer " + token,
-        "Content-Type": `multipart/form-data; boundary=${request._boundary}`
-      };
+      headers["Authorization"] = "Bearer " + token;
     }
   }
 

@@ -1,6 +1,6 @@
 <script setup>
 import { Chart, registerables } from 'chart.js';
-import { onMounted, ref, nextTick } from 'vue';
+import { onMounted, ref, nextTick, watch } from 'vue';
 import { EnsayosService } from "@/services/ensayos.services";
 import EnsayosNavComponent from "@/components/EnsayosNavComponent.vue";
 
@@ -27,6 +27,7 @@ const stats = ref({
     recent_uploads: []
 });
 const isLoading = ref(true);
+const accessDenied = ref(false);
 
 const canvasAmbiente = ref(null);
 const canvasSiembra = ref(null);
@@ -34,14 +35,32 @@ const canvasSiembra = ref(null);
 onMounted(async () => {
     try {
         const response = await EnsayosService.getDashboard();
-        stats.value = response.data.stats;
-        
-        await nextTick();
-        renderCharts();
+        const raw = response.data.stats;
+        // Filter out ambiente entries with 0 ensayos so chart is meaningful
+        stats.value = {
+            ...raw,
+            por_ambiente: (raw.por_ambiente || []).filter(i => i.total > 0)
+        };
     } catch (error) {
-        console.error("Error loading dashboard stats:", error);
+        if (error?.response?.status === 403) {
+            accessDenied.value = true;
+        } else {
+            console.error("Error loading dashboard stats:", error);
+        }
     } finally {
         isLoading.value = false;
+        // Wait for the v-else block to mount in the DOM, then render charts
+        await nextTick();
+        await nextTick();
+        renderCharts();
+    }
+});
+
+// Fallback: re-render if stats change after initial mount
+watch(() => stats.value.por_ambiente, async (val) => {
+    if (val?.length) {
+        await nextTick();
+        renderCharts();
     }
 });
 
@@ -167,7 +186,16 @@ const getPercent = (total, current) => {
                 <span class="text-emerald-800 font-bold tracking-wide animate-pulse">Cargando métricas...</span>
             </div>
         </div>
-        <div v-else class="max-w-7xl w-full mx-auto space-y-6 min-w-0">
+        <!-- Access Denied Banner -->
+        <div v-if="!isLoading && accessDenied" class="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+            <div class="p-6 bg-amber-50 border border-amber-200 rounded-3xl text-center max-w-md">
+                <div class="text-5xl mb-3">🔒</div>
+                <h3 class="text-lg font-black text-amber-800 mb-2">Acceso Restringido</h3>
+                <p class="text-sm text-amber-700 font-medium">El panel de control solo está disponible para usuarios con rol <span class="font-black">JEFE</span> o <span class="font-black">LIDER</span>.</p>
+            </div>
+        </div>
+
+        <div v-if="!isLoading && !accessDenied" class="max-w-7xl w-full mx-auto space-y-6 min-w-0">
             <!-- Shared Navigation tabs -->
             <EnsayosNavComponent />
 
@@ -225,10 +253,10 @@ const getPercent = (total, current) => {
                         </h4>
                     </div>
                     <div class="p-6 flex-grow flex items-center justify-center relative" style="min-height: 300px;">
-                        <div v-show="stats.por_ambiente?.length > 0" class="w-full h-64">
+                        <div v-if="stats.por_ambiente?.length > 0" class="w-full h-64">
                             <canvas ref="canvasAmbiente"></canvas>
                         </div>
-                        <div v-show="!stats.por_ambiente?.length" class="flex flex-col items-center justify-center text-slate-400 italic text-sm h-full">
+                        <div v-else class="flex flex-col items-center justify-center text-slate-400 italic text-sm h-full">
                             <div class="text-4xl mb-2">🍕</div> Sin datos para graficar.
                         </div>
                     </div>
@@ -242,10 +270,10 @@ const getPercent = (total, current) => {
                         </h4>
                     </div>
                     <div class="p-6 flex-grow relative" style="min-height: 300px;">
-                        <div v-show="stats.por_ano?.length > 0" class="w-full h-64">
+                        <div v-if="stats.por_ano?.length > 0" class="w-full h-64">
                             <canvas ref="canvasSiembra"></canvas>
                         </div>
-                        <div v-show="!stats.por_ano?.length" class="flex flex-col items-center justify-center text-slate-400 italic text-sm h-full">
+                        <div v-else class="flex flex-col items-center justify-center text-slate-400 italic text-sm h-full">
                             <div class="text-4xl mb-2">📊</div> Sin años registrados.
                         </div>
                     </div>

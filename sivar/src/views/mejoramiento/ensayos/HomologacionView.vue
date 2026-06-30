@@ -3,8 +3,8 @@ import { ref, onMounted } from 'vue';
 import { EnsayosService } from "@/services/ensayos.services";
 
 const props = defineProps({
-    conflicts: Object, // Contains categories with array of new values
-    catalogo: Object,  // Contains master catalog lists by category
+    conflicts: Object,
+    catalogo: Object,
     tempPath: String,
     ambiente: String,
 });
@@ -13,9 +13,9 @@ const emit = defineEmits(['save', 'cancel']);
 
 const mappings = ref({});
 const processing = ref(false);
+const duplicateError = ref(null);
 
 onMounted(() => {
-    // Loop through all available dynamic conflict categories and pre-populate mappings
     if (props.conflicts) {
         Object.keys(props.conflicts).forEach(category => {
             mappings.value[category] = {};
@@ -26,8 +26,16 @@ onMounted(() => {
     }
 });
 
+const parseDuplicateItems = (message) => {
+    const colonIndex = message.indexOf(':');
+    if (colonIndex === -1) return [message];
+    const itemsPart = message.substring(colonIndex + 1).trim();
+    return itemsPart.split(/,\s+(?=[A-Z\p{Lu}])/u).map(s => s.trim()).filter(Boolean);
+};
+
 const submitMappings = async () => {
     processing.value = true;
+    duplicateError.value = null;
     try {
         const response = await EnsayosService.confirmImport({
             tempPath: props.tempPath,
@@ -38,14 +46,29 @@ const submitMappings = async () => {
         if (response.status === 200 && response.data?.success) {
             emit('save', response.data.message || 'Datos homologados e importados correctamente.');
         } else {
-            alert(response.data?.message || 'Error al procesar la homologación.');
+            const msg = response.data?.message || 'Error al procesar la homologación.';
+            if (msg.includes('DUPLICAR')) {
+                duplicateError.value = { message: 'Se encontraron registros que ya existen en la base de datos.', items: parseDuplicateItems(msg) };
+            } else {
+                duplicateError.value = { message: msg, items: [] };
+            }
         }
     } catch (err) {
         console.error(err);
-        alert('Falla al confirmar la importación: ' + (err.response?.data?.message || err.message));
+        const msg = err.response?.data?.message || err.message || 'Error desconocido';
+        if (msg.includes('DUPLICAR')) {
+            duplicateError.value = { message: 'Se encontraron registros que ya existen en la base de datos.', items: parseDuplicateItems(msg) };
+        } else {
+            duplicateError.value = { message: msg, items: [] };
+        }
     } finally {
         processing.value = false;
     }
+};
+
+const closeDuplicateModal = () => {
+    duplicateError.value = null;
+    emit('cancel'); // Return to main table
 };
 
 const cancelImport = () => {
@@ -95,8 +118,6 @@ const cancelImport = () => {
                             class="group p-5 bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md hover:border-amber-200 transition duration-300"
                         >
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                                
-                                <!-- Left: Excel value -->
                                 <div>
                                     <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-2">Encontrado en Excel</span>
                                     <div class="flex items-center space-x-3">
@@ -110,8 +131,6 @@ const cancelImport = () => {
                                         </p>
                                     </div>
                                 </div>
-
-                                <!-- Right: Decision Selector -->
                                 <div v-if="mappings[category]">
                                     <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-2">Acción Correctora</span>
                                     <select 
@@ -128,7 +147,6 @@ const cancelImport = () => {
                                         </optgroup>
                                     </select>
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -173,5 +191,108 @@ const cancelImport = () => {
 
         </div>
     </div>
+
+    <!-- ===== DUPLICATE RECORDS MODAL ===== -->
+    <Teleport to="body">
+        <Transition name="modal-fade">
+            <div v-if="duplicateError" class="fixed inset-0 z-[9999] flex items-center justify-center p-4" @click.self="closeDuplicateModal">
+                <!-- Backdrop -->
+                <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+                
+                <!-- Modal -->
+                <div class="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden animate-[modalSlideIn_0.3s_ease-out]">
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-red-500 to-red-600 px-8 py-6">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 bg-white/20 rounded-2xl">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-black text-white">Registros Duplicados Detectados</h3>
+                                <p class="text-red-100 text-sm font-medium mt-1">{{ duplicateError.message }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="px-8 py-6">
+                        <div v-if="duplicateError.items.length" class="mb-4 flex items-center gap-2">
+                            <span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-black rounded-full">
+                                {{ duplicateError.items.length }} ensayo{{ duplicateError.items.length > 1 ? 's' : '' }} duplicado{{ duplicateError.items.length > 1 ? 's' : '' }}
+                            </span>
+                            <span class="text-slate-400 text-xs">en ambiente <strong class="text-slate-600">{{ ambiente }}</strong></span>
+                        </div>
+
+                        <div v-if="duplicateError.items.length" class="max-h-[360px] overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                            <div 
+                                v-for="(item, idx) in duplicateError.items" 
+                                :key="idx"
+                                class="flex items-center gap-3 px-4 py-3 bg-red-50/60 border border-red-100 rounded-xl hover:bg-red-50 transition-colors"
+                            >
+                                <span class="flex-shrink-0 w-7 h-7 flex items-center justify-center bg-red-100 text-red-600 rounded-lg text-xs font-black">
+                                    {{ idx + 1 }}
+                                </span>
+                                <span class="text-sm text-slate-700 font-semibold break-all">{{ item }}</span>
+                            </div>
+                        </div>
+
+                        <div v-else class="text-sm text-slate-600">
+                            {{ duplicateError.message }}
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="px-8 py-5 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+                        <p class="text-xs text-slate-400 max-w-sm">
+                            Elimina los ensayos duplicados del archivo Excel y vuelve a intentarlo.
+                        </p>
+                        <button 
+                            @click="closeDuplicateModal"
+                            class="px-8 py-3 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+                        >
+                            Entendido
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
 </template>
 
+<style scoped>
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+    transition: opacity 0.25s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+    opacity: 0;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+</style>

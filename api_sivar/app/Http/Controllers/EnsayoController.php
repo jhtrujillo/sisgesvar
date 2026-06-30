@@ -18,6 +18,9 @@ class EnsayoController extends Controller
     public function index(Request $request)
     {
         $user = auth('api')->user();
+        if (!$user) {
+            return response()->json(['message' => 'Sesión expirada. Por favor inicia sesión nuevamente.'], 401);
+        }
         $query = Ensayo::query()->with('user');
 
         // Mandatory Authorization Scoping
@@ -79,8 +82,11 @@ class EnsayoController extends Controller
 
         $usersList = \App\Models\User::select('id_usrio', 'nmbre')->orderBy('nmbre')->get();
 
+        $page = (int) $request->input('page', 1);
+        file_put_contents(base_path('storage/logs/debug_page.log'), "[" . date('Y-m-d H:i:s') . "] page_input=" . $request->input('page', 'NULL') . " | page_casted=$page | all_params=" . json_encode($request->all()) . "\n", FILE_APPEND);
+
         return response()->json([
-            'ensayos' => $query->withCount('adjuntos')->paginate($perPage)->withQueryString(),
+            'ensayos' => $query->withCount('adjuntos')->paginate($perPage, ['*'], 'page', $page)->withQueryString(),
             'filters' => $request->only(['search', 'per_page', 'sort_by', 'sort_direction', 'ambiente', 'user_id']),
             'catalogos' => $catalogos,
             'users_list' => $usersList
@@ -104,11 +110,6 @@ class EnsayoController extends Controller
     {
         $file = $request->file('file');
         $ambiente = $request->ambiente;
-
-        $dups = $this->findDuplicateEnsayos($file);
-        if (!empty($dups)) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['file' => 'NO SE PUEDE DUPLICAR INFORMACIÓN. Los siguientes ensayos ya existen en la base de datos (con ortografía similar): ' . implode(', ', $dups)]);
-        }
 
         try {
             // Step 1: Load full array into memory for fast structural review
@@ -153,6 +154,7 @@ class EnsayoController extends Controller
             }
 
             // If there are ANY conflict values in ANY category, prompt user mapping
+            // Duplicates will be validated AFTER homologation in confirmImport()
             if (count($allConflicts) > 0) {
                 $tempPath = $file->store('temp_imports');
                 
@@ -165,7 +167,15 @@ class EnsayoController extends Controller
                 ], 200);
             }
 
-            // Clean execution if no conflicts
+            // No catalog conflicts — check for duplicates before direct import
+            $dups = $this->findDuplicateEnsayos($file, $ambiente);
+            if (!empty($dups)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'file' => 'NO SE PUEDE DUPLICAR INFORMACIÓN. Los siguientes ensayos ya existen en la base de datos: ' . implode(', ', $dups)
+                ]);
+            }
+
+            // Clean execution — no conflicts and no duplicates
             Excel::import(new EnsayoImport($ambiente), $file);
             
             return response()->json([
@@ -199,10 +209,16 @@ class EnsayoController extends Controller
 
             $realPath = \Illuminate\Support\Facades\Storage::path($request->tempPath);
 
-            // FINAL GATE: Ensure no one concurrently pushed duplicates during homologation wait time
-            $dups = $this->findDuplicateEnsayos($realPath);
+            // Validate duplicates AFTER homologation is complete
+            $dups = $this->findDuplicateEnsayos($realPath, $request->ambiente);
             if (!empty($dups)) {
-                throw \Illuminate\Validation\ValidationException::withMessages(['file' => 'BLOQUEO CRÍTICO: Mientras homologabas, estos ensayos ya fueron subidos al sistema. Elimínalos del archivo: ' . implode(', ', $dups)]);
+                // Cleanup temp file since we're rejecting
+                \Illuminate\Support\Facades\Storage::delete($request->tempPath);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'NO SE PUEDE DUPLICAR INFORMACIÓN. Los siguientes ensayos ya existen en la base de datos: ' . implode(', ', $dups)
+                ], 422);
             }
             
             // Custom Importer that applies final mappings
@@ -371,92 +387,67 @@ class EnsayoController extends Controller
      * Scans a file and cross-references existing DB records using fuzzy normalization
      * logic to identify potential duplicates before persistence attempts.
      */
-    private function findDuplicateEnsayos($file)
+    private function findDuplicateEnsayos($file, string $uploadAmbiente = '')
     {
-        // Handle path string or real object
+        // Parse Excel into rows
         $array = \Maatwebsite\Excel\Facades\Excel::toArray(new \App\Imports\EnsayoImport, $file);
         $rows = $array[0] ?? [];
-        
-        // DEBUG LOG: Dump what keys come out of toArray
-        file_put_contents(base_path('storage/logs/debug_excel_keys.log'), "[" . date('Y-m-d H:i:s') . "] Count: " . count($rows) . " | Sample[nombre_ensayo]: " . json_encode($rows[0]['nombre_ensayo'] ?? 'NULL') . " | Keys: " . json_encode(array_keys((array)($rows[0] ?? []))) . "\n", FILE_APPEND);
 
         if (empty($rows)) return [];
 
-        // Read and dynamically construct name if blank
-        $excelEnsayos = collect($rows)
-            ->map(function($r) {
-                // 1. Check standard mapped key
-                $original = trim($r['nombre_ensayo'] ?? '');
-                
-                // Fallback: Check other key names
-                if (!$original) {
-                    $keys = array_keys((array)$r);
-                    foreach($keys as $k) {
-                        if (str_contains(strtolower($k), 'ensayo') && !str_contains(strtolower($k), 'reporte')) {
-                            $original = trim($r[$k] ?? '');
-                            if ($original) break;
-                        }
-                    }
-                }
+        /**
+         * Build a composite fingerprint per row using fields that are ALWAYS populated:
+         *   ingenio + hacienda + suerte + serie
+         * Scoped by ambiente (from upload form).
+         */
+        $excelFingerprints = [];
+        foreach ($rows as $r) {
+            $ing  = $this->normalizeString($r['ingenio']  ?? '');
+            $hac  = $this->normalizeString($r['hacienda'] ?? '');
+            $sur  = $this->normalizeString($r['suerte']   ?? '');
+            $ser  = $this->normalizeString($r['serie']    ?? '');
 
-                // 2. If STILL BLANK, fully reconstruct it from parts to match reality
-                if (!$original) {
-                    $ing = trim($r['ingenio'] ?? '');
-                    $hac = trim($r['hacienda'] ?? '');
-                    $sur = trim($r['suerte'] ?? '');
-                    
-                    // Try to get year from row or from FS date
-                    $yr = trim($r['ano'] ?? '');
-                    if (!$yr) {
-                        $fs = $r['fs'] ?? null;
-                        if (is_numeric($fs)) {
-                            $yr = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($fs)->format('Y');
-                        } elseif ($fs && !is_numeric($fs)) {
-                            $d = date_parse($fs);
-                            if (!empty($d['year'])) $yr = $d['year'];
-                        }
-                    }
+            if (!$ing && !$hac) continue; // Skip rows without minimum identity
 
-                    if (!empty($ing) && !empty($hac)) {
-                        return "{$ing}{$yr}-{$hac}{$sur}";
-                    }
-                }
+            $fingerprint = "{$ing}|{$hac}|{$sur}|{$ser}";
 
-                return $original;
-            })
-            ->filter()
-            ->unique()
-            ->map(fn($x) => trim($x));
-        
-        if ($excelEnsayos->isEmpty()) return [];
+            // Build display label for error message
+            $displayIng = trim($r['ingenio']  ?? '');
+            $displayHac = trim($r['hacienda'] ?? '');
+            $displaySur = trim($r['suerte']   ?? '');
+            $displaySer = trim($r['serie']    ?? '');
+            $label = "{$displayIng}-{$displayHac}{$displaySur} (Serie {$displaySer})";
 
-        // Preload existing DB state and build matching hashes by mirroring the reconstruction logic
-        $allDb = \App\Models\Ensayo::get(['nombre_ensayo', 'ingenio', 'hacienda', 'suerte', 'ano_siembra', 'fecha_siembra']);
-        
-        $normalizedDb = [];
-        foreach ($allDb as $ens) {
-            // Priority 1: Use existing string from DB if populated
-            $token = trim($ens->nombre_ensayo ?? '');
-            
-            // Priority 2: Reconstruct runtime canonical signature just like Excel validator
-            if (!$token) {
-                $yr = $ens->ano_siembra ?: ($ens->fecha_siembra ? \Carbon\Carbon::parse($ens->fecha_siembra)->format('Y') : '');
-                if (!empty($ens->ingenio) && !empty($ens->hacienda)) {
-                    $token = "{$ens->ingenio}{$yr}-{$ens->hacienda}{$ens->suerte}";
-                }
-            }
-            
-            $clean = $this->normalizeString($token);
-            if (!empty($clean)) {
-                $normalizedDb[$clean] = $token; // Link to raw token for report display
-            }
+            $excelFingerprints[$fingerprint] = $label;
         }
 
+        if (empty($excelFingerprints)) return [];
+
+        // Query DB records in the same ambiente
+        $dbRecords = \App\Models\Ensayo::where('amb_seleccion', $uploadAmbiente)
+            ->get(['ingenio', 'hacienda', 'suerte', 'serie', 'amb_seleccion']);
+
+        if ($dbRecords->isEmpty()) return [];
+
+        // Build DB fingerprints
+        $dbFingerprints = [];
+        foreach ($dbRecords as $rec) {
+            $ing = $this->normalizeString($rec->ingenio  ?? '');
+            $hac = $this->normalizeString($rec->hacienda ?? '');
+            $sur = $this->normalizeString($rec->suerte   ?? '');
+            $ser = $this->normalizeString($rec->serie    ?? '');
+
+            if (!$ing && !$hac) continue;
+
+            $fp = "{$ing}|{$hac}|{$sur}|{$ser}";
+            $dbFingerprints[$fp] = true;
+        }
+
+        // Cross-reference: find Excel rows that already exist in DB
         $hits = [];
-        foreach ($excelEnsayos as $candidate) {
-            $normCandidate = $this->normalizeString($candidate);
-            if (isset($normalizedDb[$normCandidate])) {
-                $hits[] = "'{$candidate}' (ya existe como '{$normalizedDb[$normCandidate]}')";
+        foreach ($excelFingerprints as $fp => $label) {
+            if (isset($dbFingerprints[$fp])) {
+                $hits[] = $label;
             }
         }
 

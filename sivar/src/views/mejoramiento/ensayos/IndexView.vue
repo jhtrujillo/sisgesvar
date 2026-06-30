@@ -35,21 +35,15 @@ const fileError = ref(null);
 const fileInputRef = ref(null);
 const isDragging = ref(false);
 
-// Helper to extract page number from Laravel pagination URLs
-const getPageFromUrl = (url) => {
-    if (!url) return 1;
-    const match = url.match(/page=(\d+)/);
-    return match ? parseInt(match[1]) : 1;
-};
-
-const goToPage = (url) => {
-    if (!url) return;
-    const page = getPageFromUrl(url);
-    loadEnsayos(page);
+const goToPage = (pageNum) => {
+    console.log('🔵 goToPage called with:', pageNum);
+    if (!pageNum || pageNum < 1) return;
+    loadEnsayos(pageNum);
 };
 
 // Main API Loader
 const loadEnsayos = async (page = 1) => {
+    console.log('🟢 loadEnsayos called with page:', page);
     isLoading.value = true;
     try {
         const params = {
@@ -61,7 +55,9 @@ const loadEnsayos = async (page = 1) => {
             sort_by: sortBy.value,
             sort_direction: sortDirection.value
         };
+        console.log('🟡 API params:', JSON.stringify(params));
         const response = await EnsayosService.getEnsayos(params);
+        console.log('🟣 API returned page:', response.data.ensayos.current_page, 'of', response.data.ensayos.last_page, '| from:', response.data.ensayos.from, 'to:', response.data.ensayos.to);
         ensayos.value = response.data.ensayos;
         catalogos.value = response.data.catalogos;
         users_list.value = response.data.users_list;
@@ -79,7 +75,11 @@ onMounted(() => {
 // Dynamically limit which Ambientes this user can assign to imports
 const allowedUploadAmbientes = computed(() => {
     if (authUser.value?.role === 'JEFE') {
-        return catalogos.value?.AMBIENTE || [];
+        // Prefer catalogue list (always complete); fallback to user.ambiente from userInfo
+        const catAmb = catalogos.value?.AMBIENTE;
+        if (catAmb && catAmb.length > 0) return catAmb;
+        const userAmb = authUser.value?.ambiente;
+        return Array.isArray(userAmb) ? userAmb : [];
     }
     const userAmb = authUser.value?.ambiente;
     return Array.isArray(userAmb) ? userAmb : (userAmb ? [userAmb] : []);
@@ -118,9 +118,18 @@ const handleFileUpload = async () => {
         const [res, err] = await EnsayosService.importEnsayos(formData);
         if (err) {
             console.error("Upload error:", err);
-            fileError.value = err.response?.data?.errors?.file?.[0] || err.response?.data?.message || err.message || 'Error al procesar archivo';
+            // Extract all validation messages from 422 response
+            const errData = err.response?.data;
+            if (errData?.errors) {
+                // Flatten all validation error arrays into a single message
+                const messages = Object.values(errData.errors).flat();
+                fileError.value = messages.join(' | ');
+            } else {
+                fileError.value = errData?.message || err.message || 'Error al procesar archivo';
+            }
             return;
         }
+
 
         if (res.data && res.data.homologation_needed) {
             homologationData.value = {
@@ -1009,21 +1018,33 @@ const formatFecha = (dateString) => {
                         Viendo {{ ensayos.from || 0 }} - {{ ensayos.to || 0 }} de {{ ensayos.total }}
                     </div>
                     <div class="flex items-center space-x-1">
-                        <template v-for="(link, idx) in ensayos.links" :key="idx">
+                        <!-- Previous button -->
+                        <button 
+                            v-if="ensayos.current_page > 1"
+                            type="button"
+                            @click="goToPage(ensayos.current_page - 1)"
+                            class="px-3 py-1 border border-slate-300 rounded-md transition bg-white hover:bg-slate-50 text-slate-700"
+                        >&laquo; Anterior</button>
+                        <span v-else class="px-3 py-1 border border-transparent text-slate-400 select-none">&laquo; Anterior</span>
+
+                        <!-- Page numbers -->
+                        <template v-for="page in ensayos.last_page" :key="page">
                             <button 
-                                v-if="link.url" 
                                 type="button"
-                                @click="goToPage(link.url)" 
-                                v-html="link.label"
+                                @click="goToPage(page)"
                                 class="px-3 py-1 border border-slate-300 rounded-md transition bg-white hover:bg-slate-50 text-slate-700"
-                                :class="{'!bg-emerald-600 !text-white border-emerald-600 font-bold': link.active}"
-                            />
-                            <span 
-                                v-else 
-                                v-html="link.label" 
-                                class="px-3 py-1 border border-transparent text-slate-400 select-none"
-                            />
+                                :class="{'!bg-emerald-600 !text-white border-emerald-600 font-bold': page === ensayos.current_page}"
+                            >{{ page }}</button>
                         </template>
+
+                        <!-- Next button -->
+                        <button 
+                            v-if="ensayos.current_page < ensayos.last_page"
+                            type="button"
+                            @click="goToPage(ensayos.current_page + 1)"
+                            class="px-3 py-1 border border-slate-300 rounded-md transition bg-white hover:bg-slate-50 text-slate-700"
+                        >Siguiente &raquo;</button>
+                        <span v-else class="px-3 py-1 border border-transparent text-slate-400 select-none">Siguiente &raquo;</span>
                     </div>
                 </div>
             </div>

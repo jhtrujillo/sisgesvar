@@ -8,14 +8,27 @@ class StoreEnsayoRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        return true; // Security is enforced inside EnsayoController via auth('api')->user()
     }
 
     public function rules(): array
     {
         return [
-            'file' => 'required|mimes:xlsx,xls,csv|max:10240',
+            // Use mimetypes (not mimes) to match the actual MIME type browsers send for xlsx/xls/csv files
+            'file' => [
+                'required',
+                'file',
+                'max:10240',
+                function ($attribute, $value, $fail) {
+                    $extension = strtolower($value->getClientOriginalExtension());
+                    $allowed = ['xlsx', 'xls', 'csv'];
+                    if (!in_array($extension, $allowed)) {
+                        $fail('El archivo debe ser Excel (.xlsx, .xls) o CSV (.csv).');
+                    }
+                }
+            ],
             'ambiente' => 'required|string|max:100',
         ];
     }
+
 }

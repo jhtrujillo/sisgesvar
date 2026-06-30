@@ -68,7 +68,11 @@ class User extends Authenticatable implements JWTSubject, AuthenticatableContrac
     {
         $lgin = strtolower($this->lgin ?? '');
         if ($lgin === 'estuvar4') {
-            return [];
+            // JEFE: has access to all configured environments
+            return \App\Models\Catalogo::where('categoria', 'AMBIENTE')
+                ->orderBy('valor')
+                ->pluck('valor')
+                ->toArray();
         }
 
         $email = strtolower($this->email ?? '');
