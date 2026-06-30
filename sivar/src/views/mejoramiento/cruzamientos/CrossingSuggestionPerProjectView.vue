@@ -245,7 +245,6 @@
                       class="p-2 text-center border-b border-slate-100 transition-all duration-200 min-w-[75px]"
                     >
                       <div 
-                        v-if="!ocultarInviables || car?.viabilidad"
                         class="flex flex-col items-center justify-center space-y-1"
                       >
                         <input 
