@@ -99,7 +99,7 @@
           </span>
           <span class="flex items-center">
             <span class="w-3 h-3 bg-sky-100 border border-sky-200 rounded mr-1"></span>
-            Hembra (Polen &gt; 20)
+            Macho (Polen &gt; 20)
           </span>
           <span v-if="tipoMapaCalor === 'none'" class="flex items-center">
             <span class="w-3 h-3 bg-emerald-100 border border-emerald-200 rounded mr-1"></span>
@@ -237,7 +237,7 @@
                     </span>
                     <div class="flex items-center justify-center space-x-2 text-[9px] font-semibold text-slate-500 mt-1 mb-0.5">
                       <span v-if="viabilidadesMatriz?.[0]?.[indexCol]?.vm2 !== undefined">VM: {{ viabilidadesMatriz[0][indexCol].vm2 }}</span>
-                      <span>Cantidad: {{ flor.cantidad }}</span>
+                      <span>Cant. Flores: {{ flor.cantidad }} | Polen: {{ flor.polen ? flor.polen + '%' : 'N/A' }}</span>
                     </div>
                   </th>
                 </template>
@@ -268,7 +268,7 @@
                     </div>
                     <div class="flex items-center justify-center space-x-2 text-[9px] font-semibold text-slate-500">
                       <span>VM: {{ getRowVm(viabilidadRow) }}</span>
-                      <span>Polen: {{ viabilidadRow[0]?.polen || '0' }}</span>
+                      <span>Polen: {{ viabilidadRow[0]?.polen ? viabilidadRow[0].polen + '%' : '0%' }}</span>
                     </div>
                     <div class="text-[9px] text-slate-400 mt-0.5 font-semibold">Cant. Flores: {{ getCantidadFlores(viabilidadRow[0]?.varA) }}</div>
                     
