@@ -16,7 +16,6 @@
     </div>
     <div class="grid grid-cols-1 text-center sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-4">
       <router-link
-        v-if="false"
         class="group grid font-medium rounded-md m-2 bg-white border-none shadow-xl py-8 px-4 sm:rounded-lg sm:px-10"
         :to="{ name: 'variety_list.show' }"
       >
@@ -74,7 +73,6 @@
         </div>
       </router-link>
       <router-link
-        v-if="false"
         class="group grid font-medium rounded-md m-2 bg-white border-none shadow-xl py-8 px-4 sm:rounded-lg sm:px-10"
         :to="{ name: 'variety_history.show' }"
       >
