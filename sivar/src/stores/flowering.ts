@@ -10,9 +10,9 @@ export const useFloweringStore = defineStore(
   () => {
     const FloweringList = ref<FLowering[]>([]);
 
-    const getFlowering = async () => {
+    const getFlowering = async (historico: boolean = false) => {
       try {
-        const result = await floweringService.getFloweringList();
+        const result = await floweringService.getFloweringList(historico);
 
         if (result.status === 200) {
           FloweringList.value = result.data;

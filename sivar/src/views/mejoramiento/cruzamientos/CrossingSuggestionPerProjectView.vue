@@ -74,6 +74,22 @@
         </div>
       </div>
 
+      <!-- Ayuda del Índice Combinado -->
+      <div v-if="tipoMapaCalor === 'ic'" class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 mb-4 mt-2 flex items-start space-x-3 text-xs text-indigo-900 shadow-sm transition-all animate-fade-in-up">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div>
+          <strong class="font-bold block text-sm mb-1 text-indigo-800">¿Cómo se calcula el Índice Combinado (IC)?</strong>
+          <p class="mb-1">El IC es un puntaje de <strong>0 a 100</strong> que balancea un <strong>60% del Valor de Mérito (VM)</strong> y un <strong>40% de la Distancia Genética (DG)</strong>.</p>
+          <ul class="list-disc pl-4 space-y-1 mb-2 text-indigo-800/80">
+            <li><strong>VM (Valor de Mérito):</strong> El sistema usa una escala invertida de 1 a 9 (1 es excelente, 9 es malo). Se "voltea" a puntaje usando la fórmula: <code>((9.0 - VM) / 8.0) * 100</code>. <em>(Nota: Se divide sobre 8 porque es la amplitud o tamaño total de la escala, es decir: 9 - 1 = 8)</em>.</li>
+            <li><strong>DG (Distancia Genética):</strong> Se asume que 0.70 o superior es el techo ideal. Su puntaje es: <code>(DG / 0.70) * 100</code></li>
+          </ul>
+          <p class="font-mono text-[10px] bg-white/60 p-1.5 rounded text-indigo-700"><strong>Ejemplo:</strong> Si el VM es 3.0 (75 pts) y la DG es 0.50 (71.4 pts). El IC será = (75 x 0.6) + (71.4 x 0.4) = 45 + 28.5 = <strong>73.5 pts</strong>.</p>
+        </div>
+      </div>
+
       <!-- Leyenda informativa y Botón de Filtro -->
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-3 border-b border-slate-100 pb-3 no-print">
         <div class="flex flex-wrap items-center gap-3 text-[11px] font-semibold text-slate-500">
@@ -85,7 +101,7 @@
             <span class="w-3 h-3 bg-sky-100 border border-sky-200 rounded mr-1"></span>
             Hembra (Polen &gt; 20)
           </span>
-          <span v-if="!mostrarMapaCalor" class="flex items-center">
+          <span v-if="tipoMapaCalor === 'none'" class="flex items-center">
             <span class="w-3 h-3 bg-emerald-100 border border-emerald-200 rounded mr-1"></span>
             Recomendado
           </span>
@@ -98,8 +114,8 @@
             Distancia Genética
           </span>
 
-          <!-- Leyenda del Mapa de Calor (Solo visible si está activo) -->
-          <span v-if="mostrarMapaCalor" class="flex flex-wrap items-center gap-2 border-l border-slate-200 pl-3">
+          <!-- Leyenda del Mapa de Calor (DG) -->
+          <span v-if="tipoMapaCalor === 'dg'" class="flex flex-wrap items-center gap-2 border-l border-slate-200 pl-3">
             <span class="text-[9px] text-slate-400 font-extrabold uppercase mr-1">Mapa de Calor (DG):</span>
             <span class="flex items-center">
               <span class="w-3.5 h-3.5 bg-blue-600 rounded mr-1"></span>
@@ -122,20 +138,54 @@
               <span class="text-[9px] font-bold text-orange-800">Riesgo (&lt;0.35)</span>
             </span>
           </span>
+          <!-- Leyenda del Mapa de Calor (IC) -->
+          <span v-if="tipoMapaCalor === 'ic'" class="flex flex-wrap items-center gap-2 border-l border-slate-200 pl-3">
+            <span class="text-[9px] text-slate-400 font-extrabold uppercase mr-1">Índice Combinado (IC):</span>
+            <span class="flex items-center">
+              <span class="w-3.5 h-3.5 bg-indigo-600 rounded mr-1"></span>
+              <span class="text-[9px] font-bold text-indigo-800 mr-2">Exc (&ge;80)</span>
+            </span>
+            <span class="flex items-center">
+              <span class="w-3.5 h-3.5 bg-sky-400 rounded mr-1"></span>
+              <span class="text-[9px] font-bold text-sky-700 mr-2">Bueno (&ge;65)</span>
+            </span>
+            <span class="flex items-center">
+              <span class="w-3.5 h-3.5 bg-slate-200 rounded mr-1"></span>
+              <span class="text-[9px] font-bold text-slate-600 mr-2">Reg (&ge;50)</span>
+            </span>
+            <span class="flex items-center">
+              <span class="w-3.5 h-3.5 bg-rose-500 rounded mr-1"></span>
+              <span class="text-[9px] font-bold text-rose-800">Bajo (&lt;50)</span>
+            </span>
+          </span>
         </div>
 
         <!-- Botones de Control Interactivos -->
         <div class="flex justify-end items-center space-x-2">
-          <!-- Botón de Mapa de Calor -->
-          <button 
-            @click="mostrarMapaCalor = !mostrarMapaCalor"
-            class="flex items-center px-3 py-1 text-[11px] font-bold rounded-lg transition-all duration-200 border"
-            :class="mostrarMapaCalor ? 'bg-amber-500 border-amber-500 text-white shadow-sm hover:bg-amber-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'"
-            title="Mostrar mapa de calor basado en la Distancia Genética (DG)"
-          >
-            <span class="mr-1">🔥</span>
-            {{ mostrarMapaCalor ? 'Desactivar Mapa de Calor' : 'Activar Mapa de Calor' }}
-          </button>
+          <!-- Selector de Mapa de Calor (3 opciones) -->
+          <div class="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200 shadow-inner">
+            <button 
+              @click="tipoMapaCalor = 'none'"
+              class="px-2.5 py-1 text-[10px] font-bold rounded-md transition-all duration-200"
+              :class="tipoMapaCalor === 'none' ? 'bg-white text-slate-700 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'"
+            >
+              Sin Color
+            </button>
+            <button 
+              @click="tipoMapaCalor = 'dg'"
+              class="px-2.5 py-1 text-[10px] font-bold rounded-md transition-all duration-200 flex items-center"
+              :class="tipoMapaCalor === 'dg' ? 'bg-amber-500 text-white shadow-sm border border-amber-600' : 'text-slate-500 hover:text-amber-600 hover:bg-amber-50'"
+            >
+              DG
+            </button>
+            <button 
+              @click="tipoMapaCalor = 'ic'"
+              class="px-2.5 py-1 text-[10px] font-bold rounded-md transition-all duration-200 flex items-center"
+              :class="tipoMapaCalor === 'ic' ? 'bg-indigo-600 text-white shadow-sm border border-indigo-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50'"
+            >
+              Índice
+            </button>
+          </div>
 
           <!-- Botón de Filtro Ocultar/Ver Inviables -->
           <button 
@@ -241,7 +291,7 @@
                   >
                     <td 
                       v-if="(!ocultarInviables || isColumnViable(indexCol)) && Number(car?.polen2) > 20"
-                      :class="[getHeatmapClass(car?.varA, car?.varB, !!car?.viabilidad)]"
+                      :class="[getHeatmapClass(car?.varA, car?.varB, !!car?.viabilidad, car?.vm2)]"
                       class="p-2 text-center border-b border-slate-100 transition-all duration-200 min-w-[75px]"
                     >
                       <div 
@@ -255,29 +305,34 @@
                         />
                         <div 
                           class="text-[9px] font-extrabold leading-tight"
-                          :class="[mostrarMapaCalor && isDarkBackground(car.varA, car.varB) ? 'text-white' : 'text-slate-900']"
+                          :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-white' : 'text-slate-900']"
                         >
                           {{ car.varB }}
                         </div>
                         <div 
                           class="text-[8px] font-semibold leading-tight"
-                          :class="[mostrarMapaCalor && isDarkBackground(car.varA, car.varB) ? 'text-emerald-100' : 'text-slate-700']"
+                          :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-emerald-100' : 'text-slate-700']"
                         >
                           Polen: {{ car.polen2 }} | VM: {{ car.vm2 }}
                         </div>
                         <div class="flex flex-col items-center justify-center w-full border-t border-slate-100/50 pt-1 mt-1 space-y-1">
                           <span 
                             class="text-[9px] font-extrabold tracking-tight leading-none text-center"
-                            :class="[mostrarMapaCalor && isDarkBackground(car.varA, car.varB) ? 'text-white' : 'text-slate-900']"
+                            :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-white' : 'text-slate-900']"
                           >
-                            DG: {{ getDistancia(car.varA, car.varB) || "NA" }}
+                            <template v-if="tipoMapaCalor === 'ic'">
+                              IC: {{ isNaN(getIndiceCombinado(car.varA, car.varB, car.vm2)) ? 'NA' : Math.round(getIndiceCombinado(car.varA, car.varB, car.vm2)) }}
+                            </template>
+                            <template v-else>
+                              DG: {{ getDistancia(car.varA, car.varB) || "NA" }}
+                            </template>
                           </span>
                           <!-- Botón Comparador Lado a Lado -->
                           <button 
                             @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad)"
                             class="text-[8px] font-bold px-1.5 py-0.5 rounded transition-all duration-150 flex items-center justify-center space-x-0.5 border mx-auto"
                             :class="[
-                              mostrarMapaCalor && isDarkBackground(car.varA, car.varB)
+                              tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2)
                                 ? 'bg-white/20 hover:bg-white/30 text-white border-white/25'
                                 : 'bg-slate-100 hover:bg-emerald-50 text-slate-900 hover:text-emerald-700 border-slate-300 hover:border-emerald-300'
                             ]"
@@ -470,23 +525,60 @@ const resumenCrucesGuardados = ref<any[]>([]);
 
 const ocultarInviables = ref(true); // Vista compacta limpia por defecto
 const isLoading = ref(false); // Ref para spinner de carga
-const mostrarMapaCalor = ref(true); // Vista con mapa de calor por defecto
+const tipoMapaCalor = ref('dg'); // Vista con mapa de calor por defecto
 
-function isDarkBackground(varA: string, varB: string) {
-  const dgVal = getDistancia(varA, varB);
-  const val = Number(dgVal);
-  // Es oscuro si es azul (>= 0.65) o naranja (< 0.35)
-  return !isNaN(val) && (val >= 0.65 || val < 0.35);
+function getIndiceCombinado(varA: string, varB: string, vm: number | string) {
+  const dgVal = Number(getDistancia(varA, varB));
+  const vmVal = Number(vm);
+  
+  if (isNaN(dgVal) || isNaN(vmVal)) return NaN;
+  
+  // Normalizar VM: 1 es excelente (100 pts), 9 es malo (0 pts). Rango de 8.
+  let puntajeVM = ((9.0 - vmVal) / 8.0) * 100;
+  if (puntajeVM < 0) puntajeVM = 0;
+  if (puntajeVM > 100) puntajeVM = 100;
+  
+  // Normalizar DG: Topado en 0.70 (100 pts)
+  let puntajeDG = (dgVal / 0.70) * 100;
+  if (puntajeDG > 100) puntajeDG = 100;
+  if (puntajeDG < 0) puntajeDG = 0;
+  
+  // Índice Combinado (60% VM, 40% DG)
+  return (puntajeVM * 0.60) + (puntajeDG * 0.40);
 }
 
-function getHeatmapClass(varA: string, varB: string, viabilidad: boolean) {
+function isDarkBackground(varA: string, varB: string, vm: number | string) {
+  if (tipoMapaCalor.value === 'ic') {
+    const ic = getIndiceCombinado(varA, varB, vm);
+    return !isNaN(ic) && (ic >= 80 || ic < 50); // Indigo y Rose son oscuros
+  } else if (tipoMapaCalor.value === 'dg') {
+    const dgVal = getDistancia(varA, varB);
+    const val = Number(dgVal);
+    // Es oscuro si es azul (>= 0.65) o naranja (< 0.35)
+    return !isNaN(val) && (val >= 0.65 || val < 0.35);
+  }
+  return false;
+}
+
+function getHeatmapClass(varA: string, varB: string, viabilidad: boolean, vm: number | string) {
   if (!viabilidad) {
     return 'bg-slate-50/50 hover:bg-slate-100/50 border-r border-slate-100 text-slate-400 opacity-60';
   }
-  if (!mostrarMapaCalor.value) {
+  if (tipoMapaCalor.value === 'none') {
     return 'bg-emerald-50/50 hover:bg-emerald-100/50 border-r border-emerald-100/50 text-emerald-800';
   }
   
+  if (tipoMapaCalor.value === 'ic') {
+    const ic = getIndiceCombinado(varA, varB, vm);
+    if (isNaN(ic)) return 'bg-emerald-50/50 border-r border-emerald-100/50 text-emerald-800 hover:bg-emerald-100/50';
+    
+    if (ic >= 80) return 'bg-indigo-600/90 text-white font-black border-r border-indigo-700/50 shadow-inner hover:bg-indigo-700';
+    if (ic >= 65) return 'bg-sky-400/80 text-slate-900 font-extrabold border-r border-sky-500/30 hover:bg-sky-500/90';
+    if (ic >= 50) return 'bg-slate-200/60 text-slate-800 font-bold border-r border-slate-300/30 hover:bg-slate-300/80';
+    return 'bg-rose-500/90 text-white font-semibold border-r border-rose-600/30 hover:bg-rose-600/80';
+  }
+  
+  // Fallback a DG
   const dgVal = getDistancia(varA, varB);
   const val = Number(dgVal);
   if (isNaN(val)) {
