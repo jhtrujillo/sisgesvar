@@ -111,8 +111,9 @@
         </div>
       </router-link>
 
-      <!-- Experimentos Card -->
+      <!-- Experimentos Card (Oculto Temporalmente) -->
       <router-link
+        v-if="false"
         class="group relative flex flex-col bg-white border border-slate-100 hover:border-emerald-100 rounded-2xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
         :to="{ name: 'experiments.show' }"
       >
@@ -139,8 +140,9 @@
         </div>
       </router-link>
 
-      <!-- Libros de campo Card -->
+      <!-- Libros de campo Card (Oculto Temporalmente) -->
       <router-link
+        v-if="false"
         class="group relative flex flex-col bg-white border border-slate-100 hover:border-emerald-100 rounded-2xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
         :to="{ name: 'alignments.show' }"
       >
@@ -167,8 +169,9 @@
         </div>
       </router-link>
 
-      <!-- Registro de Ensayos Card -->
+      <!-- Registro de Ensayos Card (Oculto Temporalmente) -->
       <router-link
+        v-if="false"
         class="group relative flex flex-col bg-white border border-slate-100 hover:border-emerald-100 rounded-2xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
         :to="{ name: 'mejoramiento.ensayos.dashboard' }"
       >

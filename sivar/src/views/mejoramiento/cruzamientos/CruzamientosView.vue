@@ -83,8 +83,9 @@
         </div>
       </div>
 
-      <!-- Consolidado de Cruzamientos Card -->
+      <!-- Consolidado de Cruzamientos Card (Oculto Temporalmente) -->
       <router-link
+        v-if="false"
         class="group relative flex flex-col bg-white border border-slate-100 hover:border-emerald-100 rounded-2xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
         :to="{ name: 'alignments.show' }"
       >
