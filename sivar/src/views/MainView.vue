@@ -80,6 +80,33 @@
                   </div>
                 </router-link>
 
+                <!-- Bitacora Card -->
+                <a
+                  href="http://192.168.153.119/bitacora/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="group relative flex-1 min-w-[280px] max-w-[380px] flex flex-col justify-between bg-white border border-slate-100 hover:border-amber-100 rounded-3xl p-8 shadow-premium hover:shadow-premium-hover hover:-translate-y-2 transition-all duration-300 overflow-hidden"
+                >
+                  <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-amber-500 to-orange-400 transform origin-left transition-transform duration-300"></div>
+                  
+                  <div class="flex flex-col h-full items-center text-center">
+                    <div class="p-4 bg-amber-50 rounded-2xl text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300 mb-6">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" class="transition-transform duration-500 group-hover:scale-110">
+                        <path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 14H7v-2h10v2zm0-4H7v-2h10v2zm0-4H7V7h10v2z" />
+                      </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-800 mb-3 group-hover:text-amber-600 transition-colors">Bitácora</h3>
+                    <p class="text-slate-500 text-sm leading-relaxed mb-6">Acceda al sistema de bitácora para registrar y consultar las actividades diarias.</p>
+                    
+                    <span class="inline-flex items-center text-sm font-semibold text-amber-600 group-hover:text-amber-700 mt-auto">
+                      Abrir Bitácora
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1.5 transform transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </span>
+                  </div>
+                </a>
+
                 <!-- Especificaciones Module Card -->
                 <router-link
                   v-if="false"
