@@ -187,6 +187,18 @@
             </button>
           </div>
 
+          <button
+            type="button"
+            @click="autoOptimizarFlores"
+            :disabled="!hasOverusedFlowers"
+            class="flex items-center px-3 py-1 mr-2 text-[11px] font-bold text-white rounded-lg shadow-sm transition-all duration-200"
+            :class="hasOverusedFlowers ? 'bg-purple-600 hover:bg-purple-700 animate-pulse' : 'bg-slate-300 cursor-not-allowed opacity-60'"
+            title="Eliminar automáticamente los cruces menos prometedores (Activo solo al exceder flores)"
+          >
+            <span class="mr-1">✨</span>
+            Optimizar
+          </button>
+
           <!-- Botón de Filtro Ocultar/Ver Inviables -->
           <button 
             @click="ocultarInviables = !ocultarInviables"
@@ -579,40 +591,42 @@ function isDarkBackground(varA: string, varB: string, vm: number | string) {
 }
 
 function getHeatmapClass(varA: string, varB: string, viabilidad: boolean, vm: number | string) {
-  if (!viabilidad) {
-    return 'bg-slate-50/50 hover:bg-slate-100/50 border-r border-slate-100 text-slate-400 opacity-60';
-  }
+  // Sin opacidad para personas daltónicas, el contraste completo ayuda a diferenciar
+  const unselectedClasses = !viabilidad ? '' : '';
+  
   if (tipoMapaCalor.value === 'none') {
+    if (!viabilidad) return 'bg-slate-50/50 hover:bg-slate-100/50 border-r border-slate-100 text-slate-400 opacity-60';
     return 'bg-emerald-50/50 hover:bg-emerald-100/50 border-r border-emerald-100/50 text-emerald-800';
   }
   
   if (tipoMapaCalor.value === 'ic') {
     const ic = getIndiceCombinado(varA, varB, vm);
-    if (isNaN(ic)) return 'bg-emerald-50/50 border-r border-emerald-100/50 text-emerald-800 hover:bg-emerald-100/50';
+    if (isNaN(ic)) return 'bg-emerald-50/50 border-r border-emerald-100/50 text-emerald-800 hover:bg-emerald-100/50' + unselectedClasses;
     
-    if (ic >= 80) return 'bg-indigo-600/90 text-white font-black border-r border-indigo-700/50 shadow-inner hover:bg-indigo-700';
-    if (ic >= 65) return 'bg-sky-400/80 text-slate-900 font-extrabold border-r border-sky-500/30 hover:bg-sky-500/90';
-    if (ic >= 50) return 'bg-slate-200/60 text-slate-800 font-bold border-r border-slate-300/30 hover:bg-slate-300/80';
-    return 'bg-rose-500/90 text-white font-semibold border-r border-rose-600/30 hover:bg-rose-600/80';
+    if (ic >= 80) return 'bg-indigo-600/90 text-white font-black border-r border-indigo-700/50 shadow-inner hover:bg-indigo-700' + unselectedClasses;
+    if (ic >= 65) return 'bg-sky-400/80 text-slate-900 font-extrabold border-r border-sky-500/30 hover:bg-sky-500/90' + unselectedClasses;
+    if (ic >= 50) return 'bg-slate-200/60 text-slate-800 font-bold border-r border-slate-300/30 hover:bg-slate-300/80' + unselectedClasses;
+    
+    return 'bg-rose-500/90 text-white font-semibold border-r border-rose-600/30 hover:bg-rose-600/80' + unselectedClasses;
   }
   
   // Fallback a DG
   const dgVal = getDistancia(varA, varB);
   const val = Number(dgVal);
   if (isNaN(val)) {
-    return 'bg-emerald-50/50 border-r border-emerald-100/50 text-emerald-800 hover:bg-emerald-100/50';
+    return 'bg-emerald-50/50 border-r border-emerald-100/50 text-emerald-800 hover:bg-emerald-100/50' + unselectedClasses;
   }
   
   if (val >= 0.65) {
-    return 'bg-blue-600/90 text-white font-black border-r border-blue-700/50 shadow-inner hover:bg-blue-700';
+    return 'bg-blue-600/90 text-white font-black border-r border-blue-700/50 shadow-inner hover:bg-blue-700' + unselectedClasses;
   } else if (val >= 0.55) {
-    return 'bg-sky-400/60 text-slate-900 font-extrabold border-r border-sky-500/30 hover:bg-sky-500/50';
+    return 'bg-sky-400/60 text-slate-900 font-extrabold border-r border-sky-500/30 hover:bg-sky-500/50' + unselectedClasses;
   } else if (val >= 0.45) {
-    return 'bg-slate-200/60 text-slate-800 font-bold border-r border-slate-300/30 hover:bg-slate-300/40';
+    return 'bg-slate-200/60 text-slate-800 font-bold border-r border-slate-300/30 hover:bg-slate-300/40' + unselectedClasses;
   } else if (val >= 0.35) {
-    return 'bg-amber-300/80 text-amber-900 font-semibold border-r border-amber-400/30 hover:bg-amber-400/50';
+    return 'bg-amber-300/80 text-amber-900 font-semibold border-r border-amber-400/30 hover:bg-amber-400/50' + unselectedClasses;
   } else {
-    return 'bg-orange-500/90 text-white font-semibold border-r border-orange-600/30 hover:bg-orange-600/80';
+    return 'bg-orange-500/90 text-white font-semibold border-r border-orange-600/30 hover:bg-orange-600/80' + unselectedClasses;
   }
 }
 
@@ -1416,6 +1430,74 @@ async function exportarMemoriaCalculos() {
   } catch (error) {
     console.error("Error al exportar la memoria de cálculos:", error);
     toast.error("Ocurrió un error al generar la memoria de cálculos");
+  }
+}
+
+function autoOptimizarFlores() {
+  if (!hasOverusedFlowers.value) return;
+
+  const metricType = tipoMapaCalor.value; // 'dg', 'ic', or 'none' (default to dg if none)
+  const isIC = metricType === 'ic';
+  
+  let loops = 0;
+  let reducciones = 0;
+
+  // Repetir hasta que no haya exceso o cortocircuito de seguridad (1000 vueltas max)
+  while (hasOverusedFlowers.value && loops < 1000) {
+    loops++;
+    
+    // 1. Recolectar cruces activos
+    const activeCrosses: Array<{car: any, val: number, varA: string, varB: string}> = [];
+    
+    const rows = viabilidadesMatriz.value || [];
+    rows.forEach((row: any) => {
+      row.forEach((car: any) => {
+        if (car && car.viabilidad && (car.cantidad_cruzamientos ?? 1) > 0) {
+          // Obtener métrica
+          let val = 0;
+          if (isIC) {
+            val = getIndiceCombinado(car.varA, car.varB, car.vm2) || 0;
+          } else {
+            const dgString = getDistancia(car.varA, car.varB);
+            val = dgString === "NA" ? -9999 : (Number(dgString) || 0);
+          }
+          if (isNaN(val)) val = -9999;
+          activeCrosses.push({ car, val, varA: car.varA, varB: car.varB });
+        }
+      });
+    });
+    
+    if (activeCrosses.length === 0) break; // Fallback
+    
+    // 2. Ordenar de menor a mayor (peor a mejor)
+    activeCrosses.sort((a, b) => a.val - b.val);
+    
+    // 3. Iterar y reducir el primero que esté excedido
+    let reducedInThisPass = false;
+    for (const item of activeCrosses) {
+      const isMadreExcedida = getFloresUsadas(item.varA, true) > getCantidadFlores(item.varA);
+      const isPadreExcedido = getFloresUsadas(item.varB, false) > getCantidadFlores(item.varB);
+      
+      if (isMadreExcedida || isPadreExcedido) {
+        // Reducir este cruce (que es el "peor" de los activos que involucran un padre excedido)
+        item.car.cantidad_cruzamientos = (item.car.cantidad_cruzamientos ?? 1) - 1;
+        if (item.car.cantidad_cruzamientos <= 0) {
+          item.car.cantidad_cruzamientos = 0;
+          item.car.viabilidad = false;
+        }
+        reducciones++;
+        reducedInThisPass = true;
+        break; // Romper para recalcular `hasOverusedFlowers` y la lista de activos
+      }
+    }
+    
+    if (!reducedInThisPass) break; // Si no pudimos reducir nada, evitar ciclo infinito
+  }
+  
+  if (!hasOverusedFlowers.value) {
+    toast.success(`¡Inventario optimizado! Se eliminaron/redujeron ${reducciones} cruces riesgosos.`);
+  } else {
+    toast.warning(`Se redujeron ${reducciones} cruces, pero aún hay desbalance manual (ej. Autofecundaciones).`);
   }
 }
 
