@@ -1638,9 +1638,12 @@ async function autoOptimizarFlores() {
       }
       if (isNaN(val)) val = -9999;
 
-      // Solo consideramos cruces biológicamente posibles
+      // Evaluar inviabilidad sin la bandera de 'viabilidad=true'
       const causa = getCausaInviabilidad(car);
-      const isBiologicallyValid = causa === "-" || causa === "Veto manual o restricciones de autogamia" || causa === "Excluido por usuario";
+      let isBiologicallyValid = true;
+      if (causa.includes("Incompatibilidad de sexo")) isBiologicallyValid = false;
+      if (causa.includes("Restricción de Autogamia")) isBiologicallyValid = false;
+      if (causa.includes("excede límite")) isBiologicallyValid = false;
       
       if (m !== p && val !== -9999 && isBiologicallyValid) {
         allCrosses.push({ car, val, varA: m, varB: p });
