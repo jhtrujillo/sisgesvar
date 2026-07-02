@@ -1639,7 +1639,10 @@ async function autoOptimizarFlores() {
       if (isNaN(val)) val = -9999;
 
       // Solo consideramos cruces biológicamente posibles
-      if (m !== p && val !== -9999 && getCausaInviabilidad(car) === "-") {
+      const causa = getCausaInviabilidad(car);
+      const isBiologicallyValid = causa === "-" || causa === "Veto manual o restricciones de autogamia" || causa === "Excluido por usuario";
+      
+      if (m !== p && val !== -9999 && isBiologicallyValid) {
         allCrosses.push({ car, val, varA: m, varB: p });
       }
     });
