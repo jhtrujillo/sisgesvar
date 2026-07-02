@@ -47,7 +47,7 @@
     <div class="bg-white border border-slate-100 rounded-xl p-3 sm:p-4 shadow-premium relative min-h-[250px]">
       
       <!-- Estado de Procesamiento / Cargando -->
-      <div v-if="isLoading" class="absolute inset-0 bg-white/95 rounded-xl z-30 flex flex-col items-center justify-center space-y-4 transition-all duration-300">
+      <div v-if="isLoading || isOptimizing" class="absolute inset-0 bg-white/95 rounded-xl z-30 flex flex-col items-center justify-center space-y-4 transition-all duration-300">
         <div class="relative w-14 h-14">
           <!-- Círculo de base -->
           <div class="absolute inset-0 rounded-full border-4 border-emerald-50"></div>
@@ -55,7 +55,8 @@
           <div class="absolute inset-0 rounded-full border-4 border-t-cenicana animate-spin"></div>
         </div>
         <div class="flex flex-col items-center text-center px-4">
-          <span class="text-sm font-bold text-slate-700 animate-pulse">Calculando las mejores sugerencias de cruzamientos...</span>
+          <span v-if="isLoading" class="text-sm font-bold text-slate-700 animate-pulse">Calculando las mejores sugerencias de cruzamientos...</span>
+          <span v-else class="text-sm font-bold text-slate-700 animate-pulse">Aplicando algoritmos de optimización avanzada...</span>
         </div>
       </div>
 
@@ -166,7 +167,7 @@
           <div class="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200 shadow-inner">
             <button 
               @click="tipoMapaCalor = 'none'"
-              class="px-2.5 py-1 text-[10px] font-bold rounded-md transition-all duration-200"
+              class="px-2.5 py-1 text-[10px] font-bold rounded-md transition-all duration-200 whitespace-nowrap"
               :class="tipoMapaCalor === 'none' ? 'bg-white text-slate-700 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'"
             >
               Sin Color
@@ -190,19 +191,19 @@
           <button
             type="button"
             @click="autoOptimizarFlores"
-            :disabled="!hasOverusedFlowers"
-            class="flex items-center px-3 py-1 mr-2 text-[11px] font-bold text-white rounded-lg shadow-sm transition-all duration-200"
-            :class="hasOverusedFlowers ? 'bg-purple-600 hover:bg-purple-700 animate-pulse' : 'bg-slate-300 cursor-not-allowed opacity-60'"
-            title="Eliminar automáticamente los cruces menos prometedores (Activo solo al exceder flores)"
+            class="flex items-center px-3 py-1.5 mr-2 text-[11px] font-bold rounded-lg transition-all duration-200 border bg-white border-slate-200 text-slate-600 hover:bg-slate-50 whitespace-nowrap"
+            title="Optimizar inventario (Reducir excesos y maximizar capacidad usando los mejores cruces)"
           >
-            <span class="mr-1">✨</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143z" />
+            </svg>
             Optimizar
           </button>
 
           <!-- Botón de Filtro Ocultar/Ver Inviables -->
           <button 
             @click="ocultarInviables = !ocultarInviables"
-            class="flex items-center px-3 py-1 text-[11px] font-bold rounded-lg transition-all duration-200 border"
+            class="flex items-center px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all duration-200 border whitespace-nowrap"
             :class="!ocultarInviables ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm hover:bg-emerald-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -323,10 +324,15 @@
                           class="h-3.5 w-3.5 rounded border-slate-350 text-emerald-600 focus:ring-emerald-100 transition cursor-pointer"
                         />
                         <!-- Selector numérico cuando es viable -->
-                        <div v-if="car?.viabilidad" class="flex items-center justify-center mt-0.5 mb-1 bg-white/90 rounded border border-slate-200 px-1 py-0.5 shadow-sm">
-                          <button @click.stop="decrementarCantidad(car)" class="text-slate-500 hover:text-rose-600 px-1 font-bold transition-colors">-</button>
-                          <span class="text-[10px] font-black text-slate-800 w-3 text-center">{{ car.cantidad_cruzamientos ?? 1 }}</span>
-                          <button @click.stop="incrementarCantidad(car)" class="text-slate-500 hover:text-emerald-600 px-1 font-bold transition-colors">+</button>
+                        <div v-if="car?.viabilidad" class="mt-0.5 mb-1">
+                          <button 
+                            @click.stop="openFlowerAdjustmentModal(car)" 
+                            class="flex items-center justify-center space-x-1 bg-white/90 hover:bg-white rounded border border-slate-200 px-1.5 py-0.5 shadow-sm text-[9px] text-slate-700 transition-colors cursor-pointer"
+                            title="Ajustar consumo de flores"
+                          >
+                            <span>⚙️</span>
+                            <span class="font-bold">{{ car.flores_madre ?? 1 }} / {{ car.flores_padre ?? 1 }}</span>
+                          </button>
                         </div>
                         <div 
                           class="text-[9px] font-extrabold leading-tight"
@@ -528,6 +534,49 @@
   </div>
   </div>
 
+    <!-- Modal Ajuste de Flores -->
+    <div v-if="flowerModalData" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center" @click.self="closeFlowerAdjustmentModal">
+      <div class="bg-white rounded-2xl shadow-xl border border-slate-100 p-6 max-w-sm w-full mx-4">
+        <h3 class="text-lg font-bold text-slate-800 mb-1">Ajustar Consumo de Flores</h3>
+        <p class="text-xs text-slate-500 mb-4">Cruce: <strong>{{ flowerModalData.varA }}</strong> × <strong>{{ flowerModalData.varB }}</strong></p>
+        
+        <div class="space-y-4">
+          <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100">
+            <div>
+              <div class="text-xs font-bold text-slate-700">Madre ({{ flowerModalData.varA }})</div>
+              <div class="text-[10px] text-slate-500">Flores a consumir</div>
+            </div>
+            <div class="flex items-center space-x-3 bg-white rounded border border-slate-200 px-2 py-1 shadow-sm">
+              <button @click="flowerModalData.flores_madre = Math.max(1, (flowerModalData.flores_madre ?? 1) - 1)" class="text-slate-500 hover:text-rose-600 font-bold transition-colors w-5 h-5 flex items-center justify-center">-</button>
+              <span class="text-xs font-black text-slate-800 w-4 text-center">{{ flowerModalData.flores_madre ?? 1 }}</span>
+              <button @click="flowerModalData.flores_madre = (flowerModalData.flores_madre ?? 1) + 1" class="text-slate-500 hover:text-emerald-600 font-bold transition-colors w-5 h-5 flex items-center justify-center">+</button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100">
+            <div>
+              <div class="text-xs font-bold text-slate-700">Padre ({{ flowerModalData.varB }})</div>
+              <div class="text-[10px] text-slate-500">Flores a consumir</div>
+            </div>
+            <div class="flex items-center space-x-3 bg-white rounded border border-slate-200 px-2 py-1 shadow-sm">
+              <button @click="flowerModalData.flores_padre = Math.max(1, (flowerModalData.flores_padre ?? 1) - 1)" class="text-slate-500 hover:text-rose-600 font-bold transition-colors w-5 h-5 flex items-center justify-center">-</button>
+              <span class="text-xs font-black text-slate-800 w-4 text-center">{{ flowerModalData.flores_padre ?? 1 }}</span>
+              <button @click="flowerModalData.flores_padre = (flowerModalData.flores_padre ?? 1) + 1" class="text-slate-500 hover:text-emerald-600 font-bold transition-colors w-5 h-5 flex items-center justify-center">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end">
+          <button 
+            @click="closeFlowerAdjustmentModal"
+            class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors"
+          >
+            Confirmar
+          </button>
+        </div>
+      </div>
+    </div>
+
   <!-- Drawer de Hoja de Vida de la Variedad (Quick Drawer) -->
   <VarietyProfileDrawer
     v-model:isOpen="isDrawerOpen"
@@ -572,6 +621,7 @@ const resumenCrucesGuardados = ref<any[]>([]);
 
 const ocultarInviables = ref(true); // Vista compacta limpia por defecto
 const isLoading = ref(false); // Ref para spinner de carga
+const isOptimizing = ref(false); // Ref para spinner de optimización
 const tipoMapaCalor = ref('dg'); // Vista con mapa de calor por defecto
 
 function getIndiceCombinado(varA: string, varB: string, vm: number | string) {
@@ -780,43 +830,41 @@ const hasAnyViableCrossing = computed(() => {
 
 // Métodos auxiliares
 function getCantidadFlores(vrdad: string) {
-  return cantidadesMap.value[vrdad] || 0;
+  return Number(cantidadesMap.value[vrdad] || 0);
 }
 
 function getFloresUsadas(vrdad: string, isMadre: boolean) {
   let count = 0;
   const rows = viabilidadesMatriz.value || [];
   
-  if (isMadre) {
-    const motherRow = rows.find((r: any) => r[0]?.varA === vrdad);
-    if (motherRow) {
-      motherRow.forEach((car: any) => {
-        if (car && car.viabilidad) {
-          count += (car.cantidad_cruzamientos ?? 1);
+  rows.forEach((row: any) => {
+    row.forEach((car: any) => {
+      if (car?.viabilidad) {
+        if (isMadre && car.varA === vrdad) {
+          count += Number(car.flores_madre ?? 1);
+        } else if (!isMadre && car.varB === vrdad) {
+          count += Number(car.flores_padre ?? 1);
         }
-      });
-      if (autofecundacionesSeleccionadas.value.has(vrdad)) {
-        count += 1;
       }
-    }
-  } else {
-    rows.forEach((row: any) => {
-      row.forEach((car: any) => {
-        if (car && car.varB === vrdad && car.viabilidad) {
-          count += (car.cantidad_cruzamientos ?? 1);
-        }
-      });
     });
+  });
+  
+  if (isMadre && autofecundacionesSeleccionadas.value.has(vrdad)) {
+    count += 1;
   }
   return count;
 }
 
-function incrementarCantidad(car: any) {
-  car.cantidad_cruzamientos = (car.cantidad_cruzamientos ?? 1) + 1;
+const flowerModalData = ref<any>(null);
+
+function openFlowerAdjustmentModal(car: any) {
+  car.flores_madre = car.flores_madre ?? 1;
+  car.flores_padre = car.flores_padre ?? 1;
+  flowerModalData.value = car;
 }
 
-function decrementarCantidad(car: any) {
-  car.cantidad_cruzamientos = Math.max(0, (car.cantidad_cruzamientos ?? 1) - 1);
+function closeFlowerAdjustmentModal() {
+  flowerModalData.value = null;
 }
 
 function getIcon(polen: string | number) {
@@ -837,7 +885,7 @@ const hasOverusedFlowers = computed(() => {
   // Check Fathers
   const padres = floresSeleccionadas.value || [];
   for (const padre of padres) {
-    if (padre.variedad && getFloresUsadas(padre.variedad, false) > padre.cantidad) {
+    if (padre.variedad && getFloresUsadas(padre.variedad, false) > Number(padre.cantidad)) {
       return true;
     }
   }
@@ -845,11 +893,14 @@ const hasOverusedFlowers = computed(() => {
 });
 
 function toggleCruzamiento(car: any) {
-  car.viabilidad = !car.viabilidad;
-  if (car.viabilidad) {
-    car.cantidad_cruzamientos = 1;
+  if (!car.viabilidad) {
+    car.viabilidad = true;
+    car.flores_madre = 1;
+    car.flores_padre = 1;
   } else {
-    car.cantidad_cruzamientos = 0;
+    car.viabilidad = false;
+    car.flores_madre = 0;
+    car.flores_padre = 0;
   }
   
   // Guardar estado actual de cruzamientos deshabilitados en localStorage (Auto-save)
@@ -1485,15 +1536,22 @@ async function descargarPNG() {
   }
 }
 
-function autoOptimizarFlores() {
-  if (!hasOverusedFlowers.value) return;
+async function autoOptimizarFlores() {
+  isOptimizing.value = true;
+  
+  // Pausa mínima para permitir que Vue renderice la pantalla de carga antes de congelar el hilo principal
+  await new Promise(resolve => setTimeout(resolve, 50));
 
   const metricType = tipoMapaCalor.value; // 'dg', 'ic', or 'none' (default to dg if none)
   const isIC = metricType === 'ic';
   
   let loops = 0;
   let reducciones = 0;
+  let adiciones = 0;
 
+  // ============================================
+  // FASE 1: Reducción de excesos
+  // ============================================
   // Repetir hasta que no haya exceso o cortocircuito de seguridad (1000 vueltas max)
   while (hasOverusedFlowers.value && loops < 1000) {
     loops++;
@@ -1504,8 +1562,8 @@ function autoOptimizarFlores() {
     const rows = viabilidadesMatriz.value || [];
     rows.forEach((row: any) => {
       row.forEach((car: any) => {
-        if (car && car.viabilidad && (car.cantidad_cruzamientos ?? 1) > 0) {
-          // Obtener métrica
+        // Solo verificamos car.viabilidad para incluir todos los cruces que puedan estar aportando al exceso
+        if (car && car.viabilidad) {
           let val = 0;
           if (isIC) {
             val = getIndiceCombinado(car.varA, car.varB, car.vm2) || 0;
@@ -1519,7 +1577,7 @@ function autoOptimizarFlores() {
       });
     });
     
-    if (activeCrosses.length === 0) break; // Fallback
+    if (activeCrosses.length === 0) break;
     
     // 2. Ordenar de menor a mayor (peor a mejor)
     activeCrosses.sort((a, b) => a.val - b.val);
@@ -1531,26 +1589,96 @@ function autoOptimizarFlores() {
       const isPadreExcedido = getFloresUsadas(item.varB, false) > getCantidadFlores(item.varB);
       
       if (isMadreExcedida || isPadreExcedido) {
-        // Reducir este cruce (que es el "peor" de los activos que involucran un padre excedido)
-        item.car.cantidad_cruzamientos = (item.car.cantidad_cruzamientos ?? 1) - 1;
-        if (item.car.cantidad_cruzamientos <= 0) {
-          item.car.cantidad_cruzamientos = 0;
+        item.car.flores_madre = Math.max(0, Number(item.car.flores_madre ?? 1) - 1);
+        item.car.flores_padre = Math.max(0, Number(item.car.flores_padre ?? 1) - 1);
+        
+        if (item.car.flores_madre <= 0 || item.car.flores_padre <= 0) {
+          item.car.flores_madre = 0;
+          item.car.flores_padre = 0;
           item.car.viabilidad = false;
         }
         reducciones++;
         reducedInThisPass = true;
-        break; // Romper para recalcular `hasOverusedFlowers` y la lista de activos
+        break; // Romper para recalcular
       }
     }
     
-    if (!reducedInThisPass) break; // Si no pudimos reducir nada, evitar ciclo infinito
+    if (!reducedInThisPass) break;
   }
   
-  if (!hasOverusedFlowers.value) {
-    toast.success(`¡Inventario optimizado! Se eliminaron/redujeron ${reducciones} cruces riesgosos.`);
-  } else {
-    toast.warning(`Se redujeron ${reducciones} cruces, pero aún hay desbalance manual (ej. Autofecundaciones).`);
+  // ============================================
+  // FASE 2: Maximización de espacios sobrantes
+  // ============================================
+  let spaceAvailable = true;
+  loops = 0;
+  
+  while (spaceAvailable && loops < 1000) {
+    loops++;
+    
+    const inactiveCrosses: Array<{car: any, val: number, varA: string, varB: string}> = [];
+    
+    const rows = viabilidadesMatriz.value || [];
+    rows.forEach((row: any) => {
+      row.forEach((car: any) => {
+        // Evaluar candidatos INACTIVOS
+        if (car && (!car.viabilidad || (car.flores_madre ?? 0) === 0 || (car.flores_padre ?? 0) === 0)) {
+          // Ignorar Autofecundaciones (el mejorador las decide manualmente)
+          if (car.varA === car.varB) return;
+
+          let val = 0;
+          if (isIC) {
+            val = getIndiceCombinado(car.varA, car.varB, car.vm2) || 0;
+          } else {
+            const dgString = getDistancia(car.varA, car.varB);
+            val = dgString === "NA" ? -9999 : (Number(dgString) || 0);
+          }
+          if (isNaN(val)) val = -9999;
+          
+          // Ignorar cruces con métrica inválida o sin datos
+          if (val !== -9999) {
+            inactiveCrosses.push({ car, val, varA: car.varA, varB: car.varB });
+          }
+        }
+      });
+    });
+    
+    // Ordenar de MAYOR a MENOR (mejores a peores)
+    inactiveCrosses.sort((a, b) => b.val - a.val);
+    
+    let addedInThisPass = false;
+    for (const item of inactiveCrosses) {
+      const dispMadre = getCantidadFlores(item.varA);
+      const usadasMadre = getFloresUsadas(item.varA, true);
+      const dispPadre = getCantidadFlores(item.varB);
+      const usadasPadre = getFloresUsadas(item.varB, false);
+      
+      // Si AMBOS tienen espacio disponible
+      if (dispMadre > usadasMadre && dispPadre > usadasPadre) {
+        item.car.viabilidad = true;
+        item.car.flores_madre = 1;
+        item.car.flores_padre = 1;
+        
+        adiciones++;
+        addedInThisPass = true;
+        break; // Romper para recalcular
+      }
+    }
+    
+    if (!addedInThisPass) {
+      spaceAvailable = false;
+    }
   }
+
+  // Reportar resultado final
+  if (reducciones === 0 && adiciones === 0) {
+    toast.info("La matriz ya está en un estado óptimo.");
+  } else if (!hasOverusedFlowers.value) {
+    toast.success(`¡Optimización completada! Reducciones: ${reducciones} | Adiciones nuevas: ${adiciones}.`);
+  } else {
+    toast.warning(`Optimización parcial. Reducciones: ${reducciones} | Adiciones: ${adiciones}. Revisa excesos manuales.`);
+  }
+  
+  isOptimizing.value = false;
 }
 
 async function finalizarProceso() {
@@ -1572,17 +1700,14 @@ async function finalizarProceso() {
       if (row && row.length > 0) {
         row.forEach((cell: any) => {
           if (cell && cell.viabilidad === true) {
-            const cantidad = cell.cantidad_cruzamientos ?? 1;
-            for (let i = 0; i < cantidad; i++) {
-              selectedCrossings.push({...cell});
-            }
+            // Ya no multiplicamos el cruzamiento. Se guarda 1 solo cruce asimétrico
+            selectedCrossings.push({...cell});
           }
         });
         
         // Integrar Autofecundación solicitada explícitamente para esta variedad madre
         const motherCell = row[0];
         if (motherCell && autofecundacionesSeleccionadas.value.has(motherCell.varA)) {
-          // Ya no validamos if(!alreadyExists) porque queremos inyectar explícitamente la cantidad de cruces autofecundados pedidos
           selectedCrossings.push({
             varA: motherCell.varA,
             varB: motherCell.varA,
@@ -1590,7 +1715,9 @@ async function finalizarProceso() {
             proyecto2: motherCell.proyecto, // Mismo proyecto
             id_caracter: motherCell.id_caracter,
             id_caracter2: motherCell.id_caracter, // Mismo caracter
-            viabilidad: true
+            viabilidad: true,
+            flores_madre: 1,
+            flores_padre: 1 // o 0, pero autofecundación se suma en Madre únicamente
           });
         }
       }
@@ -1612,6 +1739,9 @@ async function finalizarProceso() {
         id_ponderados: idPonderado,
         proyectos: `${car.proyecto}`,
         autofecundado: autofecundado,
+        // Variables añadidas para consumo asimétrico de flores
+        flores_madre: car.flores_madre ?? 1,
+        flores_padre: car.flores_padre ?? 1,
         // Añadimos estas variables para mostrarlas en el UI del Resumen
         varA: car.varA,
         varB: car.varB
