@@ -1588,20 +1588,19 @@ async function descargarPNG() {
 async function autoOptimizarFlores() {
   isOptimizing.value = true;
   
-  // Pausa mínima para permitir que Vue renderice la pantalla de carga antes de congelar el hilo principal
+  // Pausa mínima para permitir renderizado
   await new Promise(resolve => setTimeout(resolve, 50));
 
-  const metricType = tipoMapaCalor.value; // 'dg', 'ic', or 'none' (default to dg if none)
+  const metricType = tipoMapaCalor.value; // 'dg', 'ic', or 'none'
   const isIC = metricType === 'ic';
   
-  let loops = 0;
-  let reducciones = 0;
-  let adiciones = 0;
+  let reducciones = 0; // En este nuevo modelo representará los cruces descartados
+  let adiciones = 0;   // Cruces habilitados
 
-  // 1. Construir estado local rápido para evitar recalcular la matriz en cada ciclo
   const usadas = { madre: {} as Record<string, number>, padre: {} as Record<string, number> };
   const disp = { madre: {} as Record<string, number>, padre: {} as Record<string, number> };
   
+  // 1. Cargar disponibilidades
   viabilidadesMatriz.value?.forEach((row: any) => {
     if (row && row.length > 0) {
       const m = row[0].varA;
@@ -1612,9 +1611,9 @@ async function autoOptimizarFlores() {
     if (p && p.variedad) disp.padre[p.variedad] = getCantidadFlores(p.variedad);
   });
 
-  const activeCrosses: Array<{car: any, val: number, varA: string, varB: string}> = [];
-  const inactiveCrosses: Array<{car: any, val: number, varA: string, varB: string}> = [];
+  const allCrosses: Array<{car: any, val: number, varA: string, varB: string}> = [];
   
+  // 2. Extraer todos los cruces y resetearlos a cero (Construcción desde CERO para garantizar constancia)
   const rows = viabilidadesMatriz.value || [];
   rows.forEach((row: any) => {
     row.forEach((car: any) => {
@@ -1625,6 +1624,11 @@ async function autoOptimizarFlores() {
       if (usadas.madre[m] === undefined) usadas.madre[m] = 0;
       if (usadas.padre[p] === undefined) usadas.padre[p] = 0;
       
+      // Limpiar el estado actual para que no afecte el resultado
+      car.viabilidad = false;
+      car.flores_madre = 0;
+      car.flores_padre = 0;
+      
       let val = 0;
       if (isIC) {
         val = getIndiceCombinado(m, p, car.vm2) || 0;
@@ -1634,124 +1638,64 @@ async function autoOptimizarFlores() {
       }
       if (isNaN(val)) val = -9999;
 
-      if (car.viabilidad) {
-        usadas.madre[m] += Number(car.flores_madre ?? 1);
-        usadas.padre[p] += Number(car.flores_padre ?? 1);
-        activeCrosses.push({ car, val, varA: m, varB: p });
-      } else if (m !== p && val !== -9999) {
-        inactiveCrosses.push({ car, val, varA: m, varB: p });
+      // Solo consideramos cruces biológicamente posibles
+      if (m !== p && val !== -9999 && getCausaInviabilidad(car) === "-") {
+        allCrosses.push({ car, val, varA: m, varB: p });
       }
     });
   });
   
-  // Agregar autofecundaciones fijas a las madres
+  // Agregar autofecundaciones fijas a las madres (ocupan espacio obligatorio)
   for (const m in disp.madre) {
     if (autofecundacionesSeleccionadas.value.has(m)) {
       usadas.madre[m] = (usadas.madre[m] || 0) + 1;
     }
   }
 
-  const hasOverused = () => {
-    for (const m in disp.madre) {
-      if (usadas.madre[m] > disp.madre[m]) {
-        // Solo cuenta si realmente hay cruces activos que se puedan reducir
-        if (activeCrosses.some(c => c.car.viabilidad && c.varA === m)) return true;
-      }
-    }
-    for (const p in disp.padre) {
-      if (usadas.padre[p] > disp.padre[p]) {
-        if (activeCrosses.some(c => c.car.viabilidad && c.varB === p)) return true;
-      }
-    }
-    return false;
-  };
+  // 3. Ordenar cruces de MEJOR a PEOR (Desempate alfabético para que sea 100% constante en cualquier PC)
+  allCrosses.sort((a, b) => {
+    if (b.val !== a.val) return b.val - a.val; // Valor numérico
+    if (a.varA !== b.varA) return a.varA.localeCompare(b.varA); // Madre
+    return a.varB.localeCompare(b.varB); // Padre
+  });
 
   // ============================================
-  // FASE 1: Reducción de excesos
+  // FASE 1: Llenado Greedy (Seleccionar cruces nuevos uno a uno)
   // ============================================
-  activeCrosses.sort((a, b) => a.val - b.val); // Peor a mejor
-
-  while (hasOverused() && loops < 3000) {
-    loops++;
-    let reducedInThisPass = false;
-    
-    for (let i = 0; i < activeCrosses.length; i++) {
-      const item = activeCrosses[i];
-      if (!item.car.viabilidad) continue; 
-      
-      const m = item.varA;
-      const p = item.varB;
-      
-      if (usadas.madre[m] > disp.madre[m] || usadas.padre[p] > disp.padre[p]) {
-        item.car.flores_madre = Math.max(0, Number(item.car.flores_madre ?? 1) - 1);
-        item.car.flores_padre = Math.max(0, Number(item.car.flores_padre ?? 1) - 1);
-        usadas.madre[m]--;
-        usadas.padre[p]--;
-        
-        if (item.car.flores_madre <= 0 || item.car.flores_padre <= 0) {
-          item.car.flores_madre = 0;
-          item.car.flores_padre = 0;
-          item.car.viabilidad = false; // Se deselecciona
-        }
-        
-        reducciones++;
-        reducedInThisPass = true;
-        break; 
-      }
-    }
-    if (!reducedInThisPass) break;
-  }
+  const selectedCrosses: Array<{car: any, val: number, varA: string, varB: string}> = [];
   
+  for (let i = 0; i < allCrosses.length; i++) {
+    const item = allCrosses[i];
+    const m = item.varA;
+    const p = item.varB;
+    
+    // Si aún hay espacio en AMBOS parentales, asignamos 1 flor
+    if (disp.madre[m] > usadas.madre[m] && disp.padre[p] > usadas.padre[p]) {
+      item.car.viabilidad = true;
+      item.car.flores_madre = 1;
+      item.car.flores_padre = 1;
+      usadas.madre[m]++;
+      usadas.padre[p]++;
+      
+      selectedCrosses.push(item);
+      adiciones++;
+    } else {
+      reducciones++; // Cruz que se quedó por fuera por falta de inventario
+    }
+  }
+
   // ============================================
-  // FASE 2: Maximización de espacios sobrantes (Seleccionar NUEVOS cruces)
+  // FASE 2: Repartir el remanente de flores en los MEJORES cruces seleccionados
   // ============================================
-  inactiveCrosses.sort((a, b) => b.val - a.val); // Mejor a peor
+  // Si nos sobran flores, intentamos dar 1 más a los cruces ya habilitados (de mejor a peor)
   let spaceAvailable = true;
-  loops = 0;
-  
-  while (spaceAvailable && loops < 3000) {
+  let loops = 0;
+  while (spaceAvailable && loops < 1000) {
     loops++;
     let addedInThisPass = false;
     
-    for (let i = 0; i < inactiveCrosses.length; i++) {
-      const item = inactiveCrosses[i];
-      if (item.car.viabilidad) continue; // Ya fue seleccionado en esta fase
-      
-      const m = item.varA;
-      const p = item.varB;
-      
-      // Solo sugerir cruces que sean biológicamente viables
-      if (getCausaInviabilidad(item.car) !== "-") continue;
-      
-      if (disp.madre[m] > usadas.madre[m] && disp.padre[p] > usadas.padre[p]) {
-        item.car.viabilidad = true;
-        item.car.flores_madre = 1; // Se inicia con 1 flor
-        item.car.flores_padre = 1;
-        usadas.madre[m]++;
-        usadas.padre[p]++;
-        
-        adiciones++;
-        addedInThisPass = true;
-        break; 
-      }
-    }
-    if (!addedInThisPass) spaceAvailable = false;
-  }
-
-  // ============================================
-  // FASE 3: Asignar flores sobrantes a los MEJORES cruces YA seleccionados
-  // ============================================
-  spaceAvailable = true;
-  loops = 0;
-  const allActive = [...activeCrosses, ...inactiveCrosses].filter(c => c.car.viabilidad);
-  allActive.sort((a, b) => b.val - a.val); // Mejor a peor
-  
-  while (spaceAvailable && loops < 3000) {
-    loops++;
-    let addedInThisPass = false;
-    
-    for (let i = 0; i < allActive.length; i++) {
-      const item = allActive[i];
+    for (let i = 0; i < selectedCrosses.length; i++) {
+      const item = selectedCrosses[i];
       const m = item.varA;
       const p = item.varB;
       
@@ -1760,24 +1704,17 @@ async function autoOptimizarFlores() {
         item.car.flores_padre = Number(item.car.flores_padre ?? 0) + 1;
         usadas.madre[m]++;
         usadas.padre[p]++;
-        
-        adiciones++;
         addedInThisPass = true;
-        break; 
+        // No break here, we distribute evenly across the best crosses
       }
     }
     if (!addedInThisPass) spaceAvailable = false;
   }
 
-  // Reportar resultado final
-  if (reducciones === 0 && adiciones === 0) {
-    toast.info("La matriz ya está en un estado óptimo.");
-  } else if (!hasOverusedFlowers.value) {
-    toast.success(`¡Optimización completada! Reducciones: ${reducciones} | Adiciones: ${adiciones}.`);
-  } else {
-    toast.warning(`Optimización parcial. Reducciones: ${reducciones} | Adiciones: ${adiciones}.`);
-  }
-  
+  // Borrar el draft de LocalStorage para que no interfiera en la siguiente recarga
+  localStorage.removeItem(draftKey.value);
+
+  toast.success(`¡Optimización Calculada! Cruces habilitados: ${adiciones}. Descartados por límite: ${reducciones}.`);
   isOptimizing.value = false;
 }
 
