@@ -212,6 +212,20 @@
             </svg>
             {{ ocultarInviables ? 'Ver Inviables' : 'Ocultar Inviables' }}
           </button>
+          
+          <!-- Botón Expandir a Pantalla Completa -->
+          <button 
+            @click="isExpanded = !isExpanded"
+            class="flex items-center px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all duration-200 border whitespace-nowrap"
+            :class="isExpanded ? 'bg-slate-700 border-slate-700 text-white shadow-sm hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'"
+            title="Ampliar/Reducir tabla de cruzamientos"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path v-if="!isExpanded" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 14h4v4m0-4l-5 5m11-5h-4v4m0-4l5 5M4 10h4V6m0 4L3 5m11 5h-4V6m0 4l5-5" />
+            </svg>
+            {{ isExpanded ? 'Reducir' : 'Ampliar' }}
+          </button>
         </div>
       </div>
 
@@ -225,9 +239,31 @@
       </div>
 
       <!-- Cuadrícula Estilo Clásico/Compacto de Oro (Sin Barra Horizontal) -->
-      <div v-else class="overflow-hidden border border-slate-100 rounded-xl shadow-sm">
-        <div class="max-h-[500px] overflow-x-auto overflow-y-auto scrollbar-custom">
-          <table ref="matrizTable" class="table-auto w-full divide-y divide-slate-150 bg-white">
+      <div v-else :class="isExpanded ? 'fixed inset-0 z-[9999] bg-white shadow-[0_0_80px_rgba(0,0,0,0.3)] flex flex-col border border-slate-200 overflow-hidden w-full h-full' : 'overflow-hidden border border-slate-100 rounded-xl shadow-sm relative'">
+        
+        <!-- Header de Modo Expandido -->
+        <div v-if="isExpanded" class="flex justify-between items-center px-4 py-3 border-b border-slate-100 bg-slate-50/80 backdrop-blur">
+          <div class="flex items-center space-x-3">
+            <span class="p-1.5 bg-emerald-100 text-emerald-700 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              </svg>
+            </span>
+            <div>
+              <h3 class="text-sm font-bold text-slate-800 leading-tight">Vista Ampliada de Cruzamientos</h3>
+              <p class="text-[10px] text-slate-500 font-semibold">{{ selectedCdCntble }} | {{ selectedMegaAmbiente }}</p>
+            </div>
+          </div>
+          <button @click="isExpanded = false" class="px-3 py-1.5 flex items-center text-[11px] font-bold text-slate-500 hover:text-slate-800 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg shadow-sm transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Cerrar
+          </button>
+        </div>
+
+        <div :class="isExpanded ? 'flex-1 overflow-x-auto overflow-y-auto scrollbar-custom p-1 bg-slate-50/30' : 'max-h-[500px] overflow-x-auto overflow-y-auto scrollbar-custom'">
+          <table ref="matrizTable" class="table-auto w-full divide-y divide-slate-150 bg-white rounded-lg">
             <thead class="bg-slate-50">
               <tr>
                 <th class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-r border-slate-100 sticky top-0 left-0 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[140px]">
@@ -593,7 +629,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 import { useSuggestionCrossingPerProjectStore } from "@/stores/crossingsuggestionperproject";
@@ -622,6 +658,7 @@ const resumenCrucesGuardados = ref<any[]>([]);
 const ocultarInviables = ref(true); // Vista compacta limpia por defecto
 const isLoading = ref(false); // Ref para spinner de carga
 const isOptimizing = ref(false); // Ref para spinner de optimización
+const isExpanded = ref(false); // Ref para modo pantalla completa
 const tipoMapaCalor = ref('dg'); // Vista con mapa de calor por defecto
 
 function getIndiceCombinado(varA: string, varB: string, vm: number | string) {
@@ -729,9 +766,21 @@ const openParentComparator = (mother: string, father: string, viable: boolean) =
   }
 };
 
+// Manejador de teclado para la tecla Escape
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape' && isExpanded.value) {
+    isExpanded.value = false;
+  }
+};
+
 // Cargar datos iniciales
 onMounted(() => {
   loadSuggestionCrossings();
+  window.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown);
 });
 
 watch([selectedIdProject, selectedMegaAmbiente, selectedCdCntble, selectedVariety], loadSuggestionCrossings);
@@ -1549,133 +1598,140 @@ async function autoOptimizarFlores() {
   let reducciones = 0;
   let adiciones = 0;
 
+  // 1. Construir estado local rápido para evitar recalcular la matriz en cada ciclo
+  const usadas = { madre: {} as Record<string, number>, padre: {} as Record<string, number> };
+  const disp = { madre: {} as Record<string, number>, padre: {} as Record<string, number> };
+  
+  viabilidadesMatriz.value?.forEach((row: any) => {
+    if (row && row.length > 0) {
+      const m = row[0].varA;
+      if (m) disp.madre[m] = getCantidadFlores(m);
+    }
+  });
+  floresSeleccionadas.value?.forEach((p: any) => {
+    if (p && p.variedad) disp.padre[p.variedad] = getCantidadFlores(p.variedad);
+  });
+
+  const activeCrosses: Array<{car: any, val: number, varA: string, varB: string}> = [];
+  const inactiveCrosses: Array<{car: any, val: number, varA: string, varB: string}> = [];
+  
+  const rows = viabilidadesMatriz.value || [];
+  rows.forEach((row: any) => {
+    row.forEach((car: any) => {
+      if (!car) return;
+      const m = car.varA;
+      const p = car.varB;
+      
+      if (usadas.madre[m] === undefined) usadas.madre[m] = 0;
+      if (usadas.padre[p] === undefined) usadas.padre[p] = 0;
+      
+      let val = 0;
+      if (isIC) {
+        val = getIndiceCombinado(m, p, car.vm2) || 0;
+      } else {
+        const dgString = getDistancia(m, p);
+        val = dgString === "NA" ? -9999 : (Number(dgString) || 0);
+      }
+      if (isNaN(val)) val = -9999;
+
+      if (car.viabilidad) {
+        usadas.madre[m] += Number(car.flores_madre ?? 1);
+        usadas.padre[p] += Number(car.flores_padre ?? 1);
+        activeCrosses.push({ car, val, varA: m, varB: p });
+      } else if (m !== p && val !== -9999) {
+        inactiveCrosses.push({ car, val, varA: m, varB: p });
+      }
+    });
+  });
+  
+  // Agregar autofecundaciones fijas a las madres
+  for (const m in disp.madre) {
+    if (autofecundacionesSeleccionadas.value.has(m)) {
+      usadas.madre[m] = (usadas.madre[m] || 0) + 1;
+    }
+  }
+
+  const hasOverused = () => {
+    for (const m in disp.madre) if (usadas.madre[m] > disp.madre[m]) return true;
+    for (const p in disp.padre) if (usadas.padre[p] > disp.padre[p]) return true;
+    return false;
+  };
+
   // ============================================
   // FASE 1: Reducción de excesos
   // ============================================
-  // Repetir hasta que no haya exceso o cortocircuito de seguridad (1000 vueltas max)
-  while (hasOverusedFlowers.value && loops < 1000) {
+  activeCrosses.sort((a, b) => a.val - b.val); // Peor a mejor
+
+  while (hasOverused() && loops < 3000) {
     loops++;
-    
-    // 1. Recolectar cruces activos
-    const activeCrosses: Array<{car: any, val: number, varA: string, varB: string}> = [];
-    
-    const rows = viabilidadesMatriz.value || [];
-    rows.forEach((row: any) => {
-      row.forEach((car: any) => {
-        // Solo verificamos car.viabilidad para incluir todos los cruces que puedan estar aportando al exceso
-        if (car && car.viabilidad) {
-          let val = 0;
-          if (isIC) {
-            val = getIndiceCombinado(car.varA, car.varB, car.vm2) || 0;
-          } else {
-            const dgString = getDistancia(car.varA, car.varB);
-            val = dgString === "NA" ? -9999 : (Number(dgString) || 0);
-          }
-          if (isNaN(val)) val = -9999;
-          activeCrosses.push({ car, val, varA: car.varA, varB: car.varB });
-        }
-      });
-    });
-    
-    if (activeCrosses.length === 0) break;
-    
-    // 2. Ordenar de menor a mayor (peor a mejor)
-    activeCrosses.sort((a, b) => a.val - b.val);
-    
-    // 3. Iterar y reducir el primero que esté excedido
     let reducedInThisPass = false;
-    for (const item of activeCrosses) {
-      const isMadreExcedida = getFloresUsadas(item.varA, true) > getCantidadFlores(item.varA);
-      const isPadreExcedido = getFloresUsadas(item.varB, false) > getCantidadFlores(item.varB);
+    
+    for (let i = 0; i < activeCrosses.length; i++) {
+      const item = activeCrosses[i];
+      if (!item.car.viabilidad) continue; 
       
-      if (isMadreExcedida || isPadreExcedido) {
+      const m = item.varA;
+      const p = item.varB;
+      
+      if (usadas.madre[m] > disp.madre[m] || usadas.padre[p] > disp.padre[p]) {
         item.car.flores_madre = Math.max(0, Number(item.car.flores_madre ?? 1) - 1);
         item.car.flores_padre = Math.max(0, Number(item.car.flores_padre ?? 1) - 1);
+        usadas.madre[m]--;
+        usadas.padre[p]--;
         
         if (item.car.flores_madre <= 0 || item.car.flores_padre <= 0) {
           item.car.flores_madre = 0;
           item.car.flores_padre = 0;
           item.car.viabilidad = false;
+          inactiveCrosses.push(item);
         }
+        
         reducciones++;
         reducedInThisPass = true;
-        break; // Romper para recalcular
+        break; 
       }
     }
-    
     if (!reducedInThisPass) break;
   }
   
   // ============================================
   // FASE 2: Maximización de espacios sobrantes
   // ============================================
+  inactiveCrosses.sort((a, b) => b.val - a.val); // Mejor a peor
   let spaceAvailable = true;
   loops = 0;
   
-  while (spaceAvailable && loops < 1000) {
+  while (spaceAvailable && loops < 3000) {
     loops++;
-    
-    const inactiveCrosses: Array<{car: any, val: number, varA: string, varB: string}> = [];
-    
-    const rows = viabilidadesMatriz.value || [];
-    rows.forEach((row: any) => {
-      row.forEach((car: any) => {
-        // Evaluar candidatos INACTIVOS
-        if (car && (!car.viabilidad || (car.flores_madre ?? 0) === 0 || (car.flores_padre ?? 0) === 0)) {
-          // Ignorar Autofecundaciones (el mejorador las decide manualmente)
-          if (car.varA === car.varB) return;
-
-          let val = 0;
-          if (isIC) {
-            val = getIndiceCombinado(car.varA, car.varB, car.vm2) || 0;
-          } else {
-            const dgString = getDistancia(car.varA, car.varB);
-            val = dgString === "NA" ? -9999 : (Number(dgString) || 0);
-          }
-          if (isNaN(val)) val = -9999;
-          
-          // Ignorar cruces con métrica inválida o sin datos
-          if (val !== -9999) {
-            inactiveCrosses.push({ car, val, varA: car.varA, varB: car.varB });
-          }
-        }
-      });
-    });
-    
-    // Ordenar de MAYOR a MENOR (mejores a peores)
-    inactiveCrosses.sort((a, b) => b.val - a.val);
-    
     let addedInThisPass = false;
-    for (const item of inactiveCrosses) {
-      const dispMadre = getCantidadFlores(item.varA);
-      const usadasMadre = getFloresUsadas(item.varA, true);
-      const dispPadre = getCantidadFlores(item.varB);
-      const usadasPadre = getFloresUsadas(item.varB, false);
+    
+    for (let i = 0; i < inactiveCrosses.length; i++) {
+      const item = inactiveCrosses[i];
+      const m = item.varA;
+      const p = item.varB;
       
-      // Si AMBOS tienen espacio disponible
-      if (dispMadre > usadasMadre && dispPadre > usadasPadre) {
+      if (disp.madre[m] > usadas.madre[m] && disp.padre[p] > usadas.padre[p]) {
         item.car.viabilidad = true;
-        item.car.flores_madre = 1;
-        item.car.flores_padre = 1;
+        item.car.flores_madre = Number(item.car.flores_madre ?? 0) + 1;
+        item.car.flores_padre = Number(item.car.flores_padre ?? 0) + 1;
+        usadas.madre[m]++;
+        usadas.padre[p]++;
         
         adiciones++;
         addedInThisPass = true;
-        break; // Romper para recalcular
+        break; 
       }
     }
-    
-    if (!addedInThisPass) {
-      spaceAvailable = false;
-    }
+    if (!addedInThisPass) spaceAvailable = false;
   }
 
   // Reportar resultado final
   if (reducciones === 0 && adiciones === 0) {
     toast.info("La matriz ya está en un estado óptimo.");
   } else if (!hasOverusedFlowers.value) {
-    toast.success(`¡Optimización completada! Reducciones: ${reducciones} | Adiciones nuevas: ${adiciones}.`);
+    toast.success(`¡Optimización ultrarrápida! Reducciones: ${reducciones} | Adiciones: ${adiciones}.`);
   } else {
-    toast.warning(`Optimización parcial. Reducciones: ${reducciones} | Adiciones: ${adiciones}. Revisa excesos manuales.`);
+    toast.warning(`Optimización parcial. Reducciones: ${reducciones} | Adiciones: ${adiciones}.`);
   }
   
   isOptimizing.value = false;
