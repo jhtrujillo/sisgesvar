@@ -1692,35 +1692,15 @@ async function autoOptimizarFlores() {
 
   // ============================================
   // FASE 2: Repartir el remanente de flores en los MEJORES cruces seleccionados
+  // SE ELIMINÓ: El usuario espera que 1 checkbox = 1 flor. Si sobran flores porque no hay más cruces viables, 
+  // es mejor dejar las flores como "sobrantes" en el inventario (ej: Usadas 5 / 9) en lugar de ocultarlas 
+  // metiéndole múltiples flores a un solo cruce, lo cual causa confusión visual en los conteos.
   // ============================================
-  // Si nos sobran flores, intentamos dar 1 más a los cruces ya habilitados (de mejor a peor)
-  let spaceAvailable = true;
-  let loops = 0;
-  while (spaceAvailable && loops < 1000) {
-    loops++;
-    let addedInThisPass = false;
-    
-    for (let i = 0; i < selectedCrosses.length; i++) {
-      const item = selectedCrosses[i];
-      const m = item.varA;
-      const p = item.varB;
-      
-      if (disp.madre[m] > usadas.madre[m] && disp.padre[p] > usadas.padre[p]) {
-        item.car.flores_madre = Number(item.car.flores_madre ?? 0) + 1;
-        item.car.flores_padre = Number(item.car.flores_padre ?? 0) + 1;
-        usadas.madre[m]++;
-        usadas.padre[p]++;
-        addedInThisPass = true;
-        // No break here, we distribute evenly across the best crosses
-      }
-    }
-    if (!addedInThisPass) spaceAvailable = false;
-  }
 
   // Borrar el draft de LocalStorage para que no interfiera en la siguiente recarga
   localStorage.removeItem(draftKey.value);
 
-  toast.success(`¡Optimización Calculada! Cruces habilitados: ${adiciones}. Descartados por límite: ${reducciones}.`);
+  toast.success(`¡Optimización Calculada! Cruces habilitados (1 flor c/u): ${adiciones}. Cruces descartados por falta de inventario: ${reducciones}.`);
   isOptimizing.value = false;
 }
 
