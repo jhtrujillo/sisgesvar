@@ -1616,6 +1616,10 @@ async function autoOptimizarFlores() {
   // 2. Extraer todos los cruces y resetearlos a cero (Construcción desde CERO para garantizar constancia)
   const rows = viabilidadesMatriz.value || [];
   
+  console.log("=== INICIANDO OPTIMIZACIÓN PASO A PASO ===");
+  console.log("1. Disponibilidad inicial de padre CC 10-123:", disp.padre['CC 10-123']);
+  let fantasmasIgnorados = 0;
+
   // Primero limpiamos TODO el estado para que ningún cruce duplicado o fantasma quede seleccionado
   rows.forEach((row: any) => {
     row.forEach((car: any) => {
@@ -1641,7 +1645,10 @@ async function autoOptimizarFlores() {
       
       // Si ya procesamos un cruce para este padre en esta fila, es un fantasma invisible, lo saltamos!
       // (Esto imita exactamente el comportamiento de getCruzamiento que solo retorna el primero)
-      if (seenFathersInRow.has(p)) return;
+      if (seenFathersInRow.has(p)) {
+        if (p === 'CC 10-123') fantasmasIgnorados++;
+        return;
+      }
       seenFathersInRow.add(p);
 
       if (usadas.padre[p] === undefined) usadas.padre[p] = 0;
@@ -1664,9 +1671,14 @@ async function autoOptimizarFlores() {
       
       if (m !== p && val !== -9999 && isBiologicallyValid) {
         allCrosses.push({ car, val, varA: m, varB: p });
+        if (p === 'CC 10-123') console.log(`-> Cruce BIOLÓGICAMENTE VIABLE encontrado para CC 10-123 con madre ${m} | Puntaje: ${val}`);
+      } else if (p === 'CC 10-123') {
+        console.log(`-> Cruce DESCARTADO en pre-filtro biológico para CC 10-123 con madre ${m} | Causa: ${causa} | isBiologicallyValid: ${isBiologicallyValid}`);
       }
     });
   });
+
+  console.log(`2. Extracción terminada. Fantasmas ignorados para CC 10-123: ${fantasmasIgnorados}`);
   
   // Agregar autofecundaciones fijas a las madres (ocupan espacio obligatorio)
   for (const m in disp.madre) {
@@ -1681,6 +1693,8 @@ async function autoOptimizarFlores() {
     if (a.varA !== b.varA) return a.varA.localeCompare(b.varA); // Madre
     return a.varB.localeCompare(b.varB); // Padre
   });
+
+  console.log(`3. Cruces ordenados. Total viables competitivos para CC 10-123: ${allCrosses.filter(c => c.varB === 'CC 10-123').length}`);
 
   // ============================================
   // FASE 1: Llenado Greedy (Seleccionar cruces nuevos uno a uno)
@@ -1700,22 +1714,27 @@ async function autoOptimizarFlores() {
       usadas.madre[m]++;
       usadas.padre[p]++;
       
+      if (p === 'CC 10-123') console.log(`--> [ASIGNADO] Se asignó 1 flor a CC 10-123 con madre ${m} | Usadas padre ahora: ${usadas.padre[p]}`);
+      
       selectedCrosses.push(item);
       adiciones++;
     } else {
+      if (p === 'CC 10-123') console.log(`--> [SIN INVENTARIO] Se descartó a CC 10-123 con madre ${m} | disp.padre: ${disp.padre[p]} vs usadas.padre: ${usadas.padre[p]} | disp.madre: ${disp.madre[m]} vs usadas.madre: ${usadas.madre[m]}`);
       reducciones++; // Cruz que se quedó por fuera por falta de inventario
     }
   }
 
   // ============================================
   // FASE 2: Repartir el remanente de flores en los MEJORES cruces seleccionados
-  // SE ELIMINÓ: El usuario espera que 1 checkbox = 1 flor. Si sobran flores porque no hay más cruces viables, 
-  // es mejor dejar las flores como "sobrantes" en el inventario (ej: Usadas 5 / 9) en lugar de ocultarlas 
-  // metiéndole múltiples flores a un solo cruce, lo cual causa confusión visual en los conteos.
   // ============================================
 
   // Borrar el draft de LocalStorage para que no interfiera en la siguiente recarga
   localStorage.removeItem(draftKey.value);
+
+  console.log("=== RESUMEN FINAL PARA CC 10-123 ===");
+  console.log("Usadas contadas internamente en el bucle:", usadas.padre['CC 10-123']);
+  console.log("getFloresUsadas() reportará a la UI:", getFloresUsadas('CC 10-123', false));
+  console.log("=====================================");
 
   toast.success(`¡Optimización Calculada! Cruces habilitados (1 flor c/u): ${adiciones}. Cruces descartados por falta de inventario: ${reducciones}.`);
   isOptimizing.value = false;
