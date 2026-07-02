@@ -1615,20 +1615,31 @@ async function autoOptimizarFlores() {
   
   // 2. Extraer todos los cruces y resetearlos a cero (Construcción desde CERO para garantizar constancia)
   const rows = viabilidadesMatriz.value || [];
+  
+  // Primero limpiamos TODO el estado para que ningún cruce duplicado o fantasma quede seleccionado
   rows.forEach((row: any) => {
     row.forEach((car: any) => {
-      if (!car) return;
-      const m = car.varA;
-      const p = car.varB;
-      
-      if (usadas.madre[m] === undefined) usadas.madre[m] = 0;
+      if (car) {
+        car.viabilidad = false;
+        car.flores_madre = 0;
+        car.flores_padre = 0;
+      }
+    });
+  });
+
+  // Ahora solo extraemos los cruces EXACTOS que la interfaz gráfica está renderizando
+  rows.forEach((row: any) => {
+    if (!row || row.length === 0) return;
+    const m = row[0].varA;
+    if (usadas.madre[m] === undefined) usadas.madre[m] = 0;
+
+    padresUnicos.value.forEach((padre: any) => {
+      const p = padre.variedad;
       if (usadas.padre[p] === undefined) usadas.padre[p] = 0;
-      
-      // Limpiar el estado actual para que no afecte el resultado
-      car.viabilidad = false;
-      car.flores_madre = 0;
-      car.flores_padre = 0;
-      
+
+      const car = getCruzamiento(row, p);
+      if (!car) return; // Si no hay cruce renderizado en esta celda, lo saltamos
+
       let val = 0;
       if (isIC) {
         val = getIndiceCombinado(m, p, car.vm2) || 0;
