@@ -1633,12 +1633,18 @@ async function autoOptimizarFlores() {
     const m = row[0].varA;
     if (usadas.madre[m] === undefined) usadas.madre[m] = 0;
 
-    padresUnicos.value.forEach((padre: any) => {
-      const p = padre.variedad;
-      if (usadas.padre[p] === undefined) usadas.padre[p] = 0;
+    const seenFathersInRow = new Set<string>();
 
-      const car = getCruzamiento(row, p);
-      if (!car) return; // Si no hay cruce renderizado en esta celda, lo saltamos
+    row.forEach((car: any) => {
+      if (!car) return;
+      const p = car.varB;
+      
+      // Si ya procesamos un cruce para este padre en esta fila, es un fantasma invisible, lo saltamos!
+      // (Esto imita exactamente el comportamiento de getCruzamiento que solo retorna el primero)
+      if (seenFathersInRow.has(p)) return;
+      seenFathersInRow.add(p);
+
+      if (usadas.padre[p] === undefined) usadas.padre[p] = 0;
 
       let val = 0;
       if (isIC) {
