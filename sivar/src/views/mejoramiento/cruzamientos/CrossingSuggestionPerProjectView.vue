@@ -226,7 +226,7 @@
       <!-- Cuadrícula Estilo Clásico/Compacto de Oro (Sin Barra Horizontal) -->
       <div v-else class="overflow-hidden border border-slate-100 rounded-xl shadow-sm">
         <div class="max-h-[500px] overflow-x-auto overflow-y-auto scrollbar-custom">
-          <table class="table-auto w-full divide-y divide-slate-150">
+          <table ref="matrizTable" class="table-auto w-full divide-y divide-slate-150 bg-white">
             <thead class="bg-slate-50">
               <tr>
                 <th class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-r border-slate-100 sticky top-0 left-0 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[140px]">
@@ -247,12 +247,13 @@
                     >
                       {{ flor.variedad }}
                     </span>
-                    <div class="flex items-center justify-center space-x-2 text-[9px] font-semibold text-slate-500 mt-1 mb-0.5">
+                    <div class="flex flex-col items-center justify-center text-[9px] font-semibold text-slate-500 mt-1 space-y-0.5 mb-1">
                       <span v-if="viabilidadesMatriz?.[0]?.[indexCol]?.vm2 !== undefined">VM: {{ viabilidadesMatriz[0][indexCol].vm2 }}</span>
-                      <span>Disp: {{ flor.cantidad }} | Polen: {{ flor.polen ? flor.polen + '%' : 'N/A' }}</span>
-                    </div>
-                    <div class="text-[9px] font-bold mt-1" :class="getFloresUsadas(flor.variedad, false) > flor.cantidad ? 'text-rose-600' : 'text-emerald-700'">
-                      Usadas: {{ getFloresUsadas(flor.variedad, false) }} / {{ flor.cantidad }}
+                      <span>Disp: {{ flor.cantidad }}</span>
+                      <span>Polen: {{ flor.polen ? flor.polen + '%' : 'N/A' }}</span>
+                      <span class="font-bold mt-0.5" :class="getFloresUsadas(flor.variedad, false) > flor.cantidad ? 'text-rose-600' : 'text-emerald-700'">
+                        Usadas: {{ getFloresUsadas(flor.variedad, false) }} / {{ flor.cantidad }}
+                      </span>
                     </div>
                   </th>
                 </template>
@@ -281,13 +282,13 @@
                       <i :class="getIcon(viabilidadRow[0]?.polen)"></i>
                       <span class="font-extrabold text-slate-800 leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors" @click="openVarietyProfile(viabilidadRow[0]?.varA)">{{ viabilidadRow[0]?.varA || 'N/A' }}</span>
                     </div>
-                    <div class="flex items-center justify-center space-x-2 text-[9px] font-semibold text-slate-500">
+                    <div class="flex flex-col items-center justify-center text-[9px] font-semibold text-slate-500 space-y-0.5">
                       <span>VM: {{ getRowVm(viabilidadRow) }}</span>
+                      <span>Disp: {{ getCantidadFlores(viabilidadRow[0]?.varA) }}</span>
                       <span>Polen: {{ viabilidadRow[0]?.polen ? viabilidadRow[0].polen + '%' : '0%' }}</span>
-                    </div>
-                    <div class="text-[9px] text-slate-400 mt-0.5 font-semibold">Disp: {{ getCantidadFlores(viabilidadRow[0]?.varA) }}</div>
-                    <div class="text-[9px] font-bold mt-0.5" :class="getFloresUsadas(viabilidadRow[0]?.varA, true) > getCantidadFlores(viabilidadRow[0]?.varA) ? 'text-rose-600' : 'text-emerald-700'">
-                      Usadas: {{ getFloresUsadas(viabilidadRow[0]?.varA, true) }} / {{ getCantidadFlores(viabilidadRow[0]?.varA) }}
+                      <span class="font-bold mt-0.5" :class="getFloresUsadas(viabilidadRow[0]?.varA, true) > getCantidadFlores(viabilidadRow[0]?.varA) ? 'text-rose-600' : 'text-emerald-700'">
+                        Usadas: {{ getFloresUsadas(viabilidadRow[0]?.varA, true) }} / {{ getCantidadFlores(viabilidadRow[0]?.varA) }}
+                      </span>
                     </div>
                     
                     <!-- Autofecundación Estilizada -->
@@ -427,6 +428,21 @@
           Imprimir PDF
         </button>
 
+        <button
+          type="button"
+          @click="descargarPNG"
+          class="flex items-center px-4 py-2 text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 rounded-xl shadow-sm hover:bg-teal-100 transition-all duration-200"
+          title="Descargar matriz como imagen (PNG)"
+          :disabled="isDownloadingImage"
+        >
+          <span class="mr-1.5" v-if="!isDownloadingImage">🖼️</span>
+          <svg v-else class="animate-spin h-3.5 w-3.5 mr-1.5 text-teal-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ isDownloadingImage ? 'Generando...' : 'Descargar PNG' }}
+        </button>
+
         <div class="flex flex-col items-end">
           <div v-if="hasOverusedFlowers" class="text-[10px] text-rose-600 font-bold mb-1">
             ⚠️ Excedes las flores disponibles
@@ -535,7 +551,8 @@ import { useSuggestionCrossingPerProjectStore } from "@/stores/crossingsuggestio
 import { useParametizeWeightedCrossingStore } from "@/stores/crossignparametizeweighted";
 import VarietyProfileDrawer from "@/components/VarietyProfileDrawer.vue";
 import ParentComparatorModal from "@/components/ParentComparatorModal.vue";
-import * as XLSX from "xlsx";
+import * as XLSX from 'xlsx';
+import html2canvas from 'html2canvas';
 import CrossingsService from "@/services/crossings.services";
 
 const SuggestionCrossingPerProjectStore = useSuggestionCrossingPerProjectStore();
@@ -1430,6 +1447,41 @@ async function exportarMemoriaCalculos() {
   } catch (error) {
     console.error("Error al exportar la memoria de cálculos:", error);
     toast.error("Ocurrió un error al generar la memoria de cálculos");
+  }
+}
+
+// Generar y descargar la matriz como PNG
+const matrizTable = ref<HTMLElement | null>(null);
+const isDownloadingImage = ref(false);
+
+async function descargarPNG() {
+  if (!matrizTable.value) return;
+  
+  try {
+    isDownloadingImage.value = true;
+    toast.info("Generando imagen PNG, por favor espera...");
+    
+    // Pequeña pausa para asegurar renderizado completo de cualquier estado
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    const canvas = await html2canvas(matrizTable.value, {
+      scale: 2, // Alta resolución
+      backgroundColor: '#ffffff',
+      useCORS: true,
+      logging: false,
+    });
+    
+    const link = document.createElement('a');
+    link.download = `Matriz_Cruzamientos_${selectedCdCntble.value}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    
+    toast.success("¡Imagen PNG descargada con éxito!");
+  } catch (error) {
+    console.error("Error al generar PNG:", error);
+    toast.error("Hubo un error al generar la imagen");
+  } finally {
+    isDownloadingImage.value = false;
   }
 }
 
