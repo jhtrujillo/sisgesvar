@@ -237,7 +237,10 @@
                     </span>
                     <div class="flex items-center justify-center space-x-2 text-[9px] font-semibold text-slate-500 mt-1 mb-0.5">
                       <span v-if="viabilidadesMatriz?.[0]?.[indexCol]?.vm2 !== undefined">VM: {{ viabilidadesMatriz[0][indexCol].vm2 }}</span>
-                      <span>Cant. Flores: {{ flor.cantidad }} | Polen: {{ flor.polen ? flor.polen + '%' : 'N/A' }}</span>
+                      <span>Disp: {{ flor.cantidad }} | Polen: {{ flor.polen ? flor.polen + '%' : 'N/A' }}</span>
+                    </div>
+                    <div class="text-[9px] font-bold mt-1" :class="getFloresUsadas(flor.variedad, false) > flor.cantidad ? 'text-rose-600' : 'text-emerald-700'">
+                      Usadas: {{ getFloresUsadas(flor.variedad, false) }} / {{ flor.cantidad }}
                     </div>
                   </th>
                 </template>
@@ -270,7 +273,10 @@
                       <span>VM: {{ getRowVm(viabilidadRow) }}</span>
                       <span>Polen: {{ viabilidadRow[0]?.polen ? viabilidadRow[0].polen + '%' : '0%' }}</span>
                     </div>
-                    <div class="text-[9px] text-slate-400 mt-0.5 font-semibold">Cant. Flores: {{ getCantidadFlores(viabilidadRow[0]?.varA) }}</div>
+                    <div class="text-[9px] text-slate-400 mt-0.5 font-semibold">Disp: {{ getCantidadFlores(viabilidadRow[0]?.varA) }}</div>
+                    <div class="text-[9px] font-bold mt-0.5" :class="getFloresUsadas(viabilidadRow[0]?.varA, true) > getCantidadFlores(viabilidadRow[0]?.varA) ? 'text-rose-600' : 'text-emerald-700'">
+                      Usadas: {{ getFloresUsadas(viabilidadRow[0]?.varA, true) }} / {{ getCantidadFlores(viabilidadRow[0]?.varA) }}
+                    </div>
                     
                     <!-- Autofecundación Estilizada -->
                     <div class="mt-1.5 flex items-center justify-center space-x-1 bg-white/70 py-0.5 px-1.5 rounded-lg border border-slate-200/50 shadow-sm max-w-[120px] mx-auto">
@@ -303,6 +309,12 @@
                           @click="toggleCruzamiento(car)" 
                           class="h-3.5 w-3.5 rounded border-slate-350 text-emerald-600 focus:ring-emerald-100 transition cursor-pointer"
                         />
+                        <!-- Selector numérico cuando es viable -->
+                        <div v-if="car?.viabilidad" class="flex items-center justify-center mt-0.5 mb-1 bg-white/90 rounded border border-slate-200 px-1 py-0.5 shadow-sm">
+                          <button @click.stop="decrementarCantidad(car)" class="text-slate-500 hover:text-rose-600 px-1 font-bold transition-colors">-</button>
+                          <span class="text-[10px] font-black text-slate-800 w-3 text-center">{{ car.cantidad_cruzamientos ?? 1 }}</span>
+                          <button @click.stop="incrementarCantidad(car)" class="text-slate-500 hover:text-emerald-600 px-1 font-bold transition-colors">+</button>
+                        </div>
                         <div 
                           class="text-[9px] font-extrabold leading-tight"
                           :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-white' : 'text-slate-900']"
@@ -403,16 +415,22 @@
           Imprimir PDF
         </button>
 
-        <button
-          type="button"
-          @click="finalizarProceso"
-          class="flex items-center px-5 py-2 text-xs font-bold text-white bg-cenicana hover:bg-cenicana-800 rounded-xl shadow-md transition-all duration-200"
-        >
-          Finalizar
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-        </button>
+        <div class="flex flex-col items-end">
+          <div v-if="hasOverusedFlowers" class="text-[10px] text-rose-600 font-bold mb-1">
+            ⚠️ Excedes las flores disponibles
+          </div>
+          <button
+            type="button"
+            @click="finalizarProceso"
+            :disabled="hasOverusedFlowers"
+            class="flex items-center px-5 py-2 text-xs font-bold text-white bg-cenicana hover:bg-cenicana-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-md transition-all duration-200"
+          >
+            Finalizar
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
     </div>
@@ -734,12 +752,74 @@ function getCantidadFlores(vrdad: string) {
   return cantidadesMap.value[vrdad] || 0;
 }
 
+function getFloresUsadas(vrdad: string, isMadre: boolean) {
+  let count = 0;
+  const rows = viabilidadesMatriz.value || [];
+  
+  if (isMadre) {
+    const motherRow = rows.find((r: any) => r[0]?.varA === vrdad);
+    if (motherRow) {
+      motherRow.forEach((car: any) => {
+        if (car && car.viabilidad) {
+          count += (car.cantidad_cruzamientos ?? 1);
+        }
+      });
+      if (autofecundacionesSeleccionadas.value.has(vrdad)) {
+        count += 1;
+      }
+    }
+  } else {
+    rows.forEach((row: any) => {
+      row.forEach((car: any) => {
+        if (car && car.varB === vrdad && car.viabilidad) {
+          count += (car.cantidad_cruzamientos ?? 1);
+        }
+      });
+    });
+  }
+  return count;
+}
+
+function incrementarCantidad(car: any) {
+  car.cantidad_cruzamientos = (car.cantidad_cruzamientos ?? 1) + 1;
+}
+
+function decrementarCantidad(car: any) {
+  car.cantidad_cruzamientos = Math.max(0, (car.cantidad_cruzamientos ?? 1) - 1);
+}
+
 function getIcon(polen: string | number) {
   return +polen <= 20 ? "fa fa-venus text-rose-500 font-bold" : "fa fa-mars text-sky-500 font-bold";
 }
 
+const hasOverusedFlowers = computed(() => {
+  // Check Mothers
+  const rows = viabilidadesMatriz.value || [];
+  for (const row of rows) {
+    if (row && row.length > 0) {
+      const madre = row[0]?.varA;
+      if (madre && getFloresUsadas(madre, true) > getCantidadFlores(madre)) {
+        return true;
+      }
+    }
+  }
+  // Check Fathers
+  const padres = floresSeleccionadas.value || [];
+  for (const padre of padres) {
+    if (padre.variedad && getFloresUsadas(padre.variedad, false) > padre.cantidad) {
+      return true;
+    }
+  }
+  return false;
+});
+
 function toggleCruzamiento(car: any) {
   car.viabilidad = !car.viabilidad;
+  if (car.viabilidad) {
+    car.cantidad_cruzamientos = 1;
+  } else {
+    car.cantidad_cruzamientos = 0;
+  }
   
   // Guardar estado actual de cruzamientos deshabilitados en localStorage (Auto-save)
   const rows = viabilidadesMatriz.value || [];
@@ -1358,27 +1438,26 @@ async function finalizarProceso() {
       if (row && row.length > 0) {
         row.forEach((cell: any) => {
           if (cell && cell.viabilidad === true) {
-            selectedCrossings.push(cell);
+            const cantidad = cell.cantidad_cruzamientos ?? 1;
+            for (let i = 0; i < cantidad; i++) {
+              selectedCrossings.push({...cell});
+            }
           }
         });
         
         // Integrar Autofecundación solicitada explícitamente para esta variedad madre
         const motherCell = row[0];
         if (motherCell && autofecundacionesSeleccionadas.value.has(motherCell.varA)) {
-          // Verificar si ya existe en selectedCrossings (por si varA == varB y ya era viable)
-          const alreadyExists = selectedCrossings.some(c => c.varA === motherCell.varA && c.varB === motherCell.varA);
-          if (!alreadyExists) {
-            // Inyectar un cruce simulado consigo misma
-            selectedCrossings.push({
-              varA: motherCell.varA,
-              varB: motherCell.varA,
-              proyecto: motherCell.proyecto,
-              proyecto2: motherCell.proyecto, // Mismo proyecto
-              id_caracter: motherCell.id_caracter,
-              id_caracter2: motherCell.id_caracter, // Mismo caracter
-              viabilidad: true
-            });
-          }
+          // Ya no validamos if(!alreadyExists) porque queremos inyectar explícitamente la cantidad de cruces autofecundados pedidos
+          selectedCrossings.push({
+            varA: motherCell.varA,
+            varB: motherCell.varA,
+            proyecto: motherCell.proyecto,
+            proyecto2: motherCell.proyecto, // Mismo proyecto
+            id_caracter: motherCell.id_caracter,
+            id_caracter2: motherCell.id_caracter, // Mismo caracter
+            viabilidad: true
+          });
         }
       }
     });
