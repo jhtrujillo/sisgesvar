@@ -12,11 +12,8 @@ import {
   ROUTE_GERMOPLASM_BANK,
   ROUTE_CROSSING_LIST,
   ROUTE_SEQUENCE_SERVER,
-  ROUTE_WIKI_CENICANA,
-  ROUTE_JBROWSE,
-  ROUTE_GALAXY,
-  ROUTE_ALIGNMENTS,
-  ROUTE_ALIGNMENTS_LIST,
+  ROUTE_BIOJAVA,
+  ROUTE_COMP_GEN,
   ROUTE_PARENTS_DIAGRAM_LEVEL,
   ROUTE_CROSSING_INITIAL_DATA,
   ROUTE_CROSSING_WEIGHTED,
@@ -62,41 +59,24 @@ const routes = [
         beforeEnter: authGuard
       },
       {
-        path: ROUTE_WIKI_CENICANA,
-        name: "wiki_cenicana.show",
-        component: () => import("@/views/bioinformatica/WikiCenicanaView.vue"),
-        beforeEnter: authGuard
-      },
-      {
-        path: ROUTE_JBROWSE,
-        name: "jbrowse.show",
-        component: () => import("@/views/bioinformatica/JBrowseView.vue"),
-        beforeEnter: authGuard
-      },
-      {
-        path: ROUTE_GALAXY,
-        name: "galaxy.show",
-        component: () => import("@/views/bioinformatica/GalaxyView.vue"),
-        beforeEnter: authGuard
-      },
-      {
         path: ROUTE_SEQUENCE_SERVER,
         name: "sequence_server.show",
-        component: () => import("@/views/bioinformatica/SecuenceServerView.vue"),
+        component: () => import("@/views/bioinformatica/SequenceServerView.vue"),
         beforeEnter: authGuard
       },
       {
-        path: ROUTE_ALIGNMENTS_LIST,
-        name: "alignments_list.show",
-        component: () => import("@/views/bioinformatica/AlignmentsListView.vue"),
+        path: ROUTE_BIOJAVA,
+        name: "biojava.show",
+        component: () => import("@/views/DashboardBiojavaView.vue"),
         beforeEnter: authGuard
       },
       {
-        path: ROUTE_ALIGNMENTS,
-        name: "alignments.show",
-        component: () => import("@/views/bioinformatica/AlignmentsView.vue"),
+        path: ROUTE_COMP_GEN,
+        name: "comp_gen.show",
+        component: () => import("@/views/biojava/CompGenView.vue"),
         beforeEnter: authGuard
       },
+
       {
         path: ROUTE_MEJORAMIENTO,
         name: "mejoramiento.show",

@@ -142,7 +142,7 @@
       <!-- Libros de campo Card -->
       <router-link
         class="group relative flex flex-col bg-white border border-slate-100 hover:border-emerald-100 rounded-2xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
-        :to="{ name: 'alignments.show' }"
+        :to="{ name: 'mejoramiento.show' }"
       >
         <div class="absolute top-0 left-0 w-full h-1 bg-emerald-400 group-hover:bg-cenicana transition-colors duration-300"></div>
         

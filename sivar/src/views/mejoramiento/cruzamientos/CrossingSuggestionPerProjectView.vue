@@ -204,6 +204,20 @@
             Optimizar
           </button>
 
+          <!-- Toggle de Vistas Oculto temporalmente
+          <button 
+            @click="isDragDropView = !isDragDropView"
+            class="flex items-center px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all duration-200 border whitespace-nowrap"
+            :class="isDragDropView ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm hover:bg-indigo-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path v-if="!isDragDropView" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+              <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
+            {{ isDragDropView ? 'Ver Matriz Clásica' : 'Vista Drag & Drop' }}
+          </button>
+          -->
+
           <!-- Botón de Filtro Ocultar/Ver Inviables -->
           <button 
             @click="ocultarInviables = !ocultarInviables"
@@ -242,8 +256,10 @@
         <span class="text-[11px] text-slate-400">Haga clic en "Ver Inviables" para ver todas las opciones o modifique los pesos en el paso anterior.</span>
       </div>
 
-      <!-- Cuadrícula Estilo Clásico/Compacto de Oro (Sin Barra Horizontal) -->
-      <div v-else :class="isExpanded ? 'fixed inset-0 z-[9999] bg-white shadow-[0_0_80px_rgba(0,0,0,0.3)] flex flex-col border border-slate-200 overflow-hidden w-full h-full' : 'overflow-hidden border border-slate-100 rounded-xl shadow-sm relative'">
+      <!-- Contenedor General para Ambas Vistas -->
+      <div v-else class="w-full">
+        <!-- VISTA MATRIZ CLÁSICA -->
+        <div v-show="!isDragDropView" :class="isExpanded ? 'fixed inset-0 z-[9999] bg-white shadow-[0_0_80px_rgba(0,0,0,0.3)] flex flex-col border border-slate-200 overflow-hidden w-full h-full' : 'overflow-hidden border border-slate-100 rounded-xl shadow-sm relative'">
         
         <!-- Header de Modo Expandido -->
         <div v-if="isExpanded" class="flex justify-between items-center px-4 py-3 border-b border-slate-100 bg-slate-50/80 backdrop-blur">
@@ -421,8 +437,185 @@
             </tbody>
           </table>
         </div>
+        </div>
+
+        <!-- VISTA DRAG & DROP -->
+        <div v-show="isDragDropView" class="w-full bg-white border border-slate-200 rounded-xl flex shadow-sm min-h-[600px] max-h-[80vh] overflow-hidden select-none">
+          <!-- PANEL IZQUIERDO: MADRES -->
+          <div class="w-72 border-r border-slate-100 flex flex-col bg-slate-50">
+            <div class="p-3 border-b border-slate-100 bg-emerald-700 text-white shadow-sm z-10 flex justify-between items-center">
+              <h3 class="font-bold text-sm flex items-center">
+                <span class="w-2 h-2 rounded-full bg-white mr-2"></span>
+                Madres (Hembras)
+              </h3>
+              <span class="text-xs bg-emerald-800 px-2 py-0.5 rounded-full font-medium">{{ madresUnicas.length }}</span>
+            </div>
+            <div class="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
+              <div 
+                v-for="madre in madresUnicas" 
+                :key="madre.variedad"
+                draggable="true"
+                @dragstart="handleDragStart($event, madre, 'madre')"
+                class="bg-white border rounded-lg shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col group"
+                :class="getCantidadFlores(madre.variedad) - getFloresUsadas(madre.variedad, true) <= 0 ? 'opacity-50 border-rose-200' : 'border-slate-200 hover:border-emerald-300'"
+              >
+                <div class="px-3 py-2 border-b border-slate-50 flex justify-between items-center bg-gradient-to-r from-emerald-50/30 to-white">
+                  <span class="font-bold text-sm text-slate-800">{{ madre.variedad }}</span>
+                  <span class="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded font-medium">Polen: {{ Number(madre.polen).toFixed(0) }}</span>
+                </div>
+                <div class="px-3 py-1.5 bg-slate-50/50 flex justify-between items-center text-xs">
+                  <span class="text-slate-500 font-medium">Disponibles</span>
+                  <span class="font-bold" :class="getCantidadFlores(madre.variedad) - getFloresUsadas(madre.variedad, true) <= 0 ? 'text-rose-600' : 'text-emerald-600'">
+                    {{ getCantidadFlores(madre.variedad) - getFloresUsadas(madre.variedad, true) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL CENTRAL: ZONA DE CRUCES -->
+          <div class="flex-1 flex flex-col relative bg-[#f8fafc]">
+            <!-- PANEL SUPERIOR: PADRES -->
+            <div class="h-28 border-b border-slate-200 bg-white shadow-sm z-10 flex flex-col">
+              <div class="px-4 py-1.5 bg-indigo-600 text-white text-xs font-bold flex justify-between items-center">
+                <span class="flex items-center"><span class="w-2 h-2 rounded-full bg-white mr-2"></span> Padres (Machos)</span>
+                <span class="text-[10px] bg-indigo-700 px-1.5 py-0.5 rounded-full">{{ floresSeleccionadas.length }}</span>
+              </div>
+              <div class="flex-1 overflow-x-auto flex items-center px-3 space-x-3 custom-scrollbar py-2">
+                <div 
+                  v-for="padre in floresSeleccionadas" 
+                  :key="padre.variedad"
+                  draggable="true"
+                  @dragstart="handleDragStart($event, padre, 'padre')"
+                  class="flex-shrink-0 w-44 bg-white border rounded-lg shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-all duration-200 flex flex-col h-full"
+                  :class="getCantidadFlores(padre.variedad) - getFloresUsadas(padre.variedad, false) <= 0 ? 'opacity-50 border-rose-200' : 'border-slate-200 hover:border-indigo-300'"
+                >
+                  <div class="px-2 py-1.5 border-b border-slate-50 flex justify-between items-center bg-gradient-to-r from-indigo-50/30 to-white">
+                    <span class="font-bold text-xs text-slate-800 truncate">{{ padre.variedad }}</span>
+                    <span class="text-[9px] text-slate-500 bg-slate-100 px-1 py-0.5 rounded font-medium">Pol: {{ Number(padre.polen).toFixed(0) }}</span>
+                  </div>
+                  <div class="px-2 py-1 bg-slate-50/50 flex justify-between items-center text-[11px] flex-1">
+                    <span class="text-slate-500">Disp.</span>
+                    <span class="font-bold" :class="getCantidadFlores(padre.variedad) - getFloresUsadas(padre.variedad, false) <= 0 ? 'text-rose-600' : 'text-indigo-600'">
+                      {{ getCantidadFlores(padre.variedad) - getFloresUsadas(padre.variedad, false) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- DROP ZONE -->
+            <div 
+              class="flex-1 relative overflow-y-auto p-6"
+              @dragover="handleDragOver"
+              @drop="handleDrop($event, 'zone')"
+            >
+              <!-- Hint Background -->
+              <div v-if="manualCrosses.length === 0" class="absolute inset-0 pointer-events-none flex items-center justify-center opacity-40 flex-col">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-slate-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <h2 class="text-2xl font-bold text-slate-500">Arrastra Madres y Padres aquí</h2>
+                <p class="text-slate-500 mt-2">Une las tarjetas para formar cruces interactivos</p>
+              </div>
+
+              <!-- Pending Match Indicators -->
+              <div v-if="pendingMother || pendingFather" class="absolute top-4 left-1/2 -translate-x-1/2 bg-white px-6 py-3 rounded-2xl shadow-lg border border-emerald-200 flex items-center space-x-4 z-20 animate-pulse">
+                <div class="flex flex-col items-center">
+                  <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">Madre</span>
+                  <div class="px-3 py-1.5 bg-slate-100 rounded border border-slate-200 min-w-[100px] text-center font-bold text-slate-700">
+                    {{ pendingMother ? pendingMother.variedad : 'Esperando...' }}
+                  </div>
+                </div>
+                <div class="text-slate-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <div class="flex flex-col items-center">
+                  <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Padre</span>
+                  <div class="px-3 py-1.5 bg-slate-100 rounded border border-slate-200 min-w-[100px] text-center font-bold text-slate-700">
+                    {{ pendingFather ? pendingFather.variedad : 'Esperando...' }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Manual Crosses Grid -->
+              <div class="relative z-10 grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <div 
+                  v-for="(cross, i) in manualCrosses" 
+                  :key="i"
+                  class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 hover:shadow-md transition-all flex flex-col"
+                >
+                  <div class="flex justify-between items-start mb-3">
+                    <div class="flex items-center space-x-2">
+                      <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded">Exitosa</span>
+                      <span class="text-[10px] text-slate-500 font-medium bg-slate-100 px-2 py-0.5 rounded">VM: {{ cross.valor_merito }}</span>
+                      <span v-if="cross.causa_inviabilidad !== 'Ninguna'" class="px-2 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-bold rounded max-w-[120px] truncate" :title="cross.causa_inviabilidad">
+                        {{ cross.causa_inviabilidad }}
+                      </span>
+                    </div>
+                    <button @click="removeManualCross(cross)" class="text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-full p-1 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  
+                  <div class="flex items-center justify-between px-2 py-3 bg-slate-50/50 rounded-lg border border-slate-100 mb-3">
+                    <div class="flex flex-col items-center flex-1 w-0">
+                      <span class="text-[10px] text-emerald-700 font-bold uppercase tracking-wider mb-1">Madre</span>
+                      <span class="font-bold text-slate-800 text-sm truncate w-full text-center" :title="cross.varA">{{ cross.varA }}</span>
+                    </div>
+                    <div class="px-2 text-slate-300 flex-shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <div class="flex flex-col items-center flex-1 w-0">
+                      <span class="text-[10px] text-indigo-700 font-bold uppercase tracking-wider mb-1">Padre</span>
+                      <span class="font-bold text-slate-800 text-sm truncate w-full text-center" :title="cross.varB">{{ cross.varB }}</span>
+                    </div>
+                  </div>
+
+                  <div class="flex justify-between items-center pt-3 border-t border-slate-100 mt-auto">
+                    <div class="flex flex-col">
+                      <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Flores Asignadas</span>
+                    </div>
+                    <div class="flex items-center space-x-3 bg-slate-100 rounded-lg p-1 border border-slate-200">
+                      <button 
+                        @click="if(cross.flores_madre > 1) { cross.flores_madre--; cross.flores_padre--; }"
+                        class="w-6 h-6 rounded bg-white shadow-sm flex items-center justify-center text-slate-600 hover:text-rose-600 hover:border-rose-200 border border-transparent transition-all"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4" />
+                        </svg>
+                      </button>
+                      <span class="font-bold text-sm text-slate-700 min-w-[20px] text-center">{{ cross.flores_madre }}</span>
+                      <button 
+                        @click="() => {
+                          const limitM = getCantidadFlores(cross.varA) - getFloresUsadas(cross.varA, true);
+                          const limitP = getCantidadFlores(cross.varB) - getFloresUsadas(cross.varB, false);
+                          if(limitM > 0 && limitP > 0) {
+                            cross.flores_madre++; cross.flores_padre++;
+                          } else {
+                            toast.warning('No hay más flores disponibles para aumentar este cruce.');
+                          }
+                        }"
+                        class="w-6 h-6 rounded bg-emerald-600 shadow-sm flex items-center justify-center text-white hover:bg-emerald-700 transition-all"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
 
 
 
@@ -506,8 +699,9 @@
           </button>
         </div>
       </div>
+      </div>
     </div>
-    </div>
+  </div>
   <div v-else class="bg-white border border-emerald-100 rounded-2xl shadow-xl p-8 max-w-4xl mx-auto my-8 animate-fade-in-up">
     <div class="flex flex-col items-center text-center">
       <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
@@ -572,7 +766,6 @@
       </div>
     </div>
   </div>
-  </div>
 
     <!-- Modal Ajuste de Flores -->
     <div v-if="flowerModalData" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center" @click.self="closeFlowerAdjustmentModal">
@@ -630,6 +823,7 @@
     :fatherName="comparatorFather"
     :initiallyViable="comparatorInitiallyViable"
   />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -664,6 +858,13 @@ const isLoading = ref(false); // Ref para spinner de carga
 const isOptimizing = ref(false); // Ref para spinner de optimización
 const optimizandoMadre = ref(""); // Para mostrar en el loading qué variedad se procesa
 const isExpanded = ref(false); // Ref para modo pantalla completa
+const isDragDropView = ref(false); // Ref para alternar a Drag & Drop
+
+// Variables de Estado para Drag & Drop
+const activeDragType = ref<'madre' | 'padre' | null>(null);
+const activeDragItem = ref<any>(null);
+const pendingMother = ref<any>(null);
+const pendingFather = ref<any>(null);
 const tipoMapaCalor = ref('dg'); // Vista con mapa de calor por defecto
 
 function getIndiceCombinado(varA: string, varB: string, vm: number | string) {
@@ -1849,6 +2050,141 @@ async function finalizarProceso() {
 }
 
 
+// ==========================================
+// LÓGICA VISTA DRAG & DROP
+// ==========================================
+
+const madresUnicas = computed(() => {
+  const m = new Map();
+  const rows = viabilidadesMatriz.value || [];
+  rows.forEach((row: any) => {
+    if (row && row.length > 0) {
+      const madre = row[0];
+      if (Number(madre.polen) <= 20 && !m.has(madre.varA)) {
+        m.set(madre.varA, { variedad: madre.varA, polen: madre.polen });
+      }
+    }
+  });
+  return Array.from(m.values());
+});
+
+const manualCrosses = computed(() => {
+  const crosses: any[] = [];
+  const rows = viabilidadesMatriz.value || [];
+  rows.forEach((row: any) => {
+    if (row && row.length > 0 && Number(row[0]?.polen) <= 20) {
+      row.forEach((car: any) => {
+        if (car && car.viabilidad && Number(car.polen2) > 20) {
+          crosses.push(car);
+        }
+      });
+    }
+  });
+  return crosses;
+});
+
+function handleDragStart(event: DragEvent, item: any, type: 'madre' | 'padre') {
+  activeDragType.value = type;
+  activeDragItem.value = item;
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'copy';
+    event.dataTransfer.setData('text/plain', JSON.stringify({ type, item: item.variedad }));
+  }
+}
+
+function handleDragOver(event: DragEvent) {
+  event.preventDefault();
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'copy';
+  }
+}
+
+function handleDrop(event: DragEvent, dropType: 'zone') {
+  event.preventDefault();
+  
+  if (dropType === 'zone') {
+    if (activeDragType.value === 'madre') pendingMother.value = activeDragItem.value;
+    else if (activeDragType.value === 'padre') pendingFather.value = activeDragItem.value;
+  }
+  
+  activeDragType.value = null;
+  activeDragItem.value = null;
+
+  if (pendingMother.value && pendingFather.value) {
+    attemptManualCross(pendingMother.value.variedad, pendingFather.value.variedad);
+  }
+}
+
+function clearPendingDrop() {
+  pendingMother.value = null;
+  pendingFather.value = null;
+}
+
+function attemptManualCross(m: string, p: string) {
+  const rows = viabilidadesMatriz.value || [];
+  let foundCar = null;
+  
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    if (row && row.length > 0 && row[0].varA === m) {
+      foundCar = row.find((c: any) => c && c.varB === p);
+      break;
+    }
+  }
+
+  if (!foundCar) {
+    toast.error(`Cruce entre ${m} y ${p} no existe o no se evaluó en la matriz inicial.`);
+    clearPendingDrop();
+    return;
+  }
+
+  if (foundCar.viabilidad) {
+    toast.info("Este cruce ya se encuentra activo.");
+    clearPendingDrop();
+    return;
+  }
+
+  let isBiologicallyValid = true;
+  const causa = getCausaInviabilidad(foundCar);
+  if (causa.includes("Incompatibilidad de sexo")) isBiologicallyValid = false;
+  if (causa.includes("Restricción de Autogamia")) isBiologicallyValid = false;
+  if (causa.includes("excede límite")) isBiologicallyValid = false;
+  if (Number(foundCar?.polen2) <= 20) isBiologicallyValid = false; // El padre debe ser macho
+  
+  if (!isBiologicallyValid) {
+    toast.error(`Cruce biológicamente inválido: ${causa}`);
+    clearPendingDrop();
+    return;
+  }
+
+  const dispMother = getCantidadFlores(m);
+  const usedMother = getFloresUsadas(m, true);
+  if (usedMother >= dispMother) {
+    toast.warning(`No hay flores suficientes para la madre ${m}.`);
+    clearPendingDrop();
+    return;
+  }
+
+  const dispFather = getCantidadFlores(p);
+  const usedFather = getFloresUsadas(p, false);
+  if (usedFather >= dispFather) {
+    toast.warning(`No hay flores suficientes para el macho ${p}.`);
+    clearPendingDrop();
+    return;
+  }
+
+  foundCar.viabilidad = true;
+  foundCar.flores_madre = 1;
+  foundCar.flores_padre = 1;
+  toast.success(`Cruce ${m} x ${p} registrado.`);
+  clearPendingDrop();
+}
+
+function removeManualCross(car: any) {
+  car.viabilidad = false;
+  car.flores_madre = 0;
+  car.flores_padre = 0;
+}
 </script>
 
 <style>

@@ -5,13 +5,12 @@ export const ROUTE_USERS = "/users";
 
 //Bioinformatica
 export const ROUTE_BIOINFORMATICA = "bioinformatica/";
-export const ROUTE_WIKI_CENICANA = "bioinformatica/wiki_cenicana/";
-export const ROUTE_JBROWSE = "bioinformatica/jbrowse/";
-export const ROUTE_RSTUDIO = "bioinformatica/rstudio/";
-export const ROUTE_GALAXY = "bioinformatica/galaxy/";
-export const ROUTE_ALIGNMENTS = "bioinformatica/alignments/";
-export const ROUTE_ALIGNMENTS_LIST = "bioinformatica/alignments_list/";
-export const ROUTE_SEQUENCE_SERVER = "bioinformatica/sequence_ser/ver";
+export const ROUTE_SEQUENCE_SERVER = "bioinformatica/sequence_server/";
+
+//BioJava
+export const ROUTE_BIOJAVA = "biojava/";
+export const ROUTE_COMP_GEN = "biojava/comp-gen/";
+
 
 export const ROUTE_MEJORAMIENTO = "mejoramiento/";
 export const ROUTE_VARIEDADES = "mejoramiento/variedades/";
@@ -45,14 +44,11 @@ export const NON_SIGNIFICANT_ROUTES = [
   ROUTE_HOME,
   ROUTE_LOGIN,
   ROUTE_USERS,
-  ROUTE_SEQUENCE_SERVER,
-  ROUTE_WIKI_CENICANA,
-  ROUTE_JBROWSE,
-  ROUTE_RSTUDIO,
-  ROUTE_GALAXY,
-  ROUTE_ALIGNMENTS,
-  ROUTE_ALIGNMENTS_LIST,
+
   ROUTE_BIOINFORMATICA,
+  ROUTE_BIOJAVA,
+  ROUTE_COMP_GEN,
+  ROUTE_SEQUENCE_SERVER,
   ROUTE_MEJORAMIENTO,
   ROUTE_VARIEDADES,
   ROUTE_CRUZAMIENTOS,
