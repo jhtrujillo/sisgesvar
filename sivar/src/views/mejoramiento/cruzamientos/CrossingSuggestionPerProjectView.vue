@@ -56,7 +56,11 @@
         </div>
         <div class="flex flex-col items-center text-center px-4">
           <span v-if="isLoading" class="text-sm font-bold text-slate-700 animate-pulse">Calculando las mejores sugerencias de cruzamientos...</span>
-          <span v-else class="text-sm font-bold text-slate-700 animate-pulse">Aplicando algoritmos de optimización avanzada...</span>
+          <span v-else class="text-sm font-bold text-slate-700 animate-pulse">
+            Aplicando algoritmos de optimización avanzada
+            <span v-if="optimizandoMadre" class="text-emerald-700 block mt-1 text-xs font-black bg-emerald-50 py-1 px-3 rounded-full border border-emerald-100">Evaluando madre: {{ optimizandoMadre }}</span>
+            <span v-else>...</span>
+          </span>
         </div>
       </div>
 
@@ -263,7 +267,7 @@
         </div>
 
         <div :class="isExpanded ? 'flex-1 overflow-x-auto overflow-y-auto scrollbar-custom p-1 bg-slate-50/30' : 'max-h-[500px] overflow-x-auto overflow-y-auto scrollbar-custom'">
-          <table ref="matrizTable" class="table-auto w-full divide-y divide-slate-150 bg-white rounded-lg">
+          <table v-if="!isOptimizing" ref="matrizTable" class="table-auto w-full divide-y divide-slate-150 bg-white rounded-lg">
             <thead class="bg-slate-50">
               <tr>
                 <th class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-r border-slate-100 sticky top-0 left-0 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[140px]">
@@ -658,6 +662,7 @@ const resumenCrucesGuardados = ref<any[]>([]);
 const ocultarInviables = ref(true); // Vista compacta limpia por defecto
 const isLoading = ref(false); // Ref para spinner de carga
 const isOptimizing = ref(false); // Ref para spinner de optimización
+const optimizandoMadre = ref(""); // Para mostrar en el loading qué variedad se procesa
 const isExpanded = ref(false); // Ref para modo pantalla completa
 const tipoMapaCalor = ref('dg'); // Vista con mapa de calor por defecto
 
@@ -813,6 +818,9 @@ async function loadSuggestionCrossings() {
             }
           });
         });
+      } else {
+        // Si no hay borrador, optimizar automáticamente por defecto para no desbordar el inventario
+        await autoOptimizarFlores(true);
       }
     } catch (error) {
       console.error("Error al cargar cruzamientos por proyecto:", error);
@@ -977,22 +985,41 @@ function toggleAutofecundar(viabilidadRow: any) {
   }
 }
 
+// Caché para getDistancia
+let distanciasCache: Map<string, Map<string, any>> | null = null;
+
+function buildDistanciasCache() {
+  const distancias = SuggestionCrossingPerProjectStore.suggestionCrossingsPerProjectFilter?.distancias || {};
+  const cache = new Map<string, Map<string, any>>();
+  
+  for (const [keyA, subDist] of Object.entries(distancias)) {
+    const cleanA = keyA.trim().toUpperCase();
+    const subCache = new Map<string, any>();
+    
+    if (subDist && typeof subDist === 'object') {
+      for (const [keyB, val] of Object.entries(subDist)) {
+        subCache.set(keyB.trim().toUpperCase(), val);
+      }
+    }
+    cache.set(cleanA, subCache);
+  }
+  distanciasCache = cache;
+}
+
 function getDistancia(varA: string, varB: string) {
   if (!varA || !varB) return "NA";
-  const distancias = SuggestionCrossingPerProjectStore.suggestionCrossingsPerProjectFilter?.distancias || {};
+  
+  if (!distanciasCache) {
+    buildDistanciasCache();
+  }
+  
   const cleanA = varA.trim().toUpperCase();
   const cleanB = varB.trim().toUpperCase();
   
-  const keyA = Object.keys(distancias).find(k => k.trim().toUpperCase() === cleanA);
-  if (!keyA) return "NA";
-  
-  const subDist = distancias[keyA];
+  const subDist = distanciasCache?.get(cleanA);
   if (!subDist) return "NA";
   
-  const keyB = Object.keys(subDist).find(k => k.trim().toUpperCase() === cleanB);
-  if (!keyB) return "NA";
-  
-  const val = subDist[keyB];
+  const val = subDist.get(cleanB);
   return val !== null && val !== undefined ? String(val) : "NA";
 }
 
@@ -1005,14 +1032,18 @@ function getCausaInviabilidad(cell: any): string {
   const floresPR = filterData.flores_pr || [];
   const floresEIII = filterData.flores_eiii || [];
   const testigoLimpio = filterData.testigo_limpio || {};
-
+  // Caché estática para findVarietyData para evitar millones de operaciones .find()
+  if (!(window as any).__varietyDataCache) {
+    const map = new Map<string, any>();
+    [...floresBG, ...floresPR, ...floresEIII].forEach((f: any) => {
+      if (f && f.vrdad) map.set(f.vrdad.trim().toUpperCase(), f);
+    });
+    (window as any).__varietyDataCache = map;
+  }
+  
   const findVarietyData = (varName: string) => {
     if (!varName) return undefined;
-    const cleanVar = varName.trim().toUpperCase();
-    let data = floresBG.find((f: any) => f.vrdad && f.vrdad.trim().toUpperCase() === cleanVar);
-    if (!data) data = floresPR.find((f: any) => f.vrdad && f.vrdad.trim().toUpperCase() === cleanVar);
-    if (!data) data = floresEIII.find((f: any) => f.vrdad && f.vrdad.trim().toUpperCase() === cleanVar);
-    return data;
+    return (window as any).__varietyDataCache.get(varName.trim().toUpperCase());
   };
 
   const florAData = findVarietyData(cell.varA);
@@ -1585,74 +1616,83 @@ async function descargarPNG() {
   }
 }
 
-async function autoOptimizarFlores() {
+async function autoOptimizarFlores(silent: boolean | Event = false) {
+  const isSilent = typeof silent === 'boolean' ? silent : false;
   isOptimizing.value = true;
-  
-  // Pausa mínima para permitir renderizado
   await new Promise(resolve => setTimeout(resolve, 50));
 
-  const metricType = tipoMapaCalor.value; // 'dg', 'ic', or 'none'
+  const metricType = tipoMapaCalor.value;
   const isIC = metricType === 'ic';
-  
-  let reducciones = 0; // En este nuevo modelo representará los cruces descartados
-  let adiciones = 0;   // Cruces habilitados
+  let adiciones = 0;
 
   const usadas = { madre: {} as Record<string, number>, padre: {} as Record<string, number> };
   const disp = { madre: {} as Record<string, number>, padre: {} as Record<string, number> };
   
-  // 1. Cargar disponibilidades
-  viabilidadesMatriz.value?.forEach((row: any) => {
+  // 1. Cargar disponibilidades (DISP)
+  const rows = viabilidadesMatriz.value || [];
+  rows.forEach((row: any) => {
     if (row && row.length > 0) {
       const m = row[0].varA;
       if (m) disp.madre[m] = getCantidadFlores(m);
     }
   });
-  floresSeleccionadas.value?.forEach((p: any) => {
-    if (p && p.variedad) disp.padre[p.variedad] = getCantidadFlores(p.variedad);
+  floresSeleccionadas.value.forEach((padre: any) => {
+    const p = padre.variedad;
+    if (p) disp.padre[p] = getCantidadFlores(p);
   });
 
-  const allCrosses: Array<{car: any, val: number, varA: string, varB: string}> = [];
-  
-  // 2. Extraer todos los cruces y resetearlos a cero (Construcción desde CERO para garantizar constancia)
-  const rows = viabilidadesMatriz.value || [];
-  
-  console.log("=== INICIANDO OPTIMIZACIÓN PASO A PASO ===");
-  console.log("1. Disponibilidad inicial de padre CC 10-123:", disp.padre['CC 10-123']);
-  let fantasmasIgnorados = 0;
-
-  // Primero limpiamos TODO el estado para que ningún cruce duplicado o fantasma quede seleccionado
+  // 2. Limpieza total y cobro de autofecundaciones (OPTIMIZADO para Vue Reactivity)
   rows.forEach((row: any) => {
     row.forEach((car: any) => {
       if (car) {
-        car.viabilidad = false;
-        car.flores_madre = 0;
-        car.flores_padre = 0;
+        // Solo modificamos si es estrictamente necesario para evitar colapsar la reactividad de Vue
+        if (car.viabilidad) car.viabilidad = false;
+        if (car.flores_madre !== 0) car.flores_madre = 0;
+        if (car.flores_padre !== 0) car.flores_padre = 0;
       }
     });
   });
 
-  // Ahora solo extraemos los cruces EXACTOS que la interfaz gráfica está renderizando
-  rows.forEach((row: any) => {
-    if (!row || row.length === 0) return;
+  for (const m in disp.madre) {
+    if (usadas.madre[m] === undefined) usadas.madre[m] = 0;
+    if (autofecundacionesSeleccionadas.value.has(m)) {
+      usadas.madre[m] += 1;
+    }
+  }
+
+  // 3. Procesar fila por fila (Dando prioridad a las Hembras)
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+    const row = rows[rowIndex];
+    if (!row || row.length === 0) continue;
+    
+    // Ignorar las filas de machos (el UI solo muestra Hembras con polen <= 20)
+    if (Number(row[0]?.polen) > 20) continue;
+
     const m = row[0].varA;
+    
+    // Actualizar la UI para mostrar la madre actual y forzar el repintado en pantalla a 60fps
+    optimizandoMadre.value = m;
+    // El doble requestAnimationFrame garantiza que Vue aplique los cambios al DOM y el navegador los dibuje
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
     if (usadas.madre[m] === undefined) usadas.madre[m] = 0;
 
     const seenFathersInRow = new Set<string>();
+    const crossesForMother: Array<{car: any, val: number, varB: string}> = [];
+    const memoCausa = new Map<string, string>();
 
+    // Extraer cruces viables de esta madre
     row.forEach((car: any) => {
       if (!car) return;
       const p = car.varB;
       
-      // Si ya procesamos un cruce para este padre en esta fila, es un fantasma invisible, lo saltamos!
-      // (Esto imita exactamente el comportamiento de getCruzamiento que solo retorna el primero)
-      if (seenFathersInRow.has(p)) {
-        if (p === 'CC 10-123') fantasmasIgnorados++;
-        return;
-      }
+      // Filtro caza-fantasmas (ignorar duplicados de la BD)
+      if (seenFathersInRow.has(p)) return;
       seenFathersInRow.add(p);
 
       if (usadas.padre[p] === undefined) usadas.padre[p] = 0;
 
+      // Calcular puntaje matemático (IC o DG)
       let val = 0;
       if (isIC) {
         val = getIndiceCombinado(m, p, car.vm2) || 0;
@@ -1662,83 +1702,64 @@ async function autoOptimizarFlores() {
       }
       if (isNaN(val)) val = -9999;
 
-      // Evaluar inviabilidad sin la bandera de 'viabilidad=true'
-      const causa = getCausaInviabilidad(car);
+      // Filtro biológico estricto con memoización
+      const key = m + '|' + p;
+      let causa = memoCausa.get(key);
+      if (causa === undefined) {
+        causa = getCausaInviabilidad(car);
+        memoCausa.set(key, causa);
+      }
+      
       let isBiologicallyValid = true;
       if (causa.includes("Incompatibilidad de sexo")) isBiologicallyValid = false;
       if (causa.includes("Restricción de Autogamia")) isBiologicallyValid = false;
       if (causa.includes("excede límite")) isBiologicallyValid = false;
       
+      // Regla de polen de la interfaz: El padre DEBE tener polen > 20
+      if (Number(car?.polen2) <= 20) isBiologicallyValid = false;
+      
       if (m !== p && val !== -9999 && isBiologicallyValid) {
-        allCrosses.push({ car, val, varA: m, varB: p });
-        if (p === 'CC 10-123') console.log(`-> Cruce BIOLÓGICAMENTE VIABLE encontrado para CC 10-123 con madre ${m} | Puntaje: ${val}`);
-      } else if (p === 'CC 10-123') {
-        console.log(`-> Cruce DESCARTADO en pre-filtro biológico para CC 10-123 con madre ${m} | Causa: ${causa} | isBiologicallyValid: ${isBiologicallyValid}`);
+        crossesForMother.push({ car, val, varB: p });
       }
     });
-  });
 
-  console.log(`2. Extracción terminada. Fantasmas ignorados para CC 10-123: ${fantasmasIgnorados}`);
-  
-  // Agregar autofecundaciones fijas a las madres (ocupan espacio obligatorio)
-  for (const m in disp.madre) {
-    if (autofecundacionesSeleccionadas.value.has(m)) {
-      usadas.madre[m] = (usadas.madre[m] || 0) + 1;
+    // Ordenar los cruces DE ESTA MADRE de mejor a peor puntaje
+    // (Desempate alfabético por padre para determinismo)
+    crossesForMother.sort((a, b) => {
+      if (b.val !== a.val) return b.val - a.val;
+      return a.varB.localeCompare(b.varB);
+    });
+
+    // 4. Asignación "1 flor a la vez" para esta madre
+    for (let i = 0; i < crossesForMother.length; i++) {
+      const item = crossesForMother[i];
+      const p = item.varB;
+
+      // Si la madre tiene espacio Y el padre también tiene espacio
+      if (disp.madre[m] > usadas.madre[m] && disp.padre[p] > usadas.padre[p]) {
+        item.car.viabilidad = true;
+        item.car.flores_madre = 1;
+        item.car.flores_padre = 1;
+        
+        usadas.madre[m]++;
+        usadas.padre[p]++;
+        adiciones++;
+      }
+      // Si la madre ya se quedó sin flores (usadas == disp), ya no buscamos más padres para ella
+      if (usadas.madre[m] >= disp.madre[m]) break;
     }
   }
 
-  // 3. Ordenar cruces de MEJOR a PEOR (Desempate alfabético para que sea 100% constante en cualquier PC)
-  allCrosses.sort((a, b) => {
-    if (b.val !== a.val) return b.val - a.val; // Valor numérico
-    if (a.varA !== b.varA) return a.varA.localeCompare(b.varA); // Madre
-    return a.varB.localeCompare(b.varB); // Padre
-  });
-
-  console.log(`3. Cruces ordenados. Total viables competitivos para CC 10-123: ${allCrosses.filter(c => c.varB === 'CC 10-123').length}`);
-
-  // ============================================
-  // FASE 1: Llenado Greedy (Seleccionar cruces nuevos uno a uno)
-  // ============================================
-  const selectedCrosses: Array<{car: any, val: number, varA: string, varB: string}> = [];
-  
-  for (let i = 0; i < allCrosses.length; i++) {
-    const item = allCrosses[i];
-    const m = item.varA;
-    const p = item.varB;
-    
-    // Si aún hay espacio en AMBOS parentales, asignamos 1 flor
-    if (disp.madre[m] > usadas.madre[m] && disp.padre[p] > usadas.padre[p]) {
-      item.car.viabilidad = true;
-      item.car.flores_madre = 1;
-      item.car.flores_padre = 1;
-      usadas.madre[m]++;
-      usadas.padre[p]++;
-      
-      if (p === 'CC 10-123') console.log(`--> [ASIGNADO] Se asignó 1 flor a CC 10-123 con madre ${m} | Usadas padre ahora: ${usadas.padre[p]}`);
-      
-      selectedCrosses.push(item);
-      adiciones++;
-    } else {
-      if (p === 'CC 10-123') console.log(`--> [SIN INVENTARIO] Se descartó a CC 10-123 con madre ${m} | disp.padre: ${disp.padre[p]} vs usadas.padre: ${usadas.padre[p]} | disp.madre: ${disp.madre[m]} vs usadas.madre: ${usadas.madre[m]}`);
-      reducciones++; // Cruz que se quedó por fuera por falta de inventario
-    }
-  }
-
-  // ============================================
-  // FASE 2: Repartir el remanente de flores en los MEJORES cruces seleccionados
-  // ============================================
-
-  // Borrar el draft de LocalStorage para que no interfiera en la siguiente recarga
+  // Borrar draft para no ensuciar recargas
+  optimizandoMadre.value = "";
   localStorage.removeItem(draftKey.value);
 
-  console.log("=== RESUMEN FINAL PARA CC 10-123 ===");
-  console.log("Usadas contadas internamente en el bucle:", usadas.padre['CC 10-123']);
-  console.log("getFloresUsadas() reportará a la UI:", getFloresUsadas('CC 10-123', false));
-  console.log("=====================================");
-
-  toast.success(`¡Optimización Calculada! Cruces habilitados (1 flor c/u): ${adiciones}. Cruces descartados por falta de inventario: ${reducciones}.`);
+  if (!isSilent) {
+    toast.success(`¡Optimización Calculada! Cruces asignados: ${adiciones}.`);
+  }
   isOptimizing.value = false;
 }
+
 
 async function finalizarProceso() {
   // 1. Mostrar spinner de guardado
