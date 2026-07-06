@@ -12,17 +12,8 @@ app.use(express.json());
 // Servir la carpeta public estáticamente para poder ver los resultados generados
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
-const envFilePath = path.join(__dirname, '.env.biojava');
-// Buscar biojava.jar por defecto dentro de la carpeta "biojava" en la raíz de SIVAR
-let jarPath = path.join(__dirname, 'biojava', 'biojava.jar');
-
-if (fs.existsSync(envFilePath)) {
-    const envContent = fs.readFileSync(envFilePath, 'utf-8');
-    const match = envContent.match(/BIOJAVA_JAR_PATH=(.*)/);
-    if (match && match[1]) {
-        jarPath = match[1].trim();
-    }
-}
+// Buscar biojava.jar obligatoriamente dentro de la carpeta "biojava" en la raíz de SIVAR
+const jarPath = path.join(__dirname, 'biojava', 'biojava.jar');
 
 const PORT = 3001;
 
