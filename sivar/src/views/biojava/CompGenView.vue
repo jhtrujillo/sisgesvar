@@ -25,46 +25,43 @@
       Integra y visualiza bloques de sintenia (McScanX) y ortología con anotaciones funcionales para análisis evolutivos.
     </p>
 
-    <!-- Tarjeta de Resultados Pre-procesados -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-6">
-      <div class="p-6 md:p-8 bg-slate-50 border-b border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div>
-          <h2 class="text-xl font-bold text-slate-800">Resultados Procesados</h2>
-          <p class="text-sm text-slate-500 mt-1">Selecciona un análisis previamente ejecutado para visualizarlo de inmediato.</p>
-        </div>
-        <div class="w-full md:w-96">
-          <select 
-            v-model="selectedPrecomputed"
-            @change="loadPrecomputed"
-            class="w-full border-slate-300 rounded-lg shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm font-medium"
-          >
-            <option value="">-- Seleccionar Análisis --</option>
-            <option value="CC1940_vs_R570">CC 1940 vs R570</option>
-            <option value="R570_vs_Spont_sim">R570 vs Spontaneum (Simulación)</option>
-          </select>
-        </div>
+    <!-- Barra de Resultados Pre-procesados -->
+    <div class="p-6 md:p-8 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+      <div>
+        <h2 class="text-xl font-bold text-slate-800">Resultados Procesados</h2>
+        <p class="text-sm text-slate-500 mt-1">Selecciona un análisis pre-configurado para cargar automáticamente sus parámetros en el formulario inferior.</p>
+      </div>
+      <div class="w-full md:w-96">
+        <select 
+          v-model="selectedPrecomputed"
+          @change="loadPrecomputed"
+          class="w-full border-slate-300 rounded-lg shadow-sm focus:border-teal-500 focus:ring-teal-500 text-sm font-medium"
+        >
+          <option value="">-- Seleccionar Análisis --</option>
+          <option value="CC1940_vs_R570">CC 1940 vs R570</option>
+          <option value="R570_vs_Spont_sim">R570 vs Spontaneum (Simulación)</option>
+        </select>
       </div>
     </div>
 
     <!-- Visor de Resultados -->
     <div v-if="resultHtmlUrl" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8">
-      <div class="p-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-        <h2 class="text-lg font-bold text-slate-800">Visor de Sintenia</h2>
-        <a :href="resultHtmlUrl" target="_blank" class="text-sm text-teal-600 hover:text-teal-700 font-medium">Abrir en nueva pestaña ↗</a>
+      <div class="p-3 bg-slate-50 border-b border-slate-100 flex justify-end items-center">
+        <a :href="resultHtmlUrl" target="_blank" class="text-sm text-teal-600 hover:text-teal-700 font-medium flex items-center">
+          Abrir en nueva pestaña 
+          <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+        </a>
       </div>
       <div class="w-full" style="height: 800px;">
         <iframe :src="resultHtmlUrl" class="w-full h-full border-0"></iframe>
       </div>
     </div>
 
-    <!-- Ejecutar Nuevo Análisis -->
-    <details class="group bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8" :open="!resultHtmlUrl">
-      <summary class="p-6 md:p-8 bg-white cursor-pointer list-none flex items-center justify-between font-bold text-slate-800 text-xl border-b border-slate-100">
-        Ejecutar Nuevo Análisis Manual
-        <span class="transition group-open:rotate-180">
-          <svg fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-        </span>
-      </summary>
+    <!-- Ejecutar Análisis Manual -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8">
+      <div class="p-6 md:p-8 bg-white flex items-center justify-between font-bold text-slate-800 text-xl border-b border-slate-100">
+        Ejecutar Análisis Manual
+      </div>
       
       <div class="p-6 md:p-8 bg-white">
         <form @submit.prevent="runAnalysis" class="space-y-6">
@@ -176,7 +173,7 @@
           </div>
         </form>
       </div>
-    </details>
+    </div>
 
   </div>
 </template>
@@ -213,13 +210,41 @@ const form = ref({
 });
 
 const loadPrecomputed = () => {
-  if (!selectedPrecomputed.value) {
-    resultHtmlUrl.value = '';
-    return;
+  const baseDir = '/Users/estuvar4/Documents/2. software/17.biojava';
+
+  if (selectedPrecomputed.value === 'CC1940_vs_R570') {
+    form.value = {
+      ...form.value,
+      gff1: `${baseDir}/dataset_genomico/genomas/CC-01-1940/CC-01-1940.gff`,
+      gff2: `${baseDir}/dataset_genomico/genomas/R570/R570.gff`,
+      collinearity: `${baseDir}/dataset_genomico/comparativas/CC1940_vs_R570/CC1940_vs_R570.collinearity`,
+      cds1: `${baseDir}/dataset_genomico/genomas/CC-01-1940/CC-01-1940.cds.fa`,
+      cds2: `${baseDir}/dataset_genomico/genomas/R570/R570.cds.fa`,
+      prot1: `${baseDir}/dataset_genomico/genomas/CC-01-1940/CC-01-1940.protein.faa`,
+      prot2: `${baseDir}/dataset_genomico/genomas/R570/R570.protein.faa`,
+      vcf: `${baseDir}/dataset_genomico/genomas/CC-01-1940/CC-01-1940_sim.vcf`,
+      kaks: `${baseDir}/dataset_genomico/comparativas/CC1940_vs_R570/kaks_1940_vs_R570.tsv`,
+      name1: 'CC 1940',
+      name2: 'R570',
+      organism: 'Saccharum'
+    };
+  } else if (selectedPrecomputed.value === 'R570_vs_Spont_sim') {
+    form.value = {
+      ...form.value,
+      gff1: `${baseDir}/dataset_genomico/genomas/R570_sim/R570.gff`,
+      gff2: `${baseDir}/dataset_genomico/genomas/Spont_sim/Spont.gff`,
+      collinearity: `${baseDir}/dataset_genomico/comparativas/R570_vs_Spont_sim/R570_vs_Spont.collinearity`,
+      cds1: `${baseDir}/dataset_genomico/genomas/R570_sim/R570.cds.fa`,
+      cds2: `${baseDir}/dataset_genomico/genomas/Spont_sim/Spont.cds.fa`,
+      prot1: ``,
+      prot2: ``,
+      vcf: ``,
+      kaks: `${baseDir}/dataset_genomico/comparativas/R570_vs_Spont_sim/R570_vs_Spont.kaks.tsv`,
+      name1: 'R570',
+      name2: 'Spontaneum',
+      organism: 'Saccharum'
+    };
   }
-  
-  const viteBase = import.meta.env.BASE_URL;
-  resultHtmlUrl.value = `${viteBase}biojava_outputs/comp_gen/${selectedPrecomputed.value}/visor_sintenia.html`.replace(/\/\//g, '/');
 };
 
 const runAnalysis = async () => {
