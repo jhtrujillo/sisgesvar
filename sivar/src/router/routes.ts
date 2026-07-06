@@ -20,7 +20,6 @@ export const ROUTE_FLOWERING_LIST = "mejoramiento/flowering_list/";
 export const ROUTE_VARIETYS_LIST = "mejoramiento/varietys_list/";
 export const ROUTE_CROSSING_LIST = "mejoramiento/crossing_list/";
 export const ROUTE_VARIETY_HISTORY = "mejoramiento/variety_history/";
-export const ROUTE_BITACORA = "bitacora/";
 export const ROUTE_GERMOPLASM_BANK = "mejoramiento/germoplasm_bank/";
 export const ROUTE_PARENTS_DIAGRAM_LEVEL = "mejoramiento/parents_diagram_level/";
 export const ROUTE_CROSSING_INITIAL_DATA = "mejoramiento/crossing_initial_data/";
@@ -59,7 +58,6 @@ export const NON_SIGNIFICANT_ROUTES = [
   ROUTE_VARIETYS_LIST,
   ROUTE_CROSSING_LIST,
   ROUTE_VARIETY_HISTORY,
-  ROUTE_BITACORA,
   ROUTE_GERMOPLASM_BANK,
   ROUTE_PARENTS_DIAGRAM_LEVEL,
   ROUTE_CROSSING_INITIAL_DATA,
