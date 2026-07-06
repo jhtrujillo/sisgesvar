@@ -215,8 +215,10 @@ const showLogsModal = ref(false);
 const consoleLogs = ref<string[]>([]);
 const logsContainer = ref<HTMLElement | null>(null);
 
-// Configuración de rutas (Esta es la raíz donde Vite sirve los estáticos)
-const PUBLIC_PATH = '/Users/estuvar4/Documents/2. software/13. SIVAR/sivar/public/biojava_outputs/';
+// Directorio base relativo a biojava-runner.js para guardar los outputs
+const PUBLIC_PATH = 'public/biojava_outputs/';
+// URL base del microservicio Node (asegúrate de que coincida con donde corre biojava-runner.js)
+const BACKEND_URL = 'http://192.168.153.238:3001'; // <-- Cambia a localhost si corres SIVAR y BioJava en la misma máquina
 
 const form = ref({
   collinearity: '',
@@ -302,7 +304,7 @@ const runAnalysis = async () => {
   form.value.outputFile = `${PUBLIC_PATH}${subfolder}/reporte_comparativo.tsv`;
 
   try {
-    const response = await fetch('http://localhost:3001/run-comp-gen', {
+    const response = await fetch(`${BACKEND_URL}/run-comp-gen`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -317,7 +319,7 @@ const runAnalysis = async () => {
     }
 
     // Comenzar a escuchar SSE
-    const eventSource = new EventSource(`http://localhost:3001/comp-gen-logs/${data.jobId}`);
+    const eventSource = new EventSource(`${BACKEND_URL}/comp-gen-logs/${data.jobId}`);
 
     eventSource.addEventListener('log', (e) => {
       consoleLogs.value.push(JSON.parse(e.data));
@@ -330,8 +332,8 @@ const runAnalysis = async () => {
       isLoading.value = false;
       eventSource.close();
       
-      const viteBase = import.meta.env.BASE_URL;
-      resultHtmlUrl.value = `${viteBase}biojava_outputs/${subfolder}/visor_sintenia.html`.replace(/\/\//g, '/');
+      // Obtener el HTML desde el servidor Node (no de Vite)
+      resultHtmlUrl.value = `${BACKEND_URL}/${PUBLIC_PATH}${subfolder}/visor_sintenia.html`.replace(/([^:]\/)\/+/g, "$1");
       
       // Cerrar modal automáticamente después de unos segundos si todo salió bien
       setTimeout(() => {

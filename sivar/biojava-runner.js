@@ -9,6 +9,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Servir la carpeta public estáticamente para poder ver los resultados generados
+app.use('/public', express.static(path.join(__dirname, 'public')));
+
 const envFilePath = path.join(__dirname, '.env.biojava');
 let jarPath = '/Users/estuvar4/Documents/2. software/17.biojava/target/biojava.jar';
 if (fs.existsSync(envFilePath)) {
