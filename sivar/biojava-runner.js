@@ -13,7 +13,9 @@ app.use(express.json());
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 const envFilePath = path.join(__dirname, '.env.biojava');
-let jarPath = '/Users/estuvar4/Documents/2. software/17.biojava/target/biojava.jar';
+// Buscar biojava.jar por defecto dentro de la carpeta "biojava" en la raíz de SIVAR
+let jarPath = path.join(__dirname, 'biojava', 'biojava.jar');
+
 if (fs.existsSync(envFilePath)) {
     const envContent = fs.readFileSync(envFilePath, 'utf-8');
     const match = envContent.match(/BIOJAVA_JAR_PATH=(.*)/);
@@ -160,7 +162,9 @@ app.get('/comp-gen-logs/:jobId', (req, res) => {
 
 app.get('/list-directory', (req, res) => {
   try {
-    const targetPath = req.query.path || '/Users/estuvar4/Documents/2. software'; 
+    // Si no se envía path, por defecto arranca en la raíz de la máquina o SIVAR
+    const defaultPath = process.platform === 'win32' ? 'C:\\' : '/';
+    const targetPath = req.query.path || process.cwd(); 
     const absolutePath = path.resolve(targetPath);
 
     fs.readdir(absolutePath, { withFileTypes: true }, (err, files) => {
