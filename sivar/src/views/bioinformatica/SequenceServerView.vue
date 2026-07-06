@@ -33,9 +33,9 @@
         <p class="text-slate-500 font-medium animate-pulse">Conectando con SequenceServer...</p>
       </div>
       
-      <!-- Reemplaza la IP con la IP real de tu servidor de Linux -->
+      <!-- Iframe apuntando al servidor Linux donde corre SequenceServer en Docker -->
       <iframe 
-        src="http://192.168.153.119:4567" 
+        src="http://192.168.153.238:4567" 
         class="w-full h-full border-none"
         @load="isLoading = false"
         sandbox="allow-same-origin allow-scripts allow-forms"
