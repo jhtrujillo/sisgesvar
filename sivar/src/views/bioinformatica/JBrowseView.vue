@@ -20,7 +20,7 @@ const isLoading = ref(true);
       </div>
       <div class="flex space-x-3">
         <a 
-          href="/jbrowse2/" 
+          href="http://192.168.153.238:8080/" 
           target="_blank"
           class="inline-flex items-center px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-50 hover:shadow-sm transition-all"
         >
@@ -40,9 +40,9 @@ const isLoading = ref(true);
         <p class="text-slate-500 font-medium animate-pulse">Iniciando JBrowse 2...</p>
       </div>
       
-      <!-- Iframe apuntando al jbrowse local en public/jbrowse2 -->
+      <!-- Iframe apuntando al jbrowse alojado en el servidor Linux -->
       <iframe 
-        src="/jbrowse2/" 
+        src="http://192.168.153.238:8080/" 
         class="w-full h-full border-none"
         @load="isLoading = false"
       ></iframe>
