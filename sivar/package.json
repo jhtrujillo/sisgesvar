@@ -23,7 +23,7 @@
     "cors": "^2.8.6",
     "dayjs": "^1.11.10",
     "exceljs": "^4.4.0",
-    "express": "^5.2.1",
+    "express": "^4.19.2",
     "html2canvas": "^1.4.1",
     "jquery": "^3.7.1",
     "jszip": "^3.10.1",
