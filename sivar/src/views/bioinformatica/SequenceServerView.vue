@@ -25,20 +25,28 @@
       </div>
     </div>
 
-    <!-- Contenedor del Iframe -->
-    <div class="flex-1 bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm relative">
-      <!-- Loading indicator -->
-      <div v-if="isLoading" class="absolute inset-0 flex flex-col items-center justify-center bg-white z-10">
-        <div class="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-        <p class="text-slate-500 font-medium animate-pulse">Conectando con SequenceServer...</p>
+    <!-- Contenedor Informativo y Botón -->
+    <div class="flex-1 bg-slate-50 border border-slate-100 rounded-xl flex flex-col items-center justify-center p-8 shadow-sm">
+      <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-lg text-center flex flex-col items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-blue-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+        </svg>
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">Servidor BLAST Activo</h2>
+        <p class="text-slate-600 mb-6 leading-relaxed">
+          Por razones de seguridad del navegador y para garantizar el máximo rendimiento durante el procesamiento de los alineamientos, SequenceServer debe ejecutarse en una ventana independiente.
+        </p>
+        <a 
+          href="http://192.168.153.238:4567" 
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 hover:shadow-lg transition-all transform hover:-translate-y-0.5"
+        >
+          Abrir SequenceServer (Nueva Pestaña)
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
       </div>
-      
-      <!-- Iframe apuntando al servidor Linux donde corre SequenceServer en Docker -->
-      <iframe 
-        src="http://192.168.153.238:4567" 
-        class="w-full h-full border-none"
-        @load="isLoading = false"
-      ></iframe>
     </div>
   </div>
 </template>
