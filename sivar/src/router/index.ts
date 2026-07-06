@@ -13,6 +13,7 @@ import {
   ROUTE_CROSSING_LIST,
   ROUTE_SEQUENCE_SERVER,
   ROUTE_JBROWSE,
+  ROUTE_BITACORA,
   ROUTE_BIOJAVA,
   ROUTE_COMP_GEN,
   ROUTE_PARENTS_DIAGRAM_LEVEL,
@@ -69,6 +70,12 @@ const routes = [
         path: ROUTE_JBROWSE,
         name: "jbrowse.show",
         component: () => import("@/views/bioinformatica/JBrowseView.vue"),
+        beforeEnter: authGuard
+      },
+      {
+        path: ROUTE_BITACORA,
+        name: "bitacora.show",
+        component: () => import("@/views/BitacoraView.vue"),
         beforeEnter: authGuard
       },
       {
