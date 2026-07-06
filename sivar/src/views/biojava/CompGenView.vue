@@ -217,8 +217,8 @@ const logsContainer = ref<HTMLElement | null>(null);
 
 // Directorio base relativo a biojava-runner.js para guardar los outputs
 const PUBLIC_PATH = 'public/biojava_outputs/';
-// URL base dinámica: busca el backend en la misma IP/Host desde donde se abrió SIVAR
-const BACKEND_URL = `http://${window.location.hostname}:3001`;
+// URL base dinámica por variable de entorno (Vite), con fallback al host local
+const BACKEND_URL = import.meta.env.VITE_BIOJAVA_API_URL || `http://${window.location.hostname}:3001`;
 
 const form = ref({
   collinearity: '',
@@ -251,7 +251,13 @@ const scrollToBottom = async () => {
 };
 
 const loadPrecomputed = () => {
-  const baseDir = '/Users/estuvar4/Documents/2. software/17.biojava';
+  // Elegir ruta base dinámicamente según si estamos en Mac (local) o Linux (servidor)
+  let baseDir = '';
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    baseDir = '/Users/estuvar4/Documents/2. software/17.biojava';
+  } else {
+    baseDir = '/biodata5/proyectos/genomica_comparativa';
+  }
 
   if (selectedPrecomputed.value === 'CC1940_vs_R570') {
     form.value = {
