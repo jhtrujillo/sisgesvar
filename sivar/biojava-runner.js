@@ -1,16 +1,16 @@
 const express = require('express');
 const cors = require('cors');
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Lee de un archivo .env si existe de manera muy simple
 const envFilePath = path.join(__dirname, '.env.biojava');
-let jarPath = '/Users/estuvar4/Documents/2. software/17.biojava/target/biojava.jar'; // default fallback
+let jarPath = '/Users/estuvar4/Documents/2. software/17.biojava/target/biojava.jar';
 if (fs.existsSync(envFilePath)) {
     const envContent = fs.readFileSync(envFilePath, 'utf-8');
     const match = envContent.match(/BIOJAVA_JAR_PATH=(.*)/);
@@ -21,16 +21,17 @@ if (fs.existsSync(envFilePath)) {
 
 const PORT = 3001;
 
+// Almacén de trabajos activos para SSE
+const activeJobs = new Map();
+
 app.post('/run-comp-gen', (req, res) => {
     try {
         const { collinearity, gff1, gff2, annot1, annot2, cds1, cds2, prot1, prot2, vcf, kaks, name1, name2, outputFile, organism, outputHTML } = req.body;
 
-        // Validación básica
         if (!collinearity || !gff1 || !gff2 || !outputHTML) {
             return res.status(400).json({ error: 'Faltan parámetros requeridos (collinearity, gff1, gff2, outputHTML)' });
         }
 
-        // Asegurar que existan los directorios de salida
         const outHtmlDir = path.dirname(outputHTML);
         if (!fs.existsSync(outHtmlDir)) {
             fs.mkdirSync(outHtmlDir, { recursive: true });
@@ -43,50 +44,117 @@ app.post('/run-comp-gen', (req, res) => {
             }
         }
 
-        // Armar comando
-        let command = `java -jar "${jarPath}" comp-gen `;
-        command += `--collinearity="${collinearity}" `;
-        command += `--gff1="${gff1}" `;
-        command += `--gff2="${gff2}" `;
-        command += `--viz="${outputHTML}" `;
+        let args = ['-jar', jarPath, 'comp-gen'];
+        args.push(`--collinearity=${collinearity}`);
+        args.push(`--gff1=${gff1}`);
+        args.push(`--gff2=${gff2}`);
+        args.push(`--viz=${outputHTML}`);
 
-        if (annot1) command += `--annot1="${annot1}" `;
-        if (annot2) command += `--annot2="${annot2}" `;
-        if (cds1) command += `--cds1="${cds1}" `;
-        if (cds2) command += `--cds2="${cds2}" `;
-        if (prot1) command += `--prot1="${prot1}" `;
-        if (prot2) command += `--prot2="${prot2}" `;
-        if (vcf) command += `--vcf="${vcf}" `;
-        if (kaks) command += `--kaks="${kaks}" `;
-        if (name1) command += `--name1="${name1}" `;
-        if (name2) command += `--name2="${name2}" `;
-        if (outputFile) command += `-o "${outputFile}" `;
-        if (organism) command += `--organism="${organism}" `;
+        if (annot1) args.push(`--annot1=${annot1}`);
+        if (annot2) args.push(`--annot2=${annot2}`);
+        if (cds1) args.push(`--cds1=${cds1}`);
+        if (cds2) args.push(`--cds2=${cds2}`);
+        if (prot1) args.push(`--prot1=${prot1}`);
+        if (prot2) args.push(`--prot2=${prot2}`);
+        if (vcf) args.push(`--vcf=${vcf}`);
+        if (kaks) args.push(`--kaks=${kaks}`);
+        if (name1) args.push(`--name1=${name1}`);
+        if (name2) args.push(`--name2=${name2}`);
+        if (outputFile) { args.push(`-o`); args.push(outputFile); }
+        if (organism) args.push(`--organism=${organism}`);
 
-        console.log(`Ejecutando comando:\n${command}`);
-
-        // Ejecutar el comando de sistema
-        exec(command, { maxBuffer: 1024 * 1024 * 50 }, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`Error de ejecución: ${error.message}`);
-                return res.status(500).json({ error: error.message, stderr: stderr });
-            }
-            
-            console.log('Comando finalizado con éxito.');
-            res.json({ 
-                success: true, 
-                message: 'Análisis comp-gen completado con éxito',
-                stdout: stdout,
-                vizPath: outputHTML
-            });
+        const jobId = crypto.randomUUID();
+        activeJobs.set(jobId, {
+            logs: [],
+            clients: [],
+            status: 'running'
         });
+
+        console.log(`[Job ${jobId}] Iniciando comando: java ${args.join(' ')}`);
+
+        const child = spawn('java', args);
+
+        const broadcast = (event, data) => {
+            const job = activeJobs.get(jobId);
+            if (!job) return;
+            const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+            job.clients.forEach(client => client.write(message));
+        };
+
+        const onData = (data) => {
+            const lines = data.toString().split('\n');
+            const job = activeJobs.get(jobId);
+            if (job) {
+                lines.forEach(line => {
+                    if (line.trim()) {
+                        job.logs.push(line);
+                        broadcast('log', line);
+                    }
+                });
+            }
+        };
+
+        child.stdout.on('data', onData);
+        child.stderr.on('data', onData);
+
+        child.on('close', (code) => {
+            console.log(`[Job ${jobId}] Finalizado con código ${code}`);
+            const job = activeJobs.get(jobId);
+            if (job) {
+                job.status = code === 0 ? 'success' : 'error';
+                broadcast(job.status, { code, message: code === 0 ? 'Completado' : 'Error en el proceso' });
+                // Limpiar clientes después de unos segundos
+                setTimeout(() => {
+                    job.clients.forEach(client => client.end());
+                    activeJobs.delete(jobId);
+                }, 5000);
+            }
+        });
+        
+        child.on('error', (err) => {
+            console.error(`[Job ${jobId}] Error:`, err);
+            const job = activeJobs.get(jobId);
+            if (job) {
+                job.status = 'error';
+                broadcast('error', { code: -1, message: err.message });
+            }
+        });
+
+        res.json({ success: true, jobId, message: 'Proceso iniciado' });
 
     } catch (e) {
         res.status(400).json({ error: 'Error procesando la solicitud: ' + e.message });
     }
 });
 
-// Endpoint para listar archivos del servidor
+app.get('/comp-gen-logs/:jobId', (req, res) => {
+    const jobId = req.params.jobId;
+    const job = activeJobs.get(jobId);
+
+    if (!job) {
+        return res.status(404).json({ error: 'Job no encontrado o expirado' });
+    }
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    // Enviar logs pasados
+    job.logs.forEach(log => {
+        res.write(`event: log\ndata: ${JSON.stringify(log)}\n\n`);
+    });
+
+    if (job.status !== 'running') {
+        res.write(`event: ${job.status}\ndata: ${JSON.stringify({ message: 'El proceso ya había terminado' })}\n\n`);
+        return res.end();
+    }
+
+    job.clients.push(res);
+    req.on('close', () => {
+        job.clients = job.clients.filter(client => client !== res);
+    });
+});
+
 app.get('/list-directory', (req, res) => {
   try {
     const targetPath = req.query.path || '/Users/estuvar4/Documents/2. software'; 
@@ -103,17 +171,12 @@ app.get('/list-directory', (req, res) => {
         path: path.join(absolutePath, file.name)
       }));
 
-      // Ordenar: carpetas primero
       fileList.sort((a, b) => {
         if (a.isDirectory === b.isDirectory) return a.name.localeCompare(b.name);
         return a.isDirectory ? -1 : 1;
       });
 
-      res.json({
-        currentPath: absolutePath,
-        parentPath: path.dirname(absolutePath),
-        files: fileList
-      });
+      res.json({ currentPath: absolutePath, parentPath: path.dirname(absolutePath), files: fileList });
     });
   } catch (error) {
     res.status(500).json({ error: 'Server error', details: error.message });

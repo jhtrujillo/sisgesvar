@@ -175,17 +175,45 @@
       </div>
     </div>
 
+    <!-- Consola de Logs (Modal Flotante) -->
+    <div v-if="showLogsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 bg-opacity-75 backdrop-blur-sm p-4">
+      <div class="bg-slate-900 border border-slate-700 w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden flex flex-col h-[70vh]">
+        <div class="px-4 py-3 bg-slate-800 border-b border-slate-700 flex justify-between items-center">
+          <div class="flex items-center space-x-2">
+            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+            <span class="ml-4 text-xs font-mono text-slate-400 font-bold tracking-wider">BIOJAVA CONSOLE</span>
+          </div>
+          <button v-if="!isLoading" @click="closeLogs" class="text-slate-400 hover:text-white transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+        <div class="flex-1 p-4 overflow-y-auto bg-black font-mono text-xs sm:text-sm text-green-400 whitespace-pre-wrap break-all" ref="logsContainer">
+          <div v-for="(log, idx) in consoleLogs" :key="idx" class="mb-1">{{ log }}</div>
+          <div v-if="isLoading" class="mt-4 flex items-center text-slate-500">
+            <span class="animate-pulse">Procesando...</span>
+            <span class="ml-2 animate-bounce">_</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, nextTick } from 'vue';
 import ServerFilePicker from '@/components/ServerFilePicker.vue';
 
 const isLoading = ref(false);
 const errorMsg = ref('');
 const resultHtmlUrl = ref('');
 const selectedPrecomputed = ref('');
+
+const showLogsModal = ref(false);
+const consoleLogs = ref<string[]>([]);
+const logsContainer = ref<HTMLElement | null>(null);
 
 // Configuración de rutas (Esta es la raíz donde Vite sirve los estáticos)
 const PUBLIC_PATH = '/Users/estuvar4/Documents/2. software/13. SIVAR/sivar/public/biojava_outputs/';
@@ -208,6 +236,17 @@ const form = ref({
   outputFile: '',
   outputHTML: ''
 });
+
+const closeLogs = () => {
+  showLogsModal.value = false;
+};
+
+const scrollToBottom = async () => {
+  await nextTick();
+  if (logsContainer.value) {
+    logsContainer.value.scrollTop = logsContainer.value.scrollHeight;
+  }
+};
 
 const loadPrecomputed = () => {
   const baseDir = '/Users/estuvar4/Documents/2. software/17.biojava';
@@ -250,6 +289,9 @@ const loadPrecomputed = () => {
 const runAnalysis = async () => {
   isLoading.value = true;
   errorMsg.value = '';
+  consoleLogs.value = ['Inicializando análisis BioJava...'];
+  showLogsModal.value = true;
+  resultHtmlUrl.value = '';
   
   // Generar la carpeta de salida dinámicamente basada en los nombres
   const safeName1 = form.value.name1.trim().replace(/\s+/g, '_');
@@ -271,18 +313,47 @@ const runAnalysis = async () => {
     const data = await response.json();
 
     if (!response.ok || !data.success) {
-      throw new Error(data.error || 'Error desconocido al ejecutar comp-gen');
+      throw new Error(data.error || 'Error desconocido al iniciar comp-gen');
     }
 
-    // El base url lo provee Vite automáticamente (Ej: /apps/sivar-nuevo/)
-    // Reemplazamos la doble barra diagonal por precaución
-    const viteBase = import.meta.env.BASE_URL;
-    resultHtmlUrl.value = `${viteBase}biojava_outputs/${subfolder}/visor_sintenia.html`.replace(/\/\//g, '/');
+    // Comenzar a escuchar SSE
+    const eventSource = new EventSource(`http://localhost:3001/comp-gen-logs/${data.jobId}`);
+
+    eventSource.addEventListener('log', (e) => {
+      consoleLogs.value.push(JSON.parse(e.data));
+      scrollToBottom();
+    });
+
+    eventSource.addEventListener('success', (e) => {
+      consoleLogs.value.push('\n[OK] Análisis finalizado correctamente.');
+      scrollToBottom();
+      isLoading.value = false;
+      eventSource.close();
+      
+      const viteBase = import.meta.env.BASE_URL;
+      resultHtmlUrl.value = `${viteBase}biojava_outputs/${subfolder}/visor_sintenia.html`.replace(/\/\//g, '/');
+      
+      // Cerrar modal automáticamente después de unos segundos si todo salió bien
+      setTimeout(() => {
+        if (!errorMsg.value) {
+            closeLogs();
+        }
+      }, 2000);
+    });
+
+    eventSource.addEventListener('error', (e) => {
+      const errData = JSON.parse(e.data);
+      consoleLogs.value.push(`\n[ERROR] El proceso falló: ${errData.message}`);
+      scrollToBottom();
+      errorMsg.value = 'El proceso falló. Revisa la consola para más detalles.';
+      isLoading.value = false;
+      eventSource.close();
+    });
 
   } catch (err: any) {
     errorMsg.value = err.message;
     console.error(err);
-  } finally {
+    consoleLogs.value.push(`[ERROR] ${err.message}`);
     isLoading.value = false;
   }
 };
