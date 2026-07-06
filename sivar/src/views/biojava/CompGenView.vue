@@ -217,8 +217,8 @@ const logsContainer = ref<HTMLElement | null>(null);
 
 // Directorio base relativo a biojava-runner.js para guardar los outputs
 const PUBLIC_PATH = 'public/biojava_outputs/';
-// URL base del microservicio Node (asegúrate de que coincida con donde corre biojava-runner.js)
-const BACKEND_URL = 'http://192.168.153.238:3001'; // <-- Cambia a localhost si corres SIVAR y BioJava en la misma máquina
+// URL base dinámica: busca el backend en la misma IP/Host desde donde se abrió SIVAR
+const BACKEND_URL = `http://${window.location.hostname}:3001`;
 
 const form = ref({
   collinearity: '',
