@@ -38,7 +38,6 @@
         src="http://192.168.153.238:4567" 
         class="w-full h-full border-none"
         @load="isLoading = false"
-        sandbox="allow-same-origin allow-scripts allow-forms"
       ></iframe>
     </div>
   </div>
