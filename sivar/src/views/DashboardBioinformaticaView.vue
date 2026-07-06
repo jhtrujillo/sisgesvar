@@ -81,6 +81,31 @@
         </div>
       </router-link>
 
+      <!-- JBrowse 2 Card -->
+      <router-link
+        class="group relative flex flex-col bg-white border border-slate-100 hover:border-emerald-200 rounded-2xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
+        :to="{ name: 'jbrowse.show' }"
+      >
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-green-500 transform origin-left transition-transform duration-300"></div>
+        
+        <div class="flex flex-col h-full text-left">
+          <div class="w-12 h-12 flex items-center justify-center bg-emerald-50 rounded-xl text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 mb-4 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="transition-transform duration-500 group-hover:scale-110">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" fill="none" stroke="currentColor" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800 mb-2 group-hover:text-emerald-700 transition-colors">Visor JBrowse 2</h3>
+          <p class="text-slate-500 text-xs leading-relaxed mb-4 flex-1">Explorador de genomas interactivo de nueva generación para visualizar anotaciones, variantes y alineamientos.</p>
+          
+          <span class="inline-flex items-center text-xs font-semibold text-emerald-600 mt-auto group-hover:text-emerald-800">
+            Abrir Visor
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 ml-1 transform transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </div>
+      </router-link>
+
     </div>
 
   </div>

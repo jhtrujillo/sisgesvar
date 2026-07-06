@@ -6,6 +6,7 @@ export const ROUTE_USERS = "/users";
 //Bioinformatica
 export const ROUTE_BIOINFORMATICA = "bioinformatica/";
 export const ROUTE_SEQUENCE_SERVER = "bioinformatica/sequence_server/";
+export const ROUTE_JBROWSE = "bioinformatica/jbrowse/";
 
 //BioJava
 export const ROUTE_BIOJAVA = "biojava/";
@@ -49,6 +50,7 @@ export const NON_SIGNIFICANT_ROUTES = [
   ROUTE_BIOJAVA,
   ROUTE_COMP_GEN,
   ROUTE_SEQUENCE_SERVER,
+  ROUTE_JBROWSE,
   ROUTE_MEJORAMIENTO,
   ROUTE_VARIEDADES,
   ROUTE_CRUZAMIENTOS,
