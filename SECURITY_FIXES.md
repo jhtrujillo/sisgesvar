@@ -53,19 +53,38 @@ Rama: `fix/security-audit` (no toca `main`). Base del análisis: informe
 - **Selector de archivos:** solo lista dentro de `DATA_ROOT` (rutas relativas).
 - **Descargas/Export:** ahora van por descarga autenticada (blob), no por enlace directo.
 
-## Pendiente (NO aplicado — requiere cambios coordinados y pruebas en runtime)
+## Segunda ronda (aplicado)
 
-Se dejó fuera deliberadamente para no romper el runtime sin poder probarlo:
+5. **`fix(m-6)` — `save_weight` GET→POST** (ruta + `saveWeight` en el frontend).
+   Era la **única** ruta mutante-por-GET con un llamador real en el frontend.
 
-- **M-6 · Verbos GET→POST** para mutaciones (`crearOrigenCruzamiento`,
-  `enviarFlorAProyecto`, `send_common_bag`, …). Requiere cambiar la ruta **y** cada
-  llamador del frontend a la vez; hay ~10 rutas afectadas.
-- **M-2 (parte backend)** · emitir el *refresh* en cookie HttpOnly+Secure+SameSite
-  para recuperar el "recordar sesión" de forma segura.
-- **B-2 · Refactor de God-controllers** (`LibroCampoController`, `VarietyController`)
-  a capa de servicios. Alto riesgo por el SQL complejo; necesita pruebas.
-- **B-3 · Parámetros en el path** → mover a query/body con FormRequest.
-- **B-4 · `where('var', '.*')`** → acotar el patrón (validar antes que no rompa nombres).
+## Nota sobre CSRF y verbos GET (contexto de riesgo real)
+
+La API autentica con **JWT en la cabecera `Authorization`**, no con cookies. Por eso
+el **CSRF clásico no es explotable**: una petición forjada (`<img>`, form, prefetch)
+**no** lleva el Bearer, así que el backend la rechaza. El problema de "mutar por GET"
+queda como cuestión de **corrección REST / caché / logs**, no como agujero de seguridad.
+Por eso las demás rutas mutantes-por-GET (`crearOrigenCruzamiento`, `change_proyect_flower`,
+`send_common_bag`, `send_mail`, `crossing/modify`) — que **no tienen llamador en el
+frontend** — se dejan sin tocar hasta confirmar sus consumidores (evita romper
+integraciones externas desconocidas).
+
+## Estado de los demás pendientes
+
+- **M-2 (seguridad): RESUELTO.** El vector real era el JWT en `localStorage` (robo por
+  XSS), ya eliminado. Emitir el *refresh* en cookie **HttpOnly** es solo una mejora de
+  **UX** ("recordar sesión"); no se aplica aquí porque el flujo de refresh actual de la
+  app es ambiguo (el login no devuelve un *refresh token* separado) y reescribirlo sin
+  poder probar login en runtime podría dejar a los usuarios fuera. Recomendado hacerlo
+  con pruebas: `Set-Cookie: refresh=<jwt>; HttpOnly; Secure; SameSite=Strict` +
+  `supports_credentials=true` + `axios withCredentials`.
+- **M-6 (resto):** ver nota de CSRF arriba — diferido por falta de consumidores confirmados.
+- **B-2 · Refactor de God-controllers** (`LibroCampoController`, `VarietyController`):
+  alto riesgo por el SQL complejo, valor de seguridad bajo; necesita pruebas de regresión.
+- **B-3 · Parámetros en el path** → query/body con FormRequest (cosmético).
+- **B-4 · `where('var', '.*')`** → acotar el patrón; el `.*` parece intencional
+  (nombres de variedad con caracteres especiales), cambiarlo sin datos reales puede
+  romper búsquedas. Requiere validar contra la BD.
 
 ## Rollback
 

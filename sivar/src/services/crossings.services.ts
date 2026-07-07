@@ -37,7 +37,8 @@ async function GetSuggestionCrossingsPerProject(proyectos: string, proyecto: str
 
 async function saveWeight(proyecto: string): Promise<any> {
   const url = `${urls.API_URL}crossing/programming/save_weight/${proyecto}`;
-  return await api.get(url, {}, true);
+  // M-6: la operación muta estado -> POST (antes GET)
+  return await api.post(url, {}, true);
 }
 
 async function saveCrossing(
