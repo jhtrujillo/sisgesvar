@@ -83,7 +83,6 @@ class EnsayoController extends Controller
         $usersList = \App\Models\User::select('id_usrio', 'nmbre')->orderBy('nmbre')->get();
 
         $page = (int) $request->input('page', 1);
-        file_put_contents(base_path('storage/logs/debug_page.log'), "[" . date('Y-m-d H:i:s') . "] page_input=" . $request->input('page', 'NULL') . " | page_casted=$page | all_params=" . json_encode($request->all()) . "\n", FILE_APPEND);
 
         return response()->json([
             'ensayos' => $query->withCount('adjuntos')->paginate($perPage, ['*'], 'page', $page)->withQueryString(),
@@ -251,9 +250,6 @@ class EnsayoController extends Controller
      */
     public function update(UpdateCellEnsayoRequest $request, Ensayo $ensayo)
     {
-        // DEBUG LOGGING to track what user passes
-        file_put_contents(base_path('storage/logs/debug_save.log'), "[" . date('Y-m-d H:i:s') . "] Request: " . json_encode($request->all()) . " Ensayo ID: " . $ensayo->id . "\n", FILE_APPEND);
-
         try {
             $field = $request->field;
             // Sanitize empty inputs to NULL to prevent SQL strict typing failures (especially on Postgres numbers/dates)
@@ -357,16 +353,17 @@ class EnsayoController extends Controller
                 ]
             );
 
-            file_put_contents(base_path('storage/logs/debug_save.log'), "[" . date('Y-m-d H:i:s') . "] SUCCESS Saved\n", FILE_APPEND);
-
             return response()->json([
                 'success' => true,
                 'message' => 'Registro actualizado con éxito.',
                 'ensayo' => $ensayo
             ], 200);
         } catch (\Exception $e) {
-            file_put_contents(base_path('storage/logs/debug_save.log'), "[" . date('Y-m-d H:i:s') . "] ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
-            throw $e; // Re-throw to let Laravel handle redirect, but we logged it!
+            \Illuminate\Support\Facades\Log::error('Error al guardar ensayo', [
+                'ensayo_id' => $ensayo->id,
+                'exception' => $e->getMessage(),
+            ]);
+            throw $e;
         }
     }
 

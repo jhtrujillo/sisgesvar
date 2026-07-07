@@ -17,13 +17,19 @@ return [
 
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
-    'allowed_methods' => ['*'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
-    'allowed_origins' => ['*'],
+    // Restringido a los orígenes conocidos del frontend.
+    // Configure CORS_ALLOWED_ORIGINS (coma-separado) en .env, p.ej.:
+    //   CORS_ALLOWED_ORIGINS=https://sivar.midominio.org,http://localhost:5173
+    'allowed_origins' => array_filter(array_map('trim', explode(',', env(
+        'CORS_ALLOWED_ORIGINS',
+        env('FRONTEND_URL', 'http://localhost:5173')
+    )))),
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
 
     'exposed_headers' => [],
 
