@@ -205,6 +205,9 @@
 <script setup lang="ts">
 import { ref, nextTick } from 'vue';
 import ServerFilePicker from '@/components/ServerFilePicker.vue';
+import { useUserStore } from '@/stores/user';
+
+const userStore = useUserStore();
 
 const isLoading = ref(false);
 const errorMsg = ref('');
@@ -215,8 +218,6 @@ const showLogsModal = ref(false);
 const consoleLogs = ref<string[]>([]);
 const logsContainer = ref<HTMLElement | null>(null);
 
-// Directorio base relativo a biojava-runner.js para guardar los outputs
-const PUBLIC_PATH = 'public/biojava_outputs/';
 // URL base dinámica por variable de entorno (Vite), con fallback al host local
 const BACKEND_URL = import.meta.env.VITE_BIOJAVA_API_URL || `http://${window.location.hostname}:3001`;
 
@@ -251,26 +252,20 @@ const scrollToBottom = async () => {
 };
 
 const loadPrecomputed = () => {
-  // Elegir ruta base dinámicamente según si estamos en Mac (local) o Linux (servidor)
-  let baseDir = '';
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    baseDir = '/Users/estuvar4/Documents/2. software/17.biojava';
-  } else {
-    baseDir = '/biodata5/proyectos/genomica_comparativa';
-  }
-
+  // Rutas RELATIVAS a BIOJAVA_DATA_ROOT (configurado en el micro-servicio).
+  // El servidor las confina; el cliente ya no envía rutas absolutas del sistema.
   if (selectedPrecomputed.value === 'CC1940_vs_R570') {
     form.value = {
       ...form.value,
-      gff1: `${baseDir}/dataset_genomico/genomas/CC-01-1940/CC-01-1940.gff`,
-      gff2: `${baseDir}/dataset_genomico/genomas/R570/R570.gff`,
-      collinearity: `${baseDir}/dataset_genomico/comparativas/CC1940_vs_R570/CC1940_vs_R570.collinearity`,
-      cds1: `${baseDir}/dataset_genomico/genomas/CC-01-1940/CC-01-1940.cds.fa`,
-      cds2: `${baseDir}/dataset_genomico/genomas/R570/R570.cds.fa`,
-      prot1: `${baseDir}/dataset_genomico/genomas/CC-01-1940/CC-01-1940.protein.faa`,
-      prot2: `${baseDir}/dataset_genomico/genomas/R570/R570.protein.faa`,
-      vcf: `${baseDir}/dataset_genomico/genomas/CC-01-1940/CC-01-1940_sim.vcf`,
-      kaks: `${baseDir}/dataset_genomico/comparativas/CC1940_vs_R570/kaks_1940_vs_R570.tsv`,
+      gff1: `dataset_genomico/genomas/CC-01-1940/CC-01-1940.gff`,
+      gff2: `dataset_genomico/genomas/R570/R570.gff`,
+      collinearity: `dataset_genomico/comparativas/CC1940_vs_R570/CC1940_vs_R570.collinearity`,
+      cds1: `dataset_genomico/genomas/CC-01-1940/CC-01-1940.cds.fa`,
+      cds2: `dataset_genomico/genomas/R570/R570.cds.fa`,
+      prot1: `dataset_genomico/genomas/CC-01-1940/CC-01-1940.protein.faa`,
+      prot2: `dataset_genomico/genomas/R570/R570.protein.faa`,
+      vcf: `dataset_genomico/genomas/CC-01-1940/CC-01-1940_sim.vcf`,
+      kaks: `dataset_genomico/comparativas/CC1940_vs_R570/kaks_1940_vs_R570.tsv`,
       name1: 'CC 1940',
       name2: 'R570',
       organism: 'Saccharum'
@@ -278,15 +273,15 @@ const loadPrecomputed = () => {
   } else if (selectedPrecomputed.value === 'R570_vs_Spont_sim') {
     form.value = {
       ...form.value,
-      gff1: `${baseDir}/dataset_genomico/genomas/R570_sim/R570.gff`,
-      gff2: `${baseDir}/dataset_genomico/genomas/Spont_sim/Spont.gff`,
-      collinearity: `${baseDir}/dataset_genomico/comparativas/R570_vs_Spont_sim/R570_vs_Spont.collinearity`,
-      cds1: `${baseDir}/dataset_genomico/genomas/R570_sim/R570.cds.fa`,
-      cds2: `${baseDir}/dataset_genomico/genomas/Spont_sim/Spont.cds.fa`,
+      gff1: `dataset_genomico/genomas/R570_sim/R570.gff`,
+      gff2: `dataset_genomico/genomas/Spont_sim/Spont.gff`,
+      collinearity: `dataset_genomico/comparativas/R570_vs_Spont_sim/R570_vs_Spont.collinearity`,
+      cds1: `dataset_genomico/genomas/R570_sim/R570.cds.fa`,
+      cds2: `dataset_genomico/genomas/Spont_sim/Spont.cds.fa`,
       prot1: ``,
       prot2: ``,
       vcf: ``,
-      kaks: `${baseDir}/dataset_genomico/comparativas/R570_vs_Spont_sim/R570_vs_Spont.kaks.tsv`,
+      kaks: `dataset_genomico/comparativas/R570_vs_Spont_sim/R570_vs_Spont.kaks.tsv`,
       name1: 'R570',
       name2: 'Spontaneum',
       organism: 'Saccharum'
@@ -301,19 +296,13 @@ const runAnalysis = async () => {
   showLogsModal.value = true;
   resultHtmlUrl.value = '';
   
-  // Generar la carpeta de salida dinámicamente basada en los nombres
-  const safeName1 = form.value.name1.trim().replace(/\s+/g, '_');
-  const safeName2 = form.value.name2.trim().replace(/\s+/g, '_');
-  const subfolder = `comp_gen/${safeName1}_vs_${safeName2}`;
-  
-  form.value.outputHTML = `${PUBLIC_PATH}${subfolder}/visor_sintenia.html`;
-  form.value.outputFile = `${PUBLIC_PATH}${subfolder}/reporte_comparativo.tsv`;
-
+  // La ruta de salida la decide el servidor (dentro de OUTPUT_ROOT/<jobId>).
   try {
     const response = await fetch(`${BACKEND_URL}/run-comp-gen`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${userStore.token}`
       },
       body: JSON.stringify(form.value)
     });
@@ -324,8 +313,10 @@ const runAnalysis = async () => {
       throw new Error(data.error || 'Error desconocido al iniciar comp-gen');
     }
 
-    // Comenzar a escuchar SSE
-    const eventSource = new EventSource(`${BACKEND_URL}/comp-gen-logs/${data.jobId}`);
+    // SSE autorizado por streamToken de un solo uso (evita exponer el JWT en la URL).
+    const eventSource = new EventSource(
+      `${BACKEND_URL}/comp-gen-logs/${data.jobId}?t=${encodeURIComponent(data.streamToken)}`
+    );
 
     eventSource.addEventListener('log', (e) => {
       consoleLogs.value.push(JSON.parse(e.data));
@@ -333,15 +324,17 @@ const runAnalysis = async () => {
     });
 
     eventSource.addEventListener('success', (e) => {
+      const payload = JSON.parse(e.data);
       consoleLogs.value.push('\n[OK] Análisis finalizado correctamente.');
       scrollToBottom();
       isLoading.value = false;
       eventSource.close();
-      
-      // Obtener el HTML desde el servidor Node (no de Vite)
-      resultHtmlUrl.value = `${BACKEND_URL}/${PUBLIC_PATH}${subfolder}/visor_sintenia.html`.replace(/([^:]\/)\/+/g, "$1");
-      
-      // Cerrar modal automáticamente después de unos segundos si todo salió bien
+
+      // El servidor entrega la URL del resultado (sirve bajo /public/results/<jobId>/).
+      if (payload && payload.resultUrl) {
+        resultHtmlUrl.value = `${BACKEND_URL}${payload.resultUrl}`;
+      }
+
       setTimeout(() => {
         if (!errorMsg.value) {
             closeLogs();
@@ -350,8 +343,9 @@ const runAnalysis = async () => {
     });
 
     eventSource.addEventListener('error', (e) => {
-      const errData = JSON.parse(e.data);
-      consoleLogs.value.push(`\n[ERROR] El proceso falló: ${errData.message}`);
+      let message = 'desconocido';
+      try { message = JSON.parse((e as MessageEvent).data).message; } catch { /* ping/keepalive */ }
+      consoleLogs.value.push(`\n[ERROR] El proceso falló: ${message}`);
       scrollToBottom();
       errorMsg.value = 'El proceso falló. Revisa la consola para más detalles.';
       isLoading.value = false;

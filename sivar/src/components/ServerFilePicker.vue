@@ -147,6 +147,9 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
+import { useUserStore } from '@/stores/user';
+
+const userStore = useUserStore();
 
 const props = defineProps({
   modelValue: {
@@ -160,6 +163,9 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:modelValue']);
+
+// Micro-servicio BioJava (mismo host, puerto 3001 por defecto)
+const BIOJAVA_URL = import.meta.env.VITE_BIOJAVA_API_URL || `http://${window.location.hostname}:3001`;
 
 const displayValue = computed(() => {
   if (!props.modelValue) return '';
@@ -209,20 +215,26 @@ const loadDirectory = async (path: string) => {
   selectedPath.value = '';
 
   try {
-    const url = new URL('http://localhost:3001/list-directory');
+    // Listado confinado a DATA_ROOT y autenticado con el JWT de sesión.
+    const url = new URL(`${BIOJAVA_URL}/list-inputs`);
     if (path) {
       url.searchParams.append('path', path);
     }
 
-    const response = await fetch(url.toString());
+    const response = await fetch(url.toString(), {
+      headers: { Authorization: `Bearer ${userStore.token}` }
+    });
     const data = await response.json();
 
     if (!response.ok) {
       throw new Error(data.error || 'Error al cargar el directorio');
     }
 
-    currentPath.value = data.currentPath;
-    parentPath.value = data.parentPath;
+    // Las rutas ahora son RELATIVAS a DATA_ROOT (el servidor nunca expone rutas absolutas).
+    currentPath.value = data.currentPath || '(raíz de datos)';
+    // El nivel superior se deriva del path relativo actual.
+    const rel = data.currentPath || '';
+    parentPath.value = rel ? rel.split('/').slice(0, -1).join('/') : '';
     files.value = data.files;
 
   } catch (error: any) {
