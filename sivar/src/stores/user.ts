@@ -69,6 +69,10 @@ export const useUserStore = defineStore(
     };
   },
   {
-    persist: true
+    // M-2: NO persistir el JWT ni el refresh en localStorage (robo trivial vía XSS).
+    // Sólo se persiste información no sensible del usuario. El access token vive en
+    // memoria; para "recordar sesión" el backend debe emitir el refresh en cookie
+    // HttpOnly+Secure+SameSite (pendiente de coordinar con Laravel).
+    persist: { paths: ["userInfo"] }
   }
 );

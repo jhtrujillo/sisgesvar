@@ -6,8 +6,8 @@ import { useUserStore } from "@/stores/user";
 
 // Note: Do NOT set a global Content-Type default for POST — it breaks multipart/form-data (FormData) uploads.
 // Each function sets its own Content-Type as needed.
-axios.defaults.xsrfHeaderName = "X-CSRFToken";
-axios.defaults.xsrfCookieName = "csrftoken";
+// (B-1) Se elimina la config CSRF estilo Django (xsrfCookieName "csrftoken"): este backend
+// es Laravel con JWT por cabecera Authorization; no aplica y confundía el modelo de auth.
 
 axios.interceptors.response.use(
   function (response) {
@@ -64,7 +64,8 @@ const api = {
   delete: _delete,
   postWithImages,
   putFile,
-  postForDownload
+  postForDownload,
+  getForDownload
 };
 
 async function performAxios(url: string, request: unknown, method: string, secured: boolean | undefined) {
@@ -199,6 +200,26 @@ async function postForDownload(url: string, request: { filename: string }, secur
   } catch (error) {
     return [null, error];
   }
+}
+
+// Descarga por GET autenticada por cabecera (M-3): evita poner el JWT en la URL.
+async function getForDownload(url: string, filename: string, secured = true) {
+  const userStore = useUserStore();
+  const headers: Record<string, string> = {};
+  if (secured && userStore.token) {
+    headers.Authorization = "Bearer " + userStore.token;
+  }
+  const response = await axios({ method: "get", url, headers, responseType: "blob" });
+  const objUrl = URL.createObjectURL(
+    new Blob([response.data], { type: response.headers["content-type"] })
+  );
+  const link = document.createElement("a");
+  link.href = objUrl;
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(objUrl);
 }
 
 async function putFile(url: string, request: any, secured = true) {

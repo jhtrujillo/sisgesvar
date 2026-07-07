@@ -2,6 +2,7 @@
 import { ref, watch, nextTick, computed, onMounted } from 'vue';
 import { debounce } from 'lodash';
 import { useUserStore } from "@/stores/user";
+import api from "@/services/api";
 import { EnsayosService } from "@/services/ensayos.services";
 import HomologacionView from "./HomologacionView.vue";
 import EnsayosNavComponent from "@/components/EnsayosNavComponent.vue";
@@ -325,8 +326,14 @@ const deleteAdjunto = async (adjunto) => {
     }
 };
 
-const getDownloadUrl = (adjuntoId) => {
-    return `${EnsayosService.downloadAdjunto(adjuntoId)}?token=${userStore.token}`;
+// M-3: descarga autenticada por cabecera (sin exponer el JWT en la URL).
+const descargarAdjunto = async (adj) => {
+    try {
+        await api.getForDownload(EnsayosService.downloadAdjunto(adj.id), adj.nombre_archivo || 'adjunto');
+    } catch (err) {
+        alert('No se pudo descargar el archivo.');
+        console.error(err);
+    }
 };
 
 const formatBytes = (bytes, decimals = 2) => {
@@ -577,15 +584,20 @@ const applySingleManualFix = async (fix, index) => {
     }
 };
 
-const exportToExcel = () => {
+const exportToExcel = async () => {
+    // M-3: sin token en la URL; la descarga va autenticada por cabecera (blob).
     const params = {
         search: search.value,
         ambiente: filterAmbiente.value,
-        user_id: filterUserId.value,
-        token: userStore.token
+        user_id: filterUserId.value
     };
-    
-    window.location.href = EnsayosService.exportEnsayos(params);
+    try {
+        const filename = `SIVAR_Ensayos_${new Date().toISOString().slice(0, 10)}.xlsx`;
+        await api.getForDownload(EnsayosService.exportEnsayos(params), filename);
+    } catch (err) {
+        alert('No se pudo exportar el archivo.');
+        console.error(err);
+    }
 };
 
 const toggleSort = (key) => {
@@ -1436,14 +1448,14 @@ const formatFecha = (dateString) => {
 
                                     <!-- Quick actions hover layout -->
                                     <div class="flex items-center gap-1.5 opacity-50 group-hover/item:opacity-100 transition-opacity">
-                                        <a 
-                                            :href="getDownloadUrl(adj.id)" 
-                                            target="_blank"
+                                        <button
+                                            type="button"
+                                            @click="descargarAdjunto(adj)"
                                             class="p-1.5 bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 rounded-lg shadow-sm border border-slate-200/50 hover:border-emerald-100 transition"
                                             title="Descargar croquis o mapa"
                                         >
                                             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                        </a>
+                                        </button>
                                         <button 
                                             v-if="authUser?.role === 'JEFE' || authUser?.id === adj.user_id"
                                             @click="deleteAdjunto(adj)"
