@@ -11,6 +11,7 @@ export const ROUTE_JBROWSE = "bioinformatica/jbrowse/";
 //BioJava
 export const ROUTE_BIOJAVA = "biojava/";
 export const ROUTE_COMP_GEN = "biojava/comp-gen/";
+export const ROUTE_BLAST_NATIVO = "biojava/blast-nativo/";
 
 
 export const ROUTE_MEJORAMIENTO = "mejoramiento/";
@@ -49,6 +50,7 @@ export const NON_SIGNIFICANT_ROUTES = [
   ROUTE_BIOINFORMATICA,
   ROUTE_BIOJAVA,
   ROUTE_COMP_GEN,
+  ROUTE_BLAST_NATIVO,
   ROUTE_SEQUENCE_SERVER,
   ROUTE_JBROWSE,
   ROUTE_MEJORAMIENTO,

@@ -55,6 +55,32 @@
         </div>
       </router-link>
 
+      <!-- Servidor BLAST Nativo Card -->
+      <router-link
+        class="group relative flex flex-col bg-white border border-slate-100 hover:border-purple-200 rounded-2xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
+        :to="{ name: 'blast_nativo.show' }"
+      >
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-400 to-fuchsia-500 transform origin-left transition-transform duration-300"></div>
+        
+        <div class="flex flex-col h-full text-left">
+          <div class="w-12 h-12 flex items-center justify-center bg-purple-50 rounded-xl text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300 mb-4 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="transition-transform duration-500 group-hover:scale-110">
+              <path fill="currentColor" d="M14.5 13a1.5 1.5 0 1 0 0-3a1.5 1.5 0 0 0 0 3zm-5 0a1.5 1.5 0 1 0 0-3a1.5 1.5 0 0 0 0 3z"/>
+              <path fill="currentColor" fill-rule="evenodd" d="M21 11.5a9 9 0 1 1-18 0a9 9 0 0 1 18 0zM12 4a7.5 7.5 0 0 0-7.5 7.5v.5h15v-.5A7.5 7.5 0 0 0 12 4z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800 mb-2 group-hover:text-purple-700 transition-colors">BLAST Nativo (Nuevo)</h3>
+          <p class="text-slate-500 text-xs leading-relaxed mb-4 flex-1">Herramienta de alineamiento de secuencias totalmente integrada a SIVAR (Sin dependencias externas).</p>
+          
+          <span class="inline-flex items-center text-xs font-semibold text-purple-600 mt-auto group-hover:text-purple-800">
+            Abrir Servidor
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 ml-1 transform transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </div>
+      </router-link>
+
       <!-- BioJava Suite Card -->
       <router-link
         class="group relative flex flex-col bg-white border border-slate-100 hover:border-teal-200 rounded-2xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"

@@ -15,6 +15,7 @@ import {
   ROUTE_JBROWSE,
   ROUTE_BIOJAVA,
   ROUTE_COMP_GEN,
+  ROUTE_BLAST_NATIVO,
   ROUTE_PARENTS_DIAGRAM_LEVEL,
   ROUTE_CROSSING_INITIAL_DATA,
   ROUTE_CROSSING_WEIGHTED,
@@ -81,6 +82,12 @@ const routes = [
         path: ROUTE_COMP_GEN,
         name: "comp_gen.show",
         component: () => import("@/views/biojava/CompGenView.vue"),
+        beforeEnter: authGuard
+      },
+      {
+        path: ROUTE_BLAST_NATIVO,
+        name: "blast_nativo.show",
+        component: () => import("@/views/biojava/BlastNativeView.vue"),
         beforeEnter: authGuard
       },
 
