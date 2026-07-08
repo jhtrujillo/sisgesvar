@@ -16,6 +16,8 @@ import {
   ROUTE_BIOJAVA,
   ROUTE_COMP_GEN,
   ROUTE_BLAST_NATIVO,
+  ROUTE_LABORATORIO,
+  ROUTE_INVENTARIO_LAB,
   ROUTE_PARENTS_DIAGRAM_LEVEL,
   ROUTE_CROSSING_INITIAL_DATA,
   ROUTE_CROSSING_WEIGHTED,
@@ -88,6 +90,19 @@ const routes = [
         path: ROUTE_BLAST_NATIVO,
         name: "blast_nativo.show",
         component: () => import("@/views/biojava/BlastNativeView.vue"),
+        beforeEnter: authGuard
+      },
+
+      {
+        path: ROUTE_LABORATORIO,
+        name: "laboratorio.show",
+        component: () => import("@/views/DashboardLaboratorioView.vue"),
+        beforeEnter: authGuard
+      },
+      {
+        path: ROUTE_INVENTARIO_LAB,
+        name: "laboratorio.inventario",
+        component: () => import("@/views/laboratorio/inventario/InventarioView.vue"),
         beforeEnter: authGuard
       },
 

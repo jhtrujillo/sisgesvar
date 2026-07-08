@@ -1,0 +1,5 @@
+Line 51 opened <div v-if="isLoading || isOptimizing" cl... and CLOSED at line 66
+Line 69 opened <div v-if="isSaving" class="absolute ins... and CLOSED at line 81
+Line 84 opened <div v-if="tipoMapaCalor === 'ic'" class... and CLOSED at line 97
+Line 251 opened <div v-if="ocultarInviables && viabilida... and CLOSED at line 257
+Line 265 opened <div v-if="isExpanded" class="flex justi... and CLOSED at line 283

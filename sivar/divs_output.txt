@@ -1,0 +1,214 @@
+Line 2: OPEN div (depth 1) <div class="space-y-6 w-full max-w-[98%]
+Line 4: OPEN div (depth 2) <div class="hidden print:block mb-6 bord
+Line 5: OPEN div (depth 3) <div class="flex justify-between items-c
+Line 6: OPEN div (depth 4) <div>
+Line 9: CLOSE div (depth 4)
+Line 10: OPEN div (depth 4) <div class="text-right text-xs text-slat
+Line 11: OPEN div (depth 5) <div><strong>Fecha:</strong> {{ new Date
+Line 11: CLOSE div (depth 5)
+Line 12: OPEN div (depth 5) <div><strong>Proyecto:</strong> {{ selec
+Line 12: CLOSE div (depth 5)
+Line 13: CLOSE div (depth 4)
+Line 14: CLOSE div (depth 3)
+Line 15: OPEN div (depth 3) <div class="mt-4 text-[10px] text-slate-
+Line 16: OPEN div (depth 4) <div><strong>Mega Ambiente:</strong> {{ 
+Line 16: CLOSE div (depth 4)
+Line 17: OPEN div (depth 4) <div><strong>Responsable:</strong> _____
+Line 17: CLOSE div (depth 4)
+Line 18: OPEN div (depth 4) <div><strong>Firma de Aprobación:</stron
+Line 18: CLOSE div (depth 4)
+Line 19: CLOSE div (depth 3)
+Line 20: CLOSE div (depth 2)
+Line 22: OPEN div (depth 2) <div v-if="!isFinished" class="space-y-6
+Line 24: OPEN div (depth 3) <div class="border-b border-slate-100 pb
+Line 25: OPEN div (depth 4) <div class="flex items-center justify-be
+Line 27: OPEN div (depth 5) <div class="p-1.5 bg-emerald-50 text-cen
+Line 31: CLOSE div (depth 5)
+Line 37: CLOSE div (depth 4)
+Line 38: OPEN div (depth 4) <div class="flex flex-wrap items-center 
+Line 43: CLOSE div (depth 4)
+Line 44: CLOSE div (depth 3)
+Line 47: OPEN div (depth 3) <div class="bg-white border border-slate
+Line 50: OPEN div (depth 4) <div v-if="isLoading || isOptimizing" cl
+Line 51: OPEN div (depth 5) <div class="relative w-14 h-14">
+Line 53: OPEN div (depth 6) <div class="absolute inset-0 rounded-ful
+Line 53: CLOSE div (depth 6)
+Line 55: OPEN div (depth 6) <div class="absolute inset-0 rounded-ful
+Line 55: CLOSE div (depth 6)
+Line 56: CLOSE div (depth 5)
+Line 57: OPEN div (depth 5) <div class="flex flex-col items-center t
+Line 64: CLOSE div (depth 5)
+Line 65: CLOSE div (depth 4)
+Line 68: OPEN div (depth 4) <div v-if="isSaving" class="absolute ins
+Line 69: OPEN div (depth 5) <div class="relative w-14 h-14">
+Line 71: OPEN div (depth 6) <div class="absolute inset-0 rounded-ful
+Line 71: CLOSE div (depth 6)
+Line 73: OPEN div (depth 6) <div class="absolute inset-0 rounded-ful
+Line 73: CLOSE div (depth 6)
+Line 74: CLOSE div (depth 5)
+Line 75: OPEN div (depth 5) <div class="flex flex-col items-center t
+Line 79: CLOSE div (depth 5)
+Line 80: CLOSE div (depth 4)
+Line 83: OPEN div (depth 4) <div v-if="tipoMapaCalor === 'ic'" class
+Line 87: OPEN div (depth 5) <div>
+Line 95: CLOSE div (depth 5)
+Line 96: CLOSE div (depth 4)
+Line 99: OPEN div (depth 4) <div class="flex flex-col lg:flex-row lg
+Line 100: OPEN div (depth 5) <div class="flex flex-wrap items-center 
+Line 166: CLOSE div (depth 5)
+Line 169: OPEN div (depth 5) <div class="flex justify-end items-cente
+Line 171: OPEN div (depth 6) <div class="flex items-center bg-slate-1
+Line 193: CLOSE div (depth 6)
+Line 246: CLOSE div (depth 5)
+Line 247: CLOSE div (depth 4)
+Line 250: OPEN div (depth 4) <div v-if="ocultarInviables && viabilida
+Line 256: CLOSE div (depth 4)
+Line 259: OPEN div (depth 4) <div v-else class="w-full">
+Line 261: OPEN div (depth 5) <div v-show="!isDragDropView" :class="is
+Line 264: OPEN div (depth 6) <div v-if="isExpanded" class="flex justi
+Line 265: OPEN div (depth 7) <div class="flex items-center space-x-3"
+Line 271: OPEN div (depth 8) <div>
+Line 274: CLOSE div (depth 8)
+Line 275: CLOSE div (depth 7)
+Line 282: CLOSE div (depth 6)
+Line 284: OPEN div (depth 6) <div :class="isExpanded ? 'flex-1 overfl
+Line 306: OPEN div (depth 7) <div class="flex flex-col items-center j
+Line 313: CLOSE div (depth 7)
+Line 337: OPEN div (depth 7) <div class="flex items-center justify-ce
+Line 340: CLOSE div (depth 7)
+Line 341: OPEN div (depth 7) <div class="flex flex-col items-center j
+Line 348: CLOSE div (depth 7)
+Line 351: OPEN div (depth 7) <div class="mt-1.5 flex items-center jus
+Line 359: CLOSE div (depth 7)
+Line 372: OPEN div (depth 7) <div 
+Line 382: OPEN div (depth 8) <div v-if="car?.viabilidad" class="mt-0.
+Line 391: CLOSE div (depth 8)
+Line 392: OPEN div (depth 8) <div 
+Line 397: CLOSE div (depth 8)
+Line 398: OPEN div (depth 8) <div 
+Line 403: CLOSE div (depth 8)
+Line 404: OPEN div (depth 8) <div class="flex flex-col items-center j
+Line 430: CLOSE div (depth 8)
+Line 431: CLOSE div (depth 7)
+Line 438: CLOSE div (depth 6)
+Line 439: CLOSE div (depth 5)
+Line 442: OPEN div (depth 5) <div v-show="isDragDropView" class="w-fu
+Line 444: OPEN div (depth 6) <div class="w-72 border-r border-slate-1
+Line 445: OPEN div (depth 7) <div class="p-3 border-b border-slate-10
+Line 451: CLOSE div (depth 7)
+Line 452: OPEN div (depth 7) <div class="flex-1 overflow-y-auto p-3 s
+Line 453: OPEN div (depth 8) <div 
+Line 461: OPEN div (depth 9) <div class="px-3 py-2 border-b border-sl
+Line 464: CLOSE div (depth 9)
+Line 465: OPEN div (depth 9) <div class="px-3 py-1.5 bg-slate-50/50 f
+Line 470: CLOSE div (depth 9)
+Line 471: CLOSE div (depth 8)
+Line 472: CLOSE div (depth 7)
+Line 473: CLOSE div (depth 6)
+Line 476: OPEN div (depth 6) <div class="flex-1 flex flex-col relativ
+Line 478: OPEN div (depth 7) <div class="h-28 border-b border-slate-2
+Line 479: OPEN div (depth 8) <div class="px-4 py-1.5 bg-indigo-600 te
+Line 482: CLOSE div (depth 8)
+Line 483: OPEN div (depth 8) <div class="flex-1 overflow-x-auto flex 
+Line 484: OPEN div (depth 9) <div 
+Line 492: OPEN div (depth 10) <div class="px-2 py-1.5 border-b border-
+Line 495: CLOSE div (depth 10)
+Line 496: OPEN div (depth 10) <div class="px-2 py-1 bg-slate-50/50 fle
+Line 501: CLOSE div (depth 10)
+Line 502: CLOSE div (depth 9)
+Line 503: CLOSE div (depth 8)
+Line 504: CLOSE div (depth 7)
+Line 507: OPEN div (depth 7) <div 
+Line 513: OPEN div (depth 8) <div v-if="manualCrosses.length === 0" c
+Line 519: CLOSE div (depth 8)
+Line 522: OPEN div (depth 8) <div v-if="pendingMother || pendingFathe
+Line 523: OPEN div (depth 9) <div class="flex flex-col items-center">
+Line 525: OPEN div (depth 10) <div class="px-3 py-1.5 bg-slate-100 rou
+Line 527: CLOSE div (depth 10)
+Line 528: CLOSE div (depth 9)
+Line 529: OPEN div (depth 9) <div class="text-slate-300">
+Line 533: CLOSE div (depth 9)
+Line 534: OPEN div (depth 9) <div class="flex flex-col items-center">
+Line 536: OPEN div (depth 10) <div class="px-3 py-1.5 bg-slate-100 rou
+Line 538: CLOSE div (depth 10)
+Line 539: CLOSE div (depth 9)
+Line 540: CLOSE div (depth 8)
+Line 543: OPEN div (depth 8) <div class="relative z-10 grid grid-cols
+Line 544: OPEN div (depth 9) <div 
+Line 549: OPEN div (depth 10) <div class="flex justify-between items-s
+Line 550: OPEN div (depth 11) <div class="flex items-center space-x-2"
+Line 556: CLOSE div (depth 11)
+Line 562: CLOSE div (depth 10)
+Line 564: OPEN div (depth 10) <div class="flex items-center justify-be
+Line 565: OPEN div (depth 11) <div class="flex flex-col items-center f
+Line 568: CLOSE div (depth 11)
+Line 569: OPEN div (depth 11) <div class="px-2 text-slate-300 flex-shr
+Line 573: CLOSE div (depth 11)
+Line 574: OPEN div (depth 11) <div class="flex flex-col items-center f
+Line 577: CLOSE div (depth 11)
+Line 578: CLOSE div (depth 10)
+Line 580: OPEN div (depth 10) <div class="flex justify-between items-c
+Line 581: OPEN div (depth 11) <div class="flex flex-col">
+Line 583: CLOSE div (depth 11)
+Line 584: OPEN div (depth 11) <div class="flex items-center space-x-3 
+Line 610: CLOSE div (depth 11)
+Line 611: CLOSE div (depth 10)
+Line 612: CLOSE div (depth 9)
+Line 613: CLOSE div (depth 8)
+Line 614: CLOSE div (depth 7)
+Line 615: CLOSE div (depth 6)
+Line 616: CLOSE div (depth 5)
+Line 617: CLOSE div (depth 4)
+Line 622: OPEN div (depth 4) <div class="flex justify-between items-c
+Line 623: OPEN div (depth 5) <div class="flex items-center">
+Line 635: CLOSE div (depth 5)
+Line 638: OPEN div (depth 5) <div class="flex items-center space-x-2 
+Line 684: OPEN div (depth 6) <div class="flex flex-col items-end">
+Line 685: OPEN div (depth 7) <div v-if="hasOverusedFlowers" class="te
+Line 687: CLOSE div (depth 7)
+Line 699: CLOSE div (depth 6)
+Line 700: CLOSE div (depth 5)
+Line 701: CLOSE div (depth 4)
+Line 702: CLOSE div (depth 3)
+Line 703: OPEN div (depth 3) <div v-else class="bg-white border borde
+Line 704: OPEN div (depth 4) <div class="flex flex-col items-center t
+Line 705: OPEN div (depth 5) <div class="w-20 h-20 bg-emerald-100 rou
+Line 709: CLOSE div (depth 5)
+Line 716: OPEN div (depth 5) <div class="w-full bg-slate-50 border bo
+Line 717: OPEN div (depth 6) <div class="max-h-[300px] overflow-y-aut
+Line 745: CLOSE div (depth 6)
+Line 746: CLOSE div (depth 5)
+Line 749: OPEN div (depth 5) <div class="flex flex-col sm:flex-row it
+Line 764: CLOSE div (depth 5)
+Line 765: CLOSE div (depth 4)
+Line 766: CLOSE div (depth 3)
+Line 767: CLOSE div (depth 2)
+Line 770: OPEN div (depth 2) <div v-if="flowerModalData" class="fixed
+Line 771: OPEN div (depth 3) <div class="bg-white rounded-2xl shadow-
+Line 775: OPEN div (depth 4) <div class="space-y-4">
+Line 776: OPEN div (depth 5) <div class="flex items-center justify-be
+Line 777: OPEN div (depth 6) <div>
+Line 778: OPEN div (depth 7) <div class="text-xs font-bold text-slate
+Line 778: CLOSE div (depth 7)
+Line 779: OPEN div (depth 7) <div class="text-[10px] text-slate-500">
+Line 779: CLOSE div (depth 7)
+Line 780: CLOSE div (depth 6)
+Line 781: OPEN div (depth 6) <div class="flex items-center space-x-3 
+Line 785: CLOSE div (depth 6)
+Line 786: CLOSE div (depth 5)
+Line 788: OPEN div (depth 5) <div class="flex items-center justify-be
+Line 789: OPEN div (depth 6) <div>
+Line 790: OPEN div (depth 7) <div class="text-xs font-bold text-slate
+Line 790: CLOSE div (depth 7)
+Line 791: OPEN div (depth 7) <div class="text-[10px] text-slate-500">
+Line 791: CLOSE div (depth 7)
+Line 792: CLOSE div (depth 6)
+Line 793: OPEN div (depth 6) <div class="flex items-center space-x-3 
+Line 797: CLOSE div (depth 6)
+Line 798: CLOSE div (depth 5)
+Line 799: CLOSE div (depth 4)
+Line 801: OPEN div (depth 4) <div class="mt-6 flex justify-end">
+Line 808: CLOSE div (depth 4)
+Line 809: CLOSE div (depth 3)
+Line 810: CLOSE div (depth 2)
+Line 825: CLOSE div (depth 1)

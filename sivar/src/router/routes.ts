@@ -13,6 +13,10 @@ export const ROUTE_BIOJAVA = "biojava/";
 export const ROUTE_COMP_GEN = "biojava/comp-gen/";
 export const ROUTE_BLAST_NATIVO = "biojava/blast-nativo/";
 
+// Laboratorio
+export const ROUTE_LABORATORIO = "laboratorio/";
+export const ROUTE_INVENTARIO_LAB = "laboratorio/inventario/";
+
 
 export const ROUTE_MEJORAMIENTO = "mejoramiento/";
 export const ROUTE_VARIEDADES = "mejoramiento/variedades/";
@@ -53,6 +57,8 @@ export const NON_SIGNIFICANT_ROUTES = [
   ROUTE_BLAST_NATIVO,
   ROUTE_SEQUENCE_SERVER,
   ROUTE_JBROWSE,
+  ROUTE_LABORATORIO,
+  ROUTE_INVENTARIO_LAB,
   ROUTE_MEJORAMIENTO,
   ROUTE_VARIEDADES,
   ROUTE_CRUZAMIENTOS,

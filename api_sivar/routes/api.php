@@ -120,4 +120,18 @@ Route::group([
     Route::post('/ensayos/{ensayo}/adjuntos', [\App\Http\Controllers\AdjuntoController::class, 'store'])->name('adjuntos.store');
     Route::get('/adjuntos/{adjunto}/download', [\App\Http\Controllers\AdjuntoController::class, 'download'])->name('adjuntos.download');
     Route::delete('/adjuntos/{adjunto}', [\App\Http\Controllers\AdjuntoController::class, 'destroy'])->name('adjuntos.destroy');
+
+    // Módulo Laboratorio - Inventario
+    Route::get('/lab/inventory', [\App\Http\Controllers\LabInventoryController::class, 'index']);
+    Route::post('/lab/inventory', [\App\Http\Controllers\LabInventoryController::class, 'store']);
+    Route::put('/lab/inventory/{id}', [\App\Http\Controllers\LabInventoryController::class, 'update']);
+    Route::delete('/lab/inventory/{id}', [\App\Http\Controllers\LabInventoryController::class, 'destroy']);
+    Route::get('/lab/inventory/{id}/movements', [\App\Http\Controllers\LabInventoryController::class, 'getMovements']);
+    Route::post('/lab/inventory/{id}/movements', [\App\Http\Controllers\LabInventoryController::class, 'storeMovement']);
+    Route::delete('/lab/inventory/{id}/movements', [\App\Http\Controllers\LabInventoryController::class, 'deleteMovements']);
+    
+    Route::get('/lab/inventory-alerts', [\App\Http\Controllers\LabInventoryAlertEmailController::class, 'index']);
+    Route::post('/lab/inventory-alerts', [\App\Http\Controllers\LabInventoryAlertEmailController::class, 'store']);
+    Route::put('/lab/inventory-alerts/{id}', [\App\Http\Controllers\LabInventoryAlertEmailController::class, 'update']);
+    Route::delete('/lab/inventory-alerts/{id}', [\App\Http\Controllers\LabInventoryAlertEmailController::class, 'destroy']);
 });
