@@ -5,7 +5,7 @@ import CrossingsService from "@/services/crossings.services";
 
 export const useParametizeWeightedCrossingStore = defineStore("parametizeweightedCrossing", () => {
   // Estado para almacenar el el formato de superintendencia
-  const parametizeWeightedCrossingFilter = ref<ParametizeWeighted[]>([]);
+  const parametizeWeightedCrossingFilter = ref<ParametizeWeighted>({} as ParametizeWeighted);
 
   const getParametizeWeightedCrossingList = async (proyecto: string, megaAmbiente: string): Promise<void> => {
     try {

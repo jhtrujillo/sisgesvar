@@ -17,9 +17,9 @@ axios.interceptors.response.use(
     const userStore = useUserStore();
     const originalRequest = error.config;
 
-    if (error.response.status === 401 && (originalRequest.url.includes("refresh") || originalRequest.url.includes("login"))) {
+    if (error.response && error.response.status === 401 && (originalRequest.url.includes("refresh") || originalRequest.url.includes("login"))) {
       return Promise.reject(error);
-    } else if (error.response.status === 401 && !originalRequest._retry) {
+    } else if (error.response && error.response.status === 401 && !originalRequest._retry) {
       try {
         originalRequest._retry = true;
 
@@ -47,7 +47,7 @@ axios.interceptors.response.use(
       }
     }
 
-    if (error.response.status === 403 && error.response.data) {
+    if (error.response && error.response.status === 403 && error.response.data) {
       return Promise.reject(error.response.data);
     }
 

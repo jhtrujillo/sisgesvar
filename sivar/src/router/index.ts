@@ -29,6 +29,9 @@ import {
   ROUTE_ENSAYOS_DASHBOARD,
   ROUTE_ENSAYOS_CATALOGOS,
   ROUTE_ENSAYOS_ACTIVIDADES,
+  ROUTE_SIEMBRA_CAMPO_VIVEROS,
+  ROUTE_SIEMBRA_CAMPO_VIVERO_NUEVO,
+  ROUTE_SIEMBRA_CAMPO_VIVERO_EDITAR,
   ROUTE_ABOUT
 } from "./routes";
 import { useUserStore } from "@/stores/user";
@@ -224,6 +227,25 @@ const routes = [
         name: "mejoramiento.ensayos.actividades",
         component: () => import("@/views/mejoramiento/ensayos/ActividadesView.vue"),
         beforeEnter: authGuard
+      },
+      {
+        path: ROUTE_SIEMBRA_CAMPO_VIVEROS,
+        name: "siembra_campo_viveros.show",
+        component: () => import("@/views/mejoramiento/siembra-campo/viveros/ViverosListView.vue"),
+        beforeEnter: authGuard
+      },
+      {
+        path: ROUTE_SIEMBRA_CAMPO_VIVERO_NUEVO,
+        name: "vivero_nuevo.show",
+        component: () => import("@/views/mejoramiento/siembra-campo/viveros/ViveroFormView.vue"),
+        beforeEnter: authGuard
+      },
+      {
+        path: ROUTE_SIEMBRA_CAMPO_VIVERO_EDITAR,
+        name: "vivero_editar.show",
+        component: () => import("@/views/mejoramiento/siembra-campo/viveros/ViveroFormView.vue"),
+        beforeEnter: authGuard,
+        props: true
       },
       {
         path: ROUTE_ABOUT,

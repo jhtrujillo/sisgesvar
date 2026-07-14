@@ -1,0 +1,73 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Vivero extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $table = 'viveros';
+
+    protected $fillable = [
+        'identificador_unico',
+        'nombre',
+        'ingenio',
+        'hacienda',
+        'suerte',
+        'proyecto_id',
+        'ambiente',
+        'responsable_id',
+        'fecha_siembra',
+        'numero_corte',
+        'temporada_floracion',
+        'condicion',
+        'caracter_id',
+    ];
+
+    protected $casts = [
+        'fecha_siembra' => 'date',
+    ];
+
+    public function proyecto()
+    {
+        return $this->belongsTo(\App\Models\Proyecto::class, 'proyecto_id', 'id_prycto');
+    }
+
+    public function responsable()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'responsable_id', 'id_usrio');
+    }
+
+    public function caracter()
+    {
+        return $this->belongsTo(\App\Models\ProyectoCaracter::class, 'caracter_id');
+    }
+
+    public function getNombreProyectoAttribute()
+    {
+        return $this->proyecto ? $this->proyecto->nm_prycto : null;
+    }
+
+    public function getNombreResponsableAttribute()
+    {
+        return $this->responsable ? $this->responsable->nmbre : null;
+    }
+
+    public function getNombreAmbienteAttribute()
+    {
+        if (!$this->ambiente) return null;
+        $amb = \Illuminate\Support\Facades\DB::connection('sivar')->table('mega_ambiente')->where('id_ambnte', $this->ambiente)->first();
+        return $amb ? $amb->nm_ambnte : null;
+    }
+
+    protected $appends = ['nombre_proyecto', 'nombre_responsable', 'nombre_ambiente'];
+
+    public function cosechas()
+    {
+        return $this->hasMany(ViveroCosecha::class);
+    }
+}

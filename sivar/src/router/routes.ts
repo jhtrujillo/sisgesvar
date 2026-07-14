@@ -46,6 +46,11 @@ export const ROUTE_ABOUT = "about/";
 
 export const ERROR_404 = "";
 
+// Siembra-Campo
+export const ROUTE_SIEMBRA_CAMPO_VIVEROS = "mejoramiento/siembra-campo/viveros/";
+export const ROUTE_SIEMBRA_CAMPO_VIVERO_NUEVO = "mejoramiento/siembra-campo/viveros/nuevo/";
+export const ROUTE_SIEMBRA_CAMPO_VIVERO_EDITAR = "mejoramiento/siembra-campo/viveros/editar/:id/";
+
 export const NON_SIGNIFICANT_ROUTES = [
   ROUTE_HOME,
   ROUTE_LOGIN,
@@ -78,6 +83,9 @@ export const NON_SIGNIFICANT_ROUTES = [
   ROUTE_ENSAYOS_DASHBOARD,
   ROUTE_ENSAYOS_CATALOGOS,
   ROUTE_ENSAYOS_ACTIVIDADES,
+  ROUTE_SIEMBRA_CAMPO_VIVEROS,
+  ROUTE_SIEMBRA_CAMPO_VIVERO_NUEVO,
+  ROUTE_SIEMBRA_CAMPO_VIVERO_EDITAR,
   ROUTE_ABOUT,
   ERROR_404
 ];

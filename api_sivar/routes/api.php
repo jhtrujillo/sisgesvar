@@ -134,4 +134,25 @@ Route::group([
     Route::post('/lab/inventory-alerts', [\App\Http\Controllers\LabInventoryAlertEmailController::class, 'store']);
     Route::put('/lab/inventory-alerts/{id}', [\App\Http\Controllers\LabInventoryAlertEmailController::class, 'update']);
     Route::delete('/lab/inventory-alerts/{id}', [\App\Http\Controllers\LabInventoryAlertEmailController::class, 'destroy']);
+    
+    // Módulo Siembra-Campo: Viveros
+    Route::get('siembra-campo/viveros', [\App\Http\Controllers\ViveroController::class, 'index']);
+    Route::post('siembra-campo/viveros', [\App\Http\Controllers\ViveroController::class, 'store']);
+    Route::get('siembra-campo/viveros/{id}', [\App\Http\Controllers\ViveroController::class, 'show']);
+    Route::put('siembra-campo/viveros/{id}', [\App\Http\Controllers\ViveroController::class, 'update']);
+    Route::delete('siembra-campo/viveros/{id}', [\App\Http\Controllers\ViveroController::class, 'destroy']);
+
+    Route::post('siembra-campo/viveros/{id}/cosechar', [\App\Http\Controllers\ViveroController::class, 'registrarCosecha']);
+    Route::get('siembra-campo/viveros/{id}/cosechas', [\App\Http\Controllers\ViveroController::class, 'getHistorialCosechas']);
+
+    Route::get('siembra-campo/ingenios', [\App\Http\Controllers\ViveroController::class, 'getIngenios']);
+    Route::get('siembra-campo/haciendas/{ingenio}', [\App\Http\Controllers\ViveroController::class, 'getHaciendas']);
+    Route::get('siembra-campo/suertes/{hacienda}', [\App\Http\Controllers\ViveroController::class, 'getSuertes']);
+
+    Route::get('siembra-campo/proyectos', [\App\Http\Controllers\ViveroController::class, 'getProyectos']);
+    Route::get('siembra-campo/proyectos/{id}/caracteres', [\App\Http\Controllers\ViveroController::class, 'getCaracteresPorProyecto']);
+    Route::post('siembra-campo/proyectos/{id}/caracteres', [\App\Http\Controllers\ViveroController::class, 'storeCaracter']);
+    
+    Route::get('siembra-campo/responsables', [\App\Http\Controllers\ViveroController::class, 'getResponsables']);
+    Route::get('siembra-campo/ambientes', [\App\Http\Controllers\ViveroController::class, 'getAmbientes']);
 });

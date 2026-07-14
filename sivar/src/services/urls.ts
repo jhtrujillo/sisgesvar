@@ -6,6 +6,12 @@ const API_AUTH_LOGIN = API_AUTH + "login";
 const API_AUTH_USER_INFO = API_AUTH + "me/";
 const API_AUTH_REFRESH_TOKEN = API_AUTH + "token/refresh";
 
+//URLS Siembra-Campo
+const API_VIVEROS = API_URL + "siembra-campo/viveros";
+const API_INGENIOS = API_URL + "siembra-campo/ingenios";
+const API_HACIENDAS = API_URL + "siembra-campo/haciendas";
+const API_SUERTES = API_URL + "siembra-campo/suertes";
+
 // URLS USERs
 const API_USERS = API_URL + "users";
 const API_LINKS = API_URL + "links";
@@ -80,5 +86,12 @@ export default {
   API_ADD_DESIGNS_DETAILS,
   API_ENSAYOS,
   API_CATALOGOS,
-  API_ACTIVIDADES
+  API_ACTIVIDADES,
+  API_VIVEROS,
+  API_INGENIOS,
+  API_HACIENDAS,
+  API_SUERTES,
+  API_PROYECTOS: API_URL + 'siembra-campo/proyectos',
+  API_RESPONSABLES: API_URL + 'siembra-campo/responsables',
+  API_AMBIENTES: API_URL + 'siembra-campo/ambientes'
 };

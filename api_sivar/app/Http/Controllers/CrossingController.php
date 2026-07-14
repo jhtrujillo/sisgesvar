@@ -131,7 +131,7 @@ class CrossingController extends Controller
 
         if ($proyecto != 'x') {
             $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-                ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto) {
+                ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto) {
                     $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
                         ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto);
                 })
@@ -139,7 +139,7 @@ class CrossingController extends Controller
                 ->get();
 
             $sumaPonderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-                ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble) ponderados_valor_merito'), function ($join) use ($proyecto) {
+                ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto) {
                     $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
                         ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto);
                 })

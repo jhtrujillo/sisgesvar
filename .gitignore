@@ -38,3 +38,6 @@ sivar/*.log
 
 # IDE / Agent configurations
 .claude/
+sivar.zip
+api_sivar.zip
+Inventario.xlsx
