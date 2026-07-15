@@ -41,10 +41,15 @@ class ViveroParcelaController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Optional: check if the plot number already exists for this vivero
-        $exists = $vivero->parcelas()->where('numero_parcela', $data['numero_parcela'])->first();
-        if ($exists) {
+        // Validar que no se duplique ni el plot ni la variedad
+        $existsPlot = $vivero->parcelas()->where('numero_parcela', $data['numero_parcela'])->exists();
+        if ($existsPlot) {
             return response()->json(['message' => 'El número de parcela ya existe para este vivero.'], 422);
+        }
+
+        $existsVariedad = $vivero->parcelas()->where('variedad_id', $data['variedad_id'])->exists();
+        if ($existsVariedad) {
+            return response()->json(['message' => 'Esta variedad ya fue agregada a este vivero.'], 422);
         }
 
         $parcela = $vivero->parcelas()->create([
@@ -85,9 +90,12 @@ class ViveroParcelaController extends Controller
                 $id_plot_origen = (isset($data['id_plot_origen']) && $data['id_plot_origen'] !== '') ? $data['id_plot_origen'] : null;
                 $caracter_id = (isset($data['caracter_id']) && $data['caracter_id'] !== '') ? $data['caracter_id'] : null;
 
-                // Check if exists
-                $exists = $vivero->parcelas()->where('numero_parcela', $data['numero_parcela'])->first();
-                if ($exists) continue; // Skip existing plot numbers instead of throwing error
+                // Check if exists (either plot or variedad)
+                $existsPlot = $vivero->parcelas()->where('numero_parcela', $data['numero_parcela'])->exists();
+                if ($existsPlot) continue;
+
+                $existsVariedad = $vivero->parcelas()->where('variedad_id', $data['variedad_id'])->exists();
+                if ($existsVariedad) continue;
 
                 $parcela = $vivero->parcelas()->create([
                     'numero_parcela' => $data['numero_parcela'],

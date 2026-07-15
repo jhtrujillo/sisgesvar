@@ -442,7 +442,9 @@
             <template v-else>
               <tr v-for="p in paginatedParcelas" :key="p.id" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                 <td class="px-4 py-3 font-bold text-slate-800">{{ p.numero_parcela }}</td>
-                <td class="px-4 py-3 font-bold text-emerald-700">{{ p.variedad?.nm_vrdad }}</td>
+                <td class="px-4 py-3 font-bold text-cenicana hover:text-emerald-800 cursor-pointer hover:underline transition-colors" @click="openVarietyProfile(p.variedad?.nm_vrdad)" title="Ver hoja de vida de la variedad">
+                  {{ p.variedad?.nm_vrdad }}
+                </td>
                 <td class="px-4 py-3 text-slate-600 text-xs">{{ p.variedad?.pdgree || 'N/A' }}</td>
                 <td class="px-4 py-3 text-slate-600 text-xs">
                   <span v-if="p.caracter?.nombre">{{ p.caracter.nombre }}</span>
@@ -506,6 +508,11 @@
       @close="showImportWizard = false" 
       @imported="loadParcelas" 
     />
+    <!-- Drawer de Hoja de Vida de la Variedad (Quick Drawer) -->
+    <VarietyProfileDrawer
+      v-model:isOpen="isDrawerOpen"
+      :varietyName="selectedVarietyForDrawer"
+    />
   </div>
 </template>
 
@@ -516,6 +523,7 @@ import { useToast } from 'vue-toastification';
 import viverosServices from '@/services/viveros.services';
 import varietysServices from '@/services/varietys.services';
 import ViveroParcelasImportWizard from '@/components/viveros/ViveroParcelasImportWizard.vue';
+import VarietyProfileDrawer from "@/components/VarietyProfileDrawer.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -544,6 +552,18 @@ const form = ref({
 });
 
 const isSubmitting = ref(false);
+
+// Drawer de variedades
+const isDrawerOpen = ref(false);
+const selectedVarietyForDrawer = ref("");
+
+const openVarietyProfile = (name: any) => {
+  const nameStr = String(name || "").trim();
+  if (nameStr && nameStr !== "null" && nameStr !== "?") {
+    selectedVarietyForDrawer.value = nameStr;
+    isDrawerOpen.value = true;
+  }
+};
 
 // Parcelas State
 const parcelas = ref<any[]>([]);

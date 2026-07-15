@@ -1,0 +1,564 @@
+CENICAÑA — SIVAR
+Sistema de Información de Variedades
+Plan de Mejoras
+Módulo de Mejoramiento Genético
+Qué errores se van a corregir, qué funcionalidades nuevas se van a construir y en cuánto tiempo.
+Equipo de trabajo
+Jhon Trujillo (Líder del proyecto)  ·  Sebastian (Programador de apoyo)
+Período
+Junio 2026 – Noviembre 2026
+Dedicación
+2 días de trabajo por semana — 52 días en total
+Área del sistema
+Módulo de Mejoramiento Genético: Variedades, Floración, Cruzamientos y Experimentos
+1. Qué ya está hecho y qué falta
+Antes de presentar el plan, es importante aclarar qué módulos ya fueron mejorados y cuáles todavía tienen trabajo pendiente. Esto evita confusión entre lo que ya funciona bien y lo que aún está en proceso.
+Módulo
+¿Tiene errores pendientes?
+¿Qué tipo de trabajo hay en el plan?
+Motor de Cruzamientos
+No. Ya corregido ✓
+Solo funcionalidades nuevas que nunca existieron: puntaje combinado del cruzamiento, veto sanitario reforzado y mejoras en la lista.
+Floración
+No. Ya revisado ✓
+Solo funcionalidades nuevas que nunca se construyeron: cálculo de viabilidad del polen, sincronía floral y filtros de trabajo diario.
+Variedades
+Sí — 4 errores activos
+Mezcla de errores reales que hay que corregir (árbol genealógico roto, historial con consulta incorrecta, búsqueda del banco) más mejoras nuevas.
+Experimentos
+Sí — 4 errores activos
+Mezcla de errores reales (libro de campo inaccesible, catálogos fijos en el código) más funcionalidades nuevas (visualización del diseño, índice de selección).
+Seguridad
+Sí — 4 errores activos
+Todo son errores reales que representan riesgos para la información del programa. Son los primeros en resolverse.
+Guía de colores usada en todo este documento:
+🔴  Error grave: algo que funciona mal hoy y puede causar pérdida de información o resultados incorrectos.
+🟡  Error menor: algo que funciona mal pero no genera resultados incorrectos, solo inconvenientes.
+🟢  Funcionalidad nueva: algo que hoy no existe y se va a construir para mejorar el trabajo del programa.
+2. El Equipo
+Persona
+Rol
+¿Qué hace en este proyecto?
+Jhon Trujillo
+Líder
+Toma las decisiones de diseño. Programa la lógica principal de cada módulo, incluyendo los algoritmos que representan las reglas del mejoramiento genético. Aprueba cada cambio antes de que llegue a producción.
+Sebastian
+Programador de apoyo
+Programa las pantallas. Corrige errores identificados. Prueba cada cambio. Verifica el cumplimiento de los estándares de calidad de SETI. Documenta todo lo que se hace.
+🏛️  Estándares SETI
+Todo el trabajo debe cumplir los lineamientos del área de Sistemas y Tecnología de CENICAÑA: calidad del código, manejo seguro de la información, control de versiones y documentación. Sebastian verifica este cumplimiento en cada entrega.
+3. Seguridad del Sistema
+Estos cuatro errores no se ven en ninguna pantalla, pero representan riesgos reales para la información del programa de mejoramiento. Son los primeros en atenderse.
+🔴 S-1  La base de datos puede ser manipulada desde la URL
+¿Qué pasa?  
+Ciertas pantallas del sistema permiten que una persona malintencionada modifique el texto de la dirección web para ejecutar comandos sobre la base de datos de CENICAÑA.
+Impacto en el programa:  
+Una persona podría leer, modificar o borrar registros del programa de mejoramiento sin autorización.
+¿Qué se va a hacer?  
+Cambiar la forma en que el sistema recibe datos del usuario para que nunca sean ejecutados directamente en la base de datos. Es un ajuste técnico que no cambia ninguna pantalla visible.
+Responsable:  
+Jhon Trujillo — Sprint 1
+🔴 S-2  Direcciones internas del servidor escritas en el código
+¿Qué pasa?  
+Las direcciones IP de los servidores internos de CENICAÑA están escritas directamente en el código del sistema, visibles para cualquiera que tenga acceso al repositorio.
+Impacto en el programa:  
+Exposición de la infraestructura tecnológica de CENICAÑA a personas no autorizadas.
+¿Qué se va a hacer?  
+Mover esas direcciones a un archivo de configuración privado que no se comparte ni se publica.
+Responsable:  
+Jhon Trujillo — Sprint 1
+🟡 S-3  Errores internos del sistema se muestran al usuario
+¿Qué pasa?  
+Cuando el sistema tiene un error interno, el mensaje que aparece en pantalla contiene detalles técnicos sobre la estructura de la base de datos.
+Impacto en el programa:  
+Facilita el trabajo de un atacante que quiera explorar vulnerabilidades.
+¿Qué se va a hacer?  
+Los errores internos quedarán en un archivo de registro privado. Al usuario le aparecerá solo un mensaje genérico.
+Responsable:  
+Sebastian — Sprint 1
+🟡 S-4  Datos de floración visibles en la consola del navegador
+¿Qué pasa?  
+Mientras el sistema funciona, datos de las flores activas (hacienda, variedad, proyecto) se imprimen en una consola interna del navegador que cualquier usuario técnico puede ver.
+Impacto en el programa:  
+Exposición de información operativa del programa de mejoramiento.
+¿Qué se va a hacer?  
+Eliminar esos registros automáticos. No cambia ninguna funcionalidad visible.
+Responsable:  
+Sebastian — Sprint 1
+4. Módulo de Variedades
+Este módulo tiene una mezcla de errores activos que hay que corregir y funcionalidades nuevas que hay que construir. Se presentan por separado para que quede claro cuál es cuál.
+4.1 Errores a corregir
+🔴 V-1  El árbol genealógico no carga
+¿Qué pasa?  
+Al intentar ver el árbol genealógico de cualquier variedad, el sistema falla y no muestra nada.
+Impacto en el programa:  
+La herramienta de trazabilidad genética del programa es completamente inutilizable.
+¿Qué se va a hacer?  
+Corregir el error en el servidor que impide que el árbol se construya.
+Responsable:  
+Jhon Trujillo — Sprint 3
+🔴 V-2  El árbol genealógico muestra solo el último ancestro encontrado
+¿Qué pasa?  
+Aunque el árbol intenta cargarse, un error en el algoritmo hace que solo aparezca el último ancestro, sin ninguna rama intermedia.
+Impacto en el programa:  
+El pedigree completo de la variedad no es visible. No se pueden identificar ancestros comunes entre progenitores candidatos.
+¿Qué se va a hacer?  
+Rediseñar el algoritmo que construye el árbol para que acumule todos los niveles de ascendencia correctamente.
+Responsable:  
+Jhon Trujillo — Sprint 3
+🔴 V-3  El historial no funciona al buscar la descendencia directa de una variedad
+¿Qué pasa?  
+Al seleccionar el tipo 'Cruzamientos Directos' en el historial, el sistema no retorna ningún resultado aunque los datos existan. Hay un error en la consulta a la base de datos.
+Impacto en el programa:  
+El mejorador no puede saber qué variedades salieron de un cruzamiento específico.
+¿Qué se va a hacer?  
+Corregir la consulta para que la búsqueda por descendencia funcione correctamente.
+Responsable:  
+Jhon Trujillo — Sprint 2
+🔴 V-4  La búsqueda y el Excel del banco de germoplasma solo funcionan en la página visible
+¿Qué pasa?  
+El banco está dividido en páginas. La búsqueda y el Excel solo actúan sobre los registros de la página actual, ignorando todas las demás.
+Impacto en el programa:  
+Es imposible encontrar variedades en otras páginas. El Excel tiene solo una fracción del banco.
+¿Qué se va a hacer?  
+Conectar la búsqueda al servidor para que revise todo el banco. Crear exportación Excel con todos los registros.
+Responsable:  
+Jhon Trujillo + Sebastian — Sprint 5
+4.2 Funcionalidades nuevas a construir
+🟢 V-A  El árbol genealógico diferenciará visualmente madre y padre
+¿Por qué se necesita?  
+Hoy todos los nodos del árbol se ven iguales. Es difícil leer quién fue la madre y quién fue el padre en cada generación.
+¿Qué podrá hacer el sistema?  
+Los nodos de madres se mostrarán en rosado y los de padres en azul. También se agregarán etiquetas de generación (F1, F2, etc.) para facilitar la lectura del pedigree.
+Responsable:  
+Sebastian — Sprint 3
+🟢 V-B  El historial de variedad mostrará los resultados agronómicos obtenidos en cada etapa
+¿Por qué se necesita?  
+Hoy el historial lista los cruzamientos en que participó la variedad, pero no muestra qué resultados obtuvo en campo: rendimiento, sacarosa, resistencia a enfermedades.
+¿Qué podrá hacer el sistema?  
+El historial incluirá los promedios de rendimiento, sacarosa, mosaico y carbón en cada etapa del programa, permitiendo ver la trayectoria completa de la variedad.
+Responsable:  
+Jhon Trujillo — Sprint 4
+🟢 V-C  El banco de germoplasma tendrá filtros avanzados por mega ambiente y características
+¿Por qué se necesita?  
+Hoy solo hay búsqueda por texto libre. El mejorador tiene que revisar visualmente cientos de registros para encontrar candidatos.
+¿Qué podrá hacer el sistema?  
+Habrá filtros por mega ambiente (Seco-Semiseco, Húmedo, Piedemonte) y por rangos numéricos de TCHM, Sacarosa, Mosaico y Carbón. Los valores de enfermedades tendrán colores: verde (resistente), amarillo (tolerante), rojo (susceptible).
+Responsable:  
+Jhon Trujillo + Sebastian — Sprint 5
+🟢 V-D  El sistema alertará cuando dos progenitores están emparentados
+¿Por qué se necesita?  
+Hoy no hay ninguna herramienta que detecte si dos variedades candidatas a progenitores comparten ancestros comunes. Cruzar variedades emparentadas reduce el vigor de la descendencia.
+¿Qué podrá hacer el sistema?  
+Al configurar el cruzamiento, el sistema calculará automáticamente el nivel de parentesco entre los dos progenitores elegidos y mostrará una alerta cuando el parentesco supere el umbral crítico.
+Responsable:  
+Jhon Trujillo — Sprint 8
+5. Módulo de Floración
+✅  Este módulo no tiene errores pendientes
+Los problemas que tenía el módulo de floración ya fueron revisados y corregidos en la fase anterior. Lo que se presenta a continuación son funcionalidades completamente nuevas que nunca existieron y que mejorarán significativamente el trabajo del técnico de campo.
+5.1 Funcionalidades nuevas a construir
+🟢 F-A  El sistema calculará y usará la viabilidad del polen
+¿Por qué se necesita?  
+Hoy el sistema registra los conteos de granos de polen por muestra pero nunca calcula el porcentaje de viabilidad. Se puede sugerir un macho con polen no funcional y el cruzamiento falla.
+¿Qué podrá hacer el sistema?  
+Se calculará el porcentaje de viabilidad con los datos ya registrados. Si es menor al 10%, ese macho se bloqueará automáticamente como progenitor. Si está entre 10% y 20%, aparecerá una advertencia. El indicador será visible en la lista de floración con colores (verde/amarillo/rojo).
+Responsable:  
+Jhon Trujillo + Sebastian — Sprint 6
+🟢 F-B  El sistema verificará que madre y padre están floreciendo al mismo tiempo
+¿Por qué se necesita?  
+Un cruzamiento solo es posible si hembra y macho están activos simultáneamente. Hoy no se verifica este solapamiento. Se pueden programar cruzamientos imposibles.
+¿Qué podrá hacer el sistema?  
+Antes de mostrar una combinación como viable, el sistema verificará que las fechas de floración activa se solapen. Se agregará un diagrama visual que muestre las ventanas de floración por variedad.
+Responsable:  
+Jhon Trujillo — Sprint 7
+🟢 F-C  La lista de floración tendrá filtros para el trabajo diario
+¿Por qué se necesita?  
+Hoy se muestran todas las flores de todos los proyectos mezcladas. El técnico pierde tiempo revisando información que no le corresponde.
+¿Qué podrá hacer el sistema?  
+Habrá filtros por sexo (hembra/macho), proyecto y nivel de viabilidad del polen. Cada flor tendrá un indicador de frescura según cuántas horas lleva activa: verde (<12h), amarillo (12-24h), rojo (>24h).
+Responsable:  
+Sebastian — Sprints 6 y 7
+🟢 F-D  El sistema identificará variedades con comportamiento sexual inestable
+¿Por qué se necesita?  
+Algunos tratamientos de inducción pueden cambiar el sexo de una flor. El sistema registra estos cambios pero nunca los analiza. Un progenitor con historial de cambios frecuentes hace el cruzamiento impredecible.
+¿Qué podrá hacer el sistema?  
+En el perfil de cada variedad se mostrará el historial de cambios de sexo. En la matriz de cruzamientos aparecerá una advertencia si un progenitor tiene alto porcentaje de cambios registrados.
+Responsable:  
+Jhon Trujillo — Sprint 7
+6. Módulo de Programación de Cruzamientos
+✅  Los errores críticos del motor de cálculo ya están corregidos
+En la fase anterior se identificaron y corrigieron 5 errores graves que hacían que casi todos los cruzamientos aparecieran como inviables aunque los progenitores fueran excelentes: calificación del padre en casillero equivocado, búsqueda de datos por posición incorrecta, contaminación entre características, condición de sexo incompleta y roya sin efecto en el puntaje. Todas estas correcciones ya están en el sistema actual.
+6.1 Funcionalidades nuevas a construir
+🟢 C-A  El sistema tendrá un puntaje único de calidad para cada combinación
+¿Por qué se necesita?  
+Hoy el sistema calcula por separado qué tan buena es la madre y qué tan bueno es el padre, pero no genera un puntaje único de la combinación. Tampoco considera que en caña de azúcar cada característica se transmite de padres a hijos con diferente intensidad.
+¿Qué podrá hacer el sistema?  
+Cada celda de la matriz mostrará un puntaje combinado del cruzamiento que refleja la calidad esperada de la descendencia, considerando la capacidad de transmisión de cada característica. Facilita ordenar los cruzamientos de mejor a peor.
+Responsable:  
+Jhon Trujillo + Sebastian — Sprint 9
+🟢 C-B  Un progenitor con muy alta susceptibilidad a una enfermedad bloqueará el cruzamiento
+¿Por qué se necesita?  
+El sistema actual evalúa la suma de los niveles de ambos progenitores. Si uno tiene susceptibilidad máxima (nivel 9) pero el otro es muy resistente (nivel 1), la suma puede no superar el límite y el cruzamiento pasa como viable, aunque el progenitor crítico transmitirá esa vulnerabilidad.
+¿Qué podrá hacer el sistema?  
+Se agregará una regla adicional: si cualquiera de los dos progenitores tiene nivel 8 o 9 en enfermedades críticas como mosaico o carbón, el cruzamiento se bloqueará. El mejorador verá exactamente qué enfermedad causó el bloqueo.
+Responsable:  
+Jhon Trujillo + Sebastian — Sprint 9
+🟢 C-C  La lista de cruzamientos tendrá filtros y mostrará los resultados obtenidos
+¿Por qué se necesita?  
+Hoy la lista no tiene filtros por campaña ni por combinación de progenitores, y no muestra si el cruzamiento produjo semilla viable.
+¿Qué podrá hacer el sistema?  
+Habrá filtros por año y por combinación madre-padre. Cada cruzamiento mostrará los gramos de semilla obtenidos y las plántulas generadas.
+Responsable:  
+Jhon Trujillo + Sebastian — Sprint 10
+🟢 C-D  La distancia genética entre progenitores influirá en las sugerencias del sistema
+¿Por qué se necesita?  
+Hoy la distancia genética se muestra como dato informativo pero no se usa para decidir qué combinaciones son más prometedoras. Progenitores genéticamente distantes generan mayor vigor en la descendencia.
+¿Qué podrá hacer el sistema?  
+Las sugerencias de cruzamientos priorizarán combinaciones con mayor distancia genética, para maximizar el vigor híbrido esperado en la progenie.
+Responsable:  
+Jhon Trujillo — Sprint 10
+7. Módulo de Experimentos y Evaluación de Campo
+Este módulo tiene errores activos y funcionalidades nuevas. Se presenta cada uno en su categoría.
+7.1 Errores a corregir
+🔴 E-1  El Libro de Campo no está disponible en el sistema
+¿Qué pasa?  
+Aunque el servidor tiene toda la lógica preparada para gestionar el libro de campo, no existe ninguna pantalla en el sistema que le permita al técnico acceder a él.
+Impacto en el programa:  
+El técnico de campo no puede registrar ni consultar evaluaciones de campo desde SIVAR. Trabaja con formatos externos desconectados del sistema.
+¿Qué se va a hacer?  
+Construir la pantalla del Libro de Campo: selector del experimento, tabla de registro de variables por parcela y exportación del libro vacío en Excel para llevar al lote.
+Responsable:  
+Sebastian — Sprint 11
+🔴 E-2  No se puede ver cómo quedó distribuido el diseño experimental
+¿Qué pasa?  
+Una vez que el sistema genera el diseño, no existe ninguna pantalla que lo muestre. El mejorador no puede verificar ni imprimir la distribución antes de ir al campo.
+Impacto en el programa:  
+El mejorador no puede revisar que el diseño es correcto ni comunicárselo al equipo de campo.
+¿Qué se va a hacer?  
+Construir la pantalla de visualización del diseño: tabla con localidad, repetición, bloque, parcela y tratamiento asignado.
+Responsable:  
+Sebastian — Sprint 12
+🔴 E-3  Los catálogos del módulo están fijos y no se pueden actualizar sin tocar el código
+¿Qué pasa?  
+Los grupos de cruzamiento (EZH, EZS, EZP) y los estados del programa están escritos directamente en el código. Si CENICAÑA crea un nuevo grupo o cambia la nomenclatura, hay que modificar el código y hacer un despliegue.
+Impacto en el programa:  
+Inflexibilidad operativa: cualquier cambio en la estructura del programa requiere intervención del equipo de desarrollo.
+¿Qué se va a hacer?  
+Conectar esos catálogos a la base de datos para que los cambios se reflejen automáticamente.
+Responsable:  
+Jhon Trujillo — Sprint 10
+🟡 E-4  Operaciones de guardado sin garantía de integridad
+¿Qué pasa?  
+Al agregar o eliminar tratamientos del diseño, el sistema hace varias operaciones en la base de datos sin garantizar que todas se completen. Si se interrumpe a mitad, el diseño queda inconsistente.
+Impacto en el programa:  
+El diseño puede quedar con datos contradictorios: tratamientos registrados pero con conteos de plantas incorrectos.
+¿Qué se va a hacer?  
+Envolver cada operación en una garantía de integridad: o todo el proceso se completa correctamente, o ningún cambio queda guardado.
+Responsable:  
+Jhon Trujillo — Sprint 2
+7.2 Funcionalidades nuevas a construir
+🟢 E-A  El libro de campo calculará el rendimiento relativo al testigo
+¿Por qué se necesita?  
+Hoy los clones se comparan con rendimientos brutos, sin corregir la variación natural del suelo entre parcelas. Esto hace que las comparaciones entre tratamientos sean menos precisas.
+¿Qué podrá hacer el sistema?  
+El libro de campo calculará el rendimiento de cada clon en relación con el testigo del mismo bloque, corrigiendo las diferencias de suelo. Las decisiones de selección serán más justas y precisas.
+Responsable:  
+Jhon Trujillo — Sprint 12
+🟢 E-B  El sistema generará automáticamente un ranking de clones candidatos
+¿Por qué se necesita?  
+Hoy los clones candidatos a pasar al siguiente estado del programa se evalúan carácter por carácter sin un criterio integral de decisión.
+¿Qué podrá hacer el sistema?  
+El mejorador podrá definir la importancia de cada característica (rendimiento, sacarosa, resistencia a enfermedades) y el sistema generará automáticamente un ranking consolidado de clones de mejor a peor para facilitar la decisión de promoción.
+Responsable:  
+Jhon Trujillo + Sebastian — Sprint 12
+8. Plan de Trabajo — 6 Meses
+El trabajo se organiza en 13 períodos de 2 semanas. En cada período el equipo trabaja 4 días (2 días por semana). Total: 52 días de trabajo.
+Fase
+Meses
+¿En qué se trabaja?
+Tipo de trabajo
+1
+Junio
+Seguridad y errores críticos que bloquean funcionalidades clave
+Corrección de errores
+2
+Julio
+Módulo de Variedades: árbol genealógico, historial y banco de germoplasma
+Corrección + nuevas funciones
+3
+Agosto
+Módulo de Floración: viabilidad del polen, sincronía y filtros
+Funciones nuevas
+4
+Septiembre
+Cruzamientos: parentesco entre progenitores, puntaje combinado, criterios sanitarios
+Funciones nuevas
+5
+Octubre
+Experimentos: libro de campo, visualización del diseño, catálogos
+Corrección + nuevas funciones
+6
+Noviembre
+Cierre: pruebas completas, estándares SETI y entrega a producción
+Validación y entrega
+8.1 Detalle de Períodos de Trabajo
+── FASE 1 — JUNIO: Seguridad y Errores Críticos ──
+Sprint 1  ·  
+2 – 13 de junio
+  (4 días de trabajo)
+Objetivo: Corregir los problemas de seguridad y los errores que bloquean funcionalidades antes de ampliar el uso del sistema.
+Jhon Trujillo
+Corregir vulnerabilidades de la base de datos (S-1 y S-2)
+Mover las IPs de los servidores a configuración privada
+Corregir el error de una línea que impide cargar el Libro de Campo (E-1 — preparación)
+Corregir el error que impide que el árbol genealógico cargue (V-1 — primera parte)
+Sebastian
+Eliminar los registros automáticos que exponen datos en el navegador (S-4)
+Configurar mensajes de error seguros: detalles al log privado, mensaje genérico al usuario (S-3)
+Probar todos los cambios de este período en ambiente de desarrollo
+Sprint 2  ·  
+16 – 27 de junio
+  (4 días de trabajo)
+Objetivo: Terminar los errores críticos pendientes del módulo de Variedades y Experimentos.
+Jhon Trujillo
+Corregir la consulta rota del historial — tipo Cruzamientos Directos (V-3)
+Agregar la búsqueda de participación como padre 2 y padre 3 en el historial
+Corregir las operaciones de guardado de experimentos sin garantía de integridad (E-4)
+Sebastian
+Probar el historial de variedad con los tres tipos de consulta
+Probar experimentos con distintos escenarios de plantas disponibles
+Documentar todos los cambios de la Fase 1 según los estándares SETI
+── FASE 2 — JULIO: Módulo de Variedades ──
+Sprint 3  ·  
+1 – 11 de julio
+  (4 días de trabajo)
+Objetivo: Dejar el árbol genealógico completamente funcional y con diferenciación visual de madre y padre.
+Jhon Trujillo
+Rediseñar el algoritmo del árbol para que construya el árbol completo (V-2)
+Diferenciar visualmente madre (rosado) y padre (azul) en cada nodo del árbol (V-A)
+Agregar etiquetas de generación en el árbol
+Sebastian
+Probar el árbol con variedades de pedigrees conocidos
+Verificar que variedades con progenitores desconocidos se muestran correctamente
+Sprint 4  ·  
+14 – 25 de julio
+  (4 días de trabajo)
+Objetivo: Mejorar el historial de variedad para que sea más completo y fácil de exportar.
+Jhon Trujillo
+Hacer opcionales el estado y el tipo en el historial — solo variedad obligatoria
+Agregar resultados agronómicos al historial: rendimiento, sacarosa, enfermedades por etapa (V-B)
+Agregar paginación a la lista de variedades
+Sebastian
+Activar el botón de exportación Excel en el historial de variedad
+Probar el historial con diferentes variedades y estados del programa
+Sprint 5  ·  
+28 de julio – 8 de agosto
+  (4 días de trabajo)
+Objetivo: Dejar el banco de germoplasma completamente funcional con búsqueda real y filtros avanzados.
+Jhon Trujillo
+Conectar la búsqueda del banco al servidor para que busque en todos los registros
+Crear la exportación Excel completa del banco — todos los registros
+Agregar selector de mega ambiente y filtros por rangos de características (V-C)
+Sebastian
+Agregar código de colores a los valores de enfermedades (verde/amarillo/rojo)
+Probar el banco completo: búsqueda, filtros y exportación
+Documentar todos los cambios de la Fase 2
+── FASE 3 — AGOSTO: Módulo de Floración ──
+Sprint 6  ·  
+11 – 22 de agosto
+  (4 días de trabajo)
+Objetivo: Construir el cálculo de viabilidad del polen y los filtros de trabajo diario.
+Jhon Trujillo
+Calcular el % de viabilidad del polen con los datos ya registrados (F-A)
+Implementar el bloqueo automático de machos con viabilidad crítica en la matriz
+Desarrollar los filtros por sexo y proyecto en la lista de floración (F-C)
+Sebastian
+Agregar indicador visual de viabilidad: verde/amarillo/rojo
+Agregar filtros de floración: sexo, proyecto, nivel de viabilidad
+Probar el bloqueo automático en la matriz de cruzamientos
+Sprint 7  ·  
+25 de agosto – 5 de septiembre
+  (4 días de trabajo)
+Objetivo: Construir la sincronía floral y el seguimiento de estabilidad de sexo.
+Jhon Trujillo
+Calcular las horas de vigencia de cada flor desde su registro (F-C)
+Implementar la verificación de que madre y padre coinciden en el tiempo (F-B)
+Calcular el historial de cambios de sexo por variedad (F-D)
+Sebastian
+Agregar el indicador de frescura de la flor en la lista
+Agregar advertencia en la matriz cuando un progenitor tiene historial de cambio de sexo
+Documentar los cambios de la Fase 3
+── FASE 4 — SEPTIEMBRE/OCTUBRE: Módulo de Cruzamientos ──
+Sprint 8  ·  
+8 – 19 de septiembre
+  (4 días de trabajo)
+Objetivo: Implementar la detección automática de parentesco entre progenitores.
+Jhon Trujillo
+Construir el algoritmo que calcula el nivel de parentesco entre dos progenitores (V-D)
+Integrar la alerta de parentesco alto en el flujo de selección del testigo
+Guardar el resultado en caché para no recalcularlo en cada consulta
+Sebastian
+Mostrar el indicador de parentesco en pantalla
+Probar con variedades que se sabe que tienen ancestros comunes
+Sprint 9  ·  
+22 de septiembre – 3 de octubre
+  (4 días de trabajo)
+Objetivo: Construir el puntaje combinado del cruzamiento y reforzar los criterios sanitarios.
+Jhon Trujillo
+Calcular el puntaje combinado del cruzamiento considerando la transmisión de cada carácter (C-A)
+Implementar el bloqueo automático cuando un progenitor individual tiene susceptibilidad crítica (C-B)
+Coordinar con el equipo de mejoramiento para definir los coeficientes de transmisión por carácter
+Sebastian
+Mostrar el puntaje combinado en cada celda de la matriz
+Diferenciar con color los bloqueos por progenitor crítico vs bloqueos por suma total
+Probar con datos reales del programa
+Sprint 10  ·  
+6 – 17 de octubre
+  (4 días de trabajo)
+Objetivo: Mejorar la lista de cruzamientos y conectar los catálogos de experimentos a la base de datos.
+Jhon Trujillo
+Incorporar la distancia genética como criterio de ordenamiento en las sugerencias (C-D)
+Agregar filtros de año, madre y padre en la lista de cruzamientos (C-C)
+Conectar los catálogos de grupos y estados de experimentos a la base de datos (E-3)
+Sebastian
+Actualizar las pantallas de experimentos para leer los catálogos de la base de datos
+Probar los filtros de la lista de cruzamientos
+Documentar los cambios de la Fase 4
+── FASE 5 — OCTUBRE/NOVIEMBRE: Módulo de Experimentos ──
+Sprint 11  ·  
+20 – 31 de octubre
+  (4 días de trabajo)
+Objetivo: Construir la pantalla del Libro de Campo.
+Jhon Trujillo
+Diseñar e implementar el servicio de datos del Libro de Campo
+Validar que el flujo completo funciona correctamente con todos los estados del programa
+Sebastian
+Construir la pantalla del Libro de Campo: selector de experimento, tabla de registro por parcela, exportación Excel del libro vacío
+Probar el libro de campo con un experimento real
+Sprint 12  ·  
+3 – 14 de noviembre
+  (4 días de trabajo)
+Objetivo: Construir la visualización del diseño experimental y el ranking de selección de clones.
+Jhon Trujillo
+Construir la pantalla de visualización del diseño generado (E-B)
+Calcular el rendimiento relativo al testigo del mismo bloque (E-A)
+Construir la herramienta de ranking de clones con pesos configurables (E-B)
+Sebastian
+Integrar la visualización del diseño en el flujo de experimentos
+Construir la pantalla del ranking con ordenamiento automático de clones
+Probar con datos de un experimento completado
+Documentar los cambios de la Fase 5
+── FASE 6 — NOVIEMBRE: Cierre y Entrega ──
+Sprint 13  ·  
+17 – 28 de noviembre
+  (4 días de trabajo)
+Objetivo: Pruebas completas de todos los módulos, revisión de estándares y entrega oficial a producción.
+Jhon Trujillo
+Revisión de todos los módulos de extremo a extremo con datos reales
+Optimizaciones finales de rendimiento
+Presentación de entregables al equipo directivo y pase a producción
+Sebastian
+Pruebas integrales de todos los módulos
+Verificación completa de estándares SETI
+Documentación técnica final
+Actualización del manual de usuario
+9. Cronograma de un Vistazo
+¿Qué se entrega?
+Tipo
+Jun
+Jul
+Ago
+Sep
+Oct
+Nov
+¿Quién?
+Vulnerabilidades de seguridad corregidas
+Error
+✓
+Jhon+Seb
+Errores críticos que bloqueaban módulos
+Error
+✓
+Jhon+Seb
+Árbol genealógico funcionando y con colores
+Error+Nuevo
+✓
+Jhon
+Historial con resultados y Excel
+Error+Nuevo
+✓
+Jhon+Seb
+Banco con filtros y búsqueda real
+Error+Nuevo
+✓
+Jhon+Seb
+Floración: viabilidad del polen y filtros
+Nuevo
+✓
+Jhon+Seb
+Floración: sincronía y estabilidad de sexo
+Nuevo
+✓
+Jhon
+Alerta de parentesco entre progenitores
+Nuevo
+✓
+Jhon
+Puntaje combinado y veto sanitario reforzado
+Nuevo
+✓
+Jhon+Seb
+Filtros en lista de cruzamientos y catálogos BD
+Nuevo+Error
+✓
+Jhon+Seb
+Libro de Campo en el sistema
+Error
+✓
+Sebastian
+Visualización del diseño y ranking de clones
+Nuevo
+✓
+Jhon+Seb
+Pruebas finales, SETI y entrega a producción
+Validación
+✓
+Jhon+Seb
+10. ¿Cómo sabemos que algo está bien hecho?
+Cada entregable se considera listo cuando cumple estas cinco condiciones:
+Condición
+¿Qué significa?
+¿Quién verifica?
+Funciona con datos reales
+Se probó con datos reales del programa de mejoramiento de CENICAÑA, no datos inventados.
+Jhon Trujillo
+No dañó lo que funcionaba
+Los módulos que ya funcionaban correctamente siguen funcionando igual después del cambio.
+Sebastian
+Cumple estándares SETI
+El código cumple los lineamientos del área de Sistemas: calidad, seguridad, control de versiones y documentación.
+Sebastian
+El mejorador puede usarlo
+Un integrante del equipo de mejoramiento probó la funcionalidad y confirmó que satisface la necesidad real.
+Jhon Trujillo
+Está documentado
+Los cambios tienen documentación que explica qué hace cada nueva función y cómo usarla.
+Sebastian
+11. Riesgos que el Equipo Directivo Debe Conocer
+Estos son los factores que podrían afectar el plan. Se presentan para que el director pueda anticipar decisiones o facilitar recursos cuando sea necesario.
+Riesgo
+¿Por qué puede ocurrir?
+¿Qué se haría?
+No hay documentado cuánto se transmite cada característica genética en caña de CENICAÑA
+El puntaje combinado del cruzamiento (Sprint 9) necesita este dato del propio programa. Si no está disponible, el cálculo se hará con valores de la literatura científica publicada.
+Coordinar con el equipo de mejoramiento ANTES de septiembre para obtener estos valores. El director debe facilitar esta reunión técnica.
+Cambios necesarios en la base de datos requieren aprobación de SETI
+Algunas funcionalidades nuevas (Libro de Campo, Ranking de clones) pueden requerir agregar nuevas tablas en la base de datos.
+Revisar la necesidad de cambios antes de cada sprint. Incluir a SETI con suficiente anticipación para no bloquear el trabajo.
+Disponibilidad del equipo por otras responsabilidades en CENICAÑA
+Jhon y Sebastian pueden tener otras tareas que reduzcan los días disponibles para este proyecto.
+El Sprint 13 (noviembre) funciona como margen de maniobra. Si hay retrasos, las funcionalidades más avanzadas (Ranking de clones, ajuste espacial) pueden aplazarse sin afectar las correcciones de errores críticos.
+Fuera de temporada de floración hay pocos datos para probar sincronía
+La herramienta de sincronía floral necesita datos de flores con diferentes fechas para probarse. Si el desarrollo cae fuera de temporada, los datos reales pueden ser escasos.
+El equipo creará datos de prueba simulados con diferentes fechas para validar la lógica, independientemente de la temporada real.
+— Fin del Documento —
