@@ -145,6 +145,13 @@ Route::group([
     Route::post('siembra-campo/viveros/{id}/cosechar', [\App\Http\Controllers\ViveroController::class, 'registrarCosecha']);
     Route::get('siembra-campo/viveros/{id}/cosechas', [\App\Http\Controllers\ViveroController::class, 'getHistorialCosechas']);
 
+    // Módulo Siembra-Campo: Vivero Parcelas
+    Route::get('siembra-campo/viveros/{id}/parcelas', [\App\Http\Controllers\ViveroParcelaController::class, 'index']);
+    Route::post('siembra-campo/viveros/{id}/parcelas', [\App\Http\Controllers\ViveroParcelaController::class, 'store']);
+    Route::post('siembra-campo/viveros/{id}/parcelas/import-batch', [\App\Http\Controllers\ViveroParcelaController::class, 'importBatch']);
+    Route::delete('siembra-campo/viveros/{vivero_id}/parcelas', [\App\Http\Controllers\ViveroParcelaController::class, 'destroyAll']);
+    Route::delete('siembra-campo/viveros/{vivero_id}/parcelas/{parcela_id}', [\App\Http\Controllers\ViveroParcelaController::class, 'destroy']);
+
     Route::get('siembra-campo/ingenios', [\App\Http\Controllers\ViveroController::class, 'getIngenios']);
     Route::get('siembra-campo/haciendas/{ingenio}', [\App\Http\Controllers\ViveroController::class, 'getHaciendas']);
     Route::get('siembra-campo/suertes/{hacienda}', [\App\Http\Controllers\ViveroController::class, 'getSuertes']);

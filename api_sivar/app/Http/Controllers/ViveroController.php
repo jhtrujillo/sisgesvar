@@ -21,28 +21,26 @@ class ViveroController extends Controller
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string|max:255',
             'fecha_siembra' => 'required|date',
+            'origen_ingenio' => 'required|string',
+            'origen_hacienda' => 'required|string',
+            'origen_suerte' => 'required|string',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Generación del ID Único
-        if ($request->identificador_unico) {
-            $identificador = $request->identificador_unico;
-        } else {
-            $ingenio = $request->ingenio ?: '00';
-            $hacienda = $request->hacienda ?: '00';
-            $suerte = $request->suerte ?: '00';
-            $anioSiembra = $request->fecha_siembra ? date('Y', strtotime($request->fecha_siembra)) : date('Y');
-            
-            // Calculamos el consecutivo basándonos en la cantidad total de registros en la tabla
-            // Usamos max('id') o count(). Si hay eliminados (SoftDeletes),withTrashed()->count() o max('id') es más seguro.
-            $maxId = Vivero::withTrashed()->max('id') ?? 0;
-            $consecutivo = $maxId + 1;
-            
-            $identificador = sprintf('%s-%s-%s-%s-%d', $ingenio, $anioSiembra, $hacienda, $suerte, $consecutivo);
-        }
+        // Generación del ID Único (Siempre Automático)
+        $ingenio = $request->ingenio ?: '00';
+        $hacienda = $request->hacienda ?: '00';
+        $suerte = $request->suerte ?: '00';
+        $anioSiembra = $request->fecha_siembra ? date('Y', strtotime($request->fecha_siembra)) : date('Y');
+        
+        // Calculamos el consecutivo basándonos en la cantidad total de registros en la tabla
+        $maxId = Vivero::withTrashed()->max('id') ?? 0;
+        $consecutivo = $maxId + 1;
+        
+        $identificador = sprintf('%s-%s-%s-%s-%d', $ingenio, $anioSiembra, $hacienda, $suerte, $consecutivo);
 
         $vivero = Vivero::create([
             'identificador_unico' => $identificador,
@@ -73,7 +71,37 @@ class ViveroController extends Controller
     {
         $vivero = Vivero::findOrFail($id);
         
-        $vivero->update($request->all());
+        $oldIngenio = $vivero->ingenio;
+        $oldHacienda = $vivero->hacienda;
+        $oldSuerte = $vivero->suerte;
+        $oldFechaSiembra = $vivero->fecha_siembra;
+
+        // Fill with all fields except identificador_unico (which is handled separately)
+        $vivero->fill($request->except('identificador_unico'));
+
+        // If any of the fields that compose the auto-generated ID changed
+        if (
+            $oldIngenio !== $vivero->ingenio ||
+            $oldHacienda !== $vivero->hacienda ||
+            $oldSuerte !== $vivero->suerte ||
+            $oldFechaSiembra !== $vivero->fecha_siembra
+        ) {
+            // Check if the current ID follows the auto-generated format
+            // Format: Ingenio - Año - Hacienda - Suerte - Consecutivo [-Corte]
+            if (preg_match('/^([^-]+)-(\d{4})-([^-]+)-([^-]+)-(\d+)(?:-C?(\d+))?$/', $vivero->identificador_unico, $matches)) {
+                $consecutivo = $matches[5];
+                $corte = isset($matches[6]) ? '-' . $matches[6] : '';
+                
+                $newIngenio = $vivero->ingenio ?: '00';
+                $newAnio = $vivero->fecha_siembra ? date('Y', strtotime($vivero->fecha_siembra)) : date('Y');
+                $newHacienda = $vivero->hacienda ?: '00';
+                $newSuerte = $vivero->suerte ?: '00';
+                
+                $vivero->identificador_unico = sprintf('%s-%s-%s-%s-%d%s', $newIngenio, $newAnio, $newHacienda, $newSuerte, $consecutivo, $corte);
+            }
+        }
+        
+        $vivero->save();
 
         return response()->json($vivero);
     }
@@ -106,8 +134,8 @@ class ViveroController extends Controller
         $vivero->fecha_siembra = $request->nueva_fecha_siembra;
 
         // HU-003: Actualizar identificador_unico con el sufijo de corte
-        $identificadorBase = preg_replace('/-C\d+$/', '', $vivero->identificador_unico);
-        $vivero->identificador_unico = $identificadorBase . '-C' . $vivero->numero_corte;
+        $identificadorBase = preg_replace('/-C?\d+$/', '', $vivero->identificador_unico);
+        $vivero->identificador_unico = $identificadorBase . '-' . $vivero->numero_corte;
 
         $vivero->save();
 

@@ -40,6 +40,26 @@ export default {
     return api.get(`${urls.API_VIVEROS}/${id}/cosechas`);
   },
 
+  getParcelas(vivero_id: string | number) {
+    return api.get(`${urls.API_VIVEROS}/${vivero_id}/parcelas`);
+  },
+
+  addParcela(vivero_id: string | number, data: any) {
+    return api.post(`${urls.API_VIVEROS}/${vivero_id}/parcelas`, data);
+  },
+
+  importBatchParcelas(vivero_id: string | number, parcelas: any[]) {
+    return api.post(`${urls.API_VIVEROS}/${vivero_id}/parcelas/import-batch`, { parcelas });
+  },
+
+  deleteParcela(vivero_id: string | number, parcela_id: string | number) {
+    return api.delete(`${urls.API_VIVEROS}/${vivero_id}/parcelas/${parcela_id}`);
+  },
+
+  deleteAllParcelas(vivero_id: string | number) {
+    return api.delete(`${urls.API_VIVEROS}/${vivero_id}/parcelas`);
+  },
+
   getProyectos() {
     return api.get(urls.API_PROYECTOS);
   },

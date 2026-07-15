@@ -26,6 +26,9 @@ class Vivero extends Model
         'temporada_floracion',
         'condicion',
         'caracter_id',
+        'origen_ingenio',
+        'origen_hacienda',
+        'origen_suerte'
     ];
 
     protected $casts = [
@@ -68,6 +71,11 @@ class Vivero extends Model
 
     public function cosechas()
     {
-        return $this->hasMany(ViveroCosecha::class);
+        return $this->hasMany(ViveroCosecha::class, 'vivero_id');
+    }
+
+    public function parcelas()
+    {
+        return $this->hasMany(ViveroParcela::class, 'vivero_id');
     }
 }

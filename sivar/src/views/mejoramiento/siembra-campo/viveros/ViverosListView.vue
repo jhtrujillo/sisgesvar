@@ -53,7 +53,7 @@
       <table class="min-w-full bg-white">
         <thead class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
           <tr>
-            <th class="py-3 px-6 text-left">ID Único</th>
+            <th class="py-3 px-6 text-left">IDPlot</th>
             <th class="py-3 px-6 text-left">Nombre</th>
             <th class="py-3 px-6 text-left">Hda / Suerte</th>
             <th class="py-3 px-6 text-left">Proyecto</th>
@@ -77,12 +77,12 @@
             class="border-b border-gray-200 hover:bg-gray-100"
           >
             <td class="py-3 px-6 text-left whitespace-nowrap">
-              <span class="font-medium">{{ vivero.identificador_unico }}</span>
+              <span class="font-medium">{{ getBaseCode(vivero.identificador_unico) }}</span>
             </td>
-            <td class="py-3 px-6 text-left">{{ vivero.nombre }}</td>
+            <td class="py-3 px-6 text-left" v-html="vivero.nombre"></td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ vivero.hacienda || 'N/A' }} / {{ vivero.suerte || 'N/A' }}</td>
             <td class="px-6 py-4">
-              <div class="text-sm text-gray-900" :title="vivero.proyecto?.nm_prycto || 'N/A'">{{ vivero.proyecto?.nm_prycto || 'N/A' }}</div>
+              <div class="text-sm text-gray-900" :title="vivero.proyecto?.nm_prycto || 'N/A'" v-html="vivero.proyecto?.nm_prycto || 'N/A'"></div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="text-sm text-gray-900">{{ vivero.condicion || 'N/A' }}</div>
@@ -239,17 +239,17 @@
         <div class="p-6">
           <div class="mb-4 flex flex-col gap-2">
             <div class="text-sm text-slate-600">
-              Historial de cosechas para el vivero <span class="font-bold text-slate-800">{{ viveroSeleccionado?.nombre }}</span> (<span class="font-mono text-xs">{{ viveroSeleccionado?.identificador_unico }}</span>)
+              Historial de cosechas para el vivero <span class="font-bold text-slate-800" v-html="viveroSeleccionado?.nombre"></span> (<span class="font-mono text-xs">{{ getBaseCode(viveroSeleccionado?.identificador_unico) }}</span>)
             </div>
             <div class="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-2">
-              <div><span class="font-bold block uppercase">Ingenio</span> {{ getIngenioName(viveroSeleccionado?.ingenio) }}</div>
-              <div><span class="font-bold block uppercase">Hacienda</span> {{ viveroSeleccionado?.hacienda || 'N/A' }}</div>
+              <div><span class="font-bold block uppercase">Ingenio</span> <span v-html="getIngenioName(viveroSeleccionado?.ingenio)"></span></div>
+              <div><span class="font-bold block uppercase">Hacienda</span> <span v-html="viveroSeleccionado?.hacienda || 'N/A'"></span></div>
               <div><span class="font-bold block uppercase">Suerte</span> {{ viveroSeleccionado?.suerte || 'N/A' }}</div>
               <div><span class="font-bold block uppercase">Corte Actual</span> {{ viveroSeleccionado?.numero_corte || 'N/A' }}</div>
               
-              <div class="md:col-span-2"><span class="font-bold block uppercase">Proyecto</span> {{ viveroSeleccionado?.nombre_proyecto || 'N/A' }}</div>
-              <div><span class="font-bold block uppercase">Ambiente</span> {{ viveroSeleccionado?.nombre_ambiente || 'N/A' }}</div>
-              <div><span class="font-bold block uppercase">Responsable</span> {{ viveroSeleccionado?.nombre_responsable || 'N/A' }}</div>
+              <div class="md:col-span-2"><span class="font-bold block uppercase">Proyecto</span> <span v-html="viveroSeleccionado?.nombre_proyecto || 'N/A'"></span></div>
+              <div><span class="font-bold block uppercase">Ambiente</span> <span v-html="viveroSeleccionado?.nombre_ambiente || 'N/A'"></span></div>
+              <div><span class="font-bold block uppercase">Responsable</span> <span v-html="viveroSeleccionado?.nombre_responsable || 'N/A'"></span></div>
             </div>
           </div>
 
@@ -268,6 +268,7 @@
             <table class="w-full text-sm text-left">
               <thead class="text-xs text-slate-600 uppercase bg-slate-50 border-b border-slate-200">
                 <tr>
+                  <th scope="col" class="px-4 py-3">Código Histórico</th>
                   <th scope="col" class="px-4 py-3">Fecha de Cosecha</th>
                   <th scope="col" class="px-4 py-3">Nueva Siembra</th>
                   <th scope="col" class="px-4 py-3 text-center">Corte Anterior</th>
@@ -275,6 +276,9 @@
               </thead>
               <tbody>
                 <tr v-for="(item, index) in historial" :key="item.id" :class="index !== historial.length - 1 ? 'border-b border-slate-100' : ''" class="hover:bg-slate-50 transition-colors">
+                  <td class="px-4 py-3 font-medium text-slate-800">
+                    <span class="font-mono text-xs">{{ getHistoricalCode(viveroSeleccionado?.identificador_unico, item.numero_corte_anterior) }}</span>
+                  </td>
                   <td class="px-4 py-3 font-medium text-slate-800">{{ formatDate(item.fecha_cosecha) }}</td>
                   <td class="px-4 py-3 text-slate-600">{{ formatDate(item.nueva_fecha_siembra) }}</td>
                   <td class="px-4 py-3 text-center">
@@ -435,6 +439,17 @@ const openCosechaModal = (vivero: any) => {
 const closeCosechaModal = () => {
   isCosechaModalOpen.value = false;
   viveroSeleccionado.value = null;
+};
+
+const getBaseCode = (currentCode: string) => {
+  if (!currentCode) return '';
+  return currentCode.replace(/-C?\d+$/, '');
+};
+
+const getHistoricalCode = (currentCode: string, historicalCorte: number) => {
+  if (!currentCode) return '';
+  const baseCode = getBaseCode(currentCode);
+  return `${baseCode}-${historicalCorte}`;
 };
 
 const submitCosecha = async () => {
