@@ -507,13 +507,20 @@ class CrossingController extends Controller
                         $isDisease = in_array($caracteristica, ['msco_r', 'carbon', 'rya_cfe_r', 'roya_naranja']);
                         $hasA = $florA_eval && isset($florA_eval->$caracteristica) && $florA_eval->$caracteristica !== '' && !is_null($florA_eval->$caracteristica);
                         $hasT = $isDisease || ($testigo != null && isset($testigo->$caracteristica) && $testigo->$caracteristica !== '' && !is_null($testigo->$caracteristica));
-                        if ($hasA && $hasT) {
+                        if ($hasT) {
                             $testigoVal = ($testigo != null && isset($testigo->$caracteristica)) ? $testigo->$caracteristica : null;
-                            $vm += ($this->calcularValorMerito($caracteristica, $florA_eval, $ponderado->ponderado, $testigoVal)) / 100;
+                            
+                            $hasA = $florA_eval && isset($florA_eval->$caracteristica) && $florA_eval->$caracteristica !== '' && !is_null($florA_eval->$caracteristica);
+                            if ($hasA) {
+                                $vm += ($this->calcularValorMerito($caracteristica, $florA_eval, $ponderado->ponderado, $testigoVal)) / 100;
+                            }
+                            
                             $hasB = $florB_eval && isset($florB_eval->$caracteristica) && $florB_eval->$caracteristica !== '' && !is_null($florB_eval->$caracteristica);
                             if ($hasB) {
                                 $vm2 += ($this->calcularValorMerito($caracteristica, $florB_eval, $ponderado->ponderado, $testigoVal)) / 100;
+                            }
 
+                            if ($hasA && $hasB) {
                                 if (!$this->calcularViabilidadCaracteristica($caracteristica, $florA_eval, $florB_eval, $ponderado, $testigoVal)) {
                                     $viabilidad['viabilidad'] = false;
                                     break;
