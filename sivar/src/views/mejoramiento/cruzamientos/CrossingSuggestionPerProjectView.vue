@@ -639,22 +639,12 @@
       <div class="flex items-center space-x-2 flex-wrap gap-2">
         <button
           type="button"
-          @click="exportarExcel"
+          @click="exportarDesempenoIndividual"
           class="flex items-center px-4 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm hover:bg-emerald-100 transition-all duration-200"
-          title="Descargar cuadrícula en formato Excel"
+          title="Descargar Memoria de Desempeño Individual"
         >
           <span class="mr-1.5">📊</span>
-          Descargar Excel
-        </button>
-
-        <button
-          type="button"
-          @click="exportarMemoriaCalculos"
-          class="flex items-center px-4 py-2 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl shadow-sm hover:bg-amber-100 transition-all duration-200"
-          title="Descargar Memoria de Cálculos con todo el sustento matemático de VM y Vetos"
-        >
-          <span class="mr-1.5">🧮</span>
-          Memoria de Cálculos
+          Descargar Desempeño
         </button>
 
         <button
@@ -1363,83 +1353,10 @@ function getCausaInviabilidad(cell: any): string {
  * Propósito: Añadir la función finalizarProceso para completar exitosamente el flujo de trabajo,
  * mostrando una notificación visual (toast) y redirigiendo al usuario de vuelta a la lista general de cruces.
  */
-function exportarExcel() {
-  try {
-    const headers = ["Hembra / Macho", ...floresSeleccionadas.value.map(f => f.variedad), "Autofecundación"];
-    const rows: any[][] = [];
-    
-    // Añadir metadatos en la cabecera
-    const metadata = [
-      ["CENICAÑA - PROGRAMACIÓN DE CRUZAMIENTOS POR PROYECTO"],
-      ["Proyecto ID:", selectedCdCntble.value],
-      ["Mega Ambiente:", selectedMegaAmbiente.value],
-      ["Variedad Testigo:", selectedVariety.value],
-      ["Fecha de Generación:", new Date().toLocaleDateString("es-ES")],
-      [] // Fila vacía
-    ];
-    
-    // Construir la matriz
-    viabilidadesMatriz.value.forEach((row: any) => {
-      if (row && row.length > 0) {
-        const varA = row[0].varA;
-        const excelRow: string[] = [varA];
-        
-        row.forEach((cell: any) => {
-          if (cell) {
-            if (cell.viabilidad) {
-              excelRow.push(`SÍ (DG: ${getDistancia(cell.varA, cell.varB)} | VM: ${cell.vm2})`);
-            } else {
-              const causa = getCausaInviabilidad(cell);
-              excelRow.push(`NO - ${causa}`);
-            }
-          }
-        });
-        
-        // Agregar si la madre tiene autofecundación activada
-        if (autofecundacionesSeleccionadas.value.has(varA)) {
-          excelRow.push("SÍ");
-        } else {
-          excelRow.push("NO");
-        }
-        
-        rows.push(excelRow);
-      }
-    });
-
-    const worksheet = XLSX.utils.aoa_to_sheet([
-      ...metadata,
-      headers,
-      ...rows
-    ]);
-
-    // Aplicar algunos anchos de columna automáticos
-    const maxCols = headers.length;
-    worksheet["!cols"] = [];
-    for (let i = 0; i < maxCols; i++) {
-      worksheet["!cols"].push({ wch: i === 0 ? 18 : 25 });
-    }
-
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Hoja de Campo");
-    
-    const filename = `Programacion_Cruzamientos_${selectedCdCntble.value}_${selectedMegaAmbiente.value}.xlsx`;
-    XLSX.writeFile(workbook, filename);
-    toast.success("¡Excel de cruzamientos generado con éxito!");
-  } catch (error) {
-    console.error("Error al exportar Excel:", error);
-    toast.error("Ocurrió un error al generar el archivo Excel");
-  }
-}
-
-function imprimirHojaCampo() {
-  window.print();
-}
-
-async function exportarMemoriaCalculos() {
+async function exportarDesempenoIndividual() {
   try {
     const filterData = SuggestionCrossingPerProjectStore.suggestionCrossingsPerProjectFilter || {};
     const viabilidad = viabilidadesMatriz.value || [];
-    const distancias = filterData.distancias || {};
     
     // Cargar ponderados si no están listos
     if (!ParametizeWeightedStore.parametizeWeightedCrossingFilter || !ParametizeWeightedStore.parametizeWeightedCrossingFilter.ponderados) {
@@ -1453,192 +1370,82 @@ async function exportarMemoriaCalculos() {
     const floresEIII = filterData.flores_eiii || [];
     const testigoLimpio = filterData.testigo_limpio || {};
 
-    const findVarietyData = (varName: string) => {
+    const findVarietyData = (varName) => {
       if (!varName) return undefined;
       const cleanVar = varName.trim().toUpperCase();
-      let data = floresBG.find((f: any) => f.vrdad && f.vrdad.trim().toUpperCase() === cleanVar);
-      if (!data) data = floresPR.find((f: any) => f.vrdad && f.vrdad.trim().toUpperCase() === cleanVar);
-      if (!data) data = floresEIII.find((f: any) => f.vrdad && f.vrdad.trim().toUpperCase() === cleanVar);
+      let data = floresBG.find((f) => f.vrdad && f.vrdad.trim().toUpperCase() === cleanVar);
+      if (!data) data = floresPR.find((f) => f.vrdad && f.vrdad.trim().toUpperCase() === cleanVar);
+      if (!data) data = floresEIII.find((f) => f.vrdad && f.vrdad.trim().toUpperCase() === cleanVar);
       return data;
     };
     
-    // --- HOJA 1: RESUMEN DE CRUZAMIENTOS ---
-    const summaryHeaders = [
-      "Hembra (Madre)",
-      "Macho (Padre)",
-      "Proyecto Hembra",
-      "Proyecto Macho",
-      "Viabilidad",
-      "Motivo de Inviabilidad / Veto",
-      "Valor de Mérito Hembra",
-      "Valor de Mérito Macho",
-      "Distancia Genética (DG)",
-      "Autofecundado"
-    ];
-    
-    const summaryRows: any[][] = [];
-    
-    // --- HOJA 2: MEMORIA DE CÁLCULO - VM ---
-    const vmHeaders = [
+    const headers = [
       "Variedad Evaluada",
       "Rol (Madre/Padre)",
-      "Característica",
-      "Valor Real Variedad",
+      "Característica Evaluada",
+      "Valor Bruto (Variedad)",
       "Valor Testigo",
-      "Porcentaje vs Testigo",
-      "Nivel de Calidad",
-      "Ponderación Asignada (Peso)",
-      "Valor de Mérito Ponderado"
+      "Porcentaje vs Testigo (%)",
+      "Rango Evaluado (Regla Sistema)",
+      "Nivel Obtenido",
+      "Límite Proyecto",
+      "¿Cumple Límite Individual?"
     ];
     
-    const vmRows: any[][] = [];
+    const rows = [];
+    const procesadas = new Set();
     
-    // --- HOJA 3: VETO FITOSANITARIO ---
-    const fitosanitarioHeaders = [
-      "Variedad Hembra",
-      "Variedad Macho",
-      "Enfermedad",
-      "Valor Hembra",
-      "Valor Macho",
-      "Límite Máximo Permitido (Tolerancia)",
-      "Veto Aplicado"
-    ];
-    
-    const fitosanitarioRows: any[][] = [];
- 
-    // Para evitar duplicación de cálculos de VM en la Hoja 2
-    const procesadasVM = new Set<string>();
-    
-    // Recorrer la matriz de viabilidades
-    viabilidad.forEach((row: any) => {
+    viabilidad.forEach((row) => {
       if (row && row.length > 0) {
-        row.forEach((cell: any) => {
+        row.forEach((cell) => {
           if (cell) {
-            // Buscar perfiles de la madre y el padre
             const florAData = findVarietyData(cell.varA);
             const florBData = findVarietyData(cell.varB);
- 
-            // 1. Agregar a Hoja 1: Resumen de Cruzamientos
-            const isViable = cell.viabilidad === true;
-            const dgValue = getDistancia(cell.varA, cell.varB);
-            const autofecundado = (cell.varA && cell.varB && cell.varA.trim() === cell.varB.trim()) || autofecundacionesSeleccionadas.value.has(cell.varA) ? "SÍ" : "NO";
             
-            // Buscar motivos de inviabilidad
-            let motivoInviabilidad = "-";
-            if (!isViable) {
-              const motivos: string[] = [];
-              if (florAData && florBData) {
-                ponderados.forEach((p: any) => {
-                  const caracteristica = p.equivalente ? p.equivalente.toLowerCase() : "";
-                  const limiteMax = p.nivel;
-                  if (limiteMax !== null && limiteMax !== undefined && caracteristica) {
-                    const valorRealA = florAData[caracteristica] ?? "-";
-                    const valorRealB = florBData[caracteristica] ?? "-";
-                    
-                    if (valorRealA !== "-" && valorRealB !== "-" && valorRealA !== null && valorRealB !== null) {
-                      let lvlA = 999;
-                      let lvlB = 999;
-                      
-                      if (caracteristica === "msco_r" || caracteristica === "carbon") {
-                        [
-                          { val: Number(valorRealA), setLvl: (l: number) => lvlA = l },
-                          { val: Number(valorRealB), setLvl: (l: number) => lvlB = l }
-                        ].forEach(({ val, setLvl }) => {
-                          if (val <= 2) setLvl(1);
-                          else if (val > 2 && val <= 3) setLvl(2);
-                          else if (val > 3 && val <= 5) setLvl(3);
-                          else if (val > 5 && val <= 8) setLvl(4);
-                          else if (val > 8 && val <= 11) setLvl(5);
-                          else if (val > 11 && val <= 15) setLvl(6);
-                          else if (val > 15 && val <= 22) setLvl(7);
-                          else if (val > 22 && val <= 30) setLvl(8);
-                          else setLvl(9);
-                        });
-                      } else if (caracteristica === "tchm" || caracteristica === "scrsa" || caracteristica === "dmtro_tllo" || caracteristica === "altura_planta" || caracteristica === "poblacion") {
-                        const valTestigo = testigoLimpio[caracteristica];
-                        if (valTestigo) {
-                          [
-                            { val: Number(valorRealA), setLvl: (l: number) => lvlA = l },
-                            { val: Number(valorRealB), setLvl: (l: number) => lvlB = l }
-                          ].forEach(({ val, setLvl }) => {
-                            const pct = (val * 100) / Number(valTestigo);
-                            if (pct > 120) setLvl(1);
-                            else if (pct < 120 && pct >= 110) setLvl(2);
-                            else if (pct < 110 && pct >= 95) setLvl(3);
-                            else if (pct < 95 && pct >= 85) setLvl(4);
-                            else setLvl(5);
-                          });
-                        }
-                      } else if (caracteristica === "volcamiento") {
-                        const valTestigo = testigoLimpio[caracteristica];
-                        if (valTestigo) {
-                          [
-                            { val: Number(valorRealA), setLvl: (l: number) => lvlA = l },
-                            { val: Number(valorRealB), setLvl: (l: number) => lvlB = l }
-                          ].forEach(({ val, setLvl }) => {
-                            const pct = (val * 100) / Number(valTestigo);
-                            if (pct < 10) setLvl(1);
-                            else if (pct < 20 && pct >= 11) setLvl(2);
-                            else if (pct < 30 && pct >= 21) setLvl(3);
-                            else if (pct < 49 && pct >= 31) setLvl(4);
-                            else setLvl(5);
-                          });
-                        }
-                      } else if (caracteristica === "rya_cfe_r" || caracteristica === "roya_naranja") {
-                        lvlA = Number(valorRealA);
-                        lvlB = Number(valorRealB);
-                      }
-                      
-                      if (lvlA !== 999 && lvlB !== 999 && (lvlA + lvlB) > Number(limiteMax)) {
-                        motivos.push(`${p.equivalente.toUpperCase()} excede límite (Suma Niveles: ${lvlA}+${lvlB} = ${lvlA + lvlB} > Tolerancia: ${limiteMax})`);
-                      }
-                    }
-                  }
-                });
-              } else {
-                motivos.push("Falta de información agronómica en uno o ambos progenitores");
-              }
-              motivoInviabilidad = motivos.length > 0 ? motivos.join(" | ") : "Veto manual o restricciones de autogamia";
-            }
-            
-            summaryRows.push([
-              cell.varA,
-              cell.varB,
-              cell.proyecto,
-              cell.proyecto2,
-              isViable ? "VIABLE" : "INVIABLE / VETO",
-              motivoInviabilidad,
-              cell.vm || 0,
-              cell.vm2 || 0,
-              dgValue,
-              autofecundado
-            ]);
-            
-            // 2. Agregar a Hoja 2: Memoria de Cálculo - VM (Madre y Padre)
             [
-              { varName: cell.varA, rol: "Madre", vmTot: cell.vm, florData: florAData },
-              { varName: cell.varB, rol: "Padre", vmTot: cell.vm2, florData: florBData }
-            ].forEach(({ varName, rol, vmTot, florData }) => {
-              if (varName && !procesadasVM.has(varName) && florData) {
-                procesadasVM.add(varName);
+              { varName: cell.varA, rol: "Madre", florData: florAData },
+              { varName: cell.varB, rol: "Padre", florData: florBData }
+            ].forEach(({ varName, rol, florData }) => {
+              if (varName && !procesadas.has(varName) && florData) {
+                procesadas.add(varName);
                 
-                ponderados.forEach((p: any) => {
-                  const caracteristica = p.equivalente ? p.equivalente.toLowerCase() : "";
-                  if (p.ponderado > 0 && caracteristica) {
+                ponderados.forEach((p) => {
+                  let caracteristica = p.equivalente ? String(p.equivalente).toLowerCase() : "";
+                  if (!caracteristica && p.nombre) {
+                    const nombre = String(p.nombre).toLowerCase();
+                    if (nombre.includes("mosaico")) caracteristica = "msco_r";
+                    else if (nombre.includes("carbon") || nombre.includes("carbón")) caracteristica = "carbon";
+                    else if (nombre.includes("tchm")) caracteristica = "tchm";
+                    else if (nombre.includes("scrs")) caracteristica = "scrsa";
+                    else if (nombre.includes("diametro") || nombre.includes("diámetro") || nombre.includes("tllo")) caracteristica = "dmtro_tllo";
+                    else if (nombre.includes("altura")) caracteristica = "altura_planta";
+                    else if (nombre.includes("poblacion") || nombre.includes("población")) caracteristica = "poblacion";
+                    else if (nombre.includes("volcamiento")) caracteristica = "volcamiento";
+                    else if (nombre.includes("roya cafe") || nombre.includes("café")) caracteristica = "rya_cfe_r";
+                    else if (nombre.includes("roya naranja")) caracteristica = "roya_naranja";
+                    else caracteristica = nombre.replace(/\s+/g, '_');
+                  }
+                  
+                  if (caracteristica) {
                     const valorReal = florData[caracteristica] ?? "-";
                     const valorTestigo = testigoLimpio[caracteristica] ?? "-";
+                    const limiteMax = p.nivel !== null && p.nivel !== undefined ? Number(p.nivel) : "-";
                     
                     let porcentaje = "-";
-                    let nivel = "-";
-                    let vmPonderado = "-";
-                    
-                    if (valorReal !== "-" && valorTestigo !== "-" && valorReal !== null && valorTestigo !== null) {
+                    if (valorReal !== "-" && valorTestigo !== "-" && valorReal !== null && valorTestigo !== null && Number(valorTestigo) > 0) {
                       porcentaje = ((Number(valorReal) * 100) / Number(valorTestigo)).toFixed(2) + "%";
-                      
-                      // Determinar el nivel de calidad (emulando calcularValorMerito del backend)
+                    }
+
+                    let nivel = "-";
+                    let rangoRegla = "N/A";
+                    let cumpleLimite = "-";
+                    
+                    if (valorReal !== "-" && valorReal !== null && valorReal !== "") {
                       let lvl = 999;
+                      
                       if (caracteristica === "msco_r" || caracteristica === "carbon") {
                         const val = Number(valorReal);
+                        rangoRegla = "N1: <=2% | N2: 2.1-3% | N3: 3.1-5% | N4: 5.1-8% | N5: 8.1-11% | N6: 11.1-15% | N7: 15.1-22% | N8: 22.1-30% | N9: >30%";
                         if (val <= 2) lvl = 1;
                         else if (val > 2 && val <= 3) lvl = 2;
                         else if (val > 3 && val <= 5) lvl = 3;
@@ -1648,136 +1455,104 @@ async function exportarMemoriaCalculos() {
                         else if (val > 15 && val <= 22) lvl = 7;
                         else if (val > 22 && val <= 30) lvl = 8;
                         else lvl = 9;
-                      } else if (caracteristica === "tchm" || caracteristica === "scrsa" || caracteristica === "dmtro_tllo" || caracteristica === "altura_planta" || caracteristica === "poblacion") {
-                        const pct = (Number(valorReal) * 100) / Number(valorTestigo);
-                        if (pct > 120) lvl = 1;
-                        else if (pct < 120 && pct >= 110) lvl = 2;
-                        else if (pct < 110 && pct >= 95) lvl = 3;
-                        else if (pct < 95 && pct >= 85) lvl = 4;
-                        else lvl = 5;
+                      } else if (caracteristica === "tchm") {
+                        rangoRegla = "N1: >120% | N2: 110-120% | N3: 95-109.9% | N4: 85-94.9% | N5: <85%";
+                        if (valorTestigo !== "-" && valorTestigo !== null && Number(valorTestigo) > 0) {
+                          const pct = (Number(valorReal) * 100) / Number(valorTestigo);
+                          if (pct > 120) lvl = 1;
+                          else if (pct <= 120 && pct >= 110) lvl = 2;
+                          else if (pct < 110 && pct >= 95) lvl = 3;
+                          else if (pct < 95 && pct >= 85) lvl = 4;
+                          else lvl = 5;
+                        } else {
+                          rangoRegla += " (Falta testigo)";
+                        }
+                      } else if (caracteristica === "scrsa" || caracteristica === "dmtro_tllo" || caracteristica === "altura_planta" || caracteristica === "poblacion") {
+                        rangoRegla = "N1: >120% | N2: 100-120% | N3: 90-99.9% | N4: 80-89.9% | N5: <80%";
+                        if (valorTestigo !== "-" && valorTestigo !== null && Number(valorTestigo) > 0) {
+                          const pct = (Number(valorReal) * 100) / Number(valorTestigo);
+                          if (pct > 120) lvl = 1;
+                          else if (pct <= 120 && pct >= 100) lvl = 2;
+                          else if (pct < 100 && pct >= 90) lvl = 3;
+                          else if (pct < 90 && pct >= 80) lvl = 4;
+                          else lvl = 5;
+                        } else {
+                          rangoRegla += " (Falta testigo)";
+                        }
                       } else if (caracteristica === "volcamiento") {
-                        const pct = (Number(valorReal) * 100) / Number(valorTestigo);
-                        if (pct < 10) lvl = 1;
-                        else if (pct < 20 && pct >= 11) lvl = 2;
-                        else if (pct < 30 && pct >= 21) lvl = 3;
-                        else if (pct < 49 && pct >= 31) lvl = 4;
-                        else lvl = 5;
+                        rangoRegla = "N1: <10% | N2: 10-19.9% | N3: 20-29.9% | N4: 30-48.9% | N5: >=49% (Menor es mejor)";
+                        if (valorTestigo !== "-" && valorTestigo !== null && Number(valorTestigo) > 0) {
+                          const pct = (Number(valorReal) * 100) / Number(valorTestigo);
+                          if (pct < 10) lvl = 1;
+                          else if (pct < 20 && pct >= 10) lvl = 2;
+                          else if (pct < 30 && pct >= 20) lvl = 3;
+                          else if (pct < 49 && pct >= 30) lvl = 4;
+                          else lvl = 5;
+                        } else {
+                          rangoRegla += " (Falta testigo)";
+                        }
+                      } else if (caracteristica === "rya_cfe_r" || caracteristica === "roya_naranja") {
+                        rangoRegla = "Escala visual directa (1 al 9)";
+                        lvl = Number(valorReal);
+                      } else {
+                        rangoRegla = "Sin regla configurada";
                       }
                       
-                      nivel = lvl === 999 ? "NA" : lvl.toString();
-                      vmPonderado = lvl === 999 ? "0.00" : (p.ponderado * lvl / 100).toFixed(2);
+                      if (lvl !== 999) {
+                        nivel = lvl.toString();
+                        if (limiteMax !== "-") {
+                          cumpleLimite = lvl <= Number(limiteMax) ? "SÍ" : "NO";
+                        }
+                      }
+                    } else {
+                       rangoRegla = "Sin datos (Nivel 0 automático)";
+                       nivel = "0";
                     }
                     
-                    vmRows.push([
+                    rows.push([
                       varName,
                       rol,
-                      p.equivalente.toUpperCase(),
+                      caracteristica.toUpperCase(),
                       valorReal,
                       valorTestigo,
                       porcentaje,
+                      rangoRegla,
                       nivel,
-                      p.ponderado + "%",
-                      vmPonderado
+                      limiteMax,
+                      cumpleLimite
                     ]);
                   }
                 });
               }
-            });
-            
-            // 3. Agregar a Hoja 3: Evaluación Fitosanitaria (Vetos)
-            const enfermedades = [
-              { key: "msco_r", label: "Mosaico" },
-              { key: "carbon", label: "Carbón" },
-              { key: "rya_cfe_r", label: "Roya Café" },
-              { key: "roya_naranja", label: "Roya Naranja" }
-            ];
-            
-            enfermedades.forEach((enfermedad) => {
-              const valHembra = florAData?.[enfermedad.key] ?? "-";
-              const valMacho = florBData?.[enfermedad.key] ?? "-";
-              
-              const pondEnf = ponderados.find((p: any) => p.equivalente && p.equivalente.toLowerCase() === enfermedad.key);
-              const limiteMax = pondEnf?.nivel ?? "No definido";
-              
-              let vetoAplicado = "NO";
-              if (valHembra !== "-" && valHembra !== null && limiteMax !== "No definido" && Number(valHembra) > Number(limiteMax)) {
-                vetoAplicado = "SÍ (Hembra excede límite)";
-              } else if (valMacho !== "-" && valMacho !== null && limiteMax !== "No definido" && Number(valMacho) > Number(limiteMax)) {
-                vetoAplicado = "SÍ (Macho excede límite)";
-              }
-              
-              fitosanitarioRows.push([
-                cell.varA,
-                cell.varB,
-                enfermedad.label,
-                valHembra,
-                valMacho,
-                limiteMax,
-                vetoAplicado
-              ]);
             });
           }
         });
       }
     });
     
-    // --- CONSTRUIR EL LIBRO DE TRABAJO (WORKBOOK) ---
+    const worksheet = XLSX.utils.aoa_to_sheet([
+      ["CENICAÑA - MEMORIA DE DESEMPEÑO INDIVIDUAL POR VARIEDAD"],
+      ["Proyecto ID:", selectedCdCntble.value],
+      ["Mega Ambiente:", selectedMegaAmbiente.value],
+      ["Testigo de Referencia:", selectedVariety.value],
+      ["Fecha de Exportación:", new Date().toLocaleDateString("es-ES")],
+      [],
+      headers,
+      ...rows
+    ]);
+    
+    worksheet["!cols"] = [
+      { wch: 18 }, { wch: 15 }, { wch: 22 }, { wch: 20 }, { wch: 15 }, { wch: 80 }, { wch: 15 }, { wch: 15 }, { wch: 25 }
+    ];
+    
     const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Desempeño Individual");
     
-    // Hoja 1: Resumen de Cruzamientos
-    const summaryWorksheet = XLSX.utils.aoa_to_sheet([
-      ["CENICAÑA - RESUMEN DE CRUZAMIENTOS Y COMPATIBILIDAD"],
-      ["Proyecto ID:", selectedCdCntble.value],
-      ["Mega Ambiente:", selectedMegaAmbiente.value],
-      ["Testigo de Referencia:", selectedVariety.value],
-      ["Fecha de Exportación:", new Date().toLocaleDateString("es-ES")],
-      [],
-      summaryHeaders,
-      ...summaryRows
-    ]);
-    summaryWorksheet["!cols"] = [
-      { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 45 }, { wch: 24 }, { wch: 24 }, { wch: 24 }, { wch: 15 }
-    ];
-    XLSX.utils.book_append_sheet(workbook, summaryWorksheet, "Resumen Cruzamientos");
-    
-    // Hoja 2: Memoria de Cálculo VM
-    const vmWorksheet = XLSX.utils.aoa_to_sheet([
-      ["CENICAÑA - MEMORIA DE CÁLCULO DE VALOR DE MÉRITO (VM)"],
-      ["Proyecto ID:", selectedCdCntble.value],
-      ["Mega Ambiente:", selectedMegaAmbiente.value],
-      ["Testigo de Referencia:", selectedVariety.value],
-      ["Fecha de Exportación:", new Date().toLocaleDateString("es-ES")],
-      [],
-      vmHeaders,
-      ...vmRows
-    ]);
-    vmWorksheet["!cols"] = [
-      { wch: 18 }, { wch: 12 }, { wch: 18 }, { wch: 18 }, { wch: 15 }, { wch: 22 }, { wch: 18 }, { wch: 24 }, { wch: 24 }
-    ];
-    XLSX.utils.book_append_sheet(workbook, vmWorksheet, "Memoria de Cálculo VM");
-    
-    // Hoja 3: Evaluación Fitosanitaria
-    const fitosanitarioWorksheet = XLSX.utils.aoa_to_sheet([
-      ["CENICAÑA - EVALUACIÓN FITOSANITARIA (FILTROS DE VETO)"],
-      ["Proyecto ID:", selectedCdCntble.value],
-      ["Mega Ambiente:", selectedMegaAmbiente.value],
-      ["Testigo de Referencia:", selectedVariety.value],
-      ["Fecha de Exportación:", new Date().toLocaleDateString("es-ES")],
-      [],
-      fitosanitarioHeaders,
-      ...fitosanitarioRows
-    ]);
-    fitosanitarioWorksheet["!cols"] = [
-      { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 15 }, { wch: 15 }, { wch: 32 }, { wch: 24 }
-    ];
-    XLSX.utils.book_append_sheet(workbook, fitosanitarioWorksheet, "Filtros Fitosanitarios");
-    
-    // Escribir y descargar el archivo
-    const filename = `Memoria_Calculos_Cruzamientos_${selectedCdCntble.value}.xlsx`;
+    const filename = `Desempeno_Individual_${selectedCdCntble.value}_${selectedMegaAmbiente.value}.xlsx`;
     XLSX.writeFile(workbook, filename);
-    toast.success("¡Memoria de cálculos generada y descargada con éxito!");
+    toast.success("¡Memoria de desempeño generada con éxito!");
   } catch (error) {
-    console.error("Error al exportar la memoria de cálculos:", error);
+    console.error("Error al exportar la memoria de desempeño:", error);
     toast.error("Ocurrió un error al generar la memoria de cálculos");
   }
 }

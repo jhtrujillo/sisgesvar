@@ -135,7 +135,7 @@ class CrossingController extends Controller
                     $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
                         ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto);
                 })
-                ->select('ponderados_valor_merito.*', 'caracteristicas_valor_merito.nombre', 'caracteristicas_valor_merito.id_caracteristica')
+                ->select('ponderados_valor_merito.*', 'caracteristicas_valor_merito.nombre', 'caracteristicas_valor_merito.id_caracteristica', 'caracteristicas_valor_merito.equivalente')
                 ->get();
 
             $sumaPonderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
@@ -1166,6 +1166,10 @@ class CrossingController extends Controller
             'flores' => $flores,
             'viabilidades' => $arreglo,
             'distancias' => $distancias,
+            'testigo_limpio' => $variedad_testigo,
+            'flores_bg' => $flores_BG,
+            'flores_pr' => $flores_PR,
+            'flores_eiii' => $flores_EIII,
         ]);
     }
     public function suggestionCrossingsPerProject($proy, $proyecto, $testigo, $ambiente)
@@ -1356,6 +1360,10 @@ class CrossingController extends Controller
             'flores' => $flores,
             'viabilidades' => $arreglo,
             'distancias' => $distancias,
+            'testigo_limpio' => $variedad_testigo,
+            'flores_bg' => $flores_BG,
+            'flores_pr' => $flores_PR,
+            'flores_eiii' => $flores_EIII,
         ]);
     }
     public function criteriosBancoGermoplasma(Request $request)
