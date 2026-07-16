@@ -1432,7 +1432,11 @@ async function exportarDesempenoIndividual() {
                     const limiteMax = p.nivel !== null && p.nivel !== undefined ? Number(p.nivel) : "-";
                     
                     let porcentaje = "-";
-                    if (valorReal !== "-" && valorTestigo !== "-" && valorReal !== null && valorTestigo !== null && Number(valorTestigo) > 0) {
+                    const isEnfermedad = caracteristica === "msco_r" || caracteristica === "carbon" || caracteristica === "rya_cfe_r" || caracteristica === "roya_naranja";
+                    
+                    if (isEnfermedad) {
+                      porcentaje = "N/A (Evaluación directa)";
+                    } else if (valorReal !== "-" && valorTestigo !== "-" && valorReal !== null && valorTestigo !== null && Number(valorTestigo) > 0) {
                       porcentaje = ((Number(valorReal) * 100) / Number(valorTestigo)).toFixed(2) + "%";
                     }
 
