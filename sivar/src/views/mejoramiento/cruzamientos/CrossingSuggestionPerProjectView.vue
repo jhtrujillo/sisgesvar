@@ -1399,14 +1399,12 @@ async function exportarDesempenoIndividual() {
       if (row && row.length > 0) {
         row.forEach((cell) => {
           if (cell) {
-            const florAData = findVarietyData(cell.varA);
-            const florBData = findVarietyData(cell.varB);
-            
             [
-              { varName: cell.varA, rol: "Madre", florData: florAData },
-              { varName: cell.varB, rol: "Padre", florData: florBData }
+              { varName: cell.varA, rol: "Madre", florData: findVarietyData(cell.varA) },
+              { varName: cell.varB, rol: "Padre", florData: findVarietyData(cell.varB) }
             ].forEach(({ varName, rol, florData }) => {
-              if (varName && !procesadas.has(varName) && florData) {
+              // Excluir el testigo de referencia para que no se evalúe contra sí mismo
+              if (varName && varName !== selectedVariety.value && !procesadas.has(varName) && florData) {
                 procesadas.add(varName);
                 
                 ponderados.forEach((p) => {
