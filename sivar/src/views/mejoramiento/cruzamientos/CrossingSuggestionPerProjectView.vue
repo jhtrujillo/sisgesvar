@@ -825,6 +825,7 @@ import { useParametizeWeightedCrossingStore } from "@/stores/crossignparametizew
 import VarietyProfileDrawer from "@/components/VarietyProfileDrawer.vue";
 import ParentComparatorModal from "@/components/ParentComparatorModal.vue";
 import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import html2canvas from 'html2canvas';
 import CrossingsService from "@/services/crossings.services";
 
@@ -1391,149 +1392,187 @@ async function exportarDesempenoIndividual() {
       "Límite Proyecto",
       "¿Cumple Límite Individual?"
     ];
-    
-    const rows = [];
-    const procesadas = new Set();
-    
-    viabilidad.forEach((row) => {
-      if (row && row.length > 0) {
-        row.forEach((cell) => {
-          if (cell) {
-            [
-              { varName: cell.varA, rol: "Madre", florData: findVarietyData(cell.varA) },
-              { varName: cell.varB, rol: "Padre", florData: findVarietyData(cell.varB) }
-            ].forEach(({ varName, rol, florData }) => {
-              // Excluir el testigo de referencia para que no se evalúe contra sí mismo
-              if (varName && varName !== selectedVariety.value && !procesadas.has(varName) && florData) {
-                procesadas.add(varName);
-                
-                ponderados.forEach((p) => {
-                  let caracteristica = p.equivalente ? String(p.equivalente).toLowerCase() : "";
-                  if (!caracteristica && p.nombre) {
-                    const nombre = String(p.nombre).toLowerCase();
-                    if (nombre.includes("mosaico")) caracteristica = "msco_r";
-                    else if (nombre.includes("carbon") || nombre.includes("carbón")) caracteristica = "carbon";
-                    else if (nombre.includes("tchm")) caracteristica = "tchm";
-                    else if (nombre.includes("scrs")) caracteristica = "scrsa";
-                    else if (nombre.includes("diametro") || nombre.includes("diámetro") || nombre.includes("tllo")) caracteristica = "dmtro_tllo";
-                    else if (nombre.includes("altura")) caracteristica = "altura_planta";
-                    else if (nombre.includes("poblacion") || nombre.includes("población")) caracteristica = "poblacion";
-                    else if (nombre.includes("volcamiento")) caracteristica = "volcamiento";
-                    else if (nombre.includes("roya cafe") || nombre.includes("café")) caracteristica = "rya_cfe_r";
-                    else if (nombre.includes("roya naranja")) caracteristica = "roya_naranja";
-                    else caracteristica = nombre.replace(/\s+/g, '_');
-                  }
-                  
-                  if (caracteristica) {
-                    const valorReal = florData[caracteristica] ?? "-";
-                    const valorTestigo = testigoLimpio[caracteristica] ?? "-";
-                    const limiteMax = p.nivel !== null && p.nivel !== undefined ? Number(p.nivel) : "-";
-                    
-                    let porcentaje = "-";
-                    const isEnfermedad = caracteristica === "msco_r" || caracteristica === "carbon" || caracteristica === "rya_cfe_r" || caracteristica === "roya_naranja";
-                    
-                    if (isEnfermedad) {
-                      porcentaje = "N/A (Evaluación directa)";
-                    } else if (valorReal !== "-" && valorTestigo !== "-" && valorReal !== null && valorTestigo !== null && Number(valorTestigo) > 0) {
-                      porcentaje = ((Number(valorReal) * 100) / Number(valorTestigo)).toFixed(2) + "%";
-                    }
 
-                    let nivel = "-";
-                    let rangoRegla = "N/A";
-                    let cumpleLimite = "-";
-                    
-                    if (valorReal !== "-" && valorReal !== null && valorReal !== "") {
-                      let lvl = 999;
+    const headersVM = [
+      "Variedad Evaluada",
+      "Rol (Madre/Padre)",
+      "Característica",
+      "Nivel Obtenido",
+      "Porcentaje (%)",
+      "Aporte al VM (Nivel × % / 100)"
+    ];
+
+    const rows = [];
+    const rowsVM = [];
+    const procesadas = new Set();
+
+    if (viabilidad.length > 0) {
+      viabilidad.forEach((row) => {
+        if (row && row.length > 0) {
+          row.forEach((cell) => {
+            if (cell) {
+              [
+                { varName: cell.varA, rol: "Madre", florData: findVarietyData(cell.varA) },
+                { varName: cell.varB, rol: "Padre", florData: findVarietyData(cell.varB) }
+              ].forEach(({ varName, rol, florData }) => {
+                if (varName && varName !== selectedVariety.value && !procesadas.has(varName) && florData) {
+                  procesadas.add(varName);
+                  let totalVM = 0;
+                  
+                  ponderados.forEach((p) => {
+                    const caracteristica = p.equivalente ? p.equivalente.toLowerCase() : (p.caracteristica || p.nombre || "UNKNOWN");
+                    const nombreCaract = p.nombre || p.caracteristica || caracteristica;
+                    if (caracteristica) {
+                      const valorReal = florData[caracteristica] ?? "-";
+                      const valorTestigo = testigoLimpio[caracteristica] ?? "-";
+                      const limiteMax = p.nivel !== null && p.nivel !== undefined ? Number(p.nivel) : "-";
+                      const porcentajePeso = p.ponderado ? Number(p.ponderado) : 0;
                       
-                      if (caracteristica === "msco_r" || caracteristica === "carbon") {
-                        const val = Number(valorReal);
-                        rangoRegla = "N1: <=2% | N2: 2.1-3% | N3: 3.1-5% | N4: 5.1-8% | N5: 8.1-11% | N6: 11.1-15% | N7: 15.1-22% | N8: 22.1-30% | N9: >30%";
-                        if (val <= 2) lvl = 1;
-                        else if (val > 2 && val <= 3) lvl = 2;
-                        else if (val > 3 && val <= 5) lvl = 3;
-                        else if (val > 5 && val <= 8) lvl = 4;
-                        else if (val > 8 && val <= 11) lvl = 5;
-                        else if (val > 11 && val <= 15) lvl = 6;
-                        else if (val > 15 && val <= 22) lvl = 7;
-                        else if (val > 22 && val <= 30) lvl = 8;
-                        else lvl = 9;
-                      } else if (caracteristica === "tchm") {
-                        rangoRegla = "N1: >120% | N2: 110-120% | N3: 95-109.9% | N4: 85-94.9% | N5: <85%";
-                        if (valorTestigo !== "-" && valorTestigo !== null && Number(valorTestigo) > 0) {
-                          const pct = (Number(valorReal) * 100) / Number(valorTestigo);
-                          if (pct > 120) lvl = 1;
-                          else if (pct <= 120 && pct >= 110) lvl = 2;
-                          else if (pct < 110 && pct >= 95) lvl = 3;
-                          else if (pct < 95 && pct >= 85) lvl = 4;
-                          else lvl = 5;
+                      let porcentaje = "-";
+                      const isEnfermedad = caracteristica === "msco_r" || caracteristica === "carbon" || caracteristica === "rya_cfe_r" || caracteristica === "roya_naranja";
+                      
+                      if (isEnfermedad) {
+                        porcentaje = "N/A (Evaluación directa)";
+                      } else if (valorReal !== "-" && valorTestigo !== "-" && valorReal !== null && valorTestigo !== null && Number(valorTestigo) > 0) {
+                        porcentaje = ((Number(valorReal) * 100) / Number(valorTestigo)).toFixed(2) + "%";
+                      }
+  
+                      let nivel = "-";
+                      let rangoRegla = "N/A";
+                      let cumpleLimite = "-";
+                      let aporteVM = "-";
+                      
+                      if (valorReal !== "-" && valorReal !== null && valorReal !== "") {
+                        let lvl = 999;
+                        
+                        if (caracteristica === "msco_r" || caracteristica === "carbon") {
+                          const val = Number(valorReal);
+                          rangoRegla = "N1: <=2% | N2: 2.1-3% | N3: 3.1-5% | N4: 5.1-8% | N5: 8.1-11% | N6: 11.1-15% | N7: 15.1-22% | N8: 22.1-30% | N9: >30%";
+                          if (val <= 2) lvl = 1;
+                          else if (val > 2 && val <= 3) lvl = 2;
+                          else if (val > 3 && val <= 5) lvl = 3;
+                          else if (val > 5 && val <= 8) lvl = 4;
+                          else if (val > 8 && val <= 11) lvl = 5;
+                          else if (val > 11 && val <= 15) lvl = 6;
+                          else if (val > 15 && val <= 22) lvl = 7;
+                          else if (val > 22 && val <= 30) lvl = 8;
+                          else lvl = 9;
+                        } else if (caracteristica === "tchm") {
+                          rangoRegla = "N1: >120% | N2: 110-120% | N3: 95-109.9% | N4: 85-94.9% | N5: <85%";
+                          if (valorTestigo !== "-" && valorTestigo !== null && Number(valorTestigo) > 0) {
+                            const pct = (Number(valorReal) * 100) / Number(valorTestigo);
+                            if (pct > 120) lvl = 1;
+                            else if (pct <= 120 && pct >= 110) lvl = 2;
+                            else if (pct < 110 && pct >= 95) lvl = 3;
+                            else if (pct < 95 && pct >= 85) lvl = 4;
+                            else lvl = 5;
+                          } else {
+                            rangoRegla += " (Falta testigo)";
+                          }
+                        } else if (caracteristica === "scrsa" || caracteristica === "dmtro_tllo" || caracteristica === "altura_planta" || caracteristica === "poblacion") {
+                          rangoRegla = "N1: >120% | N2: 100-120% | N3: 90-99.9% | N4: 80-89.9% | N5: <80%";
+                          if (valorTestigo !== "-" && valorTestigo !== null && Number(valorTestigo) > 0) {
+                            const pct = (Number(valorReal) * 100) / Number(valorTestigo);
+                            if (pct > 120) lvl = 1;
+                            else if (pct <= 120 && pct >= 100) lvl = 2;
+                            else if (pct < 100 && pct >= 90) lvl = 3;
+                            else if (pct < 90 && pct >= 80) lvl = 4;
+                            else lvl = 5;
+                          } else {
+                            rangoRegla += " (Falta testigo)";
+                          }
+                        } else if (caracteristica === "volcamiento") {
+                          rangoRegla = "N1: <10% | N2: 10-19.9% | N3: 20-29.9% | N4: 30-48.9% | N5: >=49% (Menor es mejor)";
+                          if (valorTestigo !== "-" && valorTestigo !== null && Number(valorTestigo) > 0) {
+                            const pct = (Number(valorReal) * 100) / Number(valorTestigo);
+                            if (pct < 10) lvl = 1;
+                            else if (pct < 20 && pct >= 10) lvl = 2;
+                            else if (pct < 30 && pct >= 20) lvl = 3;
+                            else if (pct < 49 && pct >= 30) lvl = 4;
+                            else lvl = 5;
+                          } else {
+                            rangoRegla += " (Falta testigo)";
+                          }
+                        } else if (caracteristica === "rya_cfe_r" || caracteristica === "roya_naranja") {
+                          rangoRegla = "Escala visual directa (1 al 9)";
+                          lvl = Number(valorReal);
                         } else {
-                          rangoRegla += " (Falta testigo)";
+                          rangoRegla = "Sin regla configurada";
                         }
-                      } else if (caracteristica === "scrsa" || caracteristica === "dmtro_tllo" || caracteristica === "altura_planta" || caracteristica === "poblacion") {
-                        rangoRegla = "N1: >120% | N2: 100-120% | N3: 90-99.9% | N4: 80-89.9% | N5: <80%";
-                        if (valorTestigo !== "-" && valorTestigo !== null && Number(valorTestigo) > 0) {
-                          const pct = (Number(valorReal) * 100) / Number(valorTestigo);
-                          if (pct > 120) lvl = 1;
-                          else if (pct <= 120 && pct >= 100) lvl = 2;
-                          else if (pct < 100 && pct >= 90) lvl = 3;
-                          else if (pct < 90 && pct >= 80) lvl = 4;
-                          else lvl = 5;
-                        } else {
-                          rangoRegla += " (Falta testigo)";
+                        
+                        if (lvl !== 999) {
+                          nivel = lvl.toString();
+                          if (limiteMax !== "-") {
+                            cumpleLimite = lvl <= Number(limiteMax) ? "SÍ" : "NO";
+                          }
+                          const ap = (lvl * porcentajePeso) / 100;
+                          aporteVM = ap.toFixed(2);
+                          totalVM += ap;
                         }
-                      } else if (caracteristica === "volcamiento") {
-                        rangoRegla = "N1: <10% | N2: 10-19.9% | N3: 20-29.9% | N4: 30-48.9% | N5: >=49% (Menor es mejor)";
-                        if (valorTestigo !== "-" && valorTestigo !== null && Number(valorTestigo) > 0) {
-                          const pct = (Number(valorReal) * 100) / Number(valorTestigo);
-                          if (pct < 10) lvl = 1;
-                          else if (pct < 20 && pct >= 10) lvl = 2;
-                          else if (pct < 30 && pct >= 20) lvl = 3;
-                          else if (pct < 49 && pct >= 30) lvl = 4;
-                          else lvl = 5;
-                        } else {
-                          rangoRegla += " (Falta testigo)";
-                        }
-                      } else if (caracteristica === "rya_cfe_r" || caracteristica === "roya_naranja") {
-                        rangoRegla = "Escala visual directa (1 al 9)";
-                        lvl = Number(valorReal);
                       } else {
-                        rangoRegla = "Sin regla configurada";
+                         rangoRegla = "Sin datos (Nivel 0 automático)";
+                         nivel = "0";
+                         aporteVM = "0.00";
                       }
                       
-                      if (lvl !== 999) {
-                        nivel = lvl.toString();
-                        if (limiteMax !== "-") {
-                          cumpleLimite = lvl <= Number(limiteMax) ? "SÍ" : "NO";
-                        }
+                      rows.push([
+                        varName,
+                        rol,
+                        caracteristica.toUpperCase(),
+                        valorReal,
+                        valorTestigo,
+                        porcentaje,
+                        rangoRegla,
+                        nivel,
+                        limiteMax,
+                        cumpleLimite
+                      ]);
+                      
+                      if (porcentajePeso > 0) {
+                        rowsVM.push([
+                          varName,
+                          rol,
+                          nombreCaract.toUpperCase(),
+                          nivel,
+                          porcentajePeso.toFixed(2) + "%",
+                          Number(aporteVM)
+                        ]);
                       }
-                    } else {
-                       rangoRegla = "Sin datos (Nivel 0 automático)";
-                       nivel = "0";
                     }
-                    
-                    rows.push([
+                  });
+                  
+                  if (rowsVM.length > 0 && rowsVM[rowsVM.length - 1][0] === varName) {
+                    rowsVM.push([
                       varName,
                       rol,
-                      caracteristica.toUpperCase(),
-                      valorReal,
-                      valorTestigo,
-                      porcentaje,
-                      rangoRegla,
-                      nivel,
-                      limiteMax,
-                      cumpleLimite
+                      "TOTAL VM",
+                      "-",
+                      "100%",
+                      Number(totalVM.toFixed(2))
                     ]);
+                    // Add empty row for spacing
+                    rowsVM.push(["", "", "", "", "", ""]);
                   }
-                });
-              }
-            });
-          }
-        });
-      }
-    });
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+
+    if (rows.length === 0) {
+      toast.warning("No hay datos suficientes para exportar.");
+      return;
+    }
+
+    const workbook = new ExcelJS.Workbook();
     
-    const worksheet = XLSX.utils.aoa_to_sheet([
-      ["CENICAÑA - MEMORIA DE DESEMPEÑO INDIVIDUAL POR VARIEDAD"],
+    // ----- HOJA 1: Desempeño -----
+    const sheet = workbook.addWorksheet("Desempeño Individual");
+
+    const headerContent = [
+      ["CENICAÑA - MEMORIA DE DESEMPEÑO INDIVIDUAL"],
       ["Proyecto ID:", selectedCdCntble.value],
       ["Mega Ambiente:", selectedMegaAmbiente.value],
       ["Testigo de Referencia:", selectedVariety.value],
@@ -1541,23 +1580,81 @@ async function exportarDesempenoIndividual() {
       [],
       headers,
       ...rows
-    ]);
-    
-    worksheet["!cols"] = [
-      { wch: 18 }, { wch: 15 }, { wch: 22 }, { wch: 20 }, { wch: 15 }, { wch: 80 }, { wch: 15 }, { wch: 15 }, { wch: 25 }
+    ];
+
+    headerContent.forEach((r) => sheet.addRow(r));
+
+    sheet.mergeCells("A1:I1");
+    const titleCell = sheet.getCell("A1");
+    titleCell.font = { size: 16, bold: true, color: { argb: "FF0B4A2F" } };
+    titleCell.alignment = { horizontal: "center" };
+
+    const headerRow = sheet.getRow(7);
+    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF0E7490" }
+      };
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" }
+      };
+    });
+
+    // ----- HOJA 2: Valores de Mérito -----
+    const sheetVM = workbook.addWorksheet("Cálculo Valores de Mérito");
+    const headerVMContent = [
+      ["CENICAÑA - CÁLCULO DEL VALOR DE MÉRITO (VM)"],
+      ["Proyecto ID:", selectedCdCntble.value],
+      ["Mega Ambiente:", selectedMegaAmbiente.value],
+      ["Fecha de Exportación:", new Date().toLocaleDateString("es-ES")],
+      [],
+      headersVM,
+      ...rowsVM
     ];
     
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Desempeño Individual");
+    headerVMContent.forEach((r) => sheetVM.addRow(r));
     
-    const filename = `Desempeno_Individual_${selectedCdCntble.value}_${selectedMegaAmbiente.value}.xlsx`;
-    XLSX.writeFile(workbook, filename);
-    toast.success("¡Memoria de desempeño generada con éxito!");
+    sheetVM.mergeCells("A1:E1");
+    const titleCellVM = sheetVM.getCell("A1");
+    titleCellVM.font = { size: 16, bold: true, color: { argb: "FF0B4A2F" } };
+    titleCellVM.alignment = { horizontal: "center" };
+
+    const headerRowVM = sheetVM.getRow(6);
+    headerRowVM.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    headerRowVM.eachCell((cell) => {
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0E7490" } };
+      cell.border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
+    });
+    
+    // Colorear las filas de "TOTAL VM"
+    sheetVM.eachRow((row, rowNumber) => {
+      if (rowNumber > 6) {
+        const colC = row.getCell(3).value;
+        if (colC === "TOTAL VM") {
+          row.font = { bold: true, color: { argb: "FF0B4A2F" } };
+          row.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD1FAE5" } }; // Verde muy claro
+        }
+      }
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `Desempeno_y_ValoresMerito_${selectedCdCntble.value}_${new Date().toISOString().split("T")[0]}.xlsx`;
+    link.click();
+    toast.success("Memoria de cálculos exportada correctamente.");
   } catch (error) {
-    console.error("Error al exportar la memoria de desempeño:", error);
-    toast.error("Ocurrió un error al generar la memoria de cálculos");
+    console.error("Error exportando desempeño individual:", error);
+    toast.error("Ocurrió un error al exportar.");
   }
 }
+
 
 // Generar y descargar la matriz como PNG
 const matrizTable = ref<HTMLElement | null>(null);
