@@ -195,6 +195,19 @@
           Atrás
         </button>
       </router-link>
+
+      <!-- Botón de Excel para desempeño -->
+      <button
+        @click="exportarDesempenoIndividual"
+        class="flex items-center px-4 py-2 bg-white text-teal-700 border border-teal-200 rounded-xl shadow-sm hover:bg-teal-50 hover:border-teal-300 font-bold transition-all duration-200"
+        title="Descargar Desempeño Individual de todas las Variedades"
+      >
+        <svg class="w-4 h-4 mr-2 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        Desempeño
+      </button>
+
       <button
         @click="submitCruzamientos"
         class="flex items-center px-5 py-2 text-xs font-bold text-white bg-cenicana hover:bg-cenicana-800 rounded-xl shadow-md transition-all duration-200"
@@ -229,6 +242,8 @@
 import { ref, watch, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useSuggestionCrossingStore } from "@/stores/crossingsuggestion";
+import { useParametizeWeightedCrossingStore } from "@/stores/parametizeweightedcrossing";
+import ExcelJS from "exceljs";
 import { useToast } from "vue-toastification";
 import VarietyProfileDrawer from "@/components/VarietyProfileDrawer.vue";
 import ParentComparatorModal from "@/components/ParentComparatorModal.vue";
@@ -242,6 +257,7 @@ interface Viabilidad {
 }
 
 const SuggestionCrossingStore = useSuggestionCrossingStore();
+const ParametizeWeightedStore = useParametizeWeightedCrossingStore();
 const toast = useToast();
 const router = useRouter();
 
