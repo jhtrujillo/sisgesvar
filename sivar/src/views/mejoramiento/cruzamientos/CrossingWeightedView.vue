@@ -1,12 +1,27 @@
 <template>
   <div class="space-y-8 w-full max-w-4xl mx-auto px-4 pt-6">
+    <router-link :to="{ name: 'crossing_initial_data.show' }">
+      <button
+        type="button"
+        class="flex items-center px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 transition-all duration-200"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Atrás
+      </button>
+    </router-link>
     <!-- Encabezado con Indicador de Progreso -->
     <div class="border-b border-slate-100 pb-6">
       <div class="flex items-center justify-between mb-4">
         <h1 class="text-3xl font-extrabold text-slate-800 flex items-center">
           <div class="p-2 bg-emerald-50 text-cenicana rounded-lg mr-3">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 3m0-3a2 2 0 110 3m-9 8h10M-3 14a2 2 0 110-3m3 3a2 2 0 100-3m9 15h10M7 21a2 2 0 110-3m3 3a2 2 0 100-3" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 6V4m0 2a2 2 0 100 3m0-3a2 2 0 110 3m-9 8h10M-3 14a2 2 0 110-3m3 3a2 2 0 100-3m9 15h10M7 21a2 2 0 110-3m3 3a2 2 0 100-3"
+              />
             </svg>
           </div>
           Programación de Cruzamientos
@@ -43,7 +58,10 @@
         <!-- Mega Ambiente Selector -->
         <div>
           <label class="block uppercase tracking-wider text-slate-600 text-xs font-bold mb-3">Mega Ambiente</label>
-          <select v-model="selectedMegaAmbiente" class="w-full px-4 py-2.5 text-sm bg-white border border-slate-200 rounded-xl shadow-sm focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 outline-none transition-all duration-200 text-slate-700 font-medium">
+          <select
+            v-model="selectedMegaAmbiente"
+            class="w-full px-4 py-2.5 text-sm bg-white border border-slate-200 rounded-xl shadow-sm focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 outline-none transition-all duration-200 text-slate-700 font-medium"
+          >
             <option value="" disabled>Seleccione el ambiente...</option>
             <option value="Semiseco">Seco Semiseco</option>
             <option value="Humedo">Húmedo</option>
@@ -54,7 +72,10 @@
 
       <!-- Ficha Técnica del Testigo -->
       <Transition name="fade">
-        <div v-if="varietyProfileData" class="mt-2 mb-6 p-5 bg-gradient-to-br from-emerald-50/40 to-teal-50/10 border border-emerald-100/70 rounded-2xl shadow-sm">
+        <div
+          v-if="varietyProfileData"
+          class="mt-2 mb-6 p-5 bg-gradient-to-br from-emerald-50/40 to-teal-50/10 border border-emerald-100/70 rounded-2xl shadow-sm"
+        >
           <div class="flex items-center space-x-2.5 mb-4 border-b border-emerald-100/50 pb-3">
             <div class="p-1.5 bg-emerald-500 text-white rounded-lg shadow-sm">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -66,13 +87,13 @@
               <p class="text-[10px] text-slate-500 font-medium">Valores históricos de rendimiento y sanidad extraídos del Banco de Germoplasma</p>
             </div>
           </div>
-          
+
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <!-- TCHM -->
             <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between">
               <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">TCHM</span>
               <span class="text-xl font-extrabold text-slate-800 mt-1">
-                {{ varietyProfileData.tchm !== null && varietyProfileData.tchm !== undefined ? varietyProfileData.tchm.toFixed(1) : 'N/A' }}
+                {{ varietyProfileData.tchm !== null && varietyProfileData.tchm !== undefined ? varietyProfileData.tchm.toFixed(1) : "N/A" }}
               </span>
               <span class="text-[8px] text-slate-400 font-semibold mt-0.5">Ton. Caña / Ha</span>
             </div>
@@ -81,7 +102,7 @@
             <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between">
               <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Sacarosa</span>
               <span class="text-xl font-extrabold text-slate-800 mt-1">
-                {{ varietyProfileData.sacarosa !== null && varietyProfileData.sacarosa !== undefined ? varietyProfileData.sacarosa.toFixed(2) : 'N/A' }}%
+                {{ varietyProfileData.sacarosa !== null && varietyProfileData.sacarosa !== undefined ? varietyProfileData.sacarosa.toFixed(2) : "N/A" }}%
               </span>
               <span class="text-[8px] text-slate-400 font-semibold mt-0.5">Concentración %</span>
             </div>
@@ -90,7 +111,7 @@
             <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between">
               <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Mosaico</span>
               <span class="text-xl font-extrabold mt-1" :class="varietyProfileData.mosaico_p > 3 ? 'text-amber-600' : 'text-emerald-700'">
-                {{ varietyProfileData.mosaico_p !== null && varietyProfileData.mosaico_p !== undefined ? varietyProfileData.mosaico_p.toFixed(1) : 'N/A' }}
+                {{ varietyProfileData.mosaico_p !== null && varietyProfileData.mosaico_p !== undefined ? varietyProfileData.mosaico_p.toFixed(1) : "N/A" }}
               </span>
               <span class="text-[8px] text-slate-400 font-semibold mt-0.5">Grado susceptibilidad</span>
             </div>
@@ -99,7 +120,7 @@
             <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between">
               <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Carbón</span>
               <span class="text-xl font-extrabold mt-1" :class="varietyProfileData.carbon_p > 3 ? 'text-amber-600' : 'text-emerald-700'">
-                {{ varietyProfileData.carbon_p !== null && varietyProfileData.carbon_p !== undefined ? varietyProfileData.carbon_p.toFixed(1) : 'N/A' }}
+                {{ varietyProfileData.carbon_p !== null && varietyProfileData.carbon_p !== undefined ? varietyProfileData.carbon_p.toFixed(1) : "N/A" }}
               </span>
               <span class="text-[8px] text-slate-400 font-semibold mt-0.5">Grado susceptibilidad</span>
             </div>
@@ -111,7 +132,11 @@
       <div v-if="isFetchingProfile" class="mt-2 mb-6 p-6 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-center justify-center space-x-2">
         <svg class="animate-spin h-5 w-5 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
         </svg>
         <span class="text-xs font-bold text-slate-500 animate-pulse">Obteniendo datos de variedad testigo...</span>
       </div>
@@ -122,7 +147,11 @@
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Ponderados de Características para la Matriz</h3>
           <button @click="isHelpModalOpen = true" class="text-emerald-500 hover:text-emerald-700 transition" title="Ver ayuda sobre el cálculo de ponderados">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           </button>
         </div>
@@ -148,7 +177,9 @@
                           <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </span>
-                      <div class="absolute bottom-full left-0 mb-2 w-72 p-3 bg-slate-800 text-white text-xs font-medium leading-relaxed rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-pre-wrap text-left z-[100]">
+                      <div
+                        class="absolute bottom-full left-0 mb-2 w-72 p-3 bg-slate-800 text-white text-xs font-medium leading-relaxed rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-pre-wrap text-left z-[100]"
+                      >
                         {{ getTooltipText(item.nombre) }}
                         <div class="absolute top-full left-3 border-4 border-transparent border-t-slate-800"></div>
                       </div>
@@ -171,7 +202,7 @@
           </table>
         </div>
       </div>
-      
+
       <!-- Estado vacío cuando no han seleccionado testigo/ambiente -->
       <div v-else class="flex flex-col items-center justify-center py-12 text-center text-slate-400 space-y-3">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -182,18 +213,7 @@
     </div>
 
     <!-- Botones de Navegación -->
-    <div class="flex justify-between pt-4">
-      <router-link :to="{ name: 'crossing_initial_data.show' }">
-        <button
-          type="button"
-          class="flex items-center px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 transition-all duration-200"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-          Atrás
-        </button>
-      </router-link>
+    <div class="flex justify-end pt-4">
       <router-link :to="{ name: 'crossing_matrix.show' }">
         <button
           type="button"
@@ -220,7 +240,8 @@
         <!-- Cuerpo del modal -->
         <div class="p-6 space-y-6">
           <div class="p-3 bg-emerald-50/50 text-emerald-900 text-xs font-semibold rounded-lg border border-emerald-100/50">
-            Editando <span class="underline font-bold">{{ nombre }}</span> para el proyecto <span class="font-bold">{{ selectedCdCntble }}</span>.
+            Editando <span class="underline font-bold">{{ nombre }}</span> para el proyecto <span class="font-bold">{{ selectedCdCntble }}</span
+            >.
           </div>
 
           <!-- Mensaje de error -->
@@ -260,10 +281,16 @@
 
         <!-- Footer del modal -->
         <div class="flex justify-end items-center border-t border-slate-100 p-5 bg-slate-50">
-          <button @click="closeModal" class="mr-3 px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all duration-200">
+          <button
+            @click="closeModal"
+            class="mr-3 px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all duration-200"
+          >
             Cancelar
           </button>
-          <button @click="modificarCaracteristica" class="px-5 py-2 text-xs font-bold text-white bg-cenicana hover:bg-cenicana-800 rounded-xl shadow-md transition-all duration-200">
+          <button
+            @click="modificarCaracteristica"
+            class="px-5 py-2 text-xs font-bold text-white bg-cenicana hover:bg-cenicana-800 rounded-xl shadow-md transition-all duration-200"
+          >
             Guardar Cambios
           </button>
         </div>
@@ -276,7 +303,14 @@
         <!-- Header del modal -->
         <div class="flex justify-between items-center border-b border-slate-100 p-5 bg-slate-50">
           <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 mr-2 text-emerald-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             Guía de Ponderados
@@ -286,9 +320,7 @@
 
         <!-- Cuerpo del modal -->
         <div class="p-6 space-y-4 text-sm text-slate-600 leading-relaxed">
-          <p>
-            Esta tabla permite configurar los parámetros que calcularán el <strong>Valor de Mérito</strong> de cada cruzamiento. 
-          </p>
+          <p>Esta tabla permite configurar los parámetros que calcularán el <strong>Valor de Mérito</strong> de cada cruzamiento.</p>
           <ul class="space-y-3 mt-3">
             <li class="flex items-start">
               <span class="font-bold text-slate-700 min-w-[120px] mr-2">Nivel de Entrada:</span>
@@ -301,7 +333,8 @@
             <li class="flex items-start">
               <span class="font-bold text-slate-700 min-w-[120px] mr-2">Porcentaje (%):</span>
               <span>
-                Es el impacto real relativo de la característica. Se calcula automáticamente dividiendo el <strong>Valor Individual</strong> de esta característica entre la <strong>Suma Total</strong> de los valores individuales de toda la tabla.
+                Es el impacto real relativo de la característica. Se calcula automáticamente dividiendo el <strong>Valor Individual</strong> de esta
+                característica entre la <strong>Suma Total</strong> de los valores individuales de toda la tabla.
               </span>
             </li>
           </ul>
@@ -309,7 +342,10 @@
 
         <!-- Footer del modal -->
         <div class="flex justify-end items-center border-t border-slate-100 p-5 bg-slate-50">
-          <button @click="isHelpModalOpen = false" class="px-5 py-2 text-xs font-bold text-white bg-cenicana hover:bg-cenicana-800 rounded-xl shadow-md transition-all duration-200">
+          <button
+            @click="isHelpModalOpen = false"
+            class="px-5 py-2 text-xs font-bold text-white bg-cenicana hover:bg-cenicana-800 rounded-xl shadow-md transition-all duration-200"
+          >
             Entendido
           </button>
         </div>
@@ -459,9 +495,10 @@ const ponderadosFiltrados = computed(() => {
 // Función para obtener la ayuda (tooltip) de cada característica según su lógica en el backend
 const getTooltipText = (nombre: string) => {
   const n = (nombre || "").toLowerCase();
-  
+
   const isEnfermedad = n.includes("roya") || n.includes("carb") || n.includes("mosaico") || n.includes("enfermedad");
-  const isRendimiento = n.includes("tchm") || n.includes("sacarosa") || n.includes("diámetro") || n.includes("altura") || n.includes("poblaci") || n.includes("volcamiento");
+  const isRendimiento =
+    n.includes("tchm") || n.includes("sacarosa") || n.includes("diámetro") || n.includes("altura") || n.includes("poblaci") || n.includes("volcamiento");
 
   if (isEnfermedad) {
     return `Enfermedad (Doble Filtro de Sanidad):

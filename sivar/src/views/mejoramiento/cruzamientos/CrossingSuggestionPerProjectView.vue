@@ -1,5 +1,16 @@
 <template>
   <div class="space-y-6 w-full max-w-[98%] mx-auto px-2 sm:px-4 pt-4">
+    <router-link :to="{ name: 'crossing_matrix.show' }">
+      <button
+        type="button"
+        class="flex items-center px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 transition-all duration-200"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Atrás
+      </button>
+    </router-link>
     <!-- Encabezado exclusivo de impresión (solo visible en PDF/Impresora) -->
     <div class="hidden print:block mb-6 border-b-2 border-emerald-600 pb-4">
       <div class="flex justify-between items-center">
@@ -741,21 +752,7 @@
         </div>
 
         <!-- Botones de Navegación -->
-        <div class="flex justify-between items-center pt-2 flex-wrap gap-2 no-print">
-          <div class="flex items-center">
-            <router-link :to="{ name: 'crossing_matrix.show' }">
-              <button
-                type="button"
-                class="flex items-center px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 transition-all duration-200"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-                Atrás
-              </button>
-            </router-link>
-          </div>
-
+        <div class="flex justify-end items-center pt-2 flex-wrap gap-2 no-print">
           <!-- Botones de Acción y Exportación -->
           <div class="flex items-center space-x-2 flex-wrap gap-2">
             <button

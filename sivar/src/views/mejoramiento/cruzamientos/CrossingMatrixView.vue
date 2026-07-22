@@ -1,12 +1,27 @@
 <template>
   <div class="space-y-6 w-full max-w-[98%] mx-auto px-2 sm:px-4 pt-4">
+    <router-link :to="{ name: 'crossing_weighted.show' }">
+      <button
+        type="button"
+        class="flex items-center px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 transition-all duration-200"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Atrás
+      </button>
+    </router-link>
     <!-- Encabezado con Indicador de Progreso -->
     <div class="border-b border-slate-100 pb-4">
       <div class="flex items-center justify-between mb-3">
         <h1 class="text-2xl font-extrabold text-slate-800 flex items-center">
           <div class="p-1.5 bg-emerald-50 text-cenicana rounded-lg mr-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+              />
             </svg>
           </div>
           Programación de Cruzamientos
@@ -26,7 +41,10 @@
     <!-- Contenedor de la Matriz (Fluido y Balanceado sin Scrollbar Horizontal) -->
     <div class="bg-white border border-slate-100 rounded-xl p-3 sm:p-4 shadow-premium relative min-h-[250px]">
       <!-- Estado de Procesamiento / Cargando -->
-      <div v-if="isLoading" class="absolute inset-0 bg-white/95 rounded-xl z-30 flex flex-col items-center justify-center space-y-4 transition-all duration-300">
+      <div
+        v-if="isLoading"
+        class="absolute inset-0 bg-white/95 rounded-xl z-30 flex flex-col items-center justify-center space-y-4 transition-all duration-300"
+      >
         <div class="relative w-14 h-14">
           <!-- Círculo de base -->
           <div class="absolute inset-0 rounded-full border-4 border-emerald-50"></div>
@@ -41,18 +59,30 @@
       </div>
 
       <!-- Ayuda del Índice Combinado -->
-      <div v-if="tipoMapaCalor === 'ic'" class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 mb-4 mt-2 flex items-start space-x-3 text-xs text-indigo-900 shadow-sm transition-all animate-fade-in-up">
+      <div
+        class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 mb-4 mt-2 flex items-start space-x-3 text-xs text-indigo-900 shadow-sm transition-all animate-fade-in-up"
+      >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <div>
           <strong class="font-bold block text-sm mb-1 text-indigo-800">¿Cómo se calcula el Índice Combinado (IC)?</strong>
-          <p class="mb-1">El IC es un puntaje de <strong>0 a 100</strong> que balancea un <strong>60% del Valor de Mérito (VM)</strong> y un <strong>40% de la Distancia Genética (DG)</strong>.</p>
+          <p class="mb-1">
+            El IC es un puntaje de <strong>0 a 100</strong> que balancea un <strong>60% del Valor de Mérito (VM)</strong> y un
+            <strong>40% de la Distancia Genética (DG)</strong>.
+          </p>
           <ul class="list-disc pl-4 space-y-1 mb-2 text-indigo-800/80">
-            <li><strong>VM (Valor de Mérito):</strong> El sistema usa una escala invertida de 1 a 9 (1 es excelente, 9 es malo). Se "voltea" a puntaje usando la fórmula: <code>((9.0 - VM) / 8.0) * 100</code>. <em>(Nota: Se divide sobre 8 porque es la amplitud o tamaño total de la escala, es decir: 9 - 1 = 8)</em>.</li>
+            <li>
+              <strong>VM (Valor de Mérito):</strong> El sistema usa una escala invertida de 1 a 9 (1 es excelente, 9 es malo). Se "voltea" a puntaje usando la
+              fórmula: <code>((9.0 - VM) / 8.0) * 100</code>.
+              <em>(Nota: Se divide sobre 8 porque es la amplitud o tamaño total de la escala, es decir: 9 - 1 = 8)</em>.
+            </li>
             <li><strong>DG (Distancia Genética):</strong> Se asume que 0.70 o superior es el techo ideal. Su puntaje es: <code>(DG / 0.70) * 100</code></li>
           </ul>
-          <p class="font-mono text-[10px] bg-white/60 p-1.5 rounded text-indigo-700"><strong>Ejemplo:</strong> Si el VM es 3.0 (75 pts) y la DG es 0.50 (71.4 pts). El IC será = (75 x 0.6) + (71.4 x 0.4) = 45 + 28.5 = <strong>73.5 pts</strong>.</p>
+          <p class="font-mono text-[10px] bg-white/60 p-1.5 rounded text-indigo-700">
+            <strong>Ejemplo:</strong> Si el VM es 3.0 (75 pts) y la DG es 0.50 (71.4 pts). El IC será = (75 x 0.6) + (71.4 x 0.4) = 45 + 28.5 =
+            <strong>73.5 pts</strong>.
+          </p>
         </div>
       </div>
 
@@ -79,24 +109,46 @@
 
         <!-- Botón de Filtro Interactivo -->
         <div class="flex justify-end">
-          <button 
+          <button
             @click="ocultarInviables = !ocultarInviables"
             class="flex items-center px-3 py-1 text-[11px] font-bold rounded-lg transition-all duration-200 border"
-            :class="!ocultarInviables ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm hover:bg-emerald-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'"
+            :class="
+              !ocultarInviables
+                ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm hover:bg-emerald-700'
+                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+            "
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+              />
             </svg>
-            {{ ocultarInviables ? 'Ver Inviables' : 'Ocultar Inviables' }}
+            {{ ocultarInviables ? "Ver Inviables" : "Ocultar Inviables" }}
           </button>
         </div>
       </div>
 
       <!-- Alerta si no hay ningún cruce viable en modo limpio -->
-      <div v-if="ocultarInviables && MatrixCrossingStore.matrixCrossingsFilter.viabilidad && MatrixCrossingStore.matrixCrossingsFilter.viabilidad.length > 0 && !hasAnyViableCrossing" class="flex flex-col items-center justify-center py-10 text-center text-slate-400 space-y-2 bg-slate-50/50 rounded-xl border border-slate-100">
+      <div
+        v-if="
+          ocultarInviables &&
+          MatrixCrossingStore.matrixCrossingsFilter.viabilidad &&
+          MatrixCrossingStore.matrixCrossingsFilter.viabilidad.length > 0 &&
+          !hasAnyViableCrossing
+        "
+        class="flex flex-col items-center justify-center py-10 text-center text-slate-400 space-y-2 bg-slate-50/50 rounded-xl border border-slate-100"
+      >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-350" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          />
         </svg>
         <span class="text-xs font-semibold text-slate-500">No se encontraron cruzamientos viables en la configuración actual.</span>
         <span class="text-[11px] text-slate-400">Haga clic en "Ver Inviables" para ver todas las combinaciones o modifique los pesos en el paso anterior.</span>
@@ -108,23 +160,25 @@
           <table class="table-auto w-full divide-y divide-slate-150">
             <thead class="bg-slate-50">
               <tr>
-                <th class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-r border-slate-100 sticky top-0 left-0 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[110px]">
+                <th
+                  class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-r border-slate-100 sticky top-0 left-0 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[110px]"
+                >
                   PARENTALES
                 </th>
                 <!-- Envoltura <template> para evaluar v-if en el scope correcto de Vue 3 -->
-                <template 
-                  v-for="(flor, indexCol) in MatrixCrossingStore.matrixCrossingsFilter.flores || []"
-                  :key="flor.vrdad"
-                >
+                <template v-for="(flor, indexCol) in MatrixCrossingStore.matrixCrossingsFilter.flores || []" :key="flor.vrdad">
                   <th
                     v-if="!ocultarInviables || isColumnViable(indexCol)"
                     class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-650 bg-slate-50 border-r border-slate-100 sticky top-0 z-10 min-w-[75px]"
                   >
-                    <span class="block font-extrabold text-slate-800 leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors" @click="openVarietyProfile(flor.vrdad)">
+                    <span
+                      class="block font-extrabold text-slate-800 leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors"
+                      @click="openVarietyProfile(flor.vrdad)"
+                    >
                       {{ flor.vrdad }}
                     </span>
-                    <span 
-                      v-if="MatrixCrossingStore.matrixCrossingsFilter.viabilidad?.[0]?.[indexCol]?.vm2 !== undefined" 
+                    <span
+                      v-if="MatrixCrossingStore.matrixCrossingsFilter.viabilidad?.[0]?.[indexCol]?.vm2 !== undefined"
                       class="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-50 text-slate-500 border border-slate-100"
                     >
                       VM: {{ MatrixCrossingStore.matrixCrossingsFilter.viabilidad[0][indexCol].vm2 }}
@@ -136,44 +190,39 @@
             </thead>
             <tbody class="divide-y divide-slate-100 bg-white">
               <!-- Envoltura <template> para evaluar v-if en el scope correcto de Vue 3 -->
-              <template 
-                v-for="(viabilidadRow, indexRow) in MatrixCrossingStore.matrixCrossingsFilter.viabilidad || []" 
-                :key="indexRow"
-              >
-                <tr 
-                  v-if="!ocultarInviables || isRowViable(viabilidadRow)"
-                  class="hover:bg-slate-50/40 transition-colors"
-                >
+              <template v-for="(viabilidadRow, indexRow) in MatrixCrossingStore.matrixCrossingsFilter.viabilidad || []" :key="indexRow">
+                <tr v-if="!ocultarInviables || isRowViable(viabilidadRow)" class="hover:bg-slate-50/40 transition-colors">
                   <!-- Celda Madre Fija a la izquierda -->
-                  <td class="whitespace-nowrap px-2 py-2 text-center text-[11px] font-bold text-slate-700 bg-white border-r border-slate-100 sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[110px]">
-                    <span class="block font-extrabold text-slate-800 leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors" @click="openVarietyProfile(viabilidadRow[0].varA)">{{ viabilidadRow[0].varA }}</span>
+                  <td
+                    class="whitespace-nowrap px-2 py-2 text-center text-[11px] font-bold text-slate-700 bg-white border-r border-slate-100 sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[110px]"
+                  >
+                    <span
+                      class="block font-extrabold text-slate-800 leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors"
+                      @click="openVarietyProfile(viabilidadRow[0].varA)"
+                      >{{ viabilidadRow[0].varA }}</span
+                    >
                     <span class="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-50 text-slate-500 border border-slate-100">
                       VM: {{ getRowVm(viabilidadRow) }}
                     </span>
                     <span class="block text-[9px] text-slate-400 mt-0.5 font-semibold">Polen: {{ viabilidadRow[0].polen }}</span>
                   </td>
-                  
+
                   <!-- Celdas de la matriz filtradas por columna -->
-                  <template 
-                    v-for="(car, indexCol) in viabilidadRow" 
-                    :key="indexCol"
-                  >
-                    <td 
+                  <template v-for="(car, indexCol) in viabilidadRow" :key="indexCol">
+                    <td
                       v-if="!ocultarInviables || isColumnViable(indexCol)"
                       :class="[
-                        car?.viabilidad 
-                          ? 'bg-blue-50/50 hover:bg-blue-100/50 border-r border-blue-100/50 text-blue-800' 
+                        car?.viabilidad
+                          ? 'bg-blue-50/50 hover:bg-blue-100/50 border-r border-blue-100/50 text-blue-800'
                           : 'bg-slate-50/50 hover:bg-slate-100/50 border-r border-slate-100 text-slate-400 opacity-60'
                       ]"
                       class="p-1.5 text-center border-b border-slate-100 transition-all duration-200 min-w-[75px]"
                     >
-                      <div 
-                        class="flex flex-col items-center justify-center space-y-1"
-                      >
-                        <input 
-                          type="checkbox" 
-                          :checked="!!car?.viabilidad" 
-                          @click="toggleCruzamiento(car)" 
+                      <div class="flex flex-col items-center justify-center space-y-1">
+                        <input
+                          type="checkbox"
+                          :checked="!!car?.viabilidad"
+                          @click="toggleCruzamiento(car)"
                           class="h-3.5 w-3.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-100 transition cursor-pointer"
                         />
                         <div class="flex flex-col items-center justify-center w-full border-t border-slate-100/50 pt-1.5 mt-1 space-y-1">
@@ -181,7 +230,7 @@
                             DG: {{ getDistancia(car?.varA, car?.varB) || "NA" }}
                           </span>
                           <!-- Botón Comparador Lado a Lado -->
-                          <button 
+                          <button
                             @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad)"
                             class="text-[8px] font-bold px-1.5 py-0.5 bg-slate-100 hover:bg-emerald-50 text-slate-650 hover:text-emerald-700 rounded border border-slate-200/60 hover:border-emerald-200 transition-all duration-150 flex items-center justify-center space-x-0.5"
                             title="Comparar Progenitores Lado a Lado"
@@ -202,18 +251,7 @@
     </div>
 
     <!-- Botones de Navegación -->
-    <div class="flex justify-between pt-2">
-      <router-link :to="{ name: 'crossing_weighted.show' }">
-        <button
-          type="button"
-          class="flex items-center px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 transition-all duration-200"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-          Atrás
-        </button>
-      </router-link>
+    <div class="flex justify-end pt-2">
       <button
         @click="submitCruzamientos"
         class="flex items-center px-5 py-2 text-xs font-bold text-white bg-cenicana hover:bg-cenicana-800 rounded-xl shadow-md transition-all duration-200"
@@ -230,10 +268,7 @@
   <input type="hidden" v-model="selectedMegaAmbiente" id="ambiente" />
 
   <!-- Drawer de Hoja de Vida de la Variedad (Quick Drawer) -->
-  <VarietyProfileDrawer
-    v-model:isOpen="isDrawerOpen"
-    :varietyName="selectedVarietyForDrawer"
-  />
+  <VarietyProfileDrawer v-model:isOpen="isDrawerOpen" :varietyName="selectedVarietyForDrawer" />
 
   <!-- Modal de Comparación Lado a Lado -->
   <ParentComparatorModal
@@ -269,8 +304,8 @@ const selectedVarietyForDrawer = ref("");
 
 const getRowVm = (row: any[]) => {
   if (!row || row.length === 0) return "0";
-  const validCell = row.find(cell => cell && cell.vm !== 1 && cell.vm !== "1" && cell.vm !== 0 && cell.vm !== "0");
-  return validCell ? validCell.vm : (row[0]?.vm || "0");
+  const validCell = row.find((cell) => cell && cell.vm !== 1 && cell.vm !== "1" && cell.vm !== 0 && cell.vm !== "0");
+  return validCell ? validCell.vm : row[0]?.vm || "0";
 };
 
 const openVarietyProfile = (name: string) => {
@@ -328,7 +363,7 @@ watch([selectedMegaAmbiente, selectedCdCntble, selectedVariety], async ([newMega
     isLoading.value = true;
     try {
       await MatrixCrossingStore.getMatrixCrossingList(newCdCntble, newCdCntble, newVariety);
-      
+
       // Agregar cruzamientos seleccionados que ya están en true tras cargar los datos
       MatrixCrossingStore.matrixCrossingsFilter.viabilidad?.forEach((viabilidadRow) => {
         viabilidadRow.forEach((car: any) => {
@@ -353,12 +388,16 @@ const hasAnyViableCrossing = computed(() => {
 });
 
 // Auto-desactivar "Ocultar Inviables" si no hay ninguna combinación viable
-watch(hasAnyViableCrossing, (newVal) => {
-  const viabilidad = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
-  if (newVal === false && viabilidad.length > 0) {
-    ocultarInviables.value = false;
-  }
-}, { immediate: true });
+watch(
+  hasAnyViableCrossing,
+  (newVal) => {
+    const viabilidad = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
+    if (newVal === false && viabilidad.length > 0) {
+      ocultarInviables.value = false;
+    }
+  },
+  { immediate: true }
+);
 
 // Helper para verificar si un índice de columna (Padre) tiene al menos un cruce viable
 const isColumnViable = (indexCol: number) => {
