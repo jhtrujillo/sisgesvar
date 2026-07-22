@@ -6,14 +6,16 @@
         <h1 class="text-2xl font-extrabold text-slate-800 flex items-center">
           <div class="p-1.5 bg-emerald-50 text-cenicana rounded-lg mr-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+              />
             </svg>
           </div>
           Consolidado de Cruzamientos
         </h1>
-        <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full">
-          Sugerencias Programadas
-        </span>
+        <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full"> Sugerencias Programadas </span>
       </div>
       <div class="flex flex-wrap items-center justify-between ml-9 text-xs text-slate-500">
         <span>Confirme y seleccione las combinaciones recomendadas para generar la lista definitiva.</span>
@@ -25,9 +27,11 @@
 
     <!-- Contenedor Principal -->
     <div class="bg-white border border-slate-100 rounded-xl p-3 sm:p-4 shadow-premium relative min-h-[250px]">
-      
       <!-- Estado de Procesamiento / Cargando -->
-      <div v-if="isLoading" class="absolute inset-0 bg-white/95 rounded-xl z-30 flex flex-col items-center justify-center space-y-4 transition-all duration-300">
+      <div
+        v-if="isLoading"
+        class="absolute inset-0 bg-white/95 rounded-xl z-30 flex flex-col items-center justify-center space-y-4 transition-all duration-300"
+      >
         <div class="relative w-14 h-14">
           <!-- Círculo de base -->
           <div class="absolute inset-0 rounded-full border-4 border-emerald-50"></div>
@@ -62,24 +66,41 @@
 
         <!-- Botón de Filtro Interactivo -->
         <div class="flex justify-end">
-          <button 
+          <button
             @click="ocultarInviables = !ocultarInviables"
             class="flex items-center px-3 py-1 text-[11px] font-bold rounded-lg transition-all duration-200 border"
-            :class="!ocultarInviables ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm hover:bg-emerald-700' : 'bg-white border-slate-200 text-slate-660 hover:bg-slate-50'"
+            :class="
+              !ocultarInviables
+                ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm hover:bg-emerald-700'
+                : 'bg-white border-slate-200 text-slate-660 hover:bg-slate-50'
+            "
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+              />
             </svg>
-            {{ ocultarInviables ? 'Ver Inviables' : 'Ocultar Inviables' }}
+            {{ ocultarInviables ? "Ver Inviables" : "Ocultar Inviables" }}
           </button>
         </div>
       </div>
 
       <!-- Alerta si no hay ningún cruce viable en modo limpio -->
-      <div v-if="ocultarInviables && flattenedViabilidades.length > 0 && !hasAnyViableCrossing" class="flex flex-col items-center justify-center py-10 text-center text-slate-400 space-y-2 bg-slate-50/50 rounded-xl border border-slate-100">
+      <div
+        v-if="ocultarInviables && flattenedViabilidades.length > 0 && !hasAnyViableCrossing"
+        class="flex flex-col items-center justify-center py-10 text-center text-slate-400 space-y-2 bg-slate-50/50 rounded-xl border border-slate-100"
+      >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-350" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          />
         </svg>
         <span class="text-xs font-semibold text-slate-500">No se encontraron cruzamientos programados en la configuración actual.</span>
         <span class="text-[11px] text-slate-400">Haga clic en "Ver Inviables" para ver todas las combinaciones o modifique los pesos en el paso anterior.</span>
@@ -91,19 +112,18 @@
           <table class="table-auto w-full divide-y divide-slate-150">
             <thead class="bg-slate-50">
               <tr>
-                <th class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-r border-slate-100 sticky top-0 left-0 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[110px]">
+                <th
+                  class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-r border-slate-100 sticky top-0 left-0 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[110px]"
+                >
                   Hembra / Macho
                 </th>
                 <!-- Envoltura <template> para evaluar v-if en el scope correcto de Vue 3 -->
-                <template 
-                  v-for="(flor, indexCol) in SuggestionCrossingStore.suggestionCrossingsFilter.flores || []"
-                  :key="flor.id_pr"
-                >
+                <template v-for="(flor, indexCol) in SuggestionCrossingStore.suggestionCrossingsFilter.flores || []" :key="flor.id_pr">
                   <th
                     v-if="!ocultarInviables || isColumnViable(indexCol)"
                     class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-650 bg-slate-50 border-r border-slate-100 sticky top-0 z-10 min-w-[75px]"
                   >
-                    <span 
+                    <span
                       class="block text-slate-800 font-extrabold leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors"
                       @click="openVarietyProfile(flor.vrdad)"
                     >
@@ -116,44 +136,39 @@
             </thead>
             <tbody class="divide-y divide-slate-100 bg-white">
               <!-- Envoltura <template> para evaluar v-if en el scope correcto de Vue 3 -->
-              <template 
-                v-for="(viabilidadRow, indexRow) in flattenedViabilidades || []" 
-                :key="indexRow"
-              >
-                <tr 
-                  v-if="!ocultarInviables || isRowViable(viabilidadRow)"
-                  class="hover:bg-slate-50/40 transition-colors"
-                >
+              <template v-for="(viabilidadRow, indexRow) in flattenedViabilidades || []" :key="indexRow">
+                <tr v-if="!ocultarInviables || isRowViable(viabilidadRow)" class="hover:bg-slate-50/40 transition-colors">
                   <!-- Celda Madre Fija a la izquierda -->
-                  <td class="whitespace-nowrap px-2 py-2 text-center text-[11px] font-bold text-slate-700 bg-white border-r border-slate-100 sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[110px]">
-                    <span class="block font-extrabold text-slate-800 leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors" @click="openVarietyProfile(viabilidadRow[0]?.varA)">{{ viabilidadRow[0]?.varA || 'N/A' }}</span>
+                  <td
+                    class="whitespace-nowrap px-2 py-2 text-center text-[11px] font-bold text-slate-700 bg-white border-r border-slate-100 sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[110px]"
+                  >
+                    <span
+                      class="block font-extrabold text-slate-800 leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors"
+                      @click="openVarietyProfile(viabilidadRow[0]?.varA)"
+                      >{{ viabilidadRow[0]?.varA || "N/A" }}</span
+                    >
                     <span class="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-50 text-slate-500 border border-slate-100">
                       VM: {{ getRowVm(viabilidadRow) }}
                     </span>
-                    <span class="block text-[9px] text-slate-400 mt-0.5 font-semibold">Polen: {{ viabilidadRow[0]?.polen || '0' }}</span>
+                    <span class="block text-[9px] text-slate-400 mt-0.5 font-semibold">Polen: {{ viabilidadRow[0]?.polen || "0" }}</span>
                   </td>
-                  
+
                   <!-- Celdas de la matriz filtradas por columna -->
-                  <template 
-                    v-for="(car, indexCol) in viabilidadRow" 
-                    :key="indexCol"
-                  >
-                    <td 
+                  <template v-for="(car, indexCol) in viabilidadRow" :key="indexCol">
+                    <td
                       v-if="!ocultarInviables || isColumnViable(indexCol)"
                       :class="[
-                        car?.viabilidad 
-                          ? 'bg-emerald-50/50 hover:bg-emerald-100/50 border-r border-emerald-100/50 text-emerald-800' 
+                        car?.viabilidad
+                          ? 'bg-emerald-50/50 hover:bg-emerald-100/50 border-r border-emerald-100/50 text-emerald-800'
                           : 'bg-slate-50/50 hover:bg-slate-100/50 border-r border-slate-100 text-slate-400 opacity-60'
                       ]"
                       class="p-1.5 text-center border-b border-slate-100 transition-all duration-200 min-w-[75px]"
                     >
-                      <div 
-                        class="flex flex-col items-center justify-center space-y-1"
-                      >
-                        <input 
-                          type="checkbox" 
-                          :checked="!!car?.viabilidad" 
-                          @click="toggleCruzamiento(car)" 
+                      <div class="flex flex-col items-center justify-center space-y-1">
+                        <input
+                          type="checkbox"
+                          :checked="!!car?.viabilidad"
+                          @click="toggleCruzamiento(car)"
                           :disabled="!car?.viabilidad"
                           class="h-3.5 w-3.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-100 transition cursor-pointer"
                         />
@@ -162,7 +177,7 @@
                             DG: {{ getDistancia(car?.varA, car?.varB) || "NA" }}
                           </span>
                           <!-- Botón Comparador Lado a Lado -->
-                          <button 
+                          <button
                             @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad)"
                             class="text-[8px] font-bold px-1.5 py-0.5 bg-slate-100 hover:bg-emerald-50 text-slate-650 hover:text-emerald-700 rounded border border-slate-200/60 hover:border-emerald-200 transition-all duration-150 flex items-center justify-center space-x-0.5 mx-auto"
                             title="Comparar Progenitores Lado a Lado"
@@ -203,7 +218,12 @@
         title="Descargar Desempeño Individual de todas las Variedades"
       >
         <svg class="w-4 h-4 mr-2 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          ></path>
         </svg>
         Desempeño
       </button>
@@ -224,10 +244,7 @@
   <input type="hidden" v-model="selectedMegaAmbiente" id="ambiente" />
 
   <!-- Drawer de Hoja de Vida de la Variedad (Quick Drawer) -->
-  <VarietyProfileDrawer
-    v-model:isOpen="isDrawerOpen"
-    :varietyName="selectedVarietyForDrawer"
-  />
+  <VarietyProfileDrawer v-model:isOpen="isDrawerOpen" :varietyName="selectedVarietyForDrawer" />
 
   <!-- Modal de Comparación Lado a Lado -->
   <ParentComparatorModal
@@ -242,7 +259,7 @@
 import { ref, watch, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useSuggestionCrossingStore } from "@/stores/crossingsuggestion";
-import { useParametizeWeightedCrossingStore } from "@/stores/parametizeweightedcrossing";
+import { useParametizeWeightedCrossingStore } from "@/stores/crossignparametizeweighted";
 import ExcelJS from "exceljs";
 import { useToast } from "vue-toastification";
 import VarietyProfileDrawer from "@/components/VarietyProfileDrawer.vue";
@@ -270,8 +287,8 @@ const isLoading = ref(false); // Ref para spinner de carga
 
 const getRowVm = (row: any[]) => {
   if (!row || row.length === 0) return "0";
-  const validCell = row.find(cell => cell && cell.vm !== 1 && cell.vm !== "1" && cell.vm !== 0 && cell.vm !== "0");
-  return validCell ? validCell.vm : (row[0]?.vm || "0");
+  const validCell = row.find((cell) => cell && cell.vm !== 1 && cell.vm !== "1" && cell.vm !== 0 && cell.vm !== "0");
+  return validCell ? validCell.vm : row[0]?.vm || "0";
 };
 
 // Estados para el Drawer de variedades
@@ -404,8 +421,8 @@ const toggleCruzamiento = (car: Viabilidad) => {
 async function exportarDesempenoIndividual() {
   try {
     const filterData = SuggestionCrossingStore.suggestionCrossingsFilter || {};
-    const viabilidad = (filterData.viabilidades && filterData.viabilidades.length > 0) ? filterData.viabilidades : [];
-    
+    const viabilidad = filterData.viabilidades && filterData.viabilidades.length > 0 ? filterData.viabilidades : [];
+
     // Cargar ponderados si no están listos
     if (!ParametizeWeightedStore.parametizeWeightedCrossingFilter || !ParametizeWeightedStore.parametizeWeightedCrossingFilter.ponderados) {
       if (selectedCdCntble.value) {
@@ -413,7 +430,7 @@ async function exportarDesempenoIndividual() {
       }
     }
     const ponderados = ParametizeWeightedStore.parametizeWeightedCrossingFilter?.ponderados || [];
-    
+
     const floresBG = filterData.flores_bg || [];
     const floresPR = filterData.flores_pr || [];
     const floresEIII = filterData.flores_eiii || [];
@@ -427,7 +444,7 @@ async function exportarDesempenoIndividual() {
       if (!data) data = floresEIII.find((f) => f.vrdad && f.vrdad.trim().toUpperCase() === cleanVar);
       return data;
     };
-    
+
     const headers = [
       "Variedad Evaluada",
       "Rol (Madre/Padre)",
@@ -441,14 +458,7 @@ async function exportarDesempenoIndividual() {
       "¿Cumple Límite Individual?"
     ];
 
-    const headersVM = [
-      "Variedad Evaluada",
-      "Rol (Madre/Padre)",
-      "Característica",
-      "Nivel Obtenido",
-      "Porcentaje (%)",
-      "Aporte al VM (Nivel × % / 100)"
-    ];
+    const headersVM = ["Variedad Evaluada", "Rol (Madre/Padre)", "Característica", "Nivel Obtenido", "Porcentaje (%)", "Aporte al VM (Nivel × % / 100)"];
 
     const rows = [];
     const rowsVM = [];
@@ -466,33 +476,34 @@ async function exportarDesempenoIndividual() {
                 if (varName && varName !== selectedVariety.value && !procesadas.has(varName) && florData) {
                   procesadas.add(varName);
                   let totalVM = 0;
-                  
+
                   ponderados.forEach((p) => {
-                    const caracteristica = p.equivalente ? p.equivalente.toLowerCase() : (p.caracteristica || p.nombre || "UNKNOWN");
+                    const caracteristica = p.equivalente ? p.equivalente.toLowerCase() : p.caracteristica || p.nombre || "UNKNOWN";
                     const nombreCaract = p.nombre || p.caracteristica || caracteristica;
                     if (caracteristica) {
                       const valorReal = florData[caracteristica] ?? "-";
                       const valorTestigo = testigoLimpio[caracteristica] ?? "-";
                       const limiteMax = p.nivel !== null && p.nivel !== undefined ? Number(p.nivel) : "-";
                       const porcentajePeso = p.ponderado ? Number(p.ponderado) : 0;
-                      
+
                       let porcentaje = "-";
-                      const isEnfermedad = caracteristica === "msco_r" || caracteristica === "carbon" || caracteristica === "rya_cfe_r" || caracteristica === "roya_naranja";
-                      
+                      const isEnfermedad =
+                        caracteristica === "msco_r" || caracteristica === "carbon" || caracteristica === "rya_cfe_r" || caracteristica === "roya_naranja";
+
                       if (isEnfermedad) {
                         porcentaje = "N/A (Evaluación directa)";
                       } else if (valorReal !== "-" && valorTestigo !== "-" && valorReal !== null && valorTestigo !== null && Number(valorTestigo) > 0) {
                         porcentaje = ((Number(valorReal) * 100) / Number(valorTestigo)).toFixed(2) + "%";
                       }
-  
+
                       let nivel = "-";
                       let rangoRegla = "N/A";
                       let cumpleLimite = "-";
                       let aporteVM = "-";
-                      
+
                       if (valorReal !== "-" && valorReal !== null && valorReal !== "") {
                         let lvl = 999;
-                        
+
                         if (caracteristica === "msco_r" || caracteristica === "carbon") {
                           const val = Number(valorReal);
                           rangoRegla = "N1: <=2% | N2: 2.1-3% | N3: 3.1-5% | N4: 5.1-8% | N5: 8.1-11% | N6: 11.1-15% | N7: 15.1-22% | N8: 22.1-30% | N9: >30%";
@@ -517,7 +528,12 @@ async function exportarDesempenoIndividual() {
                           } else {
                             rangoRegla += " (Falta testigo)";
                           }
-                        } else if (caracteristica === "scrsa" || caracteristica === "dmtro_tllo" || caracteristica === "altura_planta" || caracteristica === "poblacion") {
+                        } else if (
+                          caracteristica === "scrsa" ||
+                          caracteristica === "dmtro_tllo" ||
+                          caracteristica === "altura_planta" ||
+                          caracteristica === "poblacion"
+                        ) {
                           rangoRegla = "N1: >120% | N2: 100-120% | N3: 90-99.9% | N4: 80-89.9% | N5: <80%";
                           if (valorTestigo !== "-" && valorTestigo !== null && Number(valorTestigo) > 0) {
                             const pct = (Number(valorReal) * 100) / Number(valorTestigo);
@@ -547,7 +563,7 @@ async function exportarDesempenoIndividual() {
                         } else {
                           rangoRegla = "Sin regla configurada";
                         }
-                        
+
                         if (lvl !== 999) {
                           nivel = lvl.toString();
                           if (limiteMax !== "-") {
@@ -558,46 +574,21 @@ async function exportarDesempenoIndividual() {
                           totalVM += ap;
                         }
                       } else {
-                         rangoRegla = "Sin datos (Nivel 0 automático)";
-                         nivel = "0";
-                         aporteVM = "0.00";
+                        rangoRegla = "Sin datos (Nivel 0 automático)";
+                        nivel = "0";
+                        aporteVM = "0.00";
                       }
-                      
-                      rows.push([
-                        varName,
-                        rol,
-                        caracteristica.toUpperCase(),
-                        valorReal,
-                        valorTestigo,
-                        porcentaje,
-                        rangoRegla,
-                        nivel,
-                        limiteMax,
-                        cumpleLimite
-                      ]);
-                      
+
+                      rows.push([varName, rol, caracteristica.toUpperCase(), valorReal, valorTestigo, porcentaje, rangoRegla, nivel, limiteMax, cumpleLimite]);
+
                       if (porcentajePeso > 0) {
-                        rowsVM.push([
-                          varName,
-                          rol,
-                          nombreCaract.toUpperCase(),
-                          nivel,
-                          porcentajePeso.toFixed(2) + "%",
-                          Number(aporteVM)
-                        ]);
+                        rowsVM.push([varName, rol, nombreCaract.toUpperCase(), nivel, porcentajePeso.toFixed(2) + "%", Number(aporteVM)]);
                       }
                     }
                   });
-                  
+
                   if (rowsVM.length > 0 && rowsVM[rowsVM.length - 1][0] === varName) {
-                    rowsVM.push([
-                      varName,
-                      rol,
-                      "TOTAL VM",
-                      "-",
-                      "100%",
-                      Number(totalVM.toFixed(2))
-                    ]);
+                    rowsVM.push([varName, rol, "TOTAL VM", "-", "100%", Number(totalVM.toFixed(2))]);
                     // Add empty row for spacing
                     rowsVM.push(["", "", "", "", "", ""]);
                   }
@@ -615,7 +606,7 @@ async function exportarDesempenoIndividual() {
     }
 
     const workbook = new ExcelJS.Workbook();
-    
+
     // ----- HOJA 1: Desempeño -----
     const sheet = workbook.addWorksheet("Desempeño Individual");
 
@@ -643,7 +634,7 @@ async function exportarDesempenoIndividual() {
       cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0E7490" } };
       cell.border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
     });
-    
+
     // ----- HOJA 2: Valores de Mérito -----
     const sheetVM = workbook.addWorksheet("Cálculo Valores de Mérito");
     const headerVMContent = [
@@ -655,9 +646,9 @@ async function exportarDesempenoIndividual() {
       headersVM,
       ...rowsVM
     ];
-    
+
     headerVMContent.forEach((r) => sheetVM.addRow(r));
-    
+
     sheetVM.mergeCells("A1:E1");
     const titleCellVM = sheetVM.getCell("A1");
     titleCellVM.font = { size: 16, bold: true, color: { argb: "FF0B4A2F" } };
@@ -669,7 +660,7 @@ async function exportarDesempenoIndividual() {
       cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0E7490" } };
       cell.border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
     });
-    
+
     // Colorear las filas de "TOTAL VM"
     sheetVM.eachRow((row, rowNumber) => {
       if (rowNumber > 6) {
