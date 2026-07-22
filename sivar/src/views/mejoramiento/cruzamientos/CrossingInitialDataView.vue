@@ -6,7 +6,14 @@
         class="group flex items-center px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-emerald-50 hover:text-cenicana hover:border-emerald-200 transition-all duration-200"
         :to="{ name: 'cruzamientos.show' }"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 transform transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4 mr-2 transform transition-transform group-hover:-translate-x-1"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
         Volver
@@ -19,14 +26,16 @@
         <h1 class="text-3xl font-extrabold text-slate-800 flex items-center">
           <div class="p-2 bg-emerald-50 text-cenicana rounded-lg mr-3">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
             </svg>
           </div>
           Programación de Cruzamientos
         </h1>
-        <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full">
-          Paso 1 de 3: Datos Iniciales
-        </span>
+        <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full"> Paso 1 de 3: Datos Iniciales </span>
       </div>
       <p class="text-slate-500 ml-11 text-sm">Seleccione el proyecto de mejoramiento activo para cargar las flores disponibles.</p>
     </div>
@@ -34,11 +43,18 @@
     <!-- Contenedor del Formulario -->
     <div class="bg-white border border-slate-100 rounded-2xl p-8 shadow-premium relative min-h-[200px]">
       <!-- Overlay Loading State -->
-      <div v-if="isLoading" class="absolute inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-300 rounded-2xl">
+      <div
+        v-if="isLoading"
+        class="absolute inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-300 rounded-2xl"
+      >
         <div class="p-4 bg-white rounded-2xl shadow-xl flex flex-col items-center gap-3 border border-emerald-100">
           <svg class="animate-spin h-8 w-8 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
           </svg>
           <span class="text-emerald-800 font-bold tracking-wide animate-pulse text-xs">Cargando proyectos con flores...</span>
         </div>
@@ -46,9 +62,7 @@
 
       <div class="space-y-6">
         <div>
-          <label class="block uppercase tracking-wider text-slate-600 text-xs font-bold mb-3" for="grid-state">
-            Proyectos con flores activas
-          </label>
+          <label class="block uppercase tracking-wider text-slate-600 text-xs font-bold mb-3" for="grid-state"> Proyectos con flores activas </label>
           <div class="relative">
             <ComboBoxMultiple
               :data-list="mappedCrossingInitialData"
@@ -137,7 +151,9 @@ onMounted(async () => {
 
   // Cargar el valor almacenado en local storage (si existe)
   const storedCdCntble = localStorage.getItem("selectedCdCntble");
-  if (storedCdCdCntble => storedCdCntble) model.cd_cntble = storedCdCntble;
+  if (storedCdCntble) {
+    model.cd_cntble = storedCdCntble;
+  }
   isLoading.value = false;
 });
 
