@@ -70,13 +70,13 @@
              <div 
                 v-for="cell in sortedMales" 
                 :key="cell.varB" 
-                :class="['rounded-xl p-4 transition-all relative overflow-hidden', getCardStyle(cell)]"
+                :class="['rounded-xl p-4 transition-all relative overflow-hidden', getCardStyle(cell).container]"
              >
 
                 <div class="flex justify-between items-start mb-3 mt-1">
                   <div>
-                    <span class="font-bold text-slate-800 text-sm block">{{ cell.varB }}</span>
-                    <span class="text-[10px] text-slate-500 font-medium">{{ getHeatmapLabel(cell) }}</span>
+                    <span class="font-bold text-sm block" :class="getCardStyle(cell).textMain">{{ cell.varB }}</span>
+                    <span class="text-[10px] font-medium" :class="getCardStyle(cell).textSub">{{ getHeatmapLabel(cell) }}</span>
                   </div>
                   <div class="flex items-center gap-2">
                     <!-- Botón para ajustar flores (solo visible si está seleccionado) -->
@@ -108,25 +108,25 @@
                   </div>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-y-3 gap-x-2 text-xs mb-4 p-2 bg-slate-50 rounded-lg border border-slate-100">
+                <div :class="['grid grid-cols-2 gap-y-3 gap-x-2 text-xs mb-4 p-2 rounded-lg border', getCardStyle(cell).innerBox]">
                   <div class="flex flex-col">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dist. Genética</span>
-                    <span class="font-black text-slate-700">{{ getDistanciaLocal(cell.varA, cell.varB) }}</span>
+                    <span class="text-[10px] font-bold uppercase tracking-wider" :class="getCardStyle(cell).textLabel">Dist. Genética</span>
+                    <span class="font-black" :class="getCardStyle(cell).textMain">{{ getDistanciaLocal(cell.varA, cell.varB) }}</span>
                   </div>
                   <div class="flex flex-col">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">VM Macho</span>
-                    <span class="font-black text-slate-700">{{ cell.vm2 }}</span>
+                    <span class="text-[10px] font-bold uppercase tracking-wider" :class="getCardStyle(cell).textLabel">VM Macho</span>
+                    <span class="font-black" :class="getCardStyle(cell).textMain">{{ cell.vm2 }}</span>
                   </div>
                   <div class="flex flex-col">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Polen</span>
-                    <span class="font-black text-slate-700 flex items-center gap-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider" :class="getCardStyle(cell).textLabel">Polen</span>
+                    <span class="font-black flex items-center gap-1" :class="getCardStyle(cell).textMain">
                       <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
                       {{ cell.polen2 }}%
                     </span>
                   </div>
                    <div class="flex flex-col">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Disp. Macho</span>
-                    <span class="font-black text-emerald-700">{{ getDisp(cell.varB) }}</span>
+                    <span class="text-[10px] font-bold uppercase tracking-wider" :class="getCardStyle(cell).textLabel">Disp. Macho</span>
+                    <span class="font-black" :class="getCardStyle(cell).textMain">{{ getDisp(cell.varB) }}</span>
                   </div>
                 </div>
 
@@ -183,35 +183,45 @@ const getAffinityColor = (cell: any) => {
 };
 
 const getCardStyle = (cell: any) => {
+  const isSelected = cell.viabilidad;
+  const baseBorder = isSelected ? 'ring-2 shadow-md border-[3px] ' : 'hover:-translate-y-0.5 hover:shadow-md border-2 ';
+  
+  // Helper to generate the style object
+  const createStyle = (bg: string, border: string, isDark: boolean) => ({
+    container: `${baseBorder} ${bg} ${border} ${isSelected ? 'ring-emerald-500' : ''}`,
+    textMain: isDark ? 'text-white' : 'text-slate-800',
+    textSub: isDark ? 'text-white/80' : 'text-slate-500',
+    textLabel: isDark ? 'text-white/70' : 'text-slate-400',
+    innerBox: isDark ? 'bg-black/10 border-white/10' : 'bg-slate-50/70 border-slate-200/50'
+  });
+
   if (props.tipoMapaCalor === 'none') {
-    return cell.viabilidad 
-      ? 'bg-emerald-50 border-emerald-500 border-2 shadow-sm' 
-      : 'bg-white border-slate-200 border-2 hover:border-slate-300 shadow-sm';
+    return createStyle(
+      isSelected ? 'bg-emerald-50' : 'bg-white',
+      isSelected ? 'border-emerald-500' : 'border-slate-200 hover:border-slate-300',
+      false
+    );
   }
 
   if (props.tipoMapaCalor === 'ic') {
     const ic = props.getIndiceCombinadoLocal(cell.varA, cell.varB, cell.vm2);
-    if (isNaN(ic)) return 'bg-slate-50 border-slate-300 border-2 shadow-sm';
+    if (isNaN(ic)) return createStyle('bg-slate-50', 'border-slate-300', false);
     
-    const baseClasses = cell.viabilidad ? 'ring-2 ring-emerald-500 shadow-md border-[3px] ' : 'hover:-translate-y-0.5 hover:shadow-md border-2 ';
-    
-    if (ic >= 80) return baseClasses + 'bg-indigo-50 border-indigo-500';
-    if (ic >= 65) return baseClasses + 'bg-sky-50 border-sky-400';
-    if (ic >= 50) return baseClasses + 'bg-emerald-50 border-emerald-400';
-    return baseClasses + 'bg-rose-50 border-rose-500';
+    if (ic >= 80) return createStyle('bg-indigo-600', 'border-indigo-700', true);
+    if (ic >= 65) return createStyle('bg-sky-400', 'border-sky-500', false);
+    if (ic >= 50) return createStyle('bg-emerald-500', 'border-emerald-600', true);
+    return createStyle('bg-rose-500', 'border-rose-600', true);
   }
 
   // Fallback to DG
   const val = Number(props.getDistanciaLocal(cell.varA, cell.varB));
-  if (isNaN(val)) return 'bg-slate-50 border-slate-300 border-2 shadow-sm';
+  if (isNaN(val)) return createStyle('bg-slate-50', 'border-slate-300', false);
   
-  const baseClasses = cell.viabilidad ? 'ring-2 ring-emerald-500 shadow-md border-[3px] ' : 'hover:-translate-y-0.5 hover:shadow-md border-2 ';
-  
-  if (val >= 0.65) return baseClasses + 'bg-blue-50 border-blue-600';
-  if (val >= 0.55) return baseClasses + 'bg-sky-50 border-sky-400';
-  if (val >= 0.45) return baseClasses + 'bg-slate-50 border-slate-300';
-  if (val >= 0.35) return baseClasses + 'bg-amber-50 border-amber-400';
-  return baseClasses + 'bg-orange-50 border-orange-500';
+  if (val >= 0.65) return createStyle('bg-blue-600', 'border-blue-700', true);
+  if (val >= 0.55) return createStyle('bg-sky-400', 'border-sky-500', false);
+  if (val >= 0.45) return createStyle('bg-slate-300', 'border-slate-400', false);
+  if (val >= 0.35) return createStyle('bg-amber-400', 'border-amber-500', false);
+  return createStyle('bg-orange-500', 'border-orange-600', true);
 };
 
 const getHeatmapLabel = (cell: any) => {
