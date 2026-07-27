@@ -233,15 +233,26 @@
               title="Optimizar inventario (Reducir excesos y maximizar capacidad usando los mejores cruces)"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2.5"
-                  d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143z"
-                />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143z" />
               </svg>
               Optimizar
             </button>
+
+            <!-- Toggle Asistente vs Cuadrícula -->
+            <div class="flex items-center bg-slate-100 p-1 rounded-lg mr-2 border border-slate-200">
+              <button 
+                @click="vistaActual = 'cuadricula'"
+                :class="['px-3 py-1 text-[11px] font-bold rounded-md transition-all', vistaActual === 'cuadricula' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700']"
+              >
+                Cuadrícula
+              </button>
+              <button 
+                @click="vistaActual = 'asistente'"
+                :class="['px-3 py-1 text-[11px] font-bold rounded-md transition-all', vistaActual === 'asistente' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700']"
+              >
+                Asistente
+              </button>
+            </div>
 
             <!-- Toggle de Vistas Oculto temporalmente
           <button 
@@ -375,6 +386,8 @@
                   : 'max-h-[500px] overflow-x-auto overflow-y-auto scrollbar-custom'
               "
             >
+              <!-- VISTA CUADRÍCULA -->
+              <div v-show="vistaActual === 'cuadricula'">
               <table v-if="!isOptimizing" ref="matrizTable" class="table-auto w-full divide-y divide-slate-150 bg-white rounded-lg">
                 <thead class="bg-slate-50">
                   <tr>
@@ -531,6 +544,23 @@
                   </template>
                 </tbody>
               </table>
+              </div>
+
+              <!-- VISTA ASISTENTE (MAESTRO-DETALLE) -->
+              <div v-if="vistaActual === 'asistente' && !isOptimizing">
+                <SuggestionMasterDetail
+                  :females="assistantFemales"
+                  :selectedFemaleRow="selectedFemaleRow"
+                  :sortedMales="assistantSortedMales"
+                  :ocultarRiesgos="assistantOcultarRiesgos"
+                  @select-female="row => selectedFemaleRow = row"
+                  @toggle-cross="toggleViabilidad"
+                  @toggle-riesgos="assistantOcultarRiesgos = !assistantOcultarRiesgos"
+                  :getDisp="varName => cantidadesMap[varName] || 0"
+                  :getDistanciaLocal="getDistancia"
+                  :getIndiceCombinadoLocal="getIndiceCombinado"
+                />
+              </div>
             </div>
           </div>
 
@@ -983,6 +1013,7 @@ import { useSuggestionCrossingPerProjectStore } from "@/stores/crossingsuggestio
 import { useParametizeWeightedCrossingStore } from "@/stores/crossignparametizeweighted";
 import VarietyProfileDrawer from "@/components/VarietyProfileDrawer.vue";
 import ParentComparatorModal from "@/components/ParentComparatorModal.vue";
+import SuggestionMasterDetail from "@/components/SuggestionMasterDetail.vue";
 import * as XLSX from "xlsx";
 import ExcelJS from "exceljs";
 import html2canvas from "html2canvas";
@@ -1009,6 +1040,38 @@ const isOptimizing = ref(false); // Ref para spinner de optimización
 const optimizandoMadre = ref(""); // Para mostrar en el loading qué variedad se procesa
 const isExpanded = ref(false); // Ref para modo pantalla completa
 const isDragDropView = ref(false); // Ref para alternar a Drag & Drop
+
+// --- NUEVA VISTA MAESTRO-DETALLE ---
+const vistaActual = ref<'cuadricula' | 'asistente'>('cuadricula');
+const selectedFemaleRow = ref<any>(null);
+const assistantOcultarRiesgos = ref(true);
+
+const assistantFemales = computed(() => {
+  return (viabilidadesMatriz.value || []).filter((row: any) => row && row.length > 0 && Number(row[0]?.polen) <= 20);
+});
+
+const assistantSortedMales = computed(() => {
+  if (!selectedFemaleRow.value) return [];
+  const cells = [...selectedFemaleRow.value];
+  
+  let males = cells.filter((cell: any) => cell && Number(cell.polen2) > 20);
+  
+  if (assistantOcultarRiesgos.value) {
+    males = males.filter((cell: any) => {
+      const dg = Number(getDistancia(cell.varA, cell.varB));
+      return isNaN(dg) || dg >= 0.35;
+    });
+  }
+  
+  males.sort((a: any, b: any) => {
+    const icA = getIndiceCombinado(a.varA, a.varB, a.vm);
+    const icB = getIndiceCombinado(b.varA, b.varB, b.vm);
+    return (isNaN(icB) ? 0 : icB) - (isNaN(icA) ? 0 : icA);
+  });
+  
+  return males;
+});
+// -----------------------------------
 
 // Variables de Estado para Drag & Drop
 const activeDragType = ref<"madre" | "padre" | null>(null);
