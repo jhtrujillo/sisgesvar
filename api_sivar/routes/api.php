@@ -49,7 +49,7 @@ Route::group([
     Route::get('crossingInitialData', [\App\Http\Controllers\CrossingController::class, 'crossingInitialData']);
     Route::get('listarFlores/{proyectos}/{fechai}/{fechaf}', [\App\Http\Controllers\CrossingController::class, 'listarFlores']);
     Route::get('parametizeWeightedCrossing/{proyecto}/{mega_ambiente}', [\App\Http\Controllers\CrossingController::class, 'parametizeWeightedCrossing']);
-    Route::post('modifyFeatures/{caracteristica}/{proyecto}/{nivel}/{ponderado}/{nuevo}', [\App\Http\Controllers\CrossingController::class, 'modifyFeatures']);
+    Route::post('modifyFeatures/{caracteristica}/{proyecto}/{nivel}/{ponderado}/{ambiente}/{nuevo}', [\App\Http\Controllers\CrossingController::class, 'modifyFeatures']);
     Route::get('calcularViabilidadCaracteristica/{caracteristica}/{florA}/{florB}/{ponderado}/{testigo}', [\App\Http\Controllers\CrossingController::class, 'calcularViabilidadCaracteristica']);
     Route::get('crearOrigenCruzamiento/{id_cruzamiento}', [\App\Http\Controllers\CrossingController::class, 'crearOrigenCruzamiento']);
     Route::get('generateMatrix/{proyectos}/{proyecto}/{testigo}', [\App\Http\Controllers\CrossingController::class, 'generateMatrix']);
@@ -121,20 +121,7 @@ Route::group([
     Route::get('/adjuntos/{adjunto}/download', [\App\Http\Controllers\AdjuntoController::class, 'download'])->name('adjuntos.download');
     Route::delete('/adjuntos/{adjunto}', [\App\Http\Controllers\AdjuntoController::class, 'destroy'])->name('adjuntos.destroy');
 
-    // Módulo Laboratorio - Inventario
-    Route::get('/lab/inventory', [\App\Http\Controllers\LabInventoryController::class, 'index']);
-    Route::post('/lab/inventory', [\App\Http\Controllers\LabInventoryController::class, 'store']);
-    Route::put('/lab/inventory/{id}', [\App\Http\Controllers\LabInventoryController::class, 'update']);
-    Route::delete('/lab/inventory/{id}', [\App\Http\Controllers\LabInventoryController::class, 'destroy']);
-    Route::get('/lab/inventory/{id}/movements', [\App\Http\Controllers\LabInventoryController::class, 'getMovements']);
-    Route::post('/lab/inventory/{id}/movements', [\App\Http\Controllers\LabInventoryController::class, 'storeMovement']);
-    Route::delete('/lab/inventory/{id}/movements', [\App\Http\Controllers\LabInventoryController::class, 'deleteMovements']);
-    
-    Route::get('/lab/inventory-alerts', [\App\Http\Controllers\LabInventoryAlertEmailController::class, 'index']);
-    Route::post('/lab/inventory-alerts', [\App\Http\Controllers\LabInventoryAlertEmailController::class, 'store']);
-    Route::put('/lab/inventory-alerts/{id}', [\App\Http\Controllers\LabInventoryAlertEmailController::class, 'update']);
-    Route::delete('/lab/inventory-alerts/{id}', [\App\Http\Controllers\LabInventoryAlertEmailController::class, 'destroy']);
-    
+    // Módulo Laboratorio - Inventario    
     // Módulo Siembra-Campo: Viveros
     Route::get('siembra-campo/viveros', [\App\Http\Controllers\ViveroController::class, 'index']);
     Route::post('siembra-campo/viveros', [\App\Http\Controllers\ViveroController::class, 'store']);

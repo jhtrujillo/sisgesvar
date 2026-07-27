@@ -15,7 +15,7 @@ class PonderadoVM extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'caracteristica_id','proyecto','nivel','ponderado'
+        'caracteristica_id','proyecto','nivel','ponderado','ambiente'
     ];
 
     protected $hidden = [

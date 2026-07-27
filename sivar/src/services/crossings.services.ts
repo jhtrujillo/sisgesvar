@@ -18,8 +18,8 @@ async function getParametizeWeightedCrossing(proyecto: string, megaAmbiente: str
   const url = `${urls.API_PARAMETIZE_WEIGHTED_CROSSING}/${proyecto}/${megaAmbiente}`;
   return await api.get(url, {}, true);
 }
-async function modifyFeatures(caracteristica: string, proyecto: string, nivel: string, ponderado: string, nuevo: number): Promise<any> {
-  const url = `${urls.API_MODIFY_FEATURES_CROSSING}/${caracteristica}/${proyecto}/${nivel}/${ponderado}/${nuevo}`;
+async function modifyFeatures(caracteristica: string, proyecto: string, nivel: string, ponderado: string, ambiente: string, nuevo: number): Promise<any> {
+  const url = `${urls.API_MODIFY_FEATURES_CROSSING}/${caracteristica}/${proyecto}/${nivel}/${ponderado}/${ambiente}/${nuevo}`;
   return await api.post(url, {}, true);
 }
 async function getMatrix(proyectos: string, proyecto: string, testigo: string): Promise<any> {
