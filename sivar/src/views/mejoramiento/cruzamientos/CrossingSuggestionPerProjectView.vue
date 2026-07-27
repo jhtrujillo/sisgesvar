@@ -554,7 +554,7 @@
                   :sortedMales="assistantSortedMales"
                   :ocultarRiesgos="assistantOcultarRiesgos"
                   @select-female="row => selectedFemaleRow = row"
-                  @toggle-cross="toggleViabilidad"
+                  @toggle-cross="toggleCruzamiento"
                   @toggle-riesgos="assistantOcultarRiesgos = !assistantOcultarRiesgos"
                   :getDisp="varName => cantidadesMap[varName] || 0"
                   :getDistanciaLocal="getDistancia"
