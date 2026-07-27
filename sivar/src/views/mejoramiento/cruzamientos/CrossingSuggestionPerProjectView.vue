@@ -555,6 +555,7 @@
                   :ocultarRiesgos="assistantOcultarRiesgos"
                   @select-female="row => selectedFemaleRow = row"
                   @toggle-cross="toggleCruzamiento"
+                  @open-flower-modal="openFlowerAdjustmentModal"
                   @toggle-riesgos="assistantOcultarRiesgos = !assistantOcultarRiesgos"
                   :getDisp="varName => cantidadesMap[varName] || 0"
                   :getDistanciaLocal="getDistancia"
