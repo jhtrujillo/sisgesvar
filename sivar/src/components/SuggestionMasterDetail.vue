@@ -166,6 +166,7 @@ const props = defineProps<{
   selectedFemaleRow: any | null;
   sortedMales: any[];
   ocultarRiesgos: boolean;
+  tipoMapaCalor: string;
   getDisp: (varName: string) => number | string;
   getDistanciaLocal: (varA: string, varB: string) => string | number;
   getIndiceCombinadoLocal: (varA: string, varB: string, vm: string | number) => number;
@@ -189,6 +190,18 @@ const getAffinityColor = (cell: any) => {
 };
 
 const getHeatmapBg = (cell: any) => {
+  if (props.tipoMapaCalor === 'none') return 'bg-slate-200';
+
+  if (props.tipoMapaCalor === 'ic') {
+    const ic = props.getIndiceCombinadoLocal(cell.varA, cell.varB, cell.vm);
+    if (isNaN(ic)) return 'bg-slate-300';
+    if (ic >= 80) return 'bg-indigo-600';
+    if (ic >= 65) return 'bg-sky-400';
+    if (ic >= 50) return 'bg-emerald-500';
+    return 'bg-rose-500';
+  }
+
+  // Fallback to DG
   const val = Number(props.getDistanciaLocal(cell.varA, cell.varB));
   if (isNaN(val)) return 'bg-slate-300';
   if (val >= 0.65) return 'bg-blue-600';
@@ -199,6 +212,17 @@ const getHeatmapBg = (cell: any) => {
 };
 
 const getHeatmapLabel = (cell: any) => {
+  if (props.tipoMapaCalor === 'none') return 'Sin Color';
+
+  if (props.tipoMapaCalor === 'ic') {
+    const ic = props.getIndiceCombinadoLocal(cell.varA, cell.varB, cell.vm);
+    if (isNaN(ic)) return 'Sin Genotipo';
+    if (ic >= 80) return 'Excelente (IC ≥ 80)';
+    if (ic >= 65) return 'Bueno (IC ≥ 65)';
+    if (ic >= 50) return 'Aceptable (IC ≥ 50)';
+    return 'Riesgo (IC < 50)';
+  }
+
   const val = Number(props.getDistanciaLocal(cell.varA, cell.varB));
   if (isNaN(val)) return 'Sin Genotipo';
   if (val >= 0.65) return 'Excelente (>0.65)';

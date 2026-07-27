@@ -553,6 +553,7 @@
                   :selectedFemaleRow="selectedFemaleRow"
                   :sortedMales="assistantSortedMales"
                   :ocultarRiesgos="assistantOcultarRiesgos"
+                  :tipoMapaCalor="tipoMapaCalor"
                   @select-female="row => selectedFemaleRow = row"
                   @toggle-cross="toggleCruzamiento"
                   @open-flower-modal="openFlowerAdjustmentModal"
