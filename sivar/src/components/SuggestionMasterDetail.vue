@@ -185,34 +185,33 @@ const getAffinityColor = (cell: any) => {
 const getCardStyle = (cell: any) => {
   if (props.tipoMapaCalor === 'none') {
     return cell.viabilidad 
-      ? 'bg-emerald-50 border-emerald-500 border-l-[6px] ring-1 ring-emerald-200' 
-      : 'bg-white border-slate-200 border-l-[6px] hover:border-slate-300';
+      ? 'bg-emerald-50 border-emerald-500 border-2 shadow-sm' 
+      : 'bg-white border-slate-200 border-2 hover:border-slate-300 shadow-sm';
   }
 
   if (props.tipoMapaCalor === 'ic') {
     const ic = props.getIndiceCombinadoLocal(cell.varA, cell.varB, cell.vm2);
-    if (isNaN(ic)) return 'bg-slate-50 border-slate-300 border-l-[6px]';
+    if (isNaN(ic)) return 'bg-slate-50 border-slate-300 border-2 shadow-sm';
     
-    // Si está seleccionado, darle un borde más grueso o un ring para destacarlo sobre el color
-    const baseClasses = cell.viabilidad ? 'ring-2 ring-emerald-500 shadow-md ' : 'hover:-translate-y-0.5 hover:shadow-md ';
+    const baseClasses = cell.viabilidad ? 'ring-2 ring-emerald-500 shadow-md border-[3px] ' : 'hover:-translate-y-0.5 hover:shadow-md border-2 ';
     
-    if (ic >= 80) return baseClasses + 'bg-indigo-50 border-indigo-500 border-l-[6px]';
-    if (ic >= 65) return baseClasses + 'bg-sky-50 border-sky-400 border-l-[6px]';
-    if (ic >= 50) return baseClasses + 'bg-emerald-50 border-emerald-400 border-l-[6px]';
-    return baseClasses + 'bg-rose-50 border-rose-500 border-l-[6px]';
+    if (ic >= 80) return baseClasses + 'bg-indigo-50 border-indigo-500';
+    if (ic >= 65) return baseClasses + 'bg-sky-50 border-sky-400';
+    if (ic >= 50) return baseClasses + 'bg-emerald-50 border-emerald-400';
+    return baseClasses + 'bg-rose-50 border-rose-500';
   }
 
   // Fallback to DG
   const val = Number(props.getDistanciaLocal(cell.varA, cell.varB));
-  if (isNaN(val)) return 'bg-slate-50 border-slate-300 border-l-[6px]';
+  if (isNaN(val)) return 'bg-slate-50 border-slate-300 border-2 shadow-sm';
   
-  const baseClasses = cell.viabilidad ? 'ring-2 ring-emerald-500 shadow-md ' : 'hover:-translate-y-0.5 hover:shadow-md ';
+  const baseClasses = cell.viabilidad ? 'ring-2 ring-emerald-500 shadow-md border-[3px] ' : 'hover:-translate-y-0.5 hover:shadow-md border-2 ';
   
-  if (val >= 0.65) return baseClasses + 'bg-blue-50 border-blue-600 border-l-[6px]';
-  if (val >= 0.55) return baseClasses + 'bg-sky-50 border-sky-400 border-l-[6px]';
-  if (val >= 0.45) return baseClasses + 'bg-slate-50 border-slate-300 border-l-[6px]';
-  if (val >= 0.35) return baseClasses + 'bg-amber-50 border-amber-400 border-l-[6px]';
-  return baseClasses + 'bg-orange-50 border-orange-500 border-l-[6px]';
+  if (val >= 0.65) return baseClasses + 'bg-blue-50 border-blue-600';
+  if (val >= 0.55) return baseClasses + 'bg-sky-50 border-sky-400';
+  if (val >= 0.45) return baseClasses + 'bg-slate-50 border-slate-300';
+  if (val >= 0.35) return baseClasses + 'bg-amber-50 border-amber-400';
+  return baseClasses + 'bg-orange-50 border-orange-500';
 };
 
 const getHeatmapLabel = (cell: any) => {
