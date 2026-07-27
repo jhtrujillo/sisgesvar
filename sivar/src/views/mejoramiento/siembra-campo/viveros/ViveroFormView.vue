@@ -25,7 +25,8 @@
       <p class="text-gray-600 font-medium">Cargando información del vivero...</p>
     </div>
 
-    <form v-else @submit.prevent="submitForm" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    <template v-else>
+    <form @submit.prevent="submitForm" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Identificador Único -->
         <div class="mb-4">
@@ -513,6 +514,7 @@
       v-model:isOpen="isDrawerOpen"
       :varietyName="selectedVarietyForDrawer"
     />
+    </template>
   </div>
 </template>
 
