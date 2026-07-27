@@ -184,44 +184,48 @@ const getAffinityColor = (cell: any) => {
 
 const getCardStyle = (cell: any) => {
   const isSelected = cell.viabilidad;
-  const baseBorder = isSelected ? 'ring-2 shadow-md border-[3px] ' : 'hover:-translate-y-0.5 hover:shadow-md border-2 ';
+  const baseBorder = isSelected 
+    ? 'ring-2 shadow-md border-[3px] ' 
+    : 'opacity-70 hover:opacity-100 hover:-translate-y-0.5 hover:shadow-md border-2 ';
   
   // Helper to generate the style object
-  const createStyle = (bg: string, border: string, isDark: boolean) => ({
-    container: `${baseBorder} ${bg} ${border} ${isSelected ? 'ring-emerald-500' : ''}`,
-    textMain: isDark ? 'text-white' : 'text-slate-800',
-    textSub: isDark ? 'text-white/80' : 'text-slate-500',
-    textLabel: isDark ? 'text-white/70' : 'text-slate-400',
-    innerBox: isDark ? 'bg-black/10 border-white/10' : 'bg-slate-50/70 border-slate-200/50'
-  });
+  const createStyle = (bgSelected: string, borderSelected: string, borderUnselected: string, isDark: boolean) => {
+    const bg = isSelected ? bgSelected : 'bg-slate-50';
+    const border = isSelected ? borderSelected : borderUnselected;
+    const darkText = isSelected && isDark;
+    
+    return {
+      container: `${baseBorder} ${bg} ${border} ${isSelected ? 'ring-emerald-500' : ''}`,
+      textMain: darkText ? 'text-white' : 'text-slate-800',
+      textSub: darkText ? 'text-white/80' : 'text-slate-500',
+      textLabel: darkText ? 'text-white/70' : 'text-slate-400',
+      innerBox: darkText ? 'bg-black/10 border-white/10' : 'bg-white/60 border-slate-200/50'
+    };
+  };
 
   if (props.tipoMapaCalor === 'none') {
-    return createStyle(
-      isSelected ? 'bg-emerald-50' : 'bg-white',
-      isSelected ? 'border-emerald-500' : 'border-slate-200 hover:border-slate-300',
-      false
-    );
+    return createStyle('bg-emerald-50', 'border-emerald-500', 'border-slate-200', false);
   }
 
   if (props.tipoMapaCalor === 'ic') {
     const ic = props.getIndiceCombinadoLocal(cell.varA, cell.varB, cell.vm2);
-    if (isNaN(ic)) return createStyle('bg-slate-50', 'border-slate-300', false);
+    if (isNaN(ic)) return createStyle('bg-slate-100', 'border-slate-300', 'border-slate-200', false);
     
-    if (ic >= 80) return createStyle('bg-indigo-600', 'border-indigo-700', true);
-    if (ic >= 65) return createStyle('bg-sky-400', 'border-sky-500', false);
-    if (ic >= 50) return createStyle('bg-emerald-500', 'border-emerald-600', true);
-    return createStyle('bg-rose-500', 'border-rose-600', true);
+    if (ic >= 80) return createStyle('bg-indigo-600', 'border-indigo-700', 'border-indigo-400', true);
+    if (ic >= 65) return createStyle('bg-sky-400', 'border-sky-500', 'border-sky-300', false);
+    if (ic >= 50) return createStyle('bg-emerald-500', 'border-emerald-600', 'border-emerald-400', true);
+    return createStyle('bg-rose-500', 'border-rose-600', 'border-rose-400', true);
   }
 
   // Fallback to DG
   const val = Number(props.getDistanciaLocal(cell.varA, cell.varB));
-  if (isNaN(val)) return createStyle('bg-slate-50', 'border-slate-300', false);
+  if (isNaN(val)) return createStyle('bg-slate-100', 'border-slate-300', 'border-slate-200', false);
   
-  if (val >= 0.65) return createStyle('bg-blue-600', 'border-blue-700', true);
-  if (val >= 0.55) return createStyle('bg-sky-400', 'border-sky-500', false);
-  if (val >= 0.45) return createStyle('bg-slate-300', 'border-slate-400', false);
-  if (val >= 0.35) return createStyle('bg-amber-400', 'border-amber-500', false);
-  return createStyle('bg-orange-500', 'border-orange-600', true);
+  if (val >= 0.65) return createStyle('bg-blue-600', 'border-blue-700', 'border-blue-400', true);
+  if (val >= 0.55) return createStyle('bg-sky-400', 'border-sky-500', 'border-sky-300', false);
+  if (val >= 0.45) return createStyle('bg-slate-300', 'border-slate-400', 'border-slate-300', false);
+  if (val >= 0.35) return createStyle('bg-amber-400', 'border-amber-500', 'border-amber-300', false);
+  return createStyle('bg-orange-500', 'border-orange-600', 'border-orange-400', true);
 };
 
 const getHeatmapLabel = (cell: any) => {
