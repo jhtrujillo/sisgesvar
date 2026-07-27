@@ -1066,8 +1066,8 @@ const assistantSortedMales = computed(() => {
   }
   
   males.sort((a: any, b: any) => {
-    const icA = getIndiceCombinado(a.varA, a.varB, a.vm);
-    const icB = getIndiceCombinado(b.varA, b.varB, b.vm);
+    const icA = getIndiceCombinado(a.varA, a.varB, a.vm2);
+    const icB = getIndiceCombinado(b.varA, b.varB, b.vm2);
     return (isNaN(icB) ? 0 : icB) - (isNaN(icA) ? 0 : icA);
   });
   

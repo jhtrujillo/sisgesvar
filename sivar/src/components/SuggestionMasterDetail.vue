@@ -175,7 +175,7 @@ const props = defineProps<{
 defineEmits(['select-female', 'toggle-cross', 'toggle-riesgos', 'open-flower-modal']);
 
 const getAffinity = (cell: any) => {
-  const ic = props.getIndiceCombinadoLocal(cell.varA, cell.varB, cell.vm);
+  const ic = props.getIndiceCombinadoLocal(cell.varA, cell.varB, cell.vm2);
   if (isNaN(ic)) return 0;
   return Math.min(100, Math.max(0, ic));
 };
@@ -193,7 +193,7 @@ const getHeatmapBg = (cell: any) => {
   if (props.tipoMapaCalor === 'none') return 'bg-slate-200';
 
   if (props.tipoMapaCalor === 'ic') {
-    const ic = props.getIndiceCombinadoLocal(cell.varA, cell.varB, cell.vm);
+    const ic = props.getIndiceCombinadoLocal(cell.varA, cell.varB, cell.vm2);
     if (isNaN(ic)) return 'bg-slate-300';
     if (ic >= 80) return 'bg-indigo-600';
     if (ic >= 65) return 'bg-sky-400';
@@ -215,7 +215,7 @@ const getHeatmapLabel = (cell: any) => {
   if (props.tipoMapaCalor === 'none') return 'Sin Color';
 
   if (props.tipoMapaCalor === 'ic') {
-    const ic = props.getIndiceCombinadoLocal(cell.varA, cell.varB, cell.vm);
+    const ic = props.getIndiceCombinadoLocal(cell.varA, cell.varB, cell.vm2);
     if (isNaN(ic)) return 'Sin Genotipo';
     if (ic >= 80) return 'Excelente (IC ≥ 80)';
     if (ic >= 65) return 'Bueno (IC ≥ 65)';
