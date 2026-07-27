@@ -592,7 +592,7 @@ class CrossingController extends Controller
 
         return $dist;
     }
-    public function generateMatrix($proy, $proyecto, $testigo)
+    public function generateMatrix($proy, $proyecto, $testigo, $ambiente = 'Semiseco')
     {
         $fechaf = Carbon::today()->format('Y-m-d');
         $fechai = Carbon::yesterday()->format('Y-m-d');
@@ -600,9 +600,10 @@ class CrossingController extends Controller
         $proyectos = explode(",", $proy);
 
         $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-            ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto) {
+            ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto, $ambiente) {
                 $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
-                    ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto);
+                    ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto)
+                    ->where('ponderados_valor_merito.ambiente', '=', $ambiente);
             })
             ->select('ponderados_valor_merito.*', 'caracteristicas_valor_merito.equivalente', 'caracteristicas_valor_merito.equivalente_estados')
             ->get();
@@ -805,9 +806,10 @@ class CrossingController extends Controller
             ->orderBy('floracion.vrdad', 'desc')
             ->get();
         $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-            ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto) {
+            ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto, $ambiente) {
                 $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
-                    ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto);
+                    ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto)
+                    ->where('ponderados_valor_merito.ambiente', '=', $ambiente);
             })
             ->select('ponderados_valor_merito.*', 'caracteristicas_valor_merito.equivalente', 'caracteristicas_valor_merito.equivalente_estados')
             ->get();
@@ -836,9 +838,7 @@ class CrossingController extends Controller
                     $join->on('remote_pg_sipro.id_prycto', '=', 'floracion.id_pr');
                 })
                 ->leftJoin('caracterizacion_banco_germoplasma', function ($join) use ($ambiente_sitio, $ambiente_estados) {
-                    $join->on('caracterizacion_banco_germoplasma.variedad', '=', 'floracion.vrdad')
-                        ->where('caracterizacion_banco_germoplasma.sitio_seleccion', '=', $ambiente_sitio)
-                        ->where('caracterizacion_banco_germoplasma.estado_seleccion', '=', $ambiente_estados);
+                    $join->on('caracterizacion_banco_germoplasma.variedad', '=', 'floracion.vrdad');
                 })
                 ->leftjoin('caracteres', function ($join) {
                     $join->on('caracteres.id_crcter', '=', 'floracion.id_crcter');
@@ -847,8 +847,6 @@ class CrossingController extends Controller
                 ->whereBetween('floracion.fcha', array($fechai, $fechaf))
                 ->where('floracion.estado', '=', 0)
                 ->where('floracion.bolsa_comun', '=', 0)
-                ->where('caracterizacion_banco_germoplasma.sitio_seleccion', '=', $ambiente_sitio)
-                ->where('caracterizacion_banco_germoplasma.estado_seleccion', '=', $ambiente_estados)
                 ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.polen", "floracion.id_pr", "caracteres.id_crcter", "caracteres.nmbre_crcter", "remote_pg_sipro.nm_prycto")
                 ->select(DB::raw('"floracion"."vrdad", 
                                         "floracion"."sxo", 
@@ -958,8 +956,6 @@ class CrossingController extends Controller
                                             avg(poblacion_1m::float) poblacion, 
                                             avg(sacarosa::float) scrsa'))
                 ->where('variedad', '=', $testigo)
-                ->where('caracterizacion_banco_germoplasma.sitio_seleccion', '=', $ambiente_sitio)
-                ->where('caracterizacion_banco_germoplasma.estado_seleccion', '=', $ambiente_estados)
                 ->groupBy("variedad")
                 ->first();
 
@@ -1015,9 +1011,10 @@ class CrossingController extends Controller
             ->get();
 
         $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-            ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto) {
+            ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto, $ambiente) {
                 $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
-                    ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto);
+                    ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto)
+                    ->where('ponderados_valor_merito.ambiente', '=', $ambiente);
             })
             ->select('ponderados_valor_merito.*', 'caracteristicas_valor_merito.equivalente', 'caracteristicas_valor_merito.equivalente_estados')
             ->get();;
@@ -1044,9 +1041,7 @@ class CrossingController extends Controller
                 $join->on('caracteres.id_crcter', '=', 'floracion.id_crcter');
             })
             ->leftJoin('caracterizacion_banco_germoplasma', function ($join) use ($ambiente_sitio, $ambiente_estados) {
-                $join->on('caracterizacion_banco_germoplasma.variedad', '=', 'floracion.vrdad')
-                    ->where('caracterizacion_banco_germoplasma.sitio_seleccion', '=', $ambiente_sitio)
-                    ->where('caracterizacion_banco_germoplasma.estado_seleccion', '=', $ambiente_estados);
+                $join->on('caracterizacion_banco_germoplasma.variedad', '=', 'floracion.vrdad');
             })
             ->whereBetween('floracion.fcha', array($fechai, $fechaf))
             ->where('floracion.estado', '=', 0)
@@ -1160,8 +1155,6 @@ class CrossingController extends Controller
                             avg(poblacion_1m::float) poblacion, 
                             avg(sacarosa::float) scrsa'))
             ->where('variedad', '=', $testigo)
-            ->where('caracterizacion_banco_germoplasma.sitio_seleccion', '=', $ambiente_sitio)
-            ->where('caracterizacion_banco_germoplasma.estado_seleccion', '=', $ambiente_estados)
             ->groupBy("variedad")
             ->first();
 
@@ -1205,9 +1198,10 @@ class CrossingController extends Controller
             ->get();
 
         $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-            ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto) {
+            ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto, $ambiente) {
                 $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
-                    ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto);
+                    ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto)
+                    ->where('ponderados_valor_merito.ambiente', '=', $ambiente);
             })
             ->select('ponderados_valor_merito.*', 'caracteristicas_valor_merito.equivalente', 'caracteristicas_valor_merito.equivalente_estados')
             ->get();;
@@ -1235,9 +1229,7 @@ class CrossingController extends Controller
                 $join->on('caracteres.id_crcter', '=', 'floracion.id_crcter');
             })
             ->leftJoin('caracterizacion_banco_germoplasma', function ($join) use ($ambiente_sitio, $ambiente_estados) {
-                $join->on('caracterizacion_banco_germoplasma.variedad', '=', 'floracion.vrdad')
-                    ->where('caracterizacion_banco_germoplasma.sitio_seleccion', '=', $ambiente_sitio)
-                    ->where('caracterizacion_banco_germoplasma.estado_seleccion', '=', $ambiente_estados);
+                $join->on('caracterizacion_banco_germoplasma.variedad', '=', 'floracion.vrdad');
             })
             ->whereBetween('floracion.fcha', array($fechai, $fechaf))
             ->where('floracion.estado', '=', 0)
@@ -1354,8 +1346,6 @@ class CrossingController extends Controller
                         avg(poblacion_1m::float) poblacion, 
                         avg(sacarosa::float) scrsa'))
             ->where('variedad', '=', $testigo)
-            ->where('caracterizacion_banco_germoplasma.sitio_seleccion', '=', $ambiente_sitio)
-            ->where('caracterizacion_banco_germoplasma.estado_seleccion', '=', $ambiente_estados)
             ->groupBy("variedad")
             ->first();
 

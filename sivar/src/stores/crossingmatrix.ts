@@ -9,9 +9,9 @@ export const useMatrixCrossingStore = defineStore(
     // Estado para almacenar el el formato de superintendencia
     const matrixCrossingsFilter = ref<Matrix[]>([]);
     const cruzamientosSeleccionados = ref<CruzamientoSeleccionado[]>([]);
-    const getMatrixCrossingList = async (proyectos: string, proyecto: string, testigo: string): Promise<void> => {
+    const getMatrixCrossingList = async (proyectos: string, proyecto: string, testigo: string, ambiente: string): Promise<void> => {
       try {
-        const result = await CrossingsService.getMatrix(proyectos, proyecto, testigo);
+        const result = await CrossingsService.getMatrix(proyectos, proyecto, testigo, ambiente);
 
         if (result.status === 200) {
           matrixCrossingsFilter.value = result.data;

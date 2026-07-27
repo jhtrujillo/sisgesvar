@@ -327,7 +327,7 @@ watch([selectedMegaAmbiente, selectedCdCntble, selectedVariety], async ([newMega
   if (newMegaAmbiente && newCdCntble && newVariety) {
     isLoading.value = true;
     try {
-      await MatrixCrossingStore.getMatrixCrossingList(newCdCntble, newCdCntble, newVariety);
+      await MatrixCrossingStore.getMatrixCrossingList(newCdCntble, newCdCntble, newVariety, newMegaAmbiente);
       
       // Agregar cruzamientos seleccionados que ya están en true tras cargar los datos
       MatrixCrossingStore.matrixCrossingsFilter.viabilidad?.forEach((viabilidadRow) => {
