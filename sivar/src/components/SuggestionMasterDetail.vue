@@ -70,15 +70,8 @@
              <div 
                 v-for="cell in sortedMales" 
                 :key="cell.varB" 
-                :class="[
-                  'rounded-xl border p-4 transition-all relative overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5', 
-                  cell.viabilidad 
-                    ? 'ring-2 ring-emerald-500 bg-emerald-50 border-transparent' 
-                    : 'bg-white border-slate-200 hover:border-emerald-300'
-                ]"
+                :class="['rounded-xl p-4 transition-all relative overflow-hidden', getCardStyle(cell)]"
              >
-                <!-- Indicador de color de riesgo arriba -->
-                <div class="absolute top-0 left-0 w-full h-1" :class="getHeatmapBg(cell)"></div>
 
                 <div class="flex justify-between items-start mb-3 mt-1">
                   <div>
@@ -189,26 +182,37 @@ const getAffinityColor = (cell: any) => {
   return 'bg-rose-500';
 };
 
-const getHeatmapBg = (cell: any) => {
-  if (props.tipoMapaCalor === 'none') return 'bg-slate-200';
+const getCardStyle = (cell: any) => {
+  if (props.tipoMapaCalor === 'none') {
+    return cell.viabilidad 
+      ? 'bg-emerald-50 border-emerald-500 border-l-[6px] ring-1 ring-emerald-200' 
+      : 'bg-white border-slate-200 border-l-[6px] hover:border-slate-300';
+  }
 
   if (props.tipoMapaCalor === 'ic') {
     const ic = props.getIndiceCombinadoLocal(cell.varA, cell.varB, cell.vm2);
-    if (isNaN(ic)) return 'bg-slate-300';
-    if (ic >= 80) return 'bg-indigo-600';
-    if (ic >= 65) return 'bg-sky-400';
-    if (ic >= 50) return 'bg-emerald-500';
-    return 'bg-rose-500';
+    if (isNaN(ic)) return 'bg-slate-50 border-slate-300 border-l-[6px]';
+    
+    // Si está seleccionado, darle un borde más grueso o un ring para destacarlo sobre el color
+    const baseClasses = cell.viabilidad ? 'ring-2 ring-emerald-500 shadow-md ' : 'hover:-translate-y-0.5 hover:shadow-md ';
+    
+    if (ic >= 80) return baseClasses + 'bg-indigo-50 border-indigo-500 border-l-[6px]';
+    if (ic >= 65) return baseClasses + 'bg-sky-50 border-sky-400 border-l-[6px]';
+    if (ic >= 50) return baseClasses + 'bg-emerald-50 border-emerald-400 border-l-[6px]';
+    return baseClasses + 'bg-rose-50 border-rose-500 border-l-[6px]';
   }
 
   // Fallback to DG
   const val = Number(props.getDistanciaLocal(cell.varA, cell.varB));
-  if (isNaN(val)) return 'bg-slate-300';
-  if (val >= 0.65) return 'bg-blue-600';
-  if (val >= 0.55) return 'bg-sky-400';
-  if (val >= 0.45) return 'bg-slate-300';
-  if (val >= 0.35) return 'bg-amber-400';
-  return 'bg-orange-500';
+  if (isNaN(val)) return 'bg-slate-50 border-slate-300 border-l-[6px]';
+  
+  const baseClasses = cell.viabilidad ? 'ring-2 ring-emerald-500 shadow-md ' : 'hover:-translate-y-0.5 hover:shadow-md ';
+  
+  if (val >= 0.65) return baseClasses + 'bg-blue-50 border-blue-600 border-l-[6px]';
+  if (val >= 0.55) return baseClasses + 'bg-sky-50 border-sky-400 border-l-[6px]';
+  if (val >= 0.45) return baseClasses + 'bg-slate-50 border-slate-300 border-l-[6px]';
+  if (val >= 0.35) return baseClasses + 'bg-amber-50 border-amber-400 border-l-[6px]';
+  return baseClasses + 'bg-orange-50 border-orange-500 border-l-[6px]';
 };
 
 const getHeatmapLabel = (cell: any) => {
