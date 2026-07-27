@@ -80,30 +80,7 @@
                   </div>
                 </router-link>
 
-                <!-- Laboratorio Card -->
-                <router-link
-                  class="group relative flex-1 min-w-[240px] max-w-[320px] flex flex-col justify-between bg-white border border-slate-100 hover:border-fuchsia-100 rounded-3xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-2 transition-all duration-300 group overflow-hidden"
-                  :to="{ name: 'laboratorio.show' }"
-                >
-                  <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-fuchsia-400 to-pink-500 transform origin-left transition-transform duration-300"></div>
-                  
-                  <div class="flex flex-col h-full items-center text-center">
-                    <div class="p-3 bg-fuchsia-50 rounded-2xl text-fuchsia-700 group-hover:bg-fuchsia-600 group-hover:text-white transition-colors duration-300 mb-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" class="transition-transform duration-500 group-hover:scale-110">
-                        <path fill="currentColor" d="M19.8 16.4L15 8V4h1V2H8v2h1v4l-4.8 8.4A2 2 0 0 0 6 19.5a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2a2 2 0 0 0-1.8-3.1zM10 4h4v3.6l1.1 2H8.9l1.1-2V4zm-1.6 7.6h7.2l2.6 4.4H5.8l2.6-4.4z"/>
-                      </svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-fuchsia-600 transition-colors">Laboratorio</h3>
-                    <p class="text-slate-500 text-sm leading-relaxed mb-4">Manejo de inventario, equipos, reactivos y muestras biológicas.</p>
-                    
-                    <span class="inline-flex items-center text-sm font-semibold text-fuchsia-600 group-hover:text-fuchsia-700 mt-auto">
-                      Ingresar Módulo
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1.5 transform transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </span>
-                  </div>
-                </router-link>
+
 
                 <!-- Bitacora Card -->
                 <a

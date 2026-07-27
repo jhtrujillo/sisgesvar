@@ -68,6 +68,7 @@ class ViveroParcelaController extends Controller
 
     public function importBatch(Request $request, $vivero_id)
     {
+        set_time_limit(0);
         $vivero = Vivero::findOrFail($vivero_id);
 
         $request->validate([

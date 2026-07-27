@@ -322,7 +322,7 @@
                 type="text" 
                 v-model="searchVariedad" 
                 @focus="showVariedades = true"
-                @blur="setTimeout(() => showVariedades = false, 200)"
+                @blur="hideVariedadesDelay"
                 placeholder="Buscar variedad..."
                 class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
               />

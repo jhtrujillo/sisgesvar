@@ -548,6 +548,7 @@ const modificarCaracteristica = async () => {
       selectedCdCntble.value ?? "",
       nivelValue.toString(),
       ponderadoValue.toString(),
+      selectedMegaAmbiente.value ?? "",
       nuevoValue
     );
 

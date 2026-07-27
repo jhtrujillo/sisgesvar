@@ -9,14 +9,13 @@ export const useModifyFeaturesCrossingStore = defineStore("modifyFeaturesCrossin
   const modifyFeaturesCrossingFilter = ref<ModifyWeighted[]>([]);
   const refresh = ref("");
   const mainStore = useMainStore();
-
-  const getModifyFeaturesCrossingList = async (caracteristica: string, proyecto: string, nivel: string, ponderado: string, nuevo: number) => {
+  const getModifyFeaturesCrossingList = async (caracteristica: string, proyecto: string, nivel: string, ponderado: string, ambiente: string, nuevo: number) => {
     try {
       mainStore.isBusy = true;
       mainStore.error = "";
       mainStore.responseMessage = "";
 
-      const result = await CrossingsService.modifyFeatures(caracteristica, proyecto, nivel, ponderado, nuevo);
+      const result = await CrossingsService.modifyFeatures(caracteristica, proyecto, nivel, ponderado, ambiente, nuevo);
 
       if (result.data) {
         return true;

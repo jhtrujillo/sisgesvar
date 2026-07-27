@@ -131,17 +131,19 @@ class CrossingController extends Controller
 
         if ($proyecto != 'x') {
             $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-                ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto) {
+                ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto, $ambiente) {
                     $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
-                        ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto);
+                        ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto)
+                        ->where('ponderados_valor_merito.ambiente', '=', $ambiente);
                 })
                 ->select('ponderados_valor_merito.*', 'caracteristicas_valor_merito.nombre', 'caracteristicas_valor_merito.id_caracteristica', 'caracteristicas_valor_merito.equivalente')
                 ->get();
 
             $sumaPonderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-                ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto) {
+                ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto, $ambiente) {
                     $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
-                        ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto);
+                        ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto)
+                        ->where('ponderados_valor_merito.ambiente', '=', $ambiente);
                 })
                 ->sum('ponderados_valor_merito.ponderado');
         }
@@ -158,23 +160,23 @@ class CrossingController extends Controller
         ]);
     }
 
-    public function modifyFeatures(Request $request, $car, $proyecto, $nivel, $ponderado, $nuevo)
+    public function modifyFeatures(Request $request, $car, $proyecto, $nivel, $ponderado, $ambiente, $nuevo)
     {
-        if ($nuevo == 1) {
+        $caracteristica = PonderadoVM::where('id_caracteristica', $car)
+            ->where('id_proyecto', $proyecto)
+            ->where('ambiente', $ambiente)
+            ->first();
+            
+        if (!$caracteristica) {
             $caracteristica = new PonderadoVM;
             $caracteristica->id_proyecto = $proyecto;
             $caracteristica->id_caracteristica = $car;
-            $caracteristica->nivel = $nivel;
-            $caracteristica->ponderado = $ponderado;
-            $caracteristica->save();
-        } else {
-            $caracteristica = PonderadoVM::where('id_caracteristica', $car)
-                ->where('id_proyecto', $proyecto)
-                ->first();
-            $caracteristica->nivel = $nivel;
-            $caracteristica->ponderado = $ponderado;
-            $caracteristica->save();
+            $caracteristica->ambiente = $ambiente;
         }
+        
+        $caracteristica->nivel = $nivel;
+        $caracteristica->ponderado = $ponderado;
+        $caracteristica->save();
 
         return response()->json(['message' => 'Se modificó correctamente la caracteristica.']);
     }
