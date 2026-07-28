@@ -2,13 +2,30 @@
   <div class="flex flex-col md:flex-row gap-4 h-[700px] w-full text-sm">
     <!-- Panel Izquierdo: Hembras -->
     <div class="w-full md:w-1/3 bg-white rounded-xl border border-slate-200 flex flex-col overflow-hidden shadow-sm">
-      <div class="p-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700 flex justify-between items-center sticky top-0 z-10">
-        <span class="text-sm">Madres (Hembras)</span>
-        <span class="text-xs font-normal text-slate-500 bg-white px-2 py-1 rounded-md border shadow-sm">{{ females.length }}</span>
+      <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col gap-3 sticky top-0 z-10">
+        <div class="flex justify-between items-center font-bold text-slate-700">
+          <span class="text-sm">Madres (Hembras)</span>
+          <span class="text-xs font-normal text-slate-500 bg-white px-2 py-1 rounded-md border shadow-sm">{{ filteredFemales.length }} / {{ females.length }}</span>
+        </div>
+        
+        <!-- Buscador de Hembras -->
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="h-4 w-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <input 
+            v-model="searchFemaleQuery" 
+            type="text" 
+            class="block w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-md leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm shadow-sm transition-colors" 
+            placeholder="Buscar variedad..." 
+          />
+        </div>
       </div>
       <div class="flex-1 overflow-y-auto p-3 space-y-2 scrollbar-custom bg-slate-50/30">
         <div 
-          v-for="(row, idx) in females" :key="idx"
+          v-for="(row, idx) in filteredFemales" :key="idx"
           @click="$emit('select-female', row)"
           :class="[
             'p-3 rounded-lg border cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md', 
@@ -152,7 +169,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 
 const props = defineProps<{
   females: any[];
@@ -166,6 +183,17 @@ const props = defineProps<{
 }>();
 
 defineEmits(['select-female', 'toggle-cross', 'toggle-riesgos', 'open-flower-modal']);
+
+const searchFemaleQuery = ref('');
+
+const filteredFemales = computed(() => {
+  if (!searchFemaleQuery.value) return props.females;
+  const q = searchFemaleQuery.value.toLowerCase();
+  return props.females.filter(row => {
+    const femaleName = row?.[0]?.varA || '';
+    return femaleName.toLowerCase().includes(q);
+  });
+});
 
 const getAffinity = (cell: any) => {
   const ic = props.getIndiceCombinadoLocal(cell.varA, cell.varB, cell.vm2);
