@@ -239,22 +239,22 @@
             </button>
 
             <!-- Toggle vistas -->
-            <div class="flex items-center bg-slate-100 p-1 rounded-lg mr-2 border border-slate-200">
+            <div class="flex items-center bg-slate-100 p-1 rounded-lg mr-2 border border-slate-200 shrink-0">
               <button 
                 @click="vistaActual = 'cuadricula'"
-                :class="['px-3 py-1 text-[11px] font-bold rounded-md transition-all', vistaActual === 'cuadricula' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700']"
+                :class="['px-3 py-1 text-[11px] font-bold rounded-md transition-all whitespace-nowrap', vistaActual === 'cuadricula' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700']"
               >
                 Cuadrícula
               </button>
               <button 
                 @click="vistaActual = 'asistente'"
-                :class="['px-3 py-1 text-[11px] font-bold rounded-md transition-all', vistaActual === 'asistente' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700']"
+                :class="['px-3 py-1 text-[11px] font-bold rounded-md transition-all whitespace-nowrap', vistaActual === 'asistente' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700']"
               >
                 Asistente
               </button>
               <button 
                 @click="vistaActual = 'asistente-pro'"
-                :class="['px-3 py-1 text-[11px] font-bold rounded-md transition-all', vistaActual === 'asistente-pro' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700']"
+                :class="['px-3 py-1 text-[11px] font-bold rounded-md transition-all whitespace-nowrap', vistaActual === 'asistente-pro' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700']"
               >
                 Asist. Pro
               </button>
