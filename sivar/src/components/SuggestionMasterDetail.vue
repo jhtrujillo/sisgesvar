@@ -39,26 +39,26 @@
           </div>
         </div>
       </div>
-      <div class="flex-1 overflow-y-auto p-3 space-y-2 scrollbar-custom bg-slate-50/30">
+      <div class="flex-1 overflow-auto p-3 space-y-2 scrollbar-custom bg-slate-50/30">
         <div 
           v-for="(row, idx) in filteredFemales" :key="idx"
           @click="$emit('select-female', row)"
           :class="[
-            'p-3 rounded-lg border cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md', 
+            'p-3 rounded-lg border cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md min-w-[220px]', 
             selectedFemaleRow === row 
               ? 'bg-emerald-50 border-emerald-400 ring-2 ring-emerald-100 shadow-sm' 
               : 'bg-white border-slate-200 hover:border-emerald-300'
           ]"
         >
-          <div class="flex justify-between items-start mb-2">
-            <span class="font-bold text-slate-800 text-sm">{{ row[0]?.varA }}</span>
-            <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-bold border border-slate-200">
-              VM: {{ row[0]?.vm }}
+          <div class="flex justify-between items-start mb-2 gap-2">
+            <span class="font-bold text-slate-800 text-sm truncate" :title="row?.[0]?.varA">{{ row?.[0]?.varA }}</span>
+            <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-bold border border-slate-200 whitespace-nowrap">
+              VM: {{ row?.[0]?.vm }}
             </span>
           </div>
-          <div class="flex justify-between items-center text-xs text-slate-500 font-medium">
-            <span class="flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full" :class="Number(row[0]?.polen) <= 20 ? 'bg-pink-400' : 'bg-slate-400'"></span>
+          <div class="flex justify-between items-center text-xs text-slate-500 font-medium gap-2">
+            <span class="flex items-center gap-1 whitespace-nowrap">
+              <span class="w-2 h-2 rounded-full flex-shrink-0" :class="Number(row?.[0]?.polen) <= 20 ? 'bg-pink-400' : 'bg-slate-400'"></span>
               Polen: {{ row[0]?.polen ? row[0]?.polen + '%' : 'N/A' }}
             </span>
             <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px] font-bold">
