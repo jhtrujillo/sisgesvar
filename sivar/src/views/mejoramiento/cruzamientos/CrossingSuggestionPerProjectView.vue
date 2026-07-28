@@ -1049,14 +1049,18 @@ const selectedFemaleRow = ref<any>(null);
 const assistantOcultarRiesgos = ref(true);
 
 const assistantFemales = computed(() => {
-  return (viabilidadesMatriz.value || []).filter((row: any) => row && row.length > 0 && Number(row[0]?.polen) <= 20);
+  return (viabilidadesMatriz.value || []).filter((row: any) => {
+    return row && row.length > 0 && Number(row[0]?.polen) <= 20 && row[0]?.varA !== selectedVariety.value;
+  });
 });
 
 const assistantSortedMales = computed(() => {
   if (!selectedFemaleRow.value) return [];
   const cells = [...selectedFemaleRow.value];
   
-  let males = cells.filter((cell: any) => cell && Number(cell.polen2) > 20);
+  let males = cells.filter((cell: any) => {
+    return cell && Number(cell.polen2) > 20 && cell.varB !== selectedVariety.value;
+  });
   
   if (assistantOcultarRiesgos.value) {
     males = males.filter((cell: any) => {
