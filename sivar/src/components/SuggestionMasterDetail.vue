@@ -17,10 +17,14 @@
           </div>
           <input 
             v-model="searchFemaleQuery" 
+            list="female-datalist"
             type="text" 
             class="block w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-md leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm shadow-sm transition-colors" 
             placeholder="Buscar variedad..." 
           />
+          <datalist id="female-datalist">
+            <option v-for="(row, idx) in females" :key="idx" :value="row?.[0]?.varA"></option>
+          </datalist>
         </div>
       </div>
       <div class="flex-1 overflow-y-auto p-3 space-y-2 scrollbar-custom bg-slate-50/30">
