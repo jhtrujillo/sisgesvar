@@ -430,6 +430,18 @@
                           <span class="font-bold mt-0.5" :class="getFloresUsadas(flor.variedad, false) > flor.cantidad ? 'text-rose-600' : 'text-emerald-700'">
                             Usadas: {{ getFloresUsadas(flor.variedad, false) }} / {{ flor.cantidad }}
                           </span>
+                          <!-- Autofecundación Estilizada para Machos -->
+                          <div
+                            class="mt-1.5 flex items-center justify-center space-x-1 bg-white/70 py-0.5 px-1.5 rounded-lg border border-slate-200/50 shadow-sm max-w-[85px] mx-auto cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              :checked="autofecundacionesSeleccionadas.has(flor.variedad)"
+                              @click.stop="toggleAutofecundar(flor.variedad)"
+                              class="h-3 w-3 rounded border-slate-350 text-emerald-600 focus:ring-emerald-100 cursor-pointer"
+                            />
+                            <span class="text-[8px] font-extrabold uppercase text-slate-600">Autofecundar</span>
+                          </div>
                         </div>
                       </th>
                     </template>
@@ -471,19 +483,6 @@
                           >
                             Usadas: {{ getFloresUsadas(viabilidadRow[0]?.varA, true) }} / {{ getCantidadFlores(viabilidadRow[0]?.varA) }}
                           </span>
-                        </div>
-
-                        <!-- Autofecundación Estilizada -->
-                        <div
-                          class="mt-1.5 flex items-center justify-center space-x-1 bg-white/70 py-0.5 px-1.5 rounded-lg border border-slate-200/50 shadow-sm max-w-[120px] mx-auto"
-                        >
-                          <input
-                            type="checkbox"
-                            :checked="autofecundacionesSeleccionadas.has(viabilidadRow[0]?.varA)"
-                            @click="toggleAutofecundar(viabilidadRow)"
-                            class="h-3 w-3 rounded border-slate-350 text-emerald-600 focus:ring-emerald-100 cursor-pointer"
-                          />
-                          <span class="text-[8px] font-extrabold uppercase text-slate-600">Autofecundar</span>
                         </div>
                       </td>
 
@@ -1366,7 +1365,7 @@ function getFloresUsadas(vrdad: string, isMadre: boolean) {
     });
   });
 
-  if (isMadre && autofecundacionesSeleccionadas.value.has(vrdad)) {
+  if (!isMadre && autofecundacionesSeleccionadas.value.has(vrdad)) {
     count += 1;
   }
   return count;
@@ -1434,14 +1433,13 @@ function toggleCruzamiento(car: any) {
   localStorage.setItem(draftKey.value, JSON.stringify(disabledCrosses));
 }
 
-function toggleAutofecundar(viabilidadRow: any) {
-  const varA = viabilidadRow[0]?.varA;
-  if (!varA) return;
+function toggleAutofecundar(varName: string) {
+  if (!varName) return;
 
-  if (autofecundacionesSeleccionadas.value.has(varA)) {
-    autofecundacionesSeleccionadas.value.delete(varA);
+  if (autofecundacionesSeleccionadas.value.has(varName)) {
+    autofecundacionesSeleccionadas.value.delete(varName);
   } else {
-    autofecundacionesSeleccionadas.value.add(varA);
+    autofecundacionesSeleccionadas.value.add(varName);
   }
 }
 
@@ -1988,10 +1986,10 @@ async function autoOptimizarFlores(silent: boolean | Event = false) {
     });
   });
 
-  for (const m in disp.madre) {
-    if (usadas.madre[m] === undefined) usadas.madre[m] = 0;
-    if (autofecundacionesSeleccionadas.value.has(m)) {
-      usadas.madre[m] += 1;
+  for (const p in disp.padre) {
+    if (usadas.padre[p] === undefined) usadas.padre[p] = 0;
+    if (autofecundacionesSeleccionadas.value.has(p)) {
+      usadas.padre[p] += 1;
     }
   }
 
@@ -2119,23 +2117,27 @@ async function finalizarProceso() {
           }
         });
 
-        // Integrar Autofecundación solicitada explícitamente para esta variedad madre
-        const motherCell = row[0];
-        if (motherCell && autofecundacionesSeleccionadas.value.has(motherCell.varA)) {
-          selectedCrossings.push({
-            varA: motherCell.varA,
-            varB: motherCell.varA,
-            proyecto: motherCell.proyecto,
-            proyecto2: motherCell.proyecto, // Mismo proyecto
-            id_caracter: motherCell.id_caracter,
-            id_caracter2: motherCell.id_caracter, // Mismo caracter
-            viabilidad: true,
-            flores_madre: 1,
-            flores_padre: 1 // o 0, pero autofecundación se suma en Madre únicamente
-          });
-        }
       }
     });
+
+    // Integrar Autofecundación solicitada explícitamente para las variedades machos (columnas)
+    if (rows.length > 0 && rows[0]) {
+      rows[0].forEach((cell: any) => {
+        if (cell && autofecundacionesSeleccionadas.value.has(cell.varB)) {
+          selectedCrossings.push({
+            varA: cell.varB,
+            varB: cell.varB,
+            proyecto: cell.proyecto2,
+            proyecto2: cell.proyecto2, // Mismo proyecto
+            id_caracter: cell.id_caracter2,
+            id_caracter2: cell.id_caracter2, // Mismo caracter
+            viabilidad: true,
+            flores_madre: 1,
+            flores_padre: 1
+          });
+        }
+      });
+    }
 
     if (selectedCrossings.length === 0) {
       toast.warning("No hay cruzamientos seleccionados para guardar.");
