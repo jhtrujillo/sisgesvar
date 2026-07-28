@@ -90,12 +90,6 @@
             </div>
             <p class="text-xs text-slate-500 font-medium">Machos sugeridos ordenados por afinidad</p>
           </div>
-          <div class="flex gap-3">
-             <label class="flex items-center gap-2 text-xs font-semibold text-slate-600 cursor-pointer bg-white px-3 py-1.5 rounded-lg border shadow-sm hover:bg-slate-50">
-               <input type="checkbox" :checked="ocultarRiesgos" @change="$emit('toggle-riesgos')" class="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
-               Ocultar Riesgos (DG &lt; 0.35)
-             </label>
-          </div>
         </div>
         
         <div class="flex-1 overflow-y-auto p-4 scrollbar-custom bg-slate-100/50">

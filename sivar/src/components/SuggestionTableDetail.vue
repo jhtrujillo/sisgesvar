@@ -67,10 +67,6 @@
           <div class="flex items-center gap-2">
             <input v-model="searchMaleQuery" type="text" placeholder="Filtrar padres..."
               class="pl-3 pr-3 py-1.5 border border-slate-300 rounded-md text-xs bg-white placeholder-slate-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 shadow-sm w-36" />
-            <label class="flex items-center gap-2 text-xs font-semibold text-slate-600 cursor-pointer bg-white px-3 py-1.5 rounded-lg border shadow-sm hover:bg-slate-50">
-              <input type="checkbox" :checked="ocultarRiesgos" @change="$emit('toggle-riesgos')" class="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
-              Ocultar Riesgos (DG &lt; 0.35)
-            </label>
           </div>
         </div>
 
