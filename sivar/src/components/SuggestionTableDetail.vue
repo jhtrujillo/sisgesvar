@@ -131,14 +131,27 @@
                   <td class="px-3 py-2.5 text-center font-semibold" :class="getRowTextSub(cell)">{{ cell.polen2 }}%</td>
                   <td class="px-3 py-2.5 text-center font-semibold" :class="getRowTextSub(cell)">{{ getDisp(cell.varB) }}</td>
                   <td class="px-3 py-2.5 text-center">
-                    <button @click.stop="$emit('toggle-cross', cell)"
-                      :class="['inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold border transition-all', cell.viabilidad ? 'bg-emerald-600 text-white border-emerald-700 shadow hover:bg-emerald-700' : 'bg-white/70 text-slate-600 border-slate-300 hover:bg-white hover:border-emerald-400']">
-                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path v-if="cell.viabilidad" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                        <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                      </svg>
-                      {{ cell.viabilidad ? 'Selec.' : 'Agregar' }}
-                    </button>
+                    <div class="flex items-center justify-center gap-1.5">
+                      <!-- Botón Ajuste Flores -->
+                      <button 
+                        v-if="cell.viabilidad"
+                        @click.stop="$emit('open-flower-modal', cell)"
+                        class="flex items-center justify-center gap-1 bg-white hover:bg-slate-50 rounded-md border border-slate-300 px-1.5 py-1 shadow-sm text-[10px] text-slate-700 transition-colors font-bold whitespace-nowrap"
+                        title="Ajustar consumo de flores"
+                      >
+                        <span>⚙️</span>
+                        <span>{{ cell.flores_madre ?? 1 }}/{{ cell.flores_padre ?? 1 }}</span>
+                      </button>
+
+                      <button @click.stop="$emit('toggle-cross', cell)"
+                        :class="['inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold border transition-all', cell.viabilidad ? 'bg-emerald-600 text-white border-emerald-700 shadow hover:bg-emerald-700' : 'bg-white/70 text-slate-600 border-slate-300 hover:bg-white hover:border-emerald-400']">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path v-if="cell.viabilidad" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                          <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        {{ cell.viabilidad ? 'Selec.' : 'Agregar' }}
+                      </button>
+                    </div>
                   </td>
                 </tr>
                 <tr v-if="expandedCell === cell" :class="[getRowBg(cell)]">
@@ -151,8 +164,21 @@
                       <div class="flex flex-col gap-0.5"><span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Polen</span><span class="font-black text-slate-800">{{ cell.polen2 }}%</span></div>
                       <div class="flex flex-col gap-0.5"><span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Disponibilidad</span><span class="font-black text-slate-800">{{ getDisp(cell.varB) }}</span></div>
                       <div class="flex flex-col gap-0.5"><span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Estado</span><span :class="cell.viabilidad ? 'text-emerald-700 font-black' : 'text-slate-500 font-semibold'">{{ cell.viabilidad ? '✓ Seleccionado' : 'No seleccionado' }}</span></div>
+                      
+                      <!-- Botón Ajuste Flores en detalle expandido -->
+                      <div v-if="cell.viabilidad" class="flex flex-col gap-0.5">
+                        <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Ajustar Flores</span>
+                        <button 
+                          @click.stop="$emit('open-flower-modal', cell)"
+                          class="flex items-center justify-center gap-1.5 bg-white hover:bg-slate-50 rounded-md border border-slate-300 px-3 py-1.5 shadow-sm text-xs text-slate-700 transition-colors font-bold w-full"
+                        >
+                          <span>⚙️ Ajustar:</span>
+                          <span class="text-emerald-700">{{ cell.flores_madre ?? 1 }} / {{ cell.flores_padre ?? 1 }}</span>
+                        </button>
+                      </div>
+                      
                       <div class="flex items-end">
-                        <button @click.stop="$emit('toggle-cross', cell)" class="px-4 py-1.5 rounded-lg font-bold text-xs transition-all" :class="cell.viabilidad ? 'bg-rose-500 text-white hover:bg-rose-600' : 'bg-emerald-600 text-white hover:bg-emerald-700'">
+                        <button @click.stop="$emit('toggle-cross', cell)" class="px-4 py-1.5 rounded-lg font-bold text-xs transition-all w-full" :class="cell.viabilidad ? 'bg-rose-500 text-white hover:bg-rose-600' : 'bg-emerald-600 text-white hover:bg-emerald-700'">
                           {{ cell.viabilidad ? 'Quitar selección' : '+ Seleccionar' }}
                         </button>
                       </div>
