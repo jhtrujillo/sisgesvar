@@ -91,31 +91,40 @@
         </div>
 
         <!-- Ayuda del Índice Combinado -->
-        <div
-          v-if="tipoMapaCalor === 'ic'"
-          class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 mb-4 mt-2 flex items-start space-x-3 text-xs text-indigo-900 shadow-sm transition-all animate-fade-in-up"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <div>
-            <strong class="font-bold block text-sm mb-1 text-indigo-800">¿Cómo se calcula el Índice Combinado (IC)?</strong>
-            <p class="mb-1">
-              El IC es un puntaje de <strong>0 a 100</strong> que balancea un <strong>60% del Valor de Mérito (VM)</strong> y un
-              <strong>40% de la Distancia Genética (DG)</strong>.
-            </p>
-            <ul class="list-disc pl-4 space-y-1 mb-2 text-indigo-800/80">
-              <li>
-                <strong>VM (Valor de Mérito):</strong> El sistema usa una escala invertida de 1 a 9 (1 es excelente, 9 es malo). Se "voltea" a puntaje usando la
-                fórmula: <code>((9.0 - VM) / 8.0) * 100</code>.
-                <em>(Nota: Se divide sobre 8 porque es la amplitud o tamaño total de la escala, es decir: 9 - 1 = 8)</em>.
-              </li>
-              <li><strong>DG (Distancia Genética):</strong> Se asume que 0.70 o superior es el techo ideal. Su puntaje es: <code>(DG / 0.70) * 100</code></li>
-            </ul>
-            <p class="font-mono text-[10px] bg-white/60 p-1.5 rounded text-indigo-700">
-              <strong>Ejemplo:</strong> Si el VM es 3.0 (75 pts) y la DG es 0.50 (71.4 pts). El IC será = (75 x 0.6) + (71.4 x 0.4) = 45 + 28.5 =
-              <strong>73.5 pts</strong>.
-            </p>
+        <div v-if="tipoMapaCalor === 'ic'" class="mb-4 mt-2 no-print">
+          <button 
+            @click="showICHelp = !showICHelp"
+            class="flex items-center space-x-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 hover:text-indigo-800 text-xs font-semibold rounded-md shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ showICHelp ? 'Ocultar explicación del IC' : '💡 ¿Cómo se calcula el Índice Combinado (IC)?' }}</span>
+          </button>
+
+          <div v-if="showICHelp" class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 mt-2 flex items-start space-x-3 text-xs text-indigo-900 shadow-sm transition-all animate-fade-in-up">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <strong class="font-bold block text-sm mb-1 text-indigo-800">¿Cómo se calcula el Índice Combinado (IC)?</strong>
+              <p class="mb-1">
+                El IC es un puntaje de <strong>0 a 100</strong> que balancea un <strong>60% del Valor de Mérito (VM)</strong> y un
+                <strong>40% de la Distancia Genética (DG)</strong>.
+              </p>
+              <ul class="list-disc pl-4 space-y-1 mb-2 text-indigo-800/80">
+                <li>
+                  <strong>VM (Valor de Mérito):</strong> El sistema usa una escala invertida de 1 a 9 (1 es excelente, 9 es malo). Se "voltea" a puntaje usando la
+                  fórmula: <code>((9.0 - VM) / 8.0) * 100</code>.
+                  <em>(Nota: Se divide sobre 8 porque es la amplitud o tamaño total de la escala, es decir: 9 - 1 = 8)</em>.
+                </li>
+                <li><strong>DG (Distancia Genética):</strong> Se asume que 0.70 o superior es el techo ideal. Su puntaje es: <code>(DG / 0.70) * 100</code></li>
+              </ul>
+              <p class="font-mono text-[10px] bg-white/60 p-1.5 rounded text-indigo-700">
+                <strong>Ejemplo:</strong> Si el VM es 3.0 (75 pts) y la DG es 0.50 (71.4 pts). El IC será = (75 x 0.6) + (71.4 x 0.4) = 45 + 28.5 =
+                <strong>73.5 pts</strong>.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -1063,6 +1072,7 @@ const resumenCrucesGuardados = ref<any[]>([]);
 
 const ocultarInviables = ref(true); // Vista compacta limpia por defecto
 const isLoading = ref(false); // Ref para spinner de carga
+const showICHelp = ref(false);
 const isOptimizing = ref(false); // Ref para spinner de optimización
 const optimizandoMadre = ref(""); // Para mostrar en el loading qué variedad se procesa
 const isExpanded = ref(false); // Ref para modo pantalla completa
