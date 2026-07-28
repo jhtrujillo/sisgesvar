@@ -238,7 +238,7 @@
               Optimizar
             </button>
 
-            <!-- Toggle Asistente vs Cuadrícula -->
+            <!-- Toggle vistas -->
             <div class="flex items-center bg-slate-100 p-1 rounded-lg mr-2 border border-slate-200">
               <button 
                 @click="vistaActual = 'cuadricula'"
@@ -251,6 +251,12 @@
                 :class="['px-3 py-1 text-[11px] font-bold rounded-md transition-all', vistaActual === 'asistente' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700']"
               >
                 Asistente
+              </button>
+              <button 
+                @click="vistaActual = 'asistente-pro'"
+                :class="['px-3 py-1 text-[11px] font-bold rounded-md transition-all', vistaActual === 'asistente-pro' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700']"
+              >
+                Asist. Pro
               </button>
             </div>
 
@@ -549,6 +555,24 @@
               <!-- VISTA ASISTENTE (MAESTRO-DETALLE) -->
               <div v-if="vistaActual === 'asistente' && !isOptimizing">
                 <SuggestionMasterDetail
+                  :females="assistantFemales"
+                  :selectedFemaleRow="selectedFemaleRow"
+                  :sortedMales="assistantSortedMales"
+                  :ocultarRiesgos="assistantOcultarRiesgos"
+                  :tipoMapaCalor="tipoMapaCalor"
+                  @select-female="row => selectedFemaleRow = row"
+                  @toggle-cross="toggleCruzamiento"
+                  @open-flower-modal="openFlowerAdjustmentModal"
+                  @toggle-riesgos="assistantOcultarRiesgos = !assistantOcultarRiesgos"
+                  :getDisp="varName => cantidadesMap[varName] || 0"
+                  :getDistanciaLocal="getDistancia"
+                  :getIndiceCombinadoLocal="getIndiceCombinado"
+                />
+              </div>
+
+              <!-- VISTA ASISTENTE PRO (TABLA COMPACTA) -->
+              <div v-if="vistaActual === 'asistente-pro' && !isOptimizing">
+                <SuggestionTableDetail
                   :females="assistantFemales"
                   :selectedFemaleRow="selectedFemaleRow"
                   :sortedMales="assistantSortedMales"
@@ -1016,6 +1040,7 @@ import { useParametizeWeightedCrossingStore } from "@/stores/crossignparametizew
 import VarietyProfileDrawer from "@/components/VarietyProfileDrawer.vue";
 import ParentComparatorModal from "@/components/ParentComparatorModal.vue";
 import SuggestionMasterDetail from "@/components/SuggestionMasterDetail.vue";
+import SuggestionTableDetail from "@/components/SuggestionTableDetail.vue";
 import * as XLSX from "xlsx";
 import ExcelJS from "exceljs";
 import html2canvas from "html2canvas";
@@ -1044,7 +1069,7 @@ const isExpanded = ref(false); // Ref para modo pantalla completa
 const isDragDropView = ref(false); // Ref para alternar a Drag & Drop
 
 // --- NUEVA VISTA MAESTRO-DETALLE ---
-const vistaActual = ref<'cuadricula' | 'asistente'>('cuadricula');
+const vistaActual = ref<'cuadricula' | 'asistente' | 'asistente-pro'>('cuadricula');
 const selectedFemaleRow = ref<any>(null);
 const assistantOcultarRiesgos = ref(true);
 
