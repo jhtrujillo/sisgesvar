@@ -28,7 +28,9 @@ class Vivero extends Model
         'caracter_id',
         'origen_ingenio',
         'origen_hacienda',
-        'origen_suerte'
+        'origen_suerte',
+        'origen_anio',
+        'origen_parcela'
     ];
 
     protected $casts = [
