@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col md:flex-row gap-4 h-[700px] w-full text-sm">
+  <div class="flex flex-col md:flex-row gap-4 h-full min-h-[700px] flex-1 w-full text-sm">
     <!-- Panel Izquierdo: Hembras -->
     <div class="w-full md:w-1/4 bg-white rounded-xl border border-slate-200 flex flex-col overflow-hidden shadow-sm">
       <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col gap-3 sticky top-0 z-10">

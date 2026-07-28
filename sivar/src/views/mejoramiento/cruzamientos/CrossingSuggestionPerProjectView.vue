@@ -381,9 +381,9 @@
 
             <div
               :class="
-                isExpanded
-                  ? 'flex-1 overflow-x-auto overflow-y-auto scrollbar-custom p-1 bg-slate-50/30'
-                  : 'max-h-[500px] overflow-x-auto overflow-y-auto scrollbar-custom'
+                vistaActual === 'cuadricula'
+                  ? (isExpanded ? 'flex-1 overflow-x-auto overflow-y-auto scrollbar-custom p-1 bg-slate-50/30' : 'max-h-[500px] overflow-x-auto overflow-y-auto scrollbar-custom')
+                  : (isExpanded ? 'flex-1 p-1 bg-slate-50/30 flex flex-col' : 'w-full flex flex-col')
               "
             >
               <!-- VISTA CUADRÍCULA -->
