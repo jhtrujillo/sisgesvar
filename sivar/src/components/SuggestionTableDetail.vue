@@ -130,10 +130,13 @@
                     <div class="flex items-center justify-center gap-1.5">
                       <!-- Botón Ajuste Flores -->
                       <button 
-                        v-if="cell.viabilidad"
+                        :disabled="!cell.viabilidad"
                         @click.stop="$emit('open-flower-modal', cell)"
-                        class="flex items-center justify-center gap-1 bg-white hover:bg-slate-50 rounded-md border border-slate-300 px-1.5 py-1 shadow-sm text-[10px] text-slate-700 transition-colors font-bold whitespace-nowrap"
-                        title="Ajustar consumo de flores"
+                        class="flex items-center justify-center gap-1 rounded-md border px-1.5 py-1 shadow-sm text-[10px] transition-colors font-bold whitespace-nowrap"
+                        :class="cell.viabilidad 
+                          ? 'bg-white hover:bg-slate-50 border-slate-300 text-slate-700 cursor-pointer' 
+                          : 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-60'"
+                        title="Ajustar consumo de flores (Debe seleccionar el cruzamiento primero)"
                       >
                         <span>⚙️</span>
                         <span>{{ cell.flores_madre ?? 1 }}/{{ cell.flores_padre ?? 1 }}</span>
@@ -162,14 +165,19 @@
                       <div class="flex flex-col gap-0.5"><span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Estado</span><span :class="cell.viabilidad ? 'text-emerald-700 font-black' : 'text-slate-500 font-semibold'">{{ cell.viabilidad ? '✓ Seleccionado' : 'No seleccionado' }}</span></div>
                       
                       <!-- Botón Ajuste Flores en detalle expandido -->
-                      <div v-if="cell.viabilidad" class="flex flex-col gap-0.5">
+                      <div class="flex flex-col gap-0.5">
                         <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Ajustar Flores</span>
                         <button 
+                          :disabled="!cell.viabilidad"
                           @click.stop="$emit('open-flower-modal', cell)"
-                          class="flex items-center justify-center gap-1.5 bg-white hover:bg-slate-50 rounded-md border border-slate-300 px-3 py-1.5 shadow-sm text-xs text-slate-700 transition-colors font-bold w-full"
+                          class="flex items-center justify-center gap-1.5 rounded-md border px-3 py-1.5 shadow-sm text-xs font-bold w-full transition-colors"
+                          :class="cell.viabilidad 
+                            ? 'bg-white hover:bg-slate-50 border-slate-300 text-slate-700 cursor-pointer' 
+                            : 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-60'"
+                          title="Ajustar consumo de flores (Debe seleccionar el cruzamiento primero)"
                         >
                           <span>⚙️ Ajustar:</span>
-                          <span class="text-emerald-700">{{ cell.flores_madre ?? 1 }} / {{ cell.flores_padre ?? 1 }}</span>
+                          <span :class="cell.viabilidad ? 'text-emerald-700' : 'text-slate-400'">{{ cell.flores_madre ?? 1 }} / {{ cell.flores_padre ?? 1 }}</span>
                         </button>
                       </div>
                       
