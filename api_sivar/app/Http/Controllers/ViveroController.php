@@ -21,9 +21,11 @@ class ViveroController extends Controller
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string|max:255',
             'fecha_siembra' => 'required|date',
-            'origen_ingenio' => 'required|string',
-            'origen_hacienda' => 'required|string',
-            'origen_suerte' => 'required|string',
+            'origen_ingenio' => 'nullable|string',
+            'origen_hacienda' => 'nullable|string',
+            'origen_suerte' => 'nullable|string',
+            'origen_anio' => 'nullable|integer',
+            'origen_parcela' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -56,6 +58,11 @@ class ViveroController extends Controller
             'temporada_floracion' => $request->temporada_floracion,
             'condicion' => $request->condicion,
             'caracter_id' => $request->caracter_id,
+            'origen_ingenio' => $request->origen_ingenio,
+            'origen_hacienda' => $request->origen_hacienda,
+            'origen_suerte' => $request->origen_suerte,
+            'origen_anio' => $request->origen_anio,
+            'origen_parcela' => $request->origen_parcela,
         ]);
 
         return response()->json($vivero, 201);
