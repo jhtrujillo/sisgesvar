@@ -2268,21 +2268,6 @@ function removeManualCross(car: any) {
 .scrollbar-custom::-webkit-scrollbar-track {
   background-color: #f8fafc; /* Slate 50 */
 }
-
-/* Estilo para la barra de desplazamiento de las hembras (color rosado) */
-.scrollbar-female::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.scrollbar-female::-webkit-scrollbar-thumb {
-  background-color: #f472b6; /* Pink 400 */
-  border-radius: 10px;
-}
-
-.scrollbar-female::-webkit-scrollbar-track {
-  background-color: #fdf2f8; /* Pink 50 */
-}
 @media print {
   /* Ocultar elementos de navegación y filtros en impresión */
   nav,
