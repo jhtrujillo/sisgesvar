@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col md:flex-row gap-4 h-[700px] w-full text-sm">
     <!-- Panel Izquierdo: Hembras -->
-    <div class="w-full md:w-1/3 bg-white rounded-xl border border-slate-200 flex flex-col overflow-hidden shadow-sm">
+    <div class="w-full md:w-1/4 bg-white rounded-xl border border-slate-200 flex flex-col overflow-hidden shadow-sm">
       <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col gap-3 sticky top-0 z-10">
         <div class="flex justify-between items-center font-bold text-slate-700">
           <span class="text-sm">Madres (Hembras)</span>
@@ -73,7 +73,7 @@
     </div>
 
     <!-- Panel Derecho: Machos -->
-    <div class="w-full md:w-2/3 bg-white rounded-xl border border-slate-200 flex flex-col overflow-hidden shadow-sm">
+    <div class="w-full md:w-3/4 bg-white rounded-xl border border-slate-200 flex flex-col overflow-hidden shadow-sm">
       <div v-if="!selectedFemaleRow" class="flex-1 flex flex-col items-center justify-center text-slate-400 p-10 text-center bg-slate-50/50">
         <svg class="w-16 h-16 mb-4 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path>
