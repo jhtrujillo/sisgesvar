@@ -91,7 +91,7 @@ export default {
   API_INGENIOS,
   API_HACIENDAS,
   API_SUERTES,
-  API_PROYECTOS: API_URL + 'siembra-campo/proyectos',
-  API_RESPONSABLES: API_URL + 'siembra-campo/responsables',
-  API_AMBIENTES: API_URL + 'siembra-campo/ambientes'
+  API_PROYECTOS: API_URL + "siembra-campo/proyectos",
+  API_RESPONSABLES: API_URL + "siembra-campo/responsables",
+  API_AMBIENTES: API_URL + "siembra-campo/ambientes"
 };

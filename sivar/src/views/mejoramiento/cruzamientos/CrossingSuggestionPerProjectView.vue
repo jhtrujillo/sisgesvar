@@ -102,31 +102,43 @@
         </div>
 
         <!-- Ayuda del Índice Combinado -->
-        <div
-          v-if="tipoMapaCalor === 'ic'"
-          class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 mb-4 mt-2 flex items-start space-x-3 text-xs text-indigo-900 shadow-sm transition-all animate-fade-in-up"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <div>
-            <strong class="font-bold block text-sm mb-1 text-indigo-800">¿Cómo se calcula el Índice Combinado (IC)?</strong>
-            <p class="mb-1">
-              El IC es un puntaje de <strong>0 a 100</strong> que balancea un <strong>60% del Valor de Mérito (VM)</strong> y un
-              <strong>40% de la Distancia Genética (DG)</strong>.
-            </p>
-            <ul class="list-disc pl-4 space-y-1 mb-2 text-indigo-800/80">
-              <li>
-                <strong>VM (Valor de Mérito):</strong> El sistema usa una escala invertida de 1 a 9 (1 es excelente, 9 es malo). Se "voltea" a puntaje usando la
-                fórmula: <code>((9.0 - VM) / 8.0) * 100</code>.
-                <em>(Nota: Se divide sobre 8 porque es la amplitud o tamaño total de la escala, es decir: 9 - 1 = 8)</em>.
-              </li>
-              <li><strong>DG (Distancia Genética):</strong> Se asume que 0.70 o superior es el techo ideal. Su puntaje es: <code>(DG / 0.70) * 100</code></li>
-            </ul>
-            <p class="font-mono text-[10px] bg-white/60 p-1.5 rounded text-indigo-700">
-              <strong>Ejemplo:</strong> Si el VM es 3.0 (75 pts) y la DG es 0.50 (71.4 pts). El IC será = (75 x 0.6) + (71.4 x 0.4) = 45 + 28.5 =
-              <strong>73.5 pts</strong>.
-            </p>
+        <div v-if="tipoMapaCalor === 'ic'" class="mb-4 mt-2 no-print">
+          <button
+            @click="showICHelp = !showICHelp"
+            class="flex items-center space-x-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 hover:text-indigo-800 text-xs font-semibold rounded-md shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ showICHelp ? "Ocultar explicación del IC" : "💡 ¿Cómo se calcula el Índice Combinado (IC)?" }}</span>
+          </button>
+
+          <div
+            v-if="showICHelp"
+            class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 mt-2 flex items-start space-x-3 text-xs text-indigo-900 shadow-sm transition-all animate-fade-in-up"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <strong class="font-bold block text-sm mb-1 text-indigo-800">¿Cómo se calcula el Índice Combinado (IC)?</strong>
+              <p class="mb-1">
+                El IC es un puntaje de <strong>0 a 100</strong> que balancea un <strong>60% del Valor de Mérito (VM)</strong> y un
+                <strong>40% de la Distancia Genética (DG)</strong>.
+              </p>
+              <ul class="list-disc pl-4 space-y-1 mb-2 text-indigo-800/80">
+                <li>
+                  <strong>VM (Valor de Mérito):</strong> El sistema usa una escala invertida de 1 a 9 (1 es excelente, 9 es malo). Se "voltea" a puntaje usando
+                  la fórmula: <code>((9.0 - VM) / 8.0) * 100</code>.
+                  <em>(Nota: Se divide sobre 8 porque es la amplitud o tamaño total de la escala, es decir: 9 - 1 = 8)</em>.
+                </li>
+                <li><strong>DG (Distancia Genética):</strong> Se asume que 0.70 o superior es el techo ideal. Su puntaje es: <code>(DG / 0.70) * 100</code></li>
+              </ul>
+              <p class="font-mono text-[10px] bg-white/60 p-1.5 rounded text-indigo-700">
+                <strong>Ejemplo:</strong> Si el VM es 3.0 (75 pts) y la DG es 0.50 (71.4 pts). El IC será = (75 x 0.6) + (71.4 x 0.4) = 45 + 28.5 =
+                <strong>73.5 pts</strong>.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -201,7 +213,7 @@
           </div>
 
           <!-- Botones de Control Interactivos -->
-          <div class="flex justify-end items-center space-x-2">
+          <div class="flex justify-end items-center gap-3">
             <!-- Selector de Mapa de Calor (3 opciones) -->
             <div class="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200 shadow-inner">
               <button
@@ -253,6 +265,37 @@
               </svg>
               Optimizar
             </button>
+
+            <!-- Toggle vistas -->
+            <div class="flex items-center bg-slate-100 p-1 rounded-lg mr-2 border border-slate-200 shrink-0">
+              <button
+                @click="vistaActual = 'cuadricula'"
+                :class="[
+                  'px-3 py-1 text-[11px] font-bold rounded-md transition-all whitespace-nowrap',
+                  vistaActual === 'cuadricula' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                ]"
+              >
+                Cuadrícula
+              </button>
+              <button
+                @click="vistaActual = 'asistente'"
+                :class="[
+                  'px-3 py-1 text-[11px] font-bold rounded-md transition-all whitespace-nowrap',
+                  vistaActual === 'asistente' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                ]"
+              >
+                Asistente
+              </button>
+              <button
+                @click="vistaActual = 'asistente-pro'"
+                :class="[
+                  'px-3 py-1 text-[11px] font-bold rounded-md transition-all whitespace-nowrap',
+                  vistaActual === 'asistente-pro' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                ]"
+              >
+                Asist. Pro
+              </button>
+            </div>
 
             <!-- Toggle de Vistas Oculto temporalmente
           <button 
@@ -381,167 +424,214 @@
 
             <div
               :class="
-                isExpanded
-                  ? 'flex-1 overflow-x-auto overflow-y-auto scrollbar-custom p-1 bg-slate-50/30'
-                  : 'max-h-[500px] overflow-x-auto overflow-y-auto scrollbar-custom'
+                vistaActual === 'cuadricula'
+                  ? isExpanded
+                    ? 'flex-1 overflow-x-auto overflow-y-auto scrollbar-custom p-1 bg-slate-50/30'
+                    : 'max-h-[500px] overflow-x-auto overflow-y-auto scrollbar-custom'
+                  : isExpanded
+                    ? 'flex-1 p-1 bg-slate-50/30 flex flex-col'
+                    : 'w-full flex flex-col'
               "
             >
-              <table v-if="!isOptimizing" ref="matrizTable" class="table-auto w-full divide-y divide-slate-150 bg-white rounded-lg">
-                <thead class="bg-slate-50">
-                  <tr>
-                    <th
-                      class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-r border-slate-100 sticky top-0 left-0 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[140px]"
-                    >
-                      Hembra / Machos
-                    </th>
-                    <!-- Envoltura <template> para evaluar v-if en el scope correcto de Vue 3 -->
-                    <template v-for="(flor, indexCol) in floresSeleccionadas || []" :key="indexCol">
+              <!-- VISTA CUADRÍCULA -->
+              <div v-show="vistaActual === 'cuadricula'">
+                <table v-if="!isOptimizing" ref="matrizTable" class="table-auto w-full divide-y divide-slate-150 bg-white rounded-lg">
+                  <thead class="bg-slate-50">
+                    <tr>
                       <th
-                        v-if="(!ocultarInviables || isColumnViable(indexCol)) && Number(flor.polen) > 20"
-                        class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-650 bg-slate-50 border-r border-slate-100 sticky top-0 z-10 min-w-[75px]"
+                        class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-50 border-r border-slate-100 sticky top-0 left-0 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[140px]"
                       >
-                        <span
-                          class="block text-slate-800 font-extrabold leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors"
-                          @click="openVarietyProfile(flor.variedad)"
-                        >
-                          {{ flor.variedad }}
-                        </span>
-                        <div class="flex flex-col items-center justify-center text-[9px] font-semibold text-slate-500 mt-1 space-y-0.5 mb-1">
-                          <span v-if="viabilidadesMatriz?.[0]?.[indexCol]?.vm2 !== undefined">VM: {{ viabilidadesMatriz[0][indexCol].vm2 }}</span>
-                          <span>Disp: {{ flor.cantidad }}</span>
-                          <span>Polen: {{ flor.polen ? flor.polen + "%" : "N/A" }}</span>
-                          <span class="font-bold mt-0.5" :class="getFloresUsadas(flor.variedad, false) > flor.cantidad ? 'text-rose-600' : 'text-emerald-700'">
-                            Usadas: {{ getFloresUsadas(flor.variedad, false) }} / {{ flor.cantidad }}
-                          </span>
-                        </div>
+                        Hembra / Machos
                       </th>
-                    </template>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 bg-white">
-                  <!-- Envoltura <template> para evaluar v-if en el scope correcto de Vue 3 -->
-                  <template v-for="(viabilidadRow, indexRow) in viabilidadesMatriz || []" :key="indexRow">
-                    <tr
-                      v-if="(!ocultarInviables || isRowViable(viabilidadRow)) && Number(viabilidadRow[0]?.polen) <= 20"
-                      class="hover:bg-slate-50/40 transition-colors"
-                    >
-                      <!-- Celda Madre Fija a la izquierda -->
-                      <td
-                        :class="[
-                          +viabilidadRow[0]?.polen <= 20
-                            ? 'bg-rose-50/60 hover:bg-rose-100/50 border-r border-rose-100 text-rose-800'
-                            : 'bg-sky-50/60 hover:bg-sky-100/50 border-r border-sky-100 text-sky-850'
-                        ]"
-                        class="whitespace-nowrap px-2 py-2 text-center text-[11px] font-bold sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[140px]"
-                      >
-                        <div class="flex items-center justify-center space-x-1.5 mb-0.5">
-                          <i :class="getIcon(viabilidadRow[0]?.polen)"></i>
+                      <!-- Envoltura <template> para evaluar v-if en el scope correcto de Vue 3 -->
+                      <template v-for="(flor, indexCol) in floresSeleccionadas || []" :key="indexCol">
+                        <th
+                          v-if="(!ocultarInviables || isColumnViable(indexCol)) && Number(flor.polen) > 20"
+                          class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-650 bg-slate-50 border-r border-slate-100 sticky top-0 z-10 min-w-[75px]"
+                        >
                           <span
-                            class="font-extrabold text-slate-800 leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors"
-                            @click="openVarietyProfile(viabilidadRow[0]?.varA)"
-                            >{{ viabilidadRow[0]?.varA || "N/A" }}</span
+                            class="block text-slate-800 font-extrabold leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors"
+                            @click="openVarietyProfile(flor.variedad)"
                           >
-                        </div>
-                        <div class="flex flex-col items-center justify-center text-[9px] font-semibold text-slate-500 space-y-0.5">
-                          <span>VM: {{ getRowVm(viabilidadRow) }}</span>
-                          <span>Disp: {{ getCantidadFlores(viabilidadRow[0]?.varA) }}</span>
-                          <span>Polen: {{ viabilidadRow[0]?.polen ? viabilidadRow[0].polen + "%" : "0%" }}</span>
-                          <span
-                            class="font-bold mt-0.5"
-                            :class="
-                              getFloresUsadas(viabilidadRow[0]?.varA, true) > getCantidadFlores(viabilidadRow[0]?.varA) ? 'text-rose-600' : 'text-emerald-700'
-                            "
-                          >
-                            Usadas: {{ getFloresUsadas(viabilidadRow[0]?.varA, true) }} / {{ getCantidadFlores(viabilidadRow[0]?.varA) }}
+                            {{ flor.variedad }}
                           </span>
-                        </div>
-
-                        <!-- Autofecundación Estilizada -->
-                        <div
-                          class="mt-1.5 flex items-center justify-center space-x-1 bg-white/70 py-0.5 px-1.5 rounded-lg border border-slate-200/50 shadow-sm max-w-[120px] mx-auto"
-                        >
-                          <input
-                            type="checkbox"
-                            :checked="autofecundacionesSeleccionadas.has(viabilidadRow[0]?.varA)"
-                            @click="toggleAutofecundar(viabilidadRow)"
-                            class="h-3 w-3 rounded border-slate-350 text-emerald-600 focus:ring-emerald-100 cursor-pointer"
-                          />
-                          <span class="text-[8px] font-extrabold uppercase text-slate-600">Autofecundar</span>
-                        </div>
-                      </td>
-
-                      <!-- Celdas de la matriz filtradas por columna -->
-                      <template v-for="(car, indexCol) in viabilidadRow" :key="indexCol">
-                        <td
-                          v-if="(!ocultarInviables || isColumnViable(indexCol)) && Number(car?.polen2) > 20"
-                          :class="[getHeatmapClass(car?.varA, car?.varB, !!car?.viabilidad, car?.vm2)]"
-                          class="p-2 text-center border-b border-slate-100 transition-all duration-200 min-w-[75px]"
-                        >
-                          <div class="flex flex-col items-center justify-center space-y-1">
-                            <input
-                              type="checkbox"
-                              :checked="!!car?.viabilidad"
-                              @click="toggleCruzamiento(car)"
-                              class="h-3.5 w-3.5 rounded border-slate-350 text-emerald-600 focus:ring-emerald-100 transition cursor-pointer"
-                            />
-                            <!-- Selector numérico cuando es viable -->
-                            <div v-if="car?.viabilidad" class="mt-0.5 mb-1">
-                              <button
-                                @click.stop="openFlowerAdjustmentModal(car)"
-                                class="flex items-center justify-center space-x-1 bg-white/90 hover:bg-white rounded border border-slate-200 px-1.5 py-0.5 shadow-sm text-[9px] text-slate-700 transition-colors cursor-pointer"
-                                title="Ajustar consumo de flores"
-                              >
-                                <span>⚙️</span>
-                                <span class="font-bold">{{ car.flores_madre ?? 1 }} / {{ car.flores_padre ?? 1 }}</span>
-                              </button>
-                            </div>
-                            <div
-                              class="text-[9px] font-extrabold leading-tight"
-                              :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-white' : 'text-slate-900']"
+                          <div class="flex flex-col items-center justify-center text-[9px] font-semibold text-slate-500 mt-1 space-y-0.5 mb-1">
+                            <span v-if="viabilidadesMatriz?.[0]?.[indexCol]?.vm2 !== undefined">VM: {{ viabilidadesMatriz[0][indexCol].vm2 }}</span>
+                            <span>Disp: {{ flor.cantidad }}</span>
+                            <span>Polen: {{ flor.polen ? flor.polen + "%" : "N/A" }}</span>
+                            <span
+                              class="font-bold mt-0.5"
+                              :class="getFloresUsadas(flor.variedad, false) > flor.cantidad ? 'text-rose-600' : 'text-emerald-700'"
                             >
-                              {{ car.varB }}
-                            </div>
+                              Usadas: {{ getFloresUsadas(flor.variedad, false) }} / {{ flor.cantidad }}
+                            </span>
+                            <!-- Autofecundación Estilizada para Machos -->
                             <div
-                              class="text-[8px] font-semibold leading-tight"
-                              :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-emerald-100' : 'text-slate-700']"
+                              class="mt-1.5 flex items-center justify-center space-x-1 bg-white/70 py-0.5 px-1.5 rounded-lg border border-slate-200/50 shadow-sm max-w-[85px] mx-auto cursor-pointer"
                             >
-                              Polen: {{ car.polen2 }} | VM: {{ car.vm2 }}
-                            </div>
-                            <div class="flex flex-col items-center justify-center w-full border-t border-slate-100/50 pt-1 mt-1 space-y-1">
-                              <span
-                                class="text-[9px] font-extrabold tracking-tight leading-none text-center"
-                                :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-white' : 'text-slate-900']"
-                              >
-                                <template v-if="tipoMapaCalor === 'ic'">
-                                  IC:
-                                  {{
-                                    isNaN(getIndiceCombinado(car.varA, car.varB, car.vm2)) ? "NA" : Math.round(getIndiceCombinado(car.varA, car.varB, car.vm2))
-                                  }}
-                                </template>
-                                <template v-else> DG: {{ getDistancia(car.varA, car.varB) || "NA" }} </template>
-                              </span>
-                              <!-- Botón Comparador Lado a Lado -->
-                              <button
-                                @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad)"
-                                class="text-[8px] font-bold px-1.5 py-0.5 rounded transition-all duration-150 flex items-center justify-center space-x-0.5 border mx-auto"
-                                :class="[
-                                  tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2)
-                                    ? 'bg-white/20 hover:bg-white/30 text-white border-white/25'
-                                    : 'bg-slate-100 hover:bg-emerald-50 text-slate-900 hover:text-emerald-700 border-slate-300 hover:border-emerald-300'
-                                ]"
-                                title="Comparar Progenitores Lado a Lado"
-                              >
-                                <i class="fa fa-balance-scale"></i>
-                                <span>VS</span>
-                              </button>
+                              <input
+                                type="checkbox"
+                                :checked="autofecundacionesSeleccionadas.has(flor.variedad)"
+                                @click.stop="toggleAutofecundar(flor.variedad)"
+                                class="h-3 w-3 rounded border-slate-350 text-emerald-600 focus:ring-emerald-100 cursor-pointer"
+                              />
+                              <span class="text-[8px] font-extrabold uppercase text-slate-600">Autofecundar</span>
                             </div>
                           </div>
-                        </td>
+                        </th>
                       </template>
                     </tr>
-                  </template>
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 bg-white">
+                    <!-- Envoltura <template> para evaluar v-if en el scope correcto de Vue 3 -->
+                    <template v-for="(viabilidadRow, indexRow) in viabilidadesMatriz || []" :key="indexRow">
+                      <tr
+                        v-if="(!ocultarInviables || isRowViable(viabilidadRow)) && Number(viabilidadRow[0]?.polen) <= 20"
+                        class="hover:bg-slate-50/40 transition-colors"
+                      >
+                        <!-- Celda Madre Fija a la izquierda -->
+                        <td
+                          :class="[
+                            +viabilidadRow[0]?.polen <= 20
+                              ? 'bg-rose-50/60 hover:bg-rose-100/50 border-r border-rose-100 text-rose-800'
+                              : 'bg-sky-50/60 hover:bg-sky-100/50 border-r border-sky-100 text-sky-850'
+                          ]"
+                          class="whitespace-nowrap px-2 py-2 text-center text-[11px] font-bold sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[140px]"
+                        >
+                          <div class="flex items-center justify-center space-x-1.5 mb-0.5">
+                            <i :class="getIcon(viabilidadRow[0]?.polen)"></i>
+                            <span
+                              class="font-extrabold text-slate-800 leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors"
+                              @click="openVarietyProfile(viabilidadRow[0]?.varA)"
+                              >{{ viabilidadRow[0]?.varA || "N/A" }}</span
+                            >
+                          </div>
+                          <div class="flex flex-col items-center justify-center text-[9px] font-semibold text-slate-500 space-y-0.5">
+                            <span>VM: {{ getRowVm(viabilidadRow) }}</span>
+                            <span>Disp: {{ getCantidadFlores(viabilidadRow[0]?.varA) }}</span>
+                            <span>Polen: {{ viabilidadRow[0]?.polen ? viabilidadRow[0].polen + "%" : "0%" }}</span>
+                            <span
+                              class="font-bold mt-0.5"
+                              :class="
+                                getFloresUsadas(viabilidadRow[0]?.varA, true) > getCantidadFlores(viabilidadRow[0]?.varA) ? 'text-rose-600' : 'text-emerald-700'
+                              "
+                            >
+                              Usadas: {{ getFloresUsadas(viabilidadRow[0]?.varA, true) }} / {{ getCantidadFlores(viabilidadRow[0]?.varA) }}
+                            </span>
+                          </div>
+                        </td>
+
+                        <!-- Celdas de la matriz filtradas por columna -->
+                        <template v-for="(car, indexCol) in viabilidadRow" :key="indexCol">
+                          <td
+                            v-if="(!ocultarInviables || isColumnViable(indexCol)) && Number(car?.polen2) > 20"
+                            :class="[getHeatmapClass(car?.varA, car?.varB, !!car?.viabilidad, car?.vm2)]"
+                            class="p-2 text-center border-b border-slate-100 transition-all duration-200 min-w-[75px]"
+                          >
+                            <div class="flex flex-col items-center justify-center space-y-1">
+                              <input
+                                type="checkbox"
+                                :checked="!!car?.viabilidad"
+                                @click="toggleCruzamiento(car)"
+                                class="h-3.5 w-3.5 rounded border-slate-350 text-emerald-600 focus:ring-emerald-100 transition cursor-pointer"
+                              />
+                              <!-- Selector numérico cuando es viable -->
+                              <div v-if="car?.viabilidad" class="mt-0.5 mb-1">
+                                <button
+                                  @click.stop="openFlowerAdjustmentModal(car)"
+                                  class="flex items-center justify-center space-x-1 bg-white/90 hover:bg-white rounded border border-slate-200 px-1.5 py-0.5 shadow-sm text-[9px] text-slate-700 transition-colors cursor-pointer"
+                                  title="Ajustar consumo de flores"
+                                >
+                                  <span>⚙️</span>
+                                  <span class="font-bold">{{ car.flores_madre ?? 1 }} / {{ car.flores_padre ?? 1 }}</span>
+                                </button>
+                              </div>
+                              <div
+                                class="text-[9px] font-extrabold leading-tight"
+                                :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-white' : 'text-slate-900']"
+                              >
+                                {{ car.varB }}
+                              </div>
+                              <div
+                                class="text-[8px] font-semibold leading-tight"
+                                :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-emerald-100' : 'text-slate-700']"
+                              >
+                                Polen: {{ car.polen2 }} | VM: {{ car.vm2 }}
+                              </div>
+                              <div class="flex flex-col items-center justify-center w-full border-t border-slate-100/50 pt-1 mt-1 space-y-1">
+                                <span
+                                  class="text-[9px] font-extrabold tracking-tight leading-none text-center"
+                                  :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-white' : 'text-slate-900']"
+                                >
+                                  <template v-if="tipoMapaCalor === 'ic'">
+                                    IC:
+                                    {{
+                                      isNaN(getIndiceCombinado(car.varA, car.varB, car.vm2))
+                                        ? "NA"
+                                        : Math.round(getIndiceCombinado(car.varA, car.varB, car.vm2))
+                                    }}
+                                  </template>
+                                  <template v-else> DG: {{ getDistancia(car.varA, car.varB) || "NA" }} </template>
+                                </span>
+                                <!-- Botón Comparador Lado a Lado -->
+                                <button
+                                  @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad)"
+                                  class="text-[8px] font-bold px-1.5 py-0.5 rounded transition-all duration-150 flex items-center justify-center space-x-0.5 border mx-auto"
+                                  :class="[
+                                    tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2)
+                                      ? 'bg-white/20 hover:bg-white/30 text-white border-white/25'
+                                      : 'bg-slate-100 hover:bg-emerald-50 text-slate-900 hover:text-emerald-700 border-slate-300 hover:border-emerald-300'
+                                  ]"
+                                  title="Comparar Progenitores Lado a Lado"
+                                >
+                                  <i class="fa fa-balance-scale"></i>
+                                  <span>VS</span>
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+                        </template>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- VISTA ASISTENTE (MAESTRO-DETALLE) -->
+              <div v-if="vistaActual === 'asistente' && !isOptimizing">
+                <SuggestionMasterDetail
+                  :females="assistantFemales"
+                  :selectedFemaleRow="selectedFemaleRow"
+                  :sortedMales="assistantSortedMales"
+                  :ocultarRiesgos="assistantOcultarRiesgos"
+                  :tipoMapaCalor="tipoMapaCalor"
+                  @select-female="(row) => (selectedFemaleRow = row)"
+                  @toggle-cross="toggleCruzamiento"
+                  @open-flower-modal="openFlowerAdjustmentModal"
+                  @toggle-riesgos="assistantOcultarRiesgos = !assistantOcultarRiesgos"
+                  :getDisp="(varName) => cantidadesMap[varName] || 0"
+                  :getDistanciaLocal="getDistancia"
+                  :getIndiceCombinadoLocal="getIndiceCombinado"
+                />
+              </div>
+
+              <!-- VISTA ASISTENTE PRO (TABLA COMPACTA) -->
+              <div v-if="vistaActual === 'asistente-pro' && !isOptimizing">
+                <SuggestionTableDetail
+                  :females="assistantFemales"
+                  :selectedFemaleRow="selectedFemaleRow"
+                  :sortedMales="assistantSortedMales"
+                  :ocultarRiesgos="assistantOcultarRiesgos"
+                  :tipoMapaCalor="tipoMapaCalor"
+                  @select-female="(row) => (selectedFemaleRow = row)"
+                  @toggle-cross="toggleCruzamiento"
+                  @open-flower-modal="openFlowerAdjustmentModal"
+                  @toggle-riesgos="assistantOcultarRiesgos = !assistantOcultarRiesgos"
+                  :getDisp="(varName) => cantidadesMap[varName] || 0"
+                  :getDistanciaLocal="getDistancia"
+                  :getIndiceCombinadoLocal="getIndiceCombinado"
+                />
+              </div>
             </div>
           </div>
 
@@ -980,6 +1070,8 @@ import { useSuggestionCrossingPerProjectStore } from "@/stores/crossingsuggestio
 import { useParametizeWeightedCrossingStore } from "@/stores/crossignparametizeweighted";
 import VarietyProfileDrawer from "@/components/VarietyProfileDrawer.vue";
 import ParentComparatorModal from "@/components/ParentComparatorModal.vue";
+import SuggestionMasterDetail from "@/components/SuggestionMasterDetail.vue";
+import SuggestionTableDetail from "@/components/SuggestionTableDetail.vue";
 import * as XLSX from "xlsx";
 import ExcelJS from "exceljs";
 import html2canvas from "html2canvas";
@@ -1002,10 +1094,54 @@ const resumenCrucesGuardados = ref<any[]>([]);
 
 const ocultarInviables = ref(true); // Vista compacta limpia por defecto
 const isLoading = ref(false); // Ref para spinner de carga
+const showICHelp = ref(false);
 const isOptimizing = ref(false); // Ref para spinner de optimización
 const optimizandoMadre = ref(""); // Para mostrar en el loading qué variedad se procesa
 const isExpanded = ref(false); // Ref para modo pantalla completa
 const isDragDropView = ref(false); // Ref para alternar a Drag & Drop
+
+// --- NUEVA VISTA MAESTRO-DETALLE ---
+const vistaActual = ref<"cuadricula" | "asistente" | "asistente-pro">("cuadricula");
+const selectedFemaleRow = ref<any>(null);
+const assistantOcultarRiesgos = ref(true);
+
+const assistantFemales = computed(() => {
+  return (viabilidadesMatriz.value || []).filter((row: any) => {
+    return row && row.length > 0 && Number(row[0]?.polen) <= 20 && row[0]?.varA !== selectedVariety.value;
+  });
+});
+
+const assistantSortedMales = computed(() => {
+  if (!selectedFemaleRow.value) return [];
+  const cells = [...selectedFemaleRow.value];
+
+  let males = cells.filter((cell: any) => {
+    return cell && Number(cell.polen2) > 20 && cell.varB !== selectedVariety.value;
+  });
+
+  if (assistantOcultarRiesgos.value) {
+    males = males.filter((cell: any) => {
+      const dg = Number(getDistancia(cell.varA, cell.varB));
+      return isNaN(dg) || dg >= 0.35;
+    });
+  }
+
+  males.sort((a: any, b: any) => {
+    if (tipoMapaCalor.value === "ic") {
+      const icA = getIndiceCombinado(a.varA, a.varB, a.vm2);
+      const icB = getIndiceCombinado(b.varA, b.varB, b.vm2);
+      return (isNaN(icB) ? 0 : icB) - (isNaN(icA) ? 0 : icA);
+    } else {
+      // Sort by DG (Distancia Genética) by default
+      const dgA = Number(getDistancia(a.varA, a.varB));
+      const dgB = Number(getDistancia(b.varA, b.varB));
+      return (isNaN(dgB) ? 0 : dgB) - (isNaN(dgA) ? 0 : dgA);
+    }
+  });
+
+  return males;
+});
+// -----------------------------------
 
 // Variables de Estado para Drag & Drop
 const activeDragType = ref<"madre" | "padre" | null>(null);
@@ -1252,7 +1388,7 @@ function getFloresUsadas(vrdad: string, isMadre: boolean) {
     });
   });
 
-  if (isMadre && autofecundacionesSeleccionadas.value.has(vrdad)) {
+  if (!isMadre && autofecundacionesSeleccionadas.value.has(vrdad)) {
     count += 1;
   }
   return count;
@@ -1320,14 +1456,13 @@ function toggleCruzamiento(car: any) {
   localStorage.setItem(draftKey.value, JSON.stringify(disabledCrosses));
 }
 
-function toggleAutofecundar(viabilidadRow: any) {
-  const varA = viabilidadRow[0]?.varA;
-  if (!varA) return;
+function toggleAutofecundar(varName: string) {
+  if (!varName) return;
 
-  if (autofecundacionesSeleccionadas.value.has(varA)) {
-    autofecundacionesSeleccionadas.value.delete(varA);
+  if (autofecundacionesSeleccionadas.value.has(varName)) {
+    autofecundacionesSeleccionadas.value.delete(varName);
   } else {
-    autofecundacionesSeleccionadas.value.add(varA);
+    autofecundacionesSeleccionadas.value.add(varName);
   }
 }
 
@@ -1538,6 +1673,32 @@ async function exportarDesempenoIndividual() {
       return data;
     };
 
+    const findCharacteristicValue = (varName, caracteristica) => {
+      if (!varName) return undefined;
+      const cleanVar = varName.trim().toUpperCase();
+      const field = caracteristica.toLowerCase();
+
+      // 1. Banco de Germoplasma (flores_bg)
+      let record = floresBG.find((f) => f.vrdad && f.vrdad.trim().toUpperCase() === cleanVar);
+      if (record && record[field] !== undefined && record[field] !== null && record[field] !== "") {
+        return record[field];
+      }
+
+      // 2. Etapas Regionales (flores_pr)
+      record = floresPR.find((f) => f.vrdad && f.vrdad.trim().toUpperCase() === cleanVar);
+      if (record && record[field] !== undefined && record[field] !== null && record[field] !== "") {
+        return record[field];
+      }
+
+      // 3. Etapa III (flores_eiii)
+      record = floresEIII.find((f) => f.vrdad && f.vrdad.trim().toUpperCase() === cleanVar);
+      if (record && record[field] !== undefined && record[field] !== null && record[field] !== "") {
+        return record[field];
+      }
+
+      return undefined;
+    };
+
     const headers = [
       "Variedad Evaluada",
       "Rol (Madre/Padre)",
@@ -1574,7 +1735,7 @@ async function exportarDesempenoIndividual() {
                     const caracteristica = p.equivalente ? p.equivalente.toLowerCase() : p.caracteristica || p.nombre || "UNKNOWN";
                     const nombreCaract = p.nombre || p.caracteristica || caracteristica;
                     if (caracteristica) {
-                      const valorReal = florData[caracteristica] ?? "-";
+                      const valorReal = findCharacteristicValue(varName, caracteristica) ?? "-";
                       const valorTestigo = testigoLimpio[caracteristica] ?? "-";
                       const limiteMax = p.nivel !== null && p.nivel !== undefined ? Number(p.nivel) : "-";
                       const porcentajePeso = p.ponderado ? Number(p.ponderado) : 0;
@@ -1848,10 +2009,10 @@ async function autoOptimizarFlores(silent: boolean | Event = false) {
     });
   });
 
-  for (const m in disp.madre) {
-    if (usadas.madre[m] === undefined) usadas.madre[m] = 0;
-    if (autofecundacionesSeleccionadas.value.has(m)) {
-      usadas.madre[m] += 1;
+  for (const p in disp.padre) {
+    if (usadas.padre[p] === undefined) usadas.padre[p] = 0;
+    if (autofecundacionesSeleccionadas.value.has(p)) {
+      usadas.padre[p] += 1;
     }
   }
 
@@ -1978,24 +2139,27 @@ async function finalizarProceso() {
             selectedCrossings.push({ ...cell });
           }
         });
-
-        // Integrar Autofecundación solicitada explícitamente para esta variedad madre
-        const motherCell = row[0];
-        if (motherCell && autofecundacionesSeleccionadas.value.has(motherCell.varA)) {
-          selectedCrossings.push({
-            varA: motherCell.varA,
-            varB: motherCell.varA,
-            proyecto: motherCell.proyecto,
-            proyecto2: motherCell.proyecto, // Mismo proyecto
-            id_caracter: motherCell.id_caracter,
-            id_caracter2: motherCell.id_caracter, // Mismo caracter
-            viabilidad: true,
-            flores_madre: 1,
-            flores_padre: 1 // o 0, pero autofecundación se suma en Madre únicamente
-          });
-        }
       }
     });
+
+    // Integrar Autofecundación solicitada explícitamente para las variedades machos (columnas)
+    if (rows.length > 0 && rows[0]) {
+      rows[0].forEach((cell: any) => {
+        if (cell && autofecundacionesSeleccionadas.value.has(cell.varB)) {
+          selectedCrossings.push({
+            varA: cell.varB,
+            varB: cell.varB,
+            proyecto: cell.proyecto2,
+            proyecto2: cell.proyecto2, // Mismo proyecto
+            id_caracter: cell.id_caracter2,
+            id_caracter2: cell.id_caracter2, // Mismo caracter
+            viabilidad: true,
+            flores_madre: 1,
+            flores_padre: 1
+          });
+        }
+      });
+    }
 
     if (selectedCrossings.length === 0) {
       toast.warning("No hay cruzamientos seleccionados para guardar.");

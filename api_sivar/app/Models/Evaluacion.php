@@ -2,37 +2,40 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Evaluacion extends Model
 {
-    use HasFactory;
     protected $table = 'evaluacions';
+
     protected $casts = [
-        'arrayCharacters' => 'array',
+        'arrayCharacters' => 'array'
     ];
 
     public function tipoEvaluacion()
     {
-        return $this->belongsTo(TipoEvaluacion::class );
+        return $this->belongsTo(TipoEvaluacion::class, 'tipo_evaluacion_id');
     }
 
     public function rangos()
     {
-        return $this->hasMany(RangoEvaluacion::class);
+        return $this->hasMany(RangoEvaluacion::class, 'evaluacion_id');
     }
 
-    public function obtenerCalificacion(float $porcentaje): int
+    /**
+     * Obtiene la calificación correspondiente al valor evaluado en base a los rangos definidos.
+     */
+    public function obtenerCalificacion($valor): int
     {
+        foreach ($this->rangos as $rango) {
+            $minOk = is_null($rango->valor_minimo) || $valor >= $rango->valor_minimo;
+            $maxOk = is_null($rango->valor_maximo) || $valor < $rango->valor_maximo;
 
-        $rango = $this->rangos
-            ->first(function ($r) use ($porcentaje) {
-                $minOk = is_null($r->valor_minimo) || $r->valor_minimo < $porcentaje;
-                $maxOk = is_null($r->valor_maximo) || $r->valor_maximo >= $porcentaje;
-                return $minOk && $maxOk;
-            });
+            if ($minOk && $maxOk) {
+                return $rango->calificacion;
+            }
+        }
 
-        return $rango ? (int) $rango->calificacion : 999;
+        return 0;
     }
 }

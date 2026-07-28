@@ -22,8 +22,8 @@ async function modifyFeatures(caracteristica: string, proyecto: string, nivel: s
   const url = `${urls.API_MODIFY_FEATURES_CROSSING}/${caracteristica}/${proyecto}/${nivel}/${ponderado}/${ambiente}/${nuevo}`;
   return await api.post(url, {}, true);
 }
-async function getMatrix(proyectos: string, proyecto: string, testigo: string): Promise<any> {
-  const url = `${urls.API_GENERATE_MATRIX}/${proyectos}/${proyecto}/${testigo}`;
+async function getMatrix(proyectos: string, proyecto: string, testigo: string, ambiente: string): Promise<any> {
+  const url = `${urls.API_GENERATE_MATRIX}/${proyectos}/${proyecto}/${testigo}/${ambiente}`;
   return await api.get(url, {}, true);
 }
 async function GetSuggestionCrossings(proyectos: string, proyecto: string, testigo: string, megaAmbiente: string): Promise<any> {
@@ -49,14 +49,18 @@ async function saveCrossing(
   autofecundado: number
 ): Promise<any> {
   const url = `${urls.API_URL}crossing/programming/save_crossing`;
-  return await api.post(url, {
-    madre,
-    padres,
-    observaciones,
-    id_ponderados: idPonderados,
-    proyectos,
-    autofecundado
-  }, true);
+  return await api.post(
+    url,
+    {
+      madre,
+      padres,
+      observaciones,
+      id_ponderados: idPonderados,
+      proyectos,
+      autofecundado
+    },
+    true
+  );
 }
 
 async function saveCrossingsBatch(crossings: any[]): Promise<any> {
