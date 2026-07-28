@@ -17,14 +17,26 @@
           </div>
           <input 
             v-model="searchFemaleQuery" 
-            list="female-datalist"
+            @focus="showFemaleDropdown = true"
+            @blur="hideDropdownDelayed"
             type="text" 
             class="block w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-md leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm shadow-sm transition-colors" 
             placeholder="Buscar variedad..." 
           />
-          <datalist id="female-datalist">
-            <option v-for="(row, idx) in females" :key="idx" :value="row?.[0]?.varA"></option>
-          </datalist>
+          
+          <!-- Lista Desplegable Flotante -->
+          <div v-if="showFemaleDropdown && filteredFemales.length > 0" class="absolute z-50 mt-1 w-full bg-white rounded-md shadow-lg border border-slate-200 max-h-48 overflow-y-auto">
+            <ul class="py-1 text-sm text-slate-700">
+              <li 
+                v-for="(row, idx) in filteredFemales" 
+                :key="idx"
+                @mousedown.prevent="selectFemaleFromDropdown(row)"
+                class="px-3 py-2 hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer border-b border-slate-100 last:border-0"
+              >
+                {{ row?.[0]?.varA }}
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
       <div class="flex-1 overflow-y-auto p-3 space-y-2 scrollbar-custom bg-slate-50/30">
@@ -186,9 +198,10 @@ const props = defineProps<{
   getIndiceCombinadoLocal: (varA: string, varB: string, vm: string | number) => number;
 }>();
 
-defineEmits(['select-female', 'toggle-cross', 'toggle-riesgos', 'open-flower-modal']);
+const emit = defineEmits(['select-female', 'toggle-cross', 'toggle-riesgos', 'open-flower-modal']);
 
 const searchFemaleQuery = ref('');
+const showFemaleDropdown = ref(false);
 
 const filteredFemales = computed(() => {
   if (!searchFemaleQuery.value) return props.females;
@@ -198,6 +211,19 @@ const filteredFemales = computed(() => {
     return femaleName.toLowerCase().includes(q);
   });
 });
+
+const selectFemaleFromDropdown = (row: any) => {
+  emit('select-female', row);
+  showFemaleDropdown.value = false;
+  searchFemaleQuery.value = '';
+};
+
+const hideDropdownDelayed = () => {
+  // Retardo pequeño para permitir que el click en la lista se procese antes de ocultarla
+  setTimeout(() => {
+    showFemaleDropdown.value = false;
+  }, 200);
+};
 
 const getAffinity = (cell: any) => {
   const ic = props.getIndiceCombinadoLocal(cell.varA, cell.varB, cell.vm2);
