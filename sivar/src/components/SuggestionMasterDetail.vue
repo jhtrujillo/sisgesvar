@@ -248,9 +248,11 @@ const getCardStyle = (cell: any) => {
   
   // Helper to generate the style object
   const createStyle = (bgSelected: string, borderSelected: string, borderUnselected: string, isDark: boolean) => {
-    const bg = isSelected ? bgSelected : 'bg-slate-50';
+    // Both selected and unselected use the same background color now
+    const bg = bgSelected;
     const border = isSelected ? borderSelected : borderUnselected;
-    const darkText = isSelected && isDark;
+    // Both use the same text contrast now depending on the background
+    const darkText = isDark;
     
     return {
       container: `${baseBorder} ${bg} ${border} ${isSelected ? 'ring-emerald-500' : ''}`,
