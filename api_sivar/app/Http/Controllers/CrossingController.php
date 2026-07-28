@@ -166,14 +166,14 @@ class CrossingController extends Controller
             ->where('id_proyecto', $proyecto)
             ->where('ambiente', $ambiente)
             ->first();
-            
+
         if (!$caracteristica) {
             $caracteristica = new PonderadoVM;
             $caracteristica->id_proyecto = $proyecto;
             $caracteristica->id_caracteristica = $car;
             $caracteristica->ambiente = $ambiente;
         }
-        
+
         $caracteristica->nivel = $nivel;
         $caracteristica->ponderado = $ponderado;
         $caracteristica->save();
@@ -181,178 +181,71 @@ class CrossingController extends Controller
         return response()->json(['message' => 'Se modificó correctamente la caracteristica.']);
     }
 
-    private function obtenerNivelViabilidad($flor, $caracteristica, $testigo)
+    private static $evaluacionesCache = null;
+
+    private function obtenerEvaluacion(string $tipoEvaluacion, string $caracteristica)
+    {
+        if (is_null(self::$evaluacionesCache)) {
+            self::$evaluacionesCache = \App\Models\Evaluacion::with(['tipoEvaluacion', 'rangos'])->get();
+        }
+
+        return self::$evaluacionesCache->first(function ($eval) use ($tipoEvaluacion, $caracteristica) {
+            return $eval->tipoEvaluacion->keyname === $tipoEvaluacion &&
+                in_array($caracteristica, $eval->arrayCharacters ?? []);
+        });
+    }
+
+    private function obtenerNivelEvaluacion($flor, string $caracteristica, $testigo, string $tipoEvaluacion = 'viabilidad'): int
     {
         $valor = $flor->$caracteristica ?? null;
 
         if (is_null($valor) || $valor === '') {
-            return 999;
+            return $tipoEvaluacion === 'viabilidad' ? 999 : 0;
         }
 
-        switch ($caracteristica) {
-            case 'msco_r':
-            case 'carbon':
-                if ($valor <= 2)
-                    return 1;
-                if ($valor <= 3)
-                    return 2;
-                if ($valor <= 5)
-                    return 3;
-                if ($valor <= 8)
-                    return 4;
-                if ($valor <= 11)
-                    return 5;
-                if ($valor <= 15)
-                    return 6;
-                if ($valor <= 22)
-                    return 7;
-                if ($valor <= 30)
-                    return 8;
-                return 9;
+        $evaluacion = $this->obtenerEvaluacion($tipoEvaluacion, $caracteristica);
 
-            case 'tchm':
-                if (is_null($testigo) || $testigo == 0)
-                    return 0;
-                $porcentaje = ($valor * 100) / $testigo;
-                if ($porcentaje > 120)
-                    return 1;
-                if ($porcentaje >= 110)
-                    return 2;
-                if ($porcentaje >= 95)
-                    return 3;
-                if ($porcentaje >= 85)
-                    return 4;
-                return 5;
-
-            case 'dmtro_tllo':
-            case 'altura_planta':
-            case 'poblacion':
-            case 'scrsa':
-                if (is_null($testigo) || $testigo == 0)
-                    return 0;
-                $porcentaje = ($valor * 100) / $testigo;
-                if ($porcentaje > 120)
-                    return 1;
-                if ($porcentaje >= 100)
-                    return 2;
-                if ($porcentaje >= 90)
-                    return 3;
-                if ($porcentaje >= 80)
-                    return 4;
-                return 5;
-
-            case 'volcamiento':
-                if (is_null($testigo) || $testigo == 0)
-                    return 0;
-                $porcentaje = ($valor * 100) / $testigo;
-                if ($porcentaje < 10)
-                    return 1;
-                if ($porcentaje < 20)
-                    return 2;
-                if ($porcentaje < 30)
-                    return 3;
-                if ($porcentaje < 49)
-                    return 4;
-                return 5;
-
-            // Valor directo
-            case 'rya_cfe_r':
-            case 'roya_naranja':
-                return (int) $valor;
-
-            default:
-                return 999;
+        if (!$evaluacion) {
+            return $tipoEvaluacion === 'viabilidad' ? 999 : 0;
         }
+
+        if (in_array($caracteristica, ['rya_cfe_r', 'roya_naranja'])) {
+            return (int) $valor;
+        }
+
+        $requiereTestigo = in_array($caracteristica, [
+            'tchm',
+            'dmtro_tllo',
+            'altura_planta',
+            'poblacion',
+            'scrsa',
+            'volcamiento'
+        ]);
+
+        if ($requiereTestigo) {
+            if (is_null($testigo) || $testigo == 0) {
+                return 0;
+            }
+            $valorAEvaluar = ($valor * 100) / $testigo;
+        } else {
+            $valorAEvaluar = (float) $valor;
+        }
+
+        return $evaluacion->obtenerCalificacion($valorAEvaluar);
     }
 
     public function calcularViabilidadCaracteristica($caracteristica, $florA, $florB, $ponderado, $testigo)
     {
-        // Cálculos para determinar los niveles de viabilidad
-        // $nivel_florA = $this->calcularNivel($florA, $caracteristica, $testigo);
-        // $nivel_florB = $this->calcularNivel($florB, $caracteristica, $testigo);
-
-        $nivel_florA = $this->obtenerNivelViabilidad($florA, $caracteristica, $testigo);
-        $nivel_florB = $this->obtenerNivelViabilidad($florB, $caracteristica, $testigo);
+        $nivel_florA = $this->obtenerNivelEvaluacion($florA, $caracteristica, $testigo, 'viabilidad');
+        $nivel_florB = $this->obtenerNivelEvaluacion($florB, $caracteristica, $testigo, 'viabilidad');
 
         return ($nivel_florA + $nivel_florB) <= $ponderado->nivel;
     }
 
-
-    private function obtenerNivelMerito($flor, string $caracteristica, $testigo): int
-    {
-        $valor = $flor->$caracteristica ?? null;
-
-        if (is_null($valor) || $valor === '') {
-            return 999;
-        }
-
-        switch ($caracteristica) {
-            case 'msco_r':
-            case 'carbon':
-                if ($valor <= 2)
-                    return 1;
-                if ($valor <= 3)
-                    return 2;
-                if ($valor <= 5)
-                    return 3;
-                if ($valor <= 8)
-                    return 4;
-                if ($valor <= 11)
-                    return 5;
-                if ($valor <= 15)
-                    return 6;
-                if ($valor <= 22)
-                    return 7;
-                if ($valor <= 30)
-                    return 8;
-                return 9;
-
-            case 'tchm':
-            case 'scrsa':
-            case 'dmtro_tllo':
-            case 'altura_planta':
-            case 'poblacion':
-                if (is_null($testigo) || $testigo == 0)
-                    return 0;
-                $porcentaje = ($valor * 100) / $testigo;
-                if ($porcentaje > 120)
-                    return 1;
-                if ($porcentaje >= 110)
-                    return 2;
-                if ($porcentaje >= 95)
-                    return 3;
-                if ($porcentaje >= 85)
-                    return 4;
-                return 5;
-
-            case 'volcamiento':
-                if (is_null($testigo) || $testigo == 0)
-                    return 0;
-                $porcentaje = ($valor * 100) / $testigo;
-                if ($porcentaje < 10)
-                    return 1;
-                if ($porcentaje < 20)
-                    return 2;
-                if ($porcentaje < 30)
-                    return 3;
-                if ($porcentaje < 49)
-                    return 4;
-                return 5;
-
-            case 'rya_cfe_r':
-            case 'roya_naranja':
-                return (int) $valor;
-
-            default:
-                return 0;
-        }
-    }
-
     public function calcularValorMerito($caracteristica, $florA, $ponderado, $testigo)
     {
-        $nivel_florA = $this->obtenerNivelMerito($florA, $caracteristica, $testigo);
+        $nivel_florA = $this->obtenerNivelEvaluacion($florA, $caracteristica, $testigo, 'merito');
 
-        // Retornar siempre un valor numérico
         return $ponderado * $nivel_florA;
     }
 
