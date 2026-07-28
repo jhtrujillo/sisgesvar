@@ -1066,9 +1066,16 @@ const assistantSortedMales = computed(() => {
   }
   
   males.sort((a: any, b: any) => {
-    const icA = getIndiceCombinado(a.varA, a.varB, a.vm2);
-    const icB = getIndiceCombinado(b.varA, b.varB, b.vm2);
-    return (isNaN(icB) ? 0 : icB) - (isNaN(icA) ? 0 : icA);
+    if (tipoMapaCalor.value === 'ic') {
+      const icA = getIndiceCombinado(a.varA, a.varB, a.vm2);
+      const icB = getIndiceCombinado(b.varA, b.varB, b.vm2);
+      return (isNaN(icB) ? 0 : icB) - (isNaN(icA) ? 0 : icA);
+    } else {
+      // Sort by DG (Distancia Genética) by default
+      const dgA = Number(getDistancia(a.varA, a.varB));
+      const dgB = Number(getDistancia(b.varA, b.varB));
+      return (isNaN(dgB) ? 0 : dgB) - (isNaN(dgA) ? 0 : dgA);
+    }
   });
   
   return males;
