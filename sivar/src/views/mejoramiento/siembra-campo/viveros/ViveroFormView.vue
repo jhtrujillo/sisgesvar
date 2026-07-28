@@ -263,9 +263,9 @@
       <div class="mt-6 mb-4 border-b pb-2">
         <h3 class="text-lg font-semibold text-gray-800">Origen de la Semilla</h3>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-8 gap-4 mb-6">
         <!-- Origen Ingenio -->
-        <div class="mb-4">
+        <div class="mb-4 md:col-span-2">
           <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_ingenio">Ingenio <span class="text-red-500">*</span></label>
           <select v-model="form.origen_ingenio" @change="loadHaciendasOrigen(true)" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="origen_ingenio">
             <option value="">Seleccione un Ingenio</option>
@@ -273,12 +273,12 @@
           </select>
         </div>
         <!-- Origen Año -->
-        <div class="mb-4">
+        <div class="mb-4 md:col-span-1">
           <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_anio">Año <span class="text-red-500">*</span></label>
           <input v-model="form.origen_anio" type="number" required placeholder="Ej. 2024" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="origen_anio" />
         </div>
         <!-- Origen Hacienda -->
-        <div class="mb-4">
+        <div class="mb-4 md:col-span-2">
           <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_hacienda">Hacienda <span class="text-red-500">*</span></label>
           <select v-model="form.origen_hacienda" @change="loadSuertesOrigen(true)" :disabled="!form.origen_ingenio || haciendasOrigen.length === 0" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="origen_hacienda">
             <option value="">Seleccione una Hacienda</option>
@@ -286,7 +286,7 @@
           </select>
         </div>
         <!-- Origen Suerte -->
-        <div class="mb-4">
+        <div class="mb-4 md:col-span-2">
           <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_suerte">Suerte <span class="text-red-500">*</span></label>
           <select v-model="form.origen_suerte" :disabled="!form.origen_hacienda || suertesOrigen.length === 0" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="origen_suerte">
             <option value="">Seleccione una Suerte</option>
@@ -294,7 +294,7 @@
           </select>
         </div>
         <!-- Origen Parcela -->
-        <div class="mb-4">
+        <div class="mb-4 md:col-span-1">
           <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_parcela">Parcela <span class="text-red-500">*</span></label>
           <input v-model="form.origen_parcela" type="text" required placeholder="Ej. A-12" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="origen_parcela" />
         </div>
