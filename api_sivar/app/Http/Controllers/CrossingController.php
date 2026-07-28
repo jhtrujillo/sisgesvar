@@ -525,7 +525,6 @@ class CrossingController extends Controller
                             if ($hasA && $hasB) {
                                 if (!$this->calcularViabilidadCaracteristica($caracteristica, $florA_eval, $florB_eval, $ponderado, $testigoVal)) {
                                     $viabilidad['viabilidad'] = false;
-                                    break;
                                 }
                             }
                         }
