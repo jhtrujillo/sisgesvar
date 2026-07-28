@@ -39,7 +39,7 @@
           </div>
         </div>
       </div>
-      <div class="flex-1 overflow-auto p-3 space-y-2 scrollbar-custom bg-slate-50/30">
+      <div class="flex-1 overflow-auto p-3 space-y-2 scrollbar-female bg-slate-50/30">
         <div 
           v-for="(row, idx) in filteredFemales" :key="idx"
           @click="$emit('select-female', row)"
