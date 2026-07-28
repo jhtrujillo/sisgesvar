@@ -242,7 +242,7 @@
 import { ref, watch, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useSuggestionCrossingStore } from "@/stores/crossingsuggestion";
-import { useParametizeWeightedCrossingStore } from "@/stores/parametizeweightedcrossing";
+import { useParametizeWeightedCrossingStore } from "@/stores/crossignparametizeweighted";
 import ExcelJS from "exceljs";
 import { useToast } from "vue-toastification";
 import VarietyProfileDrawer from "@/components/VarietyProfileDrawer.vue";

@@ -1642,6 +1642,32 @@ async function exportarDesempenoIndividual() {
       return data;
     };
 
+    const findCharacteristicValue = (varName, caracteristica) => {
+      if (!varName) return undefined;
+      const cleanVar = varName.trim().toUpperCase();
+      const field = caracteristica.toLowerCase();
+
+      // 1. Banco de Germoplasma (flores_bg)
+      let record = floresBG.find((f) => f.vrdad && f.vrdad.trim().toUpperCase() === cleanVar);
+      if (record && record[field] !== undefined && record[field] !== null && record[field] !== '') {
+        return record[field];
+      }
+
+      // 2. Etapas Regionales (flores_pr)
+      record = floresPR.find((f) => f.vrdad && f.vrdad.trim().toUpperCase() === cleanVar);
+      if (record && record[field] !== undefined && record[field] !== null && record[field] !== '') {
+        return record[field];
+      }
+
+      // 3. Etapa III (flores_eiii)
+      record = floresEIII.find((f) => f.vrdad && f.vrdad.trim().toUpperCase() === cleanVar);
+      if (record && record[field] !== undefined && record[field] !== null && record[field] !== '') {
+        return record[field];
+      }
+
+      return undefined;
+    };
+
     const headers = [
       "Variedad Evaluada",
       "Rol (Madre/Padre)",
@@ -1678,7 +1704,7 @@ async function exportarDesempenoIndividual() {
                     const caracteristica = p.equivalente ? p.equivalente.toLowerCase() : p.caracteristica || p.nombre || "UNKNOWN";
                     const nombreCaract = p.nombre || p.caracteristica || caracteristica;
                     if (caracteristica) {
-                      const valorReal = florData[caracteristica] ?? "-";
+                      const valorReal = findCharacteristicValue(varName, caracteristica) ?? "-";
                       const valorTestigo = testigoLimpio[caracteristica] ?? "-";
                       const limiteMax = p.nivel !== null && p.nivel !== undefined ? Number(p.nivel) : "-";
                       const porcentajePeso = p.ponderado ? Number(p.ponderado) : 0;
