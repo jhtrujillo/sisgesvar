@@ -190,7 +190,7 @@
           </div>
 
           <!-- Botones de Control Interactivos -->
-          <div class="flex justify-end items-center space-x-2">
+          <div class="flex justify-end items-center gap-3">
             <!-- Selector de Mapa de Calor (3 opciones) -->
             <div class="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200 shadow-inner">
               <button

@@ -77,38 +77,38 @@
         <div class="flex-1 overflow-y-auto scrollbar-custom">
           <table class="w-full text-xs border-collapse">
             <thead class="sticky top-0 z-10">
-              <tr class="bg-slate-800 text-white">
-                <th class="px-3 py-2.5 text-left font-bold cursor-pointer hover:bg-slate-700 select-none" @click="setSort('varB')">
+              <tr class="bg-slate-100 border-b border-slate-200 text-slate-700">
+                <th class="px-3 py-2.5 text-left font-bold cursor-pointer hover:bg-slate-200 select-none" @click="setSort('varB')">
                   <div class="flex items-center gap-1"># Padre
-                    <svg class="w-3 h-3 shrink-0 transition-transform" :class="sortCol==='varB' ? 'text-emerald-400' : 'text-slate-500'" viewBox="0 0 16 16" fill="currentColor"><path d="M8 11L4 7h8z"/></svg>
+                    <svg class="w-3 h-3 shrink-0 transition-transform" :class="sortCol==='varB' ? 'text-emerald-600' : 'text-slate-400'" viewBox="0 0 16 16" fill="currentColor"><path d="M8 11L4 7h8z"/></svg>
                   </div>
                 </th>
-                <th class="px-3 py-2.5 text-center font-bold cursor-pointer hover:bg-slate-700 select-none w-20" @click="setSort('dg')">
+                <th class="px-3 py-2.5 text-center font-bold cursor-pointer hover:bg-slate-200 select-none w-20" @click="setSort('dg')">
                   <div class="flex items-center justify-center gap-1">DG
-                    <svg class="w-3 h-3 shrink-0" :class="sortCol==='dg' ? 'text-emerald-400' : 'text-slate-500'" viewBox="0 0 16 16" fill="currentColor"><path d="M8 11L4 7h8z"/></svg>
+                    <svg class="w-3 h-3 shrink-0" :class="sortCol==='dg' ? 'text-emerald-600' : 'text-slate-400'" viewBox="0 0 16 16" fill="currentColor"><path d="M8 11L4 7h8z"/></svg>
                   </div>
                 </th>
-                <th class="px-3 py-2.5 text-center font-bold cursor-pointer hover:bg-slate-700 select-none w-24" @click="setSort('vm')">
+                <th class="px-3 py-2.5 text-center font-bold cursor-pointer hover:bg-slate-200 select-none w-24" @click="setSort('vm')">
                   <div class="flex items-center justify-center gap-1">VM Macho
-                    <svg class="w-3 h-3 shrink-0" :class="sortCol==='vm' ? 'text-emerald-400' : 'text-slate-500'" viewBox="0 0 16 16" fill="currentColor"><path d="M8 11L4 7h8z"/></svg>
+                    <svg class="w-3 h-3 shrink-0" :class="sortCol==='vm' ? 'text-emerald-600' : 'text-slate-400'" viewBox="0 0 16 16" fill="currentColor"><path d="M8 11L4 7h8z"/></svg>
                   </div>
                 </th>
-                <th class="px-3 py-2.5 text-center font-bold cursor-pointer hover:bg-slate-700 select-none w-20" @click="setSort('ic')">
+                <th class="px-3 py-2.5 text-center font-bold cursor-pointer hover:bg-slate-200 select-none w-20" @click="setSort('ic')">
                   <div class="flex items-center justify-center gap-1">Índice
-                    <svg class="w-3 h-3 shrink-0" :class="sortCol==='ic' ? 'text-emerald-400' : 'text-slate-500'" viewBox="0 0 16 16" fill="currentColor"><path d="M8 11L4 7h8z"/></svg>
+                    <svg class="w-3 h-3 shrink-0" :class="sortCol==='ic' ? 'text-emerald-600' : 'text-slate-400'" viewBox="0 0 16 16" fill="currentColor"><path d="M8 11L4 7h8z"/></svg>
                   </div>
                 </th>
-                <th class="px-3 py-2.5 text-center font-bold cursor-pointer hover:bg-slate-700 select-none w-16" @click="setSort('polen')">
+                <th class="px-3 py-2.5 text-center font-bold cursor-pointer hover:bg-slate-200 select-none w-16" @click="setSort('polen')">
                   <div class="flex items-center justify-center gap-1">Polen
-                    <svg class="w-3 h-3 shrink-0" :class="sortCol==='polen' ? 'text-emerald-400' : 'text-slate-500'" viewBox="0 0 16 16" fill="currentColor"><path d="M8 11L4 7h8z"/></svg>
+                    <svg class="w-3 h-3 shrink-0" :class="sortCol==='polen' ? 'text-emerald-600' : 'text-slate-400'" viewBox="0 0 16 16" fill="currentColor"><path d="M8 11L4 7h8z"/></svg>
                   </div>
                 </th>
-                <th class="px-3 py-2.5 text-center font-bold cursor-pointer hover:bg-slate-700 select-none w-16" @click="setSort('disp')">
+                <th class="px-3 py-2.5 text-center font-bold cursor-pointer hover:bg-slate-200 select-none w-16" @click="setSort('disp')">
                   <div class="flex items-center justify-center gap-1">Disp.
-                    <svg class="w-3 h-3 shrink-0" :class="sortCol==='disp' ? 'text-emerald-400' : 'text-slate-500'" viewBox="0 0 16 16" fill="currentColor"><path d="M8 11L4 7h8z"/></svg>
+                    <svg class="w-3 h-3 shrink-0" :class="sortCol==='disp' ? 'text-emerald-600' : 'text-slate-400'" viewBox="0 0 16 16" fill="currentColor"><path d="M8 11L4 7h8z"/></svg>
                   </div>
                 </th>
-                <th class="px-3 py-2.5 text-center font-bold w-28">Acción</th>
+                <th class="px-3 py-2.5 text-center font-bold w-28 text-slate-700">Acción</th>
               </tr>
             </thead>
             <tbody>
