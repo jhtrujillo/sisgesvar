@@ -1198,131 +1198,84 @@ class CrossingController extends Controller
     }
     public function criteriosBancoGermoplasmaPorVariedad(Request $request, $variedad)
     {
-        $bg = DB::select(DB::raw("SELECT avg(mosaico_p::float) mosaico, 
-    avg(roya_cafe_r::float) roya_cafe, 
-    avg(roya_naranja_r::float) roya_naranja, 
-    avg(carbon_p::float) carbon,
-    avg(tchm::float) tchm, 
-    avg(diametro_tallo::float) diametro_tallo, 
-    avg(volcamiento::float) volcamiento, 
-    avg(altura_planta::float) altura_planta, 
-    avg(poblacion_1m::float) poblacion, 
-    avg(sacarosa::float) sacarosa,
-    avg(dds::float) dds,
-    avg(tubos::float) tubos,
-    avg(raiz_nf::float) raiz_nf,
-    avg(numero_entrenudos::float) numero_entrenudos,
-    avg(longitud_entrenudo::float) longitud_entrenudo,
-    avg(longitud_cogollo::float) longitud_cogollo,
-    avg(longitud_hoja::float) longitud_hoja,
-    avg(floracion_tllos::float) floracion_tallos,
-    avg(floracion_p::float) floracion_p,
-    avg(aspecto_planta::float) aspecto_planta,
-    avg(aspecto_seleccion::float) aspecto_seleccion,
-    avg(pelusa::float) pelusa,
-    avg(deshoje::float) deshoje,
-    avg(materia_seca::float) materia_seca,
-    avg(humedad::float) humedad,
-    avg(brix::float) brix,
-    avg(fibra::float) fibra,
-    avg(pureza::float) pureza,
-    avg(are::float) are,
-    avg(reductores::float) reductores,
-    avg(atr::float) atr,
-    avg(peso::float) peso,
-    avg(tch::float) tch,
-    avg(tah::float) tah,
-    avg(tsh::float) tsh,
-    avg(tahm::float) tahm,
-    avg(tshm::float) tshm,
-    avg(lsdte::float) lsdte,
-    avg(lsdtt::float) lsdtt,
-    avg(lsdtv::float) lsdtv,
-    avg(lsdt::float) lsdt,
-    avg(rsd::float) rsd,
-    avg(sclyv::float) sclyv,
-    avg(rajadura_inc::float) rajadura_inc,
-    avg(entrenudos_tallo::float) entrenudos_tallo,
-    avg(entrenudos_rajados::float) entrenudos_rajados,
-    avg(hojas_erectas::float) hojas_erectas,
-    avg(raices_tallos::float) raices_tallos,
-    avg(yemas_protuberantes::float) yemas_protuberantes,
-    avg(medula::float) medula,
-    avg(habito_de_crecimiento::float) habito_de_crecimiento,
-    avg(germinacion::float) germinacion,
-    avg(tolerancia_herbicida::float) tolerancia_herbicida,
-    avg(raices_adventicias::float) raices_adventicias
-FROM public.\"caracterizacion_banco_germoplasma\" 
-WHERE true"));
-        $bg_var = DB::select(DB::raw("SELECT avg(mosaico_p::float) mosaico, 
-    avg(roya_cafe_r::float) roya_cafe, 
-    avg(roya_naranja_r::float) roya_naranja, 
-    avg(carbon_p::float) carbon,
-    avg(tchm::float) tchm, 
-    avg(diametro_tallo::float) diametro_tallo, 
-    avg(volcamiento::float) volcamiento, 
-    avg(altura_planta::float) altura_planta, 
-    avg(poblacion_1m::float) poblacion, 
-    avg(sacarosa::float) sacarosa,
-    avg(dds::float) dds,
-    avg(tubos::float) tubos,
-    avg(raiz_nf::float) raiz_nf,
-    avg(numero_entrenudos::float) numero_entrenudos,
-    avg(longitud_entrenudo::float) longitud_entrenudo,
-    avg(longitud_cogollo::float) longitud_cogollo,
-    avg(longitud_hoja::float) longitud_hoja,
-    avg(floracion_tllos::float) floracion_tallos,
-    avg(floracion_p::float) floracion_p,
-    avg(aspecto_planta::float) aspecto_planta,
-    avg(aspecto_seleccion::float) aspecto_seleccion,
-    avg(pelusa::float) pelusa,
-    avg(deshoje::float) deshoje,
-    avg(materia_seca::float) materia_seca,
-    avg(humedad::float) humedad,
-    avg(brix::float) brix,
-    avg(fibra::float) fibra,
-    avg(pureza::float) pureza,
-    avg(are::float) are,
-    avg(reductores::float) reductores,
-    avg(atr::float) atr,
-    avg(peso::float) peso,
-    avg(tch::float) tch,
-    avg(tah::float) tah,
-    avg(tsh::float) tsh,
-    avg(tahm::float) tahm,
-    avg(tshm::float) tshm,
-    avg(lsdte::float) lsdte,
-    avg(lsdtt::float) lsdtt,
-    avg(lsdtv::float) lsdtv,
-    avg(lsdt::float) lsdt,
-    avg(rsd::float) rsd,
-    avg(sclyv::float) sclyv,
-    avg(rajadura_inc::float) rajadura_inc,
-    avg(entrenudos_tallo::float) entrenudos_tallo,
-    avg(entrenudos_rajados::float) entrenudos_rajados,
-    avg(hojas_erectas::float) hojas_erectas,
-    avg(raices_tallos::float) raices_tallos,
-    avg(yemas_protuberantes::float) yemas_protuberantes,
-    avg(medula::float) medula,
-    avg(habito_de_crecimiento::float) habito_de_crecimiento,
-    avg(germinacion::float) germinacion,
-    avg(tolerancia_herbicida::float) tolerancia_herbicida,
-    avg(raices_adventicias::float) raices_adventicias
-FROM public.\"caracterizacion_banco_germoplasma\" 
-WHERE variedad = '$variedad'"));
+        $sql = "SELECT avg(mosaico_p::float) mosaico, 
+        avg(roya_cafe_r::float) roya_cafe, 
+        avg(roya_naranja_r::float) roya_naranja, 
+        avg(carbon_p::float) carbon,
+        avg(tchm::float) tchm, 
+        avg(diametro_tallo::float) diametro_tallo, 
+        avg(volcamiento::float) volcamiento, 
+        avg(altura_planta::float) altura_planta, 
+        avg(poblacion_1m::float) poblacion, 
+        avg(sacarosa::float) sacarosa,
+        avg(dds::float) dds,
+        avg(tubos::float) tubos,
+        avg(raiz_nf::float) raiz_nf,
+        avg(numero_entrenudos::float) numero_entrenudos,
+        avg(longitud_entrenudo::float) longitud_entrenudo,
+        avg(longitud_cogollo::float) longitud_cogollo,
+        avg(longitud_hoja::float) longitud_hoja,
+        avg(floracion_tllos::float) floracion_tallos,
+        avg(floracion_p::float) floracion_p,
+        avg(aspecto_planta::float) aspecto_planta,
+        avg(aspecto_seleccion::float) aspecto_seleccion,
+        avg(pelusa::float) pelusa,
+        avg(deshoje::float) deshoje,
+        avg(materia_seca::float) materia_seca,
+        avg(humedad::float) humedad,
+        avg(brix::float) brix,
+        avg(fibra::float) fibra,
+        avg(pureza::float) pureza,
+        avg(are::float) are,
+        avg(reductores::float) reductores,
+        avg(atr::float) atr,
+        avg(peso::float) peso,
+        avg(tch::float) tch,
+        avg(tah::float) tah,
+        avg(tsh::float) tsh,
+        avg(tahm::float) tahm,
+        avg(tshm::float) tshm,
+        avg(lsdte::float) lsdte,
+        avg(lsdtt::float) lsdtt,
+        avg(lsdtv::float) lsdtv,
+        avg(lsdt::float) lsdt,
+        avg(rsd::float) rsd,
+        avg(sclyv::float) sclyv,
+        avg(rajadura_inc::float) rajadura_inc,
+        avg(entrenudos_tallo::float) entrenudos_tallo,
+        avg(entrenudos_rajados::float) entrenudos_rajados,
+        avg(hojas_erectas::float) hojas_erectas,
+        avg(raices_tallos::float) raices_tallos,
+        avg(yemas_protuberantes::float) yemas_protuberantes,
+        avg(medula::float) medula,
+        avg(habito_de_crecimiento::float) habito_de_crecimiento,
+        avg(germinacion::float) germinacion,
+        avg(tolerancia_herbicida::float) tolerancia_herbicida,
+        avg(raices_adventicias::float) raices_adventicias
+    FROM public.\"caracterizacion_banco_germoplasma\"";
+
+        $bg = DB::select($sql . " WHERE true");
+
+        // Ejecutar consulta filtrada usando parámetros seguros (bindings) para evitar Inyección SQL
+        $bg_var = DB::select($sql . " WHERE variedad = ?", [$variedad]);
+
         $criterios = "";
-        foreach ($bg[0] as $key => $c) {
-            if ($bg[0]->$key != NULL and $bg[0]->$key != "" and $bg_var[0]->$key != NULL and $bg_var[0]->$key != "") {
-                if ($bg[0]->$key > $bg_var[0]->$key) {
-                    $criterios .= "<text style='color:red';>" . str_replace("_", " ", strtoupper($key)) . " <i class='fa fa-arrow-down'></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</text>";
-                } else {
-                    $criterios .= "<text style='color:green';>" . str_replace("_", " ", strtoupper($key)) . "  <i class='fa fa-arrow-up'></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</text>";
+
+        if (!empty($bg) && !empty($bg_var)) {
+            foreach ($bg[0] as $key => $c) {
+                if ($bg[0]->$key !== null && $bg[0]->$key !== "" && $bg_var[0]->$key !== null && $bg_var[0]->$key !== "") {
+                    if ($bg[0]->$key > $bg_var[0]->$key) {
+                        $criterios .= "<text style='color:red;'>" . str_replace("_", " ", strtoupper($key)) . " <i class='fa fa-arrow-down'></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</text>";
+                    } else {
+                        $criterios .= "<text style='color:green;'>" . str_replace("_", " ", strtoupper($key)) . "  <i class='fa fa-arrow-up'></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</text>";
+                    }
                 }
             }
         }
 
         return response()->json(['criterios' => $criterios]);
     }
+
 
     // public function proyectosConFlores(Request $request)
     // {
