@@ -34,7 +34,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Identificador Único -->
           <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="identificador_unico">IDPlot</label>
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="identificador_unico">ID Vivero</label>
             <input
               v-model="form.identificador_unico"
               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-500 bg-gray-100 leading-tight focus:outline-none focus:shadow-outline cursor-not-allowed"
