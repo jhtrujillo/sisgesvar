@@ -1063,10 +1063,39 @@ const loadAmbientes = async () => {
   }
 };
 
-onMounted(async () => {
+const resetAndLoad = async () => {
+  // Reset form and variables to default empty state
+  form.value = {
+    identificador_unico: "",
+    nombre: "",
+    ingenio: "",
+    hacienda: "",
+    suerte: "",
+    proyecto_id: "",
+    ambiente: "",
+    responsable_id: "",
+    fecha_siembra: "",
+    numero_corte: 1,
+    temporada_floracion: "",
+    condicion: "",
+    caracter_id: "",
+    origen_ingenio: "",
+    origen_hacienda: "",
+    origen_suerte: "",
+    origen_anio: null,
+    origen_parcela: ""
+  };
+  searchProyecto.value = "";
+  searchCaracter.value = "";
+  searchResponsable.value = "";
+  parcelas.value = [];
+
   if (route.params.id) {
     isEditing.value = true;
+  } else {
+    isEditing.value = false;
   }
+  
   isLoadingInfo.value = true;
 
   try {
@@ -1139,14 +1168,18 @@ onMounted(async () => {
       }
     }
   } catch (error) {
-    console.error("Error in onMounted:", error);
-    toast.error("Error al cargar la información inicial o del vivero");
+    console.error("Error in resetAndLoad:", error);
+    toast.error("Error al cargar la información del vivero");
   } finally {
     isLoadingInfo.value = false;
   }
 
   await loadVariedades();
-});
+};
+
+onMounted(resetAndLoad);
+
+watch(() => route.path, resetAndLoad);
 
 const submitForm = async () => {
   isSubmitting.value = true;
