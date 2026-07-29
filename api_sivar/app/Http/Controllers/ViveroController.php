@@ -82,34 +82,21 @@ class ViveroController extends Controller
     {
         $vivero = Vivero::findOrFail($id);
         
-        $oldIngenio = $vivero->ingenio;
-        $oldHacienda = $vivero->hacienda;
-        $oldSuerte = $vivero->suerte;
-        $oldFechaSiembra = $vivero->fecha_siembra;
-
-        // Fill with all fields except identificador_unico (which is handled separately)
         $vivero->fill($request->except('identificador_unico'));
-
-        // If any of the fields that compose the auto-generated ID changed
-        if (
-            $oldIngenio !== $vivero->ingenio ||
-            $oldHacienda !== $vivero->hacienda ||
-            $oldSuerte !== $vivero->suerte ||
-            $oldFechaSiembra !== $vivero->fecha_siembra
-        ) {
-            $parts = explode('-', $vivero->identificador_unico);
-            $consecutivo = end($parts);
-            if (!is_numeric($consecutivo) || intval($consecutivo) <= 0) {
-                $consecutivo = $vivero->id;
-            }
-            $vivero->identificador_unico = $this->generarIdentificadorUnico(
-                $vivero->ingenio,
-                $vivero->hacienda,
-                $vivero->suerte,
-                $vivero->fecha_siembra,
-                $consecutivo
-            );
+        
+        // Always regenerate the identificador_unico using the helper method on update
+        $parts = explode('-', $vivero->identificador_unico);
+        $consecutivo = end($parts);
+        if (!is_numeric($consecutivo) || intval($consecutivo) <= 0) {
+            $consecutivo = $vivero->id;
         }
+        $vivero->identificador_unico = $this->generarIdentificadorUnico(
+            $vivero->ingenio,
+            $vivero->hacienda,
+            $vivero->suerte,
+            $vivero->fecha_siembra,
+            $consecutivo
+        );
         
         $vivero->save();
 
