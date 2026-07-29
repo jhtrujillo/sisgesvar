@@ -53,13 +53,13 @@
       <table class="min-w-full bg-white">
         <thead class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
           <tr>
-            <th class="py-3 px-6 text-left">IDPlot</th>
+            <th class="py-3 px-6 text-left">ID Vivero</th>
             <th class="py-3 px-6 text-left">Nombre</th>
             <th class="py-3 px-6 text-left">Hda / Suerte</th>
             <th class="py-3 px-6 text-left">Proyecto</th>
             <th class="py-3 px-6 text-left">Tipo de floración</th>
             <th class="py-3 px-6 text-left">Fecha Siembra</th>
-            <th class="py-3 px-6 text-left">Cortes</th>
+            <th class="py-3 px-6 text-left">Vivero Origen</th>
             <th class="py-3 px-6 text-center">Acciones</th>
           </tr>
         </thead>
@@ -89,7 +89,9 @@
             </td>
             <td class="py-3 px-6 text-left">{{ formatDate(vivero.fecha_siembra) }}</td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ vivero.numero_corte }}</div>
+              <div class="text-sm text-gray-900 font-mono" :title="vivero.origen_parcela || 'N/A'">
+                {{ getViveroOrigenId(vivero.origen_parcela) }}
+              </div>
             </td>
             <td class="py-3 px-6 text-center">
               <div class="flex item-center justify-center">
@@ -427,6 +429,18 @@ const closeCosechaModal = () => {
 const getBaseCode = (currentCode: string) => {
   if (!currentCode) return '';
   return currentCode.replace(/-C?\d+$/, '');
+};
+
+const getViveroOrigenId = (origenParcela: string) => {
+  if (!origenParcela) return 'N/A';
+  const parts = origenParcela.split('-');
+  if (parts.length > 1) {
+    const lastPart = parts[parts.length - 1];
+    if (/^\d+$/.test(lastPart)) {
+      return parts.slice(0, -1).join('-');
+    }
+  }
+  return origenParcela;
 };
 
 const getHistoricalCode = (currentCode: string, historicalCorte: number) => {
