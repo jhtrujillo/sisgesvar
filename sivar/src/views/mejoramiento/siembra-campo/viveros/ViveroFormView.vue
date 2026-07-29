@@ -427,7 +427,7 @@
               </select>
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Plot Origen</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Parcela</label>
               <input
                 v-model="parcelaForm.numero_parcela_origen"
                 @input="updateIdPlotOrigen"
@@ -437,7 +437,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">ID Plot Origen</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">ID Parcela</label>
               <input
                 v-model="parcelaForm.id_plot_origen"
                 type="text"
@@ -538,8 +538,8 @@
                 <th class="px-4 py-3 border-b border-slate-200">Variedad</th>
                 <th class="px-4 py-3 border-b border-slate-200">Pedigree</th>
                 <th class="px-4 py-3 border-b border-slate-200">Carácter</th>
-                <th class="px-4 py-3 border-b border-slate-200">Plot Origen</th>
-                <th class="px-4 py-3 border-b border-slate-200">ID Plot Origen</th>
+                <th class="px-4 py-3 border-b border-slate-200">Parcela</th>
+                <th class="px-4 py-3 border-b border-slate-200">ID Parcela</th>
                 <th class="px-4 py-3 border-b border-slate-200 text-center">Acciones</th>
               </tr>
             </thead>
