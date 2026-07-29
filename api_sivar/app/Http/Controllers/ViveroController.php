@@ -22,7 +22,7 @@ class ViveroController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|max:255',
+            'nombre' => 'nullable|string|max:255',
             'fecha_siembra' => 'required|date',
             'origen_ingenio' => 'nullable|string',
             'origen_hacienda' => 'nullable|string',
@@ -49,7 +49,7 @@ class ViveroController extends Controller
 
         $vivero = Vivero::create([
             'identificador_unico' => $identificador,
-            'nombre' => $request->nombre,
+            'nombre' => $request->nombre ?: $identificador,
             'ingenio' => $request->ingenio,
             'hacienda' => $request->hacienda,
             'suerte' => $request->suerte,
@@ -99,6 +99,11 @@ class ViveroController extends Controller
         );
         
         $vivero->save();
+
+        if (!$vivero->nombre) {
+            $vivero->nombre = $vivero->identificador_unico;
+            $vivero->save();
+        }
 
         return response()->json($vivero);
     }
