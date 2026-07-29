@@ -32,17 +32,17 @@ class ViveroController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Generación del ID Único (Siempre Automático)
-        $ingenio = $request->ingenio ?: '00';
-        $hacienda = $request->hacienda ?: '00';
-        $suerte = $request->suerte ?: '00';
-        $anioSiembra = $request->fecha_siembra ? date('Y', strtotime($request->fecha_siembra)) : date('Y');
-        
         // Calculamos el consecutivo basándonos en la cantidad total de registros en la tabla
         $maxId = Vivero::withTrashed()->max('id') ?? 0;
         $consecutivo = $maxId + 1;
-        
-        $identificador = sprintf('%s-%s-%s-%s-%d', $ingenio, $anioSiembra, $hacienda, $suerte, $consecutivo);
+
+        $identificador = $this->generarIdentificadorUnico(
+            $request->ingenio,
+            $request->hacienda,
+            $request->suerte,
+            $request->fecha_siembra,
+            $consecutivo
+        );
 
         $vivero = Vivero::create([
             'identificador_unico' => $identificador,
@@ -93,19 +93,18 @@ class ViveroController extends Controller
             $oldSuerte !== $vivero->suerte ||
             $oldFechaSiembra !== $vivero->fecha_siembra
         ) {
-            // Check if the current ID follows the auto-generated format
-            // Format: Ingenio - Año - Hacienda - Suerte - Consecutivo [-Corte]
-            if (preg_match('/^([^-]+)-(\d{4})-([^-]+)-([^-]+)-(\d+)(?:-C?(\d+))?$/', $vivero->identificador_unico, $matches)) {
-                $consecutivo = $matches[5];
-                $corte = isset($matches[6]) ? '-' . $matches[6] : '';
-                
-                $newIngenio = $vivero->ingenio ?: '00';
-                $newAnio = $vivero->fecha_siembra ? date('Y', strtotime($vivero->fecha_siembra)) : date('Y');
-                $newHacienda = $vivero->hacienda ?: '00';
-                $newSuerte = $vivero->suerte ?: '00';
-                
-                $vivero->identificador_unico = sprintf('%s-%s-%s-%s-%d%s', $newIngenio, $newAnio, $newHacienda, $newSuerte, $consecutivo, $corte);
+            $parts = explode('-', $vivero->identificador_unico);
+            $consecutivo = end($parts);
+            if (!is_numeric($consecutivo) || intval($consecutivo) <= 0) {
+                $consecutivo = $vivero->id;
             }
+            $vivero->identificador_unico = $this->generarIdentificadorUnico(
+                $vivero->ingenio,
+                $vivero->hacienda,
+                $vivero->suerte,
+                $vivero->fecha_siembra,
+                $consecutivo
+            );
         }
         
         $vivero->save();
@@ -240,5 +239,29 @@ class ViveroController extends Controller
 
         $caracter = DB::table('proyecto_caracteres')->where('id', $newId)->first();
         return response()->json($caracter, 201);
+    }
+
+    private function generarIdentificadorUnico($ingenioCd, $haciendaCd, $suerteCd, $fechaSiembra, $consecutivo)
+    {
+        $ingenioName = '00';
+        if ($ingenioCd) {
+            $ing = DB::connection('sivar')->table('remote_pg_ingenios')->where('cd_ingnio', $ingenioCd)->first();
+            if ($ing) {
+                $ingenioName = html_entity_decode(trim($ing->nm_ingnio), ENT_QUOTES, 'UTF-8');
+            }
+        }
+
+        $haciendaName = '00';
+        if ($haciendaCd) {
+            $hda = DB::connection('sivar')->table('remote_pg_hacienda')->where('cd_hcnda', $haciendaCd)->first();
+            if ($hda) {
+                $haciendaName = html_entity_decode(trim($hda->nm_hcnda), ENT_QUOTES, 'UTF-8');
+            }
+        }
+
+        $anioSiembra = $fechaSiembra ? date('Y', strtotime($fechaSiembra)) : date('Y');
+        $suerte = $suerteCd ?: '00';
+
+        return sprintf('%s-%s-%s-%s-%d', $ingenioName, $anioSiembra, $haciendaName, $suerte, $consecutivo);
     }
 }
