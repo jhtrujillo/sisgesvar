@@ -81,7 +81,7 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="text-sm text-gray-900 font-mono" :title="vivero.origen_parcela || 'N/A'">
-                {{ getViveroOrigenId(vivero.origen_parcela) }}
+                {{ getViveroOrigenId(vivero) }}
               </div>
             </td>
             <td class="py-3 px-6 text-left" v-html="vivero.nombre"></td>
@@ -431,16 +431,27 @@ const getBaseCode = (currentCode: string) => {
   return currentCode.replace(/-C?\d+$/, '');
 };
 
-const getViveroOrigenId = (origenParcela: string) => {
-  if (!origenParcela) return 'N/A';
-  const parts = origenParcela.split('-');
-  if (parts.length > 1) {
+const getViveroOrigenId = (vivero: any) => {
+  if (!vivero) return 'N/A';
+  
+  // Si tiene origen_parcela con formato de ID de parcela de Vivero (ej: 01-2024-03-04-123-1)
+  if (vivero.origen_parcela && vivero.origen_parcela.split('-').length > 4) {
+    const parts = vivero.origen_parcela.split('-');
     const lastPart = parts[parts.length - 1];
     if (/^\d+$/.test(lastPart)) {
-      return parts.slice(0, -1).join('-');
+      return parts.slice(0, -1).join('-'); // ID del Vivero padre
     }
   }
-  return origenParcela;
+
+  // De lo contrario (ej. creado de cero manualmente), mostramos toda la info de origen ingresada
+  const info = [];
+  if (vivero.origen_ingenio) info.push(vivero.origen_ingenio);
+  if (vivero.origen_anio) info.push(vivero.origen_anio);
+  if (vivero.origen_hacienda) info.push(vivero.origen_hacienda);
+  if (vivero.origen_suerte) info.push('S:' + vivero.origen_suerte);
+  if (vivero.origen_parcela) info.push('P:' + vivero.origen_parcela);
+
+  return info.length > 0 ? info.join(' / ') : 'N/A';
 };
 
 const getHistoricalCode = (currentCode: string, historicalCorte: number) => {
