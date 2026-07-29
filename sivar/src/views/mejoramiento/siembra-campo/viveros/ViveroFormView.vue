@@ -598,7 +598,7 @@
                         class="text-emerald-600 hover:text-emerald-800 transition-colors bg-emerald-50 hover:bg-emerald-100 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm border border-emerald-200/50"
                         title="Registrar Corte"
                       >
-                        ✂️ Corte
+                        Corte
                       </button>
                       <button
                         type="button"
