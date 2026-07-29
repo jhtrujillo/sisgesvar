@@ -252,13 +252,13 @@ class ViveroController extends Controller
         $suerte = $suerteCd ?: '00';
         $anioSiembra = $fechaSiembra ? date('Y', strtotime($fechaSiembra)) : date('Y');
 
-        return sprintf('%s-%s-%s-%s-%d', $ingenio, $anioSiembra, $hacienda, $suerte, $consecutivo);
+        return sprintf('%s%s-%s-%s-%d', $ingenio, $anioSiembra, $hacienda, $suerte, $consecutivo);
     }
 
     private function formatIdViveroOrigen($vivero)
     {
-        // Si tiene origen_parcela con formato de ID de parcela de Vivero (ej: CN-2026-00EESA-00023D-2-4)
-        if ($vivero->origen_parcela && count(explode('-', $vivero->origen_parcela)) > 4) {
+        // Si tiene origen_parcela con formato de ID de parcela de Vivero (ej: CN2026-00EESA-00023D-2-4)
+        if ($vivero->origen_parcela && count(explode('-', $vivero->origen_parcela)) > 3) {
             $parts = explode('-', $vivero->origen_parcela);
             $lastPart = end($parts);
             if (is_numeric($lastPart)) {
@@ -269,8 +269,16 @@ class ViveroController extends Controller
 
         // Si no (origen manual/externo), construimos el ID usando los códigos de la base de datos
         $info = [];
-        if ($vivero->origen_ingenio) $info[] = $vivero->origen_ingenio;
-        if ($vivero->origen_anio) $info[] = $vivero->origen_anio;
+        $ingenioAnio = '';
+        if ($vivero->origen_ingenio) {
+            $ingenioAnio .= $vivero->origen_ingenio;
+        }
+        if ($vivero->origen_anio) {
+            $ingenioAnio .= $vivero->origen_anio;
+        }
+        if ($ingenioAnio !== '') {
+            $info[] = $ingenioAnio;
+        }
         if ($vivero->origen_hacienda) $info[] = $vivero->origen_hacienda;
         if ($vivero->origen_suerte) $info[] = $vivero->origen_suerte;
         if ($vivero->origen_parcela) $info[] = $vivero->origen_parcela;
