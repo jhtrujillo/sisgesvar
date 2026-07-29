@@ -1063,123 +1063,6 @@ const loadAmbientes = async () => {
   }
 };
 
-const resetAndLoad = async () => {
-  // Reset form and variables to default empty state
-  form.value = {
-    identificador_unico: "",
-    nombre: "",
-    ingenio: "",
-    hacienda: "",
-    suerte: "",
-    proyecto_id: "",
-    ambiente: "",
-    responsable_id: "",
-    fecha_siembra: "",
-    numero_corte: 1,
-    temporada_floracion: "",
-    condicion: "",
-    caracter_id: "",
-    origen_ingenio: "",
-    origen_hacienda: "",
-    origen_suerte: "",
-    origen_anio: null,
-    origen_parcela: ""
-  };
-  searchProyecto.value = "";
-  searchCaracter.value = "";
-  searchResponsable.value = "";
-  parcelas.value = [];
-
-  if (route.params.id) {
-    isEditing.value = true;
-  } else {
-    isEditing.value = false;
-  }
-  
-  isLoadingInfo.value = true;
-
-  try {
-    // Load common data concurrently for better performance
-    await Promise.all([loadIngenios(), loadProyectos(), loadResponsables(), loadAmbientes()]);
-
-    if (isEditing.value) {
-      const response = await viverosServices.getVivero(route.params.id as string);
-      const vivero = response.data;
-      if (vivero.fecha_siembra) {
-        vivero.fecha_siembra = vivero.fecha_siembra.substring(0, 10);
-      }
-      form.value = { ...vivero };
-
-      if (form.value.proyecto_id) {
-        const pry = proyectos.value.find((p) => p.id_prycto == form.value.proyecto_id);
-        if (pry) searchProyecto.value = formatProjectName(pry);
-
-        await loadCaracteres(form.value.proyecto_id);
-        if (form.value.caracter_id) {
-          const car = caracteres.value.find((c) => c.id == form.value.caracter_id);
-          if (car) searchCaracter.value = car.nombre;
-        }
-      }
-      if (form.value.responsable_id) {
-        const usr = responsables.value.find((u) => u.id_usrio == form.value.responsable_id);
-        if (usr) searchResponsable.value = usr.nmbre;
-      }
-
-      // Load cascading data without resetting values
-      if (form.value.ingenio) {
-        await loadHaciendas(false);
-      }
-      if (form.value.hacienda) {
-        await loadSuertes(false);
-      }
-
-      // Load origin cascading data
-      if (form.value.origen_ingenio) {
-        await loadHaciendasOrigen(false);
-      }
-      if (form.value.origen_hacienda) {
-        await loadSuertesOrigen(false);
-      }
-
-      // Load Parcelas
-      await loadParcelas();
-    } else {
-      const currentYear = new Date().getFullYear();
-      if (!form.value.anio) {
-        form.value.anio = currentYear;
-      }
-
-      if (route.query.origen_ingenio) {
-        form.value.origen_ingenio = route.query.origen_ingenio as string;
-        await loadHaciendasOrigen(false);
-      }
-      if (route.query.origen_hacienda) {
-        form.value.origen_hacienda = route.query.origen_hacienda as string;
-        await loadSuertesOrigen(false);
-      }
-      if (route.query.origen_suerte) {
-        form.value.origen_suerte = route.query.origen_suerte as string;
-      }
-      if (route.query.origen_anio) {
-        form.value.origen_anio = Number(route.query.origen_anio);
-      }
-      if (route.query.origen_parcela) {
-        form.value.origen_parcela = route.query.origen_parcela as string;
-      }
-    }
-  } catch (error) {
-    console.error("Error in resetAndLoad:", error);
-    toast.error("Error al cargar la información del vivero");
-  } finally {
-    isLoadingInfo.value = false;
-  }
-
-  await loadVariedades();
-};
-
-onMounted(resetAndLoad);
-
-watch(() => route.path, resetAndLoad);
 
 const submitForm = async () => {
   isSubmitting.value = true;
@@ -1312,4 +1195,122 @@ const deleteAllParcelas = async () => {
     toast.error("Error al vaciar el vivero");
   }
 };
+
+const resetAndLoad = async () => {
+  // Reset form and variables to default empty state
+  form.value = {
+    identificador_unico: "",
+    nombre: "",
+    ingenio: "",
+    hacienda: "",
+    suerte: "",
+    proyecto_id: "",
+    ambiente: "",
+    responsable_id: "",
+    fecha_siembra: "",
+    numero_corte: 1,
+    temporada_floracion: "",
+    condicion: "",
+    caracter_id: "",
+    origen_ingenio: "",
+    origen_hacienda: "",
+    origen_suerte: "",
+    origen_anio: null,
+    origen_parcela: ""
+  };
+  searchProyecto.value = "";
+  searchCaracter.value = "";
+  searchResponsable.value = "";
+  parcelas.value = [];
+
+  if (route.params.id) {
+    isEditing.value = true;
+  } else {
+    isEditing.value = false;
+  }
+  
+  isLoadingInfo.value = true;
+
+  try {
+    // Load common data concurrently for better performance
+    await Promise.all([loadIngenios(), loadProyectos(), loadResponsables(), loadAmbientes()]);
+
+    if (isEditing.value) {
+      const response = await viverosServices.getVivero(route.params.id as string);
+      const vivero = response.data;
+      if (vivero.fecha_siembra) {
+        vivero.fecha_siembra = vivero.fecha_siembra.substring(0, 10);
+      }
+      form.value = { ...vivero };
+
+      if (form.value.proyecto_id) {
+        const pry = proyectos.value.find((p) => p.id_prycto == form.value.proyecto_id);
+        if (pry) searchProyecto.value = formatProjectName(pry);
+
+        await loadCaracteres(form.value.proyecto_id);
+        if (form.value.caracter_id) {
+          const car = caracteres.value.find((c) => c.id == form.value.caracter_id);
+          if (car) searchCaracter.value = car.nombre;
+        }
+      }
+      if (form.value.responsable_id) {
+        const usr = responsables.value.find((u) => u.id_usrio == form.value.responsable_id);
+        if (usr) searchResponsable.value = usr.nmbre;
+      }
+
+      // Load cascading data without resetting values
+      if (form.value.ingenio) {
+        await loadHaciendas(false);
+      }
+      if (form.value.hacienda) {
+        await loadSuertes(false);
+      }
+
+      // Load origin cascading data
+      if (form.value.origen_ingenio) {
+        await loadHaciendasOrigen(false);
+      }
+      if (form.value.origen_hacienda) {
+        await loadSuertesOrigen(false);
+      }
+
+      // Load Parcelas
+      await loadParcelas();
+    } else {
+      const currentYear = new Date().getFullYear();
+      if (!form.value.anio) {
+        form.value.anio = currentYear;
+      }
+
+      if (route.query.origen_ingenio) {
+        form.value.origen_ingenio = route.query.origen_ingenio as string;
+        await loadHaciendasOrigen(false);
+      }
+      if (route.query.origen_hacienda) {
+        form.value.origen_hacienda = route.query.origen_hacienda as string;
+        await loadSuertesOrigen(false);
+      }
+      if (route.query.origen_suerte) {
+        form.value.origen_suerte = route.query.origen_suerte as string;
+      }
+      if (route.query.origen_anio) {
+        form.value.origen_anio = Number(route.query.origen_anio);
+      }
+      if (route.query.origen_parcela) {
+        form.value.origen_parcela = route.query.origen_parcela as string;
+      }
+    }
+  } catch (error) {
+    console.error("Error in resetAndLoad:", error);
+    toast.error("Error al cargar la información del vivero");
+  } finally {
+    isLoadingInfo.value = false;
+  }
+
+  await loadVariedades();
+};
+
+onMounted(resetAndLoad);
+
+watch(() => route.path, resetAndLoad);
 </script>
