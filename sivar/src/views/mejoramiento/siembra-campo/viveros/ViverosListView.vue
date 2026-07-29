@@ -55,7 +55,6 @@
           <tr>
             <th class="py-3 px-6 text-left">ID Vivero</th>
             <th class="py-3 px-6 text-left">Id Vivero Origen</th>
-            <th class="py-3 px-6 text-left">Hda / Suerte</th>
             <th class="py-3 px-6 text-left">Proyecto</th>
             <th class="py-3 px-6 text-left">Tipo de floración</th>
             <th class="py-3 px-6 text-left">Fecha Siembra</th>
@@ -64,10 +63,10 @@
         </thead>
         <tbody class="text-gray-600 text-sm font-light">
           <tr v-if="loading" class="border-b border-gray-200">
-            <td colspan="7" class="py-3 px-6 text-center">Cargando viveros...</td>
+            <td colspan="6" class="py-3 px-6 text-center">Cargando viveros...</td>
           </tr>
           <tr v-else-if="filteredViveros.length === 0" class="border-b border-gray-200">
-            <td colspan="7" class="py-3 px-6 text-center">No se encontraron resultados.</td>
+            <td colspan="6" class="py-3 px-6 text-center">No se encontraron resultados.</td>
           </tr>
           <tr
             v-else
@@ -83,7 +82,7 @@
                 {{ vivero.id_vivero_origen_formateado || 'N/A' }}
               </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ vivero.hacienda || 'N/A' }} / {{ vivero.suerte || 'N/A' }}</td>
+
             <td class="px-6 py-4">
               <div class="text-sm text-gray-900" :title="vivero.proyecto?.nm_prycto || 'N/A'" v-html="vivero.proyecto?.nm_prycto || 'N/A'"></div>
             </td>
