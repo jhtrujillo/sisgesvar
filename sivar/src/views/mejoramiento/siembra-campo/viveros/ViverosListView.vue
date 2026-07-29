@@ -54,21 +54,21 @@
         <thead class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
           <tr>
             <th class="py-3 px-6 text-left">ID Vivero</th>
+            <th class="py-3 px-6 text-left">Id Vivero Origen</th>
             <th class="py-3 px-6 text-left">Nombre</th>
             <th class="py-3 px-6 text-left">Hda / Suerte</th>
             <th class="py-3 px-6 text-left">Proyecto</th>
             <th class="py-3 px-6 text-left">Tipo de floración</th>
             <th class="py-3 px-6 text-left">Fecha Siembra</th>
-            <th class="py-3 px-6 text-left">Vivero Origen</th>
             <th class="py-3 px-6 text-center">Acciones</th>
           </tr>
         </thead>
         <tbody class="text-gray-600 text-sm font-light">
           <tr v-if="loading" class="border-b border-gray-200">
-            <td colspan="5" class="py-3 px-6 text-center">Cargando viveros...</td>
+            <td colspan="8" class="py-3 px-6 text-center">Cargando viveros...</td>
           </tr>
           <tr v-else-if="filteredViveros.length === 0" class="border-b border-gray-200">
-            <td colspan="5" class="py-3 px-6 text-center">No se encontraron resultados.</td>
+            <td colspan="8" class="py-3 px-6 text-center">No se encontraron resultados.</td>
           </tr>
           <tr
             v-else
@@ -79,6 +79,11 @@
             <td class="py-3 px-6 text-left whitespace-nowrap">
               <span class="font-medium">{{ getBaseCode(vivero.identificador_unico) }}</span>
             </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900 font-mono" :title="vivero.origen_parcela || 'N/A'">
+                {{ getViveroOrigenId(vivero.origen_parcela) }}
+              </div>
+            </td>
             <td class="py-3 px-6 text-left" v-html="vivero.nombre"></td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ vivero.hacienda || 'N/A' }} / {{ vivero.suerte || 'N/A' }}</td>
             <td class="px-6 py-4">
@@ -88,11 +93,6 @@
               <div class="text-sm text-gray-900">{{ vivero.condicion || 'N/A' }}</div>
             </td>
             <td class="py-3 px-6 text-left">{{ formatDate(vivero.fecha_siembra) }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900 font-mono" :title="vivero.origen_parcela || 'N/A'">
-                {{ getViveroOrigenId(vivero.origen_parcela) }}
-              </div>
-            </td>
             <td class="py-3 px-6 text-center">
               <div class="flex item-center justify-center">
 
