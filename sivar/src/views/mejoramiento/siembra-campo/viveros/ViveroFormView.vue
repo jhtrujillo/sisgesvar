@@ -1234,22 +1234,36 @@ const submitParcela = async () => {
 };
 
 const registrarCorteParcela = (p: any) => {
-  const currentVivero = form.value;
-  const origenAnio = currentVivero.fecha_siembra
-    ? new Date(currentVivero.fecha_siembra).getFullYear()
-    : new Date().getFullYear();
-  const idPlot = `${currentVivero.identificador_unico}-${p.numero_parcela}`;
-
-  router.push({
-    name: "vivero_nuevo.show",
-    query: {
-      origen_ingenio: currentVivero.ingenio || "",
-      origen_hacienda: currentVivero.hacienda || "",
-      origen_suerte: currentVivero.suerte || "",
-      origen_anio: origenAnio,
-      origen_parcela: idPlot
+  console.log("registrarCorteParcela clicked for parcel:", p);
+  try {
+    const currentVivero = form.value;
+    
+    // Extraer año de forma segura sin depender de new Date()
+    let origenAnio = new Date().getFullYear();
+    if (currentVivero.fecha_siembra) {
+      const dateStr = String(currentVivero.fecha_siembra);
+      const yearMatch = dateStr.match(/^(\d{4})/);
+      if (yearMatch && yearMatch[1]) {
+        origenAnio = parseInt(yearMatch[1], 10);
+      }
     }
-  });
+
+    const idPlot = `${currentVivero.identificador_unico}-${p.numero_parcela}`;
+    
+    router.push({
+      name: "vivero_nuevo.show",
+      query: {
+        origen_ingenio: currentVivero.ingenio || "",
+        origen_hacienda: currentVivero.hacienda || "",
+        origen_suerte: currentVivero.suerte || "",
+        origen_anio: origenAnio,
+        origen_parcela: idPlot
+      }
+    });
+  } catch (error: any) {
+    console.error("Error in registrarCorteParcela:", error);
+    toast.error("Error al redirigir al corte: " + error.message);
+  }
 };
 
 const deleteParcela = async (parcelaId: string | number) => {
