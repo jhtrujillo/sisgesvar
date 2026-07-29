@@ -13,6 +13,9 @@ class ViveroController extends Controller
     public function index()
     {
         $viveros = Vivero::with(['proyecto', 'responsable', 'caracter'])->orderBy('created_at', 'desc')->get();
+        foreach ($viveros as $vivero) {
+            $vivero->id_vivero_origen_formateado = $this->formatIdViveroOrigen($vivero);
+        }
         return response()->json($viveros);
     }
 
@@ -71,6 +74,7 @@ class ViveroController extends Controller
     public function show($id)
     {
         $vivero = Vivero::with(['proyecto', 'responsable', 'caracter'])->findOrFail($id);
+        $vivero->id_vivero_origen_formateado = $this->formatIdViveroOrigen($vivero);
         return response()->json($vivero);
     }
 
@@ -263,5 +267,48 @@ class ViveroController extends Controller
         $suerte = $suerteCd ?: '00';
 
         return sprintf('%s-%s-%s-%s-%d', $ingenioName, $anioSiembra, $haciendaName, $suerte, $consecutivo);
+    }
+
+    private function formatIdViveroOrigen($vivero)
+    {
+        // Si tiene origen_parcela con formato de ID de parcela de Vivero (ej: Ingenio La Cabaña-2024-Carlos-287-2-4)
+        if ($vivero->origen_parcela && count(explode('-', $vivero->origen_parcela)) > 4) {
+            $parts = explode('-', $vivero->origen_parcela);
+            $lastPart = end($parts);
+            if (is_numeric($lastPart)) {
+                array_pop($parts); // Remover número de parcela
+                return implode('-', $parts); // Retorna el Vivero ID padre
+            }
+        }
+
+        // Si no (origen manual/externo), construimos el ID usando los nombres completos y guiones
+        $ingenioName = null;
+        if ($vivero->origen_ingenio) {
+            $ing = DB::connection('sivar')->table('remote_pg_ingenios')->where('cd_ingnio', $vivero->origen_ingenio)->first();
+            if ($ing) {
+                $ingenioName = html_entity_decode(trim($ing->nm_ingnio), ENT_QUOTES, 'UTF-8');
+            }
+        }
+
+        $haciendaName = null;
+        if ($vivero->origen_hacienda) {
+            $hda = DB::connection('sivar')->table('remote_pg_hacienda')->where('cd_hcnda', $vivero->origen_hacienda)->first();
+            if ($hda) {
+                $haciendaName = html_entity_decode(trim($hda->nm_hcnda), ENT_QUOTES, 'UTF-8');
+            }
+        }
+
+        $anio = $vivero->origen_anio;
+        $suerte = $vivero->origen_suerte;
+        $parcela = $vivero->origen_parcela;
+
+        $info = [];
+        if ($ingenioName) $info[] = $ingenioName;
+        if ($anio) $info[] = $anio;
+        if ($haciendaName) $info[] = $haciendaName;
+        if ($suerte) $info[] = $suerte;
+        if ($parcela) $info[] = $parcela;
+
+        return count($info) > 0 ? implode('-', $info) : 'N/A';
     }
 }
