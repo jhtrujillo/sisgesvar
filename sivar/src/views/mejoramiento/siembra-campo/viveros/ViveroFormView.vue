@@ -591,21 +591,31 @@
                   <td class="px-4 py-3 text-slate-600 font-bold">{{ p.numero_parcela_origen || "N/A" }}</td>
                   <td class="px-4 py-3 text-slate-600 font-mono text-xs">{{ p.id_plot_origen || "N/A" }}</td>
                   <td class="px-4 py-3 text-center">
-                    <button
-                      type="button"
-                      @click="deleteParcela(p.id)"
-                      class="text-red-400 hover:text-red-600 transition-colors bg-red-50 hover:bg-red-100 p-2 rounded-lg"
-                      title="Eliminar Parcela"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        ></path>
-                      </svg>
-                    </button>
+                    <div class="flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        @click="registrarCorteParcela(p)"
+                        class="text-emerald-600 hover:text-emerald-800 transition-colors bg-emerald-50 hover:bg-emerald-100 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm border border-emerald-200/50"
+                        title="Registrar Corte"
+                      >
+                        ✂️ Corte
+                      </button>
+                      <button
+                        type="button"
+                        @click="deleteParcela(p.id)"
+                        class="text-red-400 hover:text-red-600 transition-colors bg-red-50 hover:bg-red-100 p-2 rounded-lg"
+                        title="Eliminar Parcela"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          ></path>
+                        </svg>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </template>
@@ -1121,6 +1131,24 @@ onMounted(async () => {
       if (!form.value.anio) {
         form.value.anio = currentYear;
       }
+
+      if (route.query.origen_ingenio) {
+        form.value.origen_ingenio = route.query.origen_ingenio as string;
+        await loadHaciendasOrigen(false);
+      }
+      if (route.query.origen_hacienda) {
+        form.value.origen_hacienda = route.query.origen_hacienda as string;
+        await loadSuertesOrigen(false);
+      }
+      if (route.query.origen_suerte) {
+        form.value.origen_suerte = route.query.origen_suerte as string;
+      }
+      if (route.query.origen_anio) {
+        form.value.origen_anio = Number(route.query.origen_anio);
+      }
+      if (route.query.origen_parcela) {
+        form.value.origen_parcela = route.query.origen_parcela as string;
+      }
     }
   } catch (error) {
     console.error("Error in onMounted:", error);
@@ -1203,6 +1231,25 @@ const submitParcela = async () => {
   } finally {
     isSubmittingParcela.value = false;
   }
+};
+
+const registrarCorteParcela = (p: any) => {
+  const currentVivero = form.value;
+  const origenAnio = currentVivero.fecha_siembra
+    ? new Date(currentVivero.fecha_siembra).getFullYear()
+    : new Date().getFullYear();
+  const idPlot = `${currentVivero.identificador_unico}-${p.numero_parcela}`;
+
+  router.push({
+    name: "vivero_nuevo.show",
+    query: {
+      origen_ingenio: currentVivero.ingenio || "",
+      origen_hacienda: currentVivero.hacienda || "",
+      origen_suerte: currentVivero.suerte || "",
+      origen_anio: origenAnio,
+      origen_parcela: idPlot
+    }
+  });
 };
 
 const deleteParcela = async (parcelaId: string | number) => {
