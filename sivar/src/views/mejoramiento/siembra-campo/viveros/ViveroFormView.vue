@@ -372,7 +372,24 @@
           <!-- Origen Parcela -->
           <div class="mb-4 md:col-span-1">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_parcela">Parcela <span class="text-red-500">*</span></label>
+            <select
+              v-if="origenParcelasOptions.length > 0"
+              v-model="form.origen_parcela"
+              required
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="origen_parcela"
+            >
+              <option value="">Seleccione</option>
+              <option 
+                v-for="p in origenParcelasOptions" 
+                :key="'orig_p_' + p.id" 
+                :value="viveroSeleccionadoOrigen.identificador_unico + '-' + p.numero_parcela"
+              >
+                {{ p.numero_parcela }} ({{ p.variedad?.nm_vrdad || 'S/V' }})
+              </option>
+            </select>
             <input
+              v-else
               v-model="form.origen_parcela"
               type="text"
               required
@@ -776,6 +793,8 @@ const isSubmitting = ref(false);
 const searchOrigenVivero = ref("");
 const showOrigenViveros = ref(false);
 const allViverosList = ref<any[]>([]);
+const origenParcelasOptions = ref<any[]>([]);
+const viveroSeleccionadoOrigen = ref<any>(null);
 
 const filteredOrigenViveros = computed(() => {
   if (!searchOrigenVivero.value) return allViverosList.value;
@@ -788,6 +807,7 @@ const filteredOrigenViveros = computed(() => {
 });
 
 const selectOrigenVivero = async (v: any) => {
+  viveroSeleccionadoOrigen.value = v;
   form.value.origen_ingenio = v.ingenio || "";
   form.value.origen_anio = v.fecha_siembra ? new Date(v.fecha_siembra).getFullYear() : null;
   
@@ -796,6 +816,9 @@ const selectOrigenVivero = async (v: any) => {
   
   await loadSuertesOrigen(false);
   form.value.origen_suerte = v.suerte || "";
+  
+  origenParcelasOptions.value = v.parcelas || [];
+  form.value.origen_parcela = ""; // reset parcel selection when vivero changes
   
   searchOrigenVivero.value = v.identificador_unico;
   showOrigenViveros.value = false;
@@ -1352,6 +1375,9 @@ const resetAndLoad = async () => {
   searchProyecto.value = "";
   searchCaracter.value = "";
   searchResponsable.value = "";
+  searchOrigenVivero.value = "";
+  origenParcelasOptions.value = [];
+  viveroSeleccionadoOrigen.value = null;
   parcelas.value = [];
 
   if (route.params.id) {
