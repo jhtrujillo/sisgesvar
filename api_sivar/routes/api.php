@@ -125,6 +125,8 @@ Route::group([
     // Módulo Siembra-Campo: Viveros
     Route::get('siembra-campo/viveros', [\App\Http\Controllers\ViveroController::class, 'index']);
     Route::post('siembra-campo/viveros', [\App\Http\Controllers\ViveroController::class, 'store']);
+    Route::get('siembra-campo/viveros/next-corte-consecutivo', [\App\Http\Controllers\ViveroController::class, 'getNextCorteConsecutivo']);
+    Route::get('siembra-campo/viveros/{id}/estructura', [\App\Http\Controllers\ViveroController::class, 'getEstructura']);
     Route::get('siembra-campo/viveros/{id}', [\App\Http\Controllers\ViveroController::class, 'show']);
     Route::put('siembra-campo/viveros/{id}', [\App\Http\Controllers\ViveroController::class, 'update']);
     Route::delete('siembra-campo/viveros/{id}', [\App\Http\Controllers\ViveroController::class, 'destroy']);

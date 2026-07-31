@@ -12,7 +12,7 @@ class ViveroController extends Controller
 {
     public function index()
     {
-        $viveros = Vivero::with(['proyecto', 'responsable', 'caracter'])->orderBy('created_at', 'desc')->get();
+        $viveros = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])->orderBy('created_at', 'desc')->get();
         foreach ($viveros as $vivero) {
             $vivero->id_vivero_origen_formateado = $this->formatIdViveroOrigen($vivero);
         }
@@ -39,13 +39,18 @@ class ViveroController extends Controller
         $maxId = Vivero::withTrashed()->max('id') ?? 0;
         $consecutivo = $maxId + 1;
 
-        $identificador = $this->generarIdentificadorUnico(
-            $request->ingenio,
-            $request->hacienda,
-            $request->suerte,
-            $request->fecha_siembra,
-            $consecutivo
-        );
+        if ($request->origen_parcela) {
+            $cutNumber = Vivero::where('origen_parcela', $request->origen_parcela)->count() + 1;
+            $identificador = $request->origen_parcela . '-' . $cutNumber;
+        } else {
+            $identificador = $this->generarIdentificadorUnico(
+                $request->ingenio,
+                $request->hacienda,
+                $request->suerte,
+                $request->fecha_siembra,
+                $consecutivo
+            );
+        }
 
         $vivero = Vivero::create([
             'identificador_unico' => $identificador,
@@ -81,22 +86,31 @@ class ViveroController extends Controller
     public function update(Request $request, $id)
     {
         $vivero = Vivero::findOrFail($id);
-        
         $vivero->fill($request->except('identificador_unico'));
         
-        // Always regenerate the identificador_unico using the helper method on update
-        $parts = explode('-', $vivero->identificador_unico);
-        $consecutivo = end($parts);
-        if (!is_numeric($consecutivo) || intval($consecutivo) <= 0) {
-            $consecutivo = $vivero->id;
+        if ($vivero->origen_parcela) {
+            $cutNumber = Vivero::where('origen_parcela', $vivero->origen_parcela)
+                ->where('id', '<=', $vivero->id)
+                ->count();
+            if ($cutNumber === 0) {
+                $cutNumber = 1;
+            }
+            $vivero->identificador_unico = $vivero->origen_parcela . '-' . $cutNumber;
+        } else {
+            // Always regenerate the identificador_unico using the helper method on update
+            $parts = explode('-', $vivero->identificador_unico);
+            $consecutivo = end($parts);
+            if (!is_numeric($consecutivo) || intval($consecutivo) <= 0) {
+                $consecutivo = $vivero->id;
+            }
+            $vivero->identificador_unico = $this->generarIdentificadorUnico(
+                $vivero->ingenio,
+                $vivero->hacienda,
+                $vivero->suerte,
+                $vivero->fecha_siembra,
+                $consecutivo
+            );
         }
-        $vivero->identificador_unico = $this->generarIdentificadorUnico(
-            $vivero->ingenio,
-            $vivero->hacienda,
-            $vivero->suerte,
-            $vivero->fecha_siembra,
-            $consecutivo
-        );
         
         $vivero->save();
 
@@ -235,6 +249,37 @@ class ViveroController extends Controller
 
         $caracter = DB::table('proyecto_caracteres')->where('id', $newId)->first();
         return response()->json($caracter, 201);
+    }
+
+    public function getNextCorteConsecutivo(Request $request)
+    {
+        $origen = $request->query('origen_parcela');
+        if (!$origen) {
+            return response()->json(['consecutivo' => 1]);
+        }
+        $count = Vivero::where('origen_parcela', $origen)->count();
+        return response()->json(['consecutivo' => $count + 1]);
+    }
+
+    public function getEstructura($id)
+    {
+        $vivero = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])->findOrFail($id);
+        $this->loadEstructuraRecursiva($vivero);
+        return response()->json($vivero);
+    }
+
+    private function loadEstructuraRecursiva($vivero)
+    {
+        foreach ($vivero->parcelas as $parcela) {
+            $plotId = $vivero->identificador_unico . '-' . $parcela->numero_parcela;
+            $cortes = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])
+                ->where('origen_parcela', $plotId)
+                ->get();
+            foreach ($cortes as $corte) {
+                $this->loadEstructuraRecursiva($corte);
+            }
+            $parcela->cortes = $cortes;
+        }
     }
 
     private function generarIdentificadorUnico($ingenioCd, $haciendaCd, $suerteCd, $fechaSiembra, $consecutivo)

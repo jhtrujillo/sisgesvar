@@ -437,7 +437,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">ID Parcela</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">ID Plot</label>
               <input
                 v-model="parcelaForm.id_plot_origen"
                 type="text"
@@ -539,7 +539,7 @@
                 <th class="px-4 py-3 border-b border-slate-200">Pedigree</th>
                 <th class="px-4 py-3 border-b border-slate-200">Carácter</th>
                 <th class="px-4 py-3 border-b border-slate-200">Parcela</th>
-                <th class="px-4 py-3 border-b border-slate-200">ID Parcela</th>
+                <th class="px-4 py-3 border-b border-slate-200">ID Plot</th>
                 <th class="px-4 py-3 border-b border-slate-200 text-center">Acciones</th>
               </tr>
             </thead>
@@ -560,7 +560,21 @@
               </tr>
               <template v-else>
                 <tr v-for="p in paginatedParcelas" :key="p.id" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                  <td class="px-4 py-3 font-bold text-slate-800">{{ p.numero_parcela }}</td>
+                  <td class="px-4 py-3 font-bold text-slate-800">
+                    <div>{{ p.numero_parcela }}</div>
+                    <div v-if="p.cortes && p.cortes.length > 0" class="mt-1 flex flex-col gap-1 font-normal">
+                      <span class="text-[9px] text-slate-400 uppercase font-bold">Cortes:</span>
+                      <router-link
+                        v-for="c in p.cortes"
+                        :key="'cut_' + c.id"
+                        :to="{ name: 'vivero_editar.show', params: { id: c.id } }"
+                        class="inline-flex items-center w-fit px-1 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100 transition-colors"
+                        title="Ver vivero hijo"
+                      >
+                        Corte {{ c.consecutivo_corte }}: {{ c.identificador_unico }}
+                      </router-link>
+                    </div>
+                  </td>
                   <td
                     class="px-4 py-3 font-bold text-cenicana hover:text-emerald-800 cursor-pointer hover:underline transition-colors"
                     @click="openVarietyProfile(p.variedad?.nm_vrdad)"
@@ -661,13 +675,14 @@
         </div>
       </div>
 
-      <!-- Import Wizard Modal -->
       <ViveroParcelasImportWizard
         v-if="isEditing && route.params.id"
         :show="showImportWizard"
         :variedades="variedades"
         :viveroId="route.params.id"
         :viveroIdentificador="form.identificador_unico"
+        :origenParcela="form.origen_parcela"
+        :consecutivoCorte="form.consecutivo_corte"
         :caracterId="form.caracter_id"
         @close="showImportWizard = false"
         @imported="loadParcelas"
@@ -712,7 +727,8 @@ const form = ref({
   origen_hacienda: "",
   origen_suerte: "",
   origen_anio: "" as string | number,
-  origen_parcela: ""
+  origen_parcela: "",
+  consecutivo_corte: null as number | null
 });
 
 const isSubmitting = ref(false);
@@ -816,7 +832,19 @@ const hideVariedadesDelay = () => {
 
 const updateIdPlotOrigen = () => {
   if (parcelaForm.value.numero_parcela_origen) {
-    parcelaForm.value.id_plot_origen = `${form.value.identificador_unico}-${parcelaForm.value.numero_parcela_origen}`;
+    const orig = form.value.origen_parcela;
+    if (orig && orig.includes("-") && orig.split("-").length > 3) {
+      const parts = orig.split("-");
+      parts.pop();
+      const parentViveroId = parts.join("-");
+      if (form.value.consecutivo_corte) {
+        parcelaForm.value.id_plot_origen = `${parentViveroId}-${parcelaForm.value.numero_parcela_origen}-${form.value.consecutivo_corte}`;
+      } else {
+        parcelaForm.value.id_plot_origen = `${parentViveroId}-${parcelaForm.value.numero_parcela_origen}`;
+      }
+    } else {
+      parcelaForm.value.id_plot_origen = `${form.value.identificador_unico}-${parcelaForm.value.numero_parcela_origen}`;
+    }
   } else {
     parcelaForm.value.id_plot_origen = "";
   }
@@ -1106,6 +1134,16 @@ const loadParcelas = async () => {
     } else {
       parcelaForm.value.numero_parcela = 1;
     }
+
+    // Auto-extract origin parcel number and calculate id_plot_origen if it's a cut nursery
+    if (form.value.origen_parcela && form.value.origen_parcela.split("-").length > 3) {
+      const parts = form.value.origen_parcela.split("-");
+      const lastPart = parts[parts.length - 1];
+      if (lastPart && !isNaN(Number(lastPart))) {
+        parcelaForm.value.numero_parcela_origen = Number(lastPart);
+      }
+      updateIdPlotOrigen();
+    }
   } catch (error) {
     console.error("Error fetching parcelas:", error);
     toast.error("Error al cargar parcelas");
@@ -1161,7 +1199,12 @@ const registrarCorteParcela = (p: any) => {
         origen_hacienda: currentVivero.hacienda || "",
         origen_suerte: currentVivero.suerte || "",
         origen_anio: origenAnio,
-        origen_parcela: idPlot
+        origen_parcela: idPlot,
+        ingenio: currentVivero.ingenio || "",
+        hacienda: currentVivero.hacienda || "",
+        suerte: currentVivero.suerte || "",
+        proyecto_id: currentVivero.proyecto_id || "",
+        caracter_id: currentVivero.caracter_id || ""
       }
     });
   } catch (error: any) {
@@ -1298,6 +1341,37 @@ const resetAndLoad = async () => {
       }
       if (route.query.origen_parcela) {
         form.value.origen_parcela = route.query.origen_parcela as string;
+        try {
+          const res = await viverosServices.getNextCorteConsecutivo(form.value.origen_parcela);
+          form.value.consecutivo_corte = res.data.consecutivo;
+          form.value.identificador_unico = `${form.value.origen_parcela}-${form.value.consecutivo_corte}`;
+        } catch (err) {
+          console.error("Error fetching next consecutivo_corte:", err);
+        }
+      }
+
+      // Pre-fill nursery fields from query parameters
+      if (route.query.ingenio) {
+        form.value.ingenio = route.query.ingenio as string;
+        await loadHaciendas(false);
+      }
+      if (route.query.hacienda) {
+        form.value.hacienda = route.query.hacienda as string;
+        await loadSuertes(false);
+      }
+      if (route.query.suerte) {
+        form.value.suerte = route.query.suerte as string;
+      }
+      if (route.query.proyecto_id) {
+        form.value.proyecto_id = Number(route.query.proyecto_id);
+        const pry = proyectos.value.find((p) => p.id_prycto == form.value.proyecto_id);
+        if (pry) searchProyecto.value = formatProjectName(pry);
+        await loadCaracteres(form.value.proyecto_id);
+      }
+      if (route.query.caracter_id) {
+        form.value.caracter_id = Number(route.query.caracter_id);
+        const car = caracteres.value.find((c) => c.id == form.value.caracter_id);
+        if (car) searchCaracter.value = car.nombre;
       }
     }
   } catch (error) {

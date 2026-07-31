@@ -196,6 +196,8 @@ const props = defineProps<{
   variedades: any[];
   viveroId: string | number;
   viveroIdentificador: string;
+  origenParcela?: string;
+  consecutivoCorte?: number | null;
   caracterId?: string | number | null;
 }>();
 
@@ -389,12 +391,19 @@ const validateData = async () => {
       
       const exactMatch = varMap.get(varVal.toLowerCase());
       
+      const getIdPlotOrigen = (pOrigenVal: any) => {
+        if (props.origenParcela && props.consecutivoCorte) {
+          return `${props.origenParcela}-${props.consecutivoCorte}`;
+        }
+        return pOrigenVal ? `${props.viveroIdentificador}-${pOrigenVal}` : null;
+      };
+
       if (exactMatch) {
         readyToImport.value.push({
           numero_parcela: plotVal,
           variedad_id: exactMatch.id_nm_vrdad,
           numero_parcela_origen: plotOrigenVal,
-          id_plot_origen: plotOrigenVal ? `${props.viveroIdentificador}-${plotOrigenVal}` : null,
+          id_plot_origen: getIdPlotOrigen(plotOrigenVal),
           caracter_id: props.caracterId || null
         });
       } else {
@@ -449,11 +458,17 @@ const submitImport = async () => {
     ...readyToImport.value,
     ...conflicts.value.map(c => {
       const plotOrigenVal = mapping.value.plot_origen ? c.row[mapping.value.plot_origen] : null;
+      const getIdPlotOrigen = (pOrigenVal: any) => {
+        if (props.origenParcela && props.consecutivoCorte) {
+          return `${props.origenParcela}-${props.consecutivoCorte}`;
+        }
+        return pOrigenVal ? `${props.viveroIdentificador}-${pOrigenVal}` : null;
+      };
       return {
         numero_parcela: c.row[mapping.value.plot],
         variedad_id: c.resolvedId,
         numero_parcela_origen: plotOrigenVal,
-        id_plot_origen: plotOrigenVal ? `${props.viveroIdentificador}-${plotOrigenVal}` : null,
+        id_plot_origen: getIdPlotOrigen(plotOrigenVal),
         caracter_id: props.caracterId || null
       };
     })

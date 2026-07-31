@@ -69,7 +69,18 @@ class Vivero extends Model
         return $amb ? $amb->nm_ambnte : null;
     }
 
-    protected $appends = ['nombre_proyecto', 'nombre_responsable', 'nombre_ambiente'];
+    public function getConsecutivoCorteAttribute()
+    {
+        if (!$this->origen_parcela) {
+            return null;
+        }
+
+        return self::where('origen_parcela', $this->origen_parcela)
+            ->where('id', '<=', $this->id)
+            ->count();
+    }
+
+    protected $appends = ['nombre_proyecto', 'nombre_responsable', 'nombre_ambiente', 'consecutivo_corte'];
 
     public function cosechas()
     {

@@ -53,6 +53,7 @@
       <table class="min-w-full bg-white">
         <thead class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
           <tr>
+            <th class="py-3 px-4 text-center w-12"></th>
             <th class="py-3 px-6 text-left">ID Vivero</th>
             <th class="py-3 px-6 text-left">Id Vivero Origen</th>
             <th class="py-3 px-6 text-left">Proyecto</th>
@@ -63,56 +64,142 @@
         </thead>
         <tbody class="text-gray-600 text-sm font-light">
           <tr v-if="loading" class="border-b border-gray-200">
-            <td colspan="6" class="py-3 px-6 text-center">Cargando viveros...</td>
+            <td colspan="7" class="py-3 px-6 text-center">Cargando viveros...</td>
           </tr>
           <tr v-else-if="filteredViveros.length === 0" class="border-b border-gray-200">
-            <td colspan="6" class="py-3 px-6 text-center">No se encontraron resultados.</td>
+            <td colspan="7" class="py-3 px-6 text-center">No se encontraron resultados.</td>
           </tr>
-          <tr
-            v-else
-            v-for="vivero in paginatedViveros"
-            :key="vivero.id"
-            class="border-b border-gray-200 hover:bg-gray-100"
-          >
-            <td class="py-3 px-6 text-left whitespace-nowrap">
-              <span class="font-medium">{{ getBaseCode(vivero.identificador_unico) }}</span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900 font-mono" :title="vivero.origen_parcela || 'N/A'">
-                {{ vivero.id_vivero_origen_formateado || 'N/A' }}
-              </div>
-            </td>
+          <template v-else>
+            <template v-for="vivero in paginatedViveros" :key="vivero.id">
+              <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                <td class="py-3 px-4 text-center whitespace-nowrap">
+                  <button
+                    @click="toggleRow(vivero.id)"
+                    class="text-slate-400 hover:text-cenicana transition-all p-1 hover:bg-slate-100 rounded"
+                    title="Ver distribución de parcelas"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-4 w-4 transform transition-transform duration-200"
+                      :class="{ 'rotate-90 text-cenicana': expandedViveros[vivero.id] }"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </td>
+                <td class="py-3 px-6 text-left whitespace-nowrap">
+                  <span class="font-medium text-slate-800">{{ vivero.identificador_unico }}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900 font-mono" :title="vivero.origen_parcela || 'N/A'">
+                    {{ vivero.id_vivero_origen_formateado || 'N/A' }}
+                  </div>
+                </td>
 
-            <td class="px-6 py-4">
-              <div class="text-sm text-gray-900" :title="vivero.proyecto?.nm_prycto || 'N/A'" v-html="vivero.proyecto?.nm_prycto || 'N/A'"></div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ vivero.condicion || 'N/A' }}</div>
-            </td>
-            <td class="py-3 px-6 text-left">{{ formatDate(vivero.fecha_siembra) }}</td>
-            <td class="py-3 px-6 text-center">
-              <div class="flex item-center justify-center">
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-900" :title="vivero.proyecto?.nm_prycto || 'N/A'" v-html="vivero.proyecto?.nm_prycto || 'N/A'"></div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">{{ vivero.condicion || 'N/A' }}</div>
+                </td>
+                <td class="py-3 px-6 text-left">{{ formatDate(vivero.fecha_siembra) }}</td>
+                <td class="py-3 px-6 text-center">
+                  <div class="flex item-center justify-center">
 
-                <router-link
-                  :to="{ name: 'vivero_editar.show', params: { id: vivero.id } }"
-                  class="w-4 mr-2 transform hover:text-blue-500 hover:scale-110 cursor-pointer"
-                  title="Editar"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                  </svg>
-                </router-link>
-                <button
-                  @click="deleteVivero(vivero.id)"
-                  class="w-4 mr-2 transform hover:text-red-500 hover:scale-110 cursor-pointer"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-            </td>
-          </tr>
+                    <button
+                      @click="openEstructuraModal(vivero.id)"
+                      class="w-4 mr-2 transform hover:text-green-500 hover:scale-110 cursor-pointer text-slate-400"
+                      title="Ver Estructura / Árbol Genealógico"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v7m0 0H8m4 0h4m-8 4h8M4 16h4m8 0h4" />
+                      </svg>
+                    </button>
+                    <router-link
+                      :to="{ name: 'vivero_editar.show', params: { id: vivero.id } }"
+                      class="w-4 mr-2 transform hover:text-blue-500 hover:scale-110 cursor-pointer text-slate-400"
+                      title="Editar"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </router-link>
+                    <button
+                      @click="deleteVivero(vivero.id)"
+                      class="w-4 mr-2 transform hover:text-red-500 hover:scale-110 cursor-pointer text-slate-400"
+                      title="Eliminar"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <!-- Detalle de Parcelas Colapsable -->
+              <tr v-if="expandedViveros[vivero.id]">
+                <td colspan="7" class="bg-slate-50 border-b border-gray-200 p-4">
+                  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cenicana" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                      </svg>
+                      Distribución de Parcelas y Trazabilidad de Cortes
+                    </h4>
+                    <div v-if="!vivero.parcelas || vivero.parcelas.length === 0" class="text-xs text-slate-400 italic py-2 text-center bg-slate-50 rounded-lg">
+                      Este vivero no tiene parcelas agregadas.
+                    </div>
+                    <div v-else class="overflow-x-auto rounded-lg border border-slate-100">
+                      <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                          <tr class="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold">
+                            <th class="px-4 py-2.5 border-b border-slate-200">Plot</th>
+                            <th class="px-4 py-2.5 border-b border-slate-200">Variedad</th>
+                            <th class="px-4 py-2.5 border-b border-slate-200">Pedigree</th>
+                            <th class="px-4 py-2.5 border-b border-slate-200">Carácter</th>
+                            <th class="px-4 py-2.5 border-b border-slate-200">Parcela Orig.</th>
+                            <th class="px-4 py-2.5 border-b border-slate-200">ID Plot Orig.</th>
+                            <th class="px-4 py-2.5 border-b border-slate-200">Cortes Realizados (Historial)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr v-for="p in vivero.parcelas" :key="'list_parc_' + p.id" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                            <td class="px-4 py-2.5 font-bold text-slate-800">{{ p.numero_parcela }}</td>
+                            <td class="px-4 py-2.5 font-bold text-cenicana">{{ p.variedad?.nm_vrdad || 'N/A' }}</td>
+                            <td class="px-4 py-2.5 text-slate-500">{{ p.variedad?.pdgree || 'N/A' }}</td>
+                            <td class="px-4 py-2.5 text-slate-600">
+                              <span v-if="p.caracter?.nombre">{{ p.caracter.nombre }}</span>
+                              <span v-else-if="vivero.caracter?.nombre" class="text-slate-400 italic" title="Heredado del Vivero">{{ vivero.caracter.nombre }}</span>
+                              <span v-else>N/A</span>
+                            </td>
+                            <td class="px-4 py-2.5 text-slate-600 font-bold">{{ p.numero_parcela_origen || 'N/A' }}</td>
+                            <td class="px-4 py-2.5 text-slate-600 font-mono">{{ p.id_plot_origen || 'N/A' }}</td>
+                            <td class="px-4 py-2.5">
+                              <div v-if="p.cortes && p.cortes.length > 0" class="flex flex-wrap gap-1.5">
+                                <router-link
+                                  v-for="c in p.cortes"
+                                  :key="'list_cut_' + c.id"
+                                  :to="{ name: 'vivero_editar.show', params: { id: c.id } }"
+                                  class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100 transition-colors shadow-sm"
+                                  title="Ver vivero destino de este corte"
+                                >
+                                  Corte {{ c.consecutivo_corte }}: {{ c.identificador_unico }}
+                                </router-link>
+                              </div>
+                              <span v-else class="text-slate-400 italic text-[10px]">Sin cortes registrados</span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </template>
         </tbody>
       </table>
       </div>
@@ -221,7 +308,7 @@
         <div class="p-6">
           <div class="mb-4 flex flex-col gap-2">
             <div class="text-sm text-slate-600">
-              Historial de cosechas para el vivero <span class="font-bold text-slate-800" v-html="viveroSeleccionado?.nombre"></span> (<span class="font-mono text-xs">{{ getBaseCode(viveroSeleccionado?.identificador_unico) }}</span>)
+              Historial de cosechas para el vivero <span class="font-bold text-slate-800" v-html="viveroSeleccionado?.nombre"></span> (<span class="font-mono text-xs">{{ viveroSeleccionado?.identificador_unico }}</span>)
             </div>
             <div class="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-2">
               <div><span class="font-bold block uppercase">Ingenio</span> <span v-html="getIngenioName(viveroSeleccionado?.ingenio)"></span></div>
@@ -286,6 +373,46 @@
       </div>
     </div>
 
+    <!-- Modal de Estructura / Árbol Genealógico -->
+    <div v-if="isEstructuraModalOpen" class="fixed inset-0 flex items-center justify-center bg-slate-900/60 z-50 transition-opacity duration-300">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl mx-4 overflow-hidden border border-slate-100 max-h-[85vh] flex flex-col">
+        <!-- Header -->
+        <div class="flex justify-between items-center border-b border-slate-100 p-5 bg-slate-50">
+          <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Árbol Genealógico del Vivero</h4>
+          <button @click="closeEstructuraModal" class="text-slate-400 hover:text-slate-600 transition-colors text-2xl">&times;</button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6 overflow-y-auto flex-1">
+          <div v-if="loadingEstructura" class="flex justify-center py-12">
+            <svg class="animate-spin h-8 w-8 text-cenicana" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+
+          <div v-else-if="viveroEstructura" class="space-y-4">
+            <p class="text-xs text-slate-500 mb-4 bg-blue-50/50 p-3 rounded-xl border border-blue-100/50">
+              A continuación se muestra el árbol genealógico del vivero <strong>{{ viveroEstructura.identificador_unico }}</strong>. Se detallan todas las parcelas (plots) del vivero y los cortes generados consecutivamente a partir de cada una de ellas de forma recursiva.
+            </p>
+            <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/20 max-h-[50vh] overflow-y-auto">
+              <ViveroTreeComponent :node="viveroEstructura" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="border-t border-slate-100 p-5 bg-slate-50 flex justify-end">
+          <button
+            @click="closeEstructuraModal"
+            class="px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -295,10 +422,39 @@ import { useRouter } from 'vue-router';
 import viverosServices from '@/services/viveros.services';
 import dayjs from 'dayjs';
 import { useToast } from 'vue-toastification';
+import ViveroTreeComponent from '@/components/viveros/ViveroTreeComponent.vue';
 
 const toast = useToast();
 const viveros = ref<any[]>([]);
 const loading = ref(true);
+const expandedViveros = ref<Record<string | number, boolean>>({});
+const toggleRow = (id: string | number) => {
+  expandedViveros.value[id] = !expandedViveros.value[id];
+};
+
+const isEstructuraModalOpen = ref(false);
+const loadingEstructura = ref(false);
+const viveroEstructura = ref<any>(null);
+
+const openEstructuraModal = async (id: number) => {
+  isEstructuraModalOpen.value = true;
+  loadingEstructura.value = true;
+  try {
+    const res = await viverosServices.getEstructura(id);
+    viveroEstructura.value = res.data;
+  } catch (error) {
+    console.error("Error fetching estructura:", error);
+    toast.error("Error al cargar la estructura del vivero");
+    isEstructuraModalOpen.value = false;
+  } finally {
+    loadingEstructura.value = false;
+  }
+};
+
+const closeEstructuraModal = () => {
+  isEstructuraModalOpen.value = false;
+  viveroEstructura.value = null;
+};
 
 const isCosechaModalOpen = ref(false);
 const isSubmittingCosecha = ref(false);
@@ -320,9 +476,16 @@ const currentPage = ref(1);
 const itemsPerPage = ref(10);
 
 const filteredViveros = computed(() => {
-  if (!searchQuery.value) return viveros.value;
+  const mainViveros = viveros.value.filter(v => {
+    if (v.origen_parcela && v.origen_parcela.split("-").length > 3) {
+      return false;
+    }
+    return true;
+  });
+
+  if (!searchQuery.value) return mainViveros;
   const q = searchQuery.value.toLowerCase();
-  return viveros.value.filter(v => 
+  return mainViveros.filter(v => 
     (v.nombre && v.nombre.toLowerCase().includes(q)) ||
     (v.identificador_unico && v.identificador_unico.toLowerCase().includes(q)) ||
     (v.hacienda && v.hacienda.toLowerCase().includes(q)) ||
