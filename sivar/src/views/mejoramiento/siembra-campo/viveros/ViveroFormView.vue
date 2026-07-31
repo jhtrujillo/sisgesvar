@@ -271,6 +271,46 @@
         <div class="mt-6 mb-4 border-b pb-2">
           <h3 class="text-lg font-semibold text-gray-800">Origen de la Semilla</h3>
         </div>
+
+        <!-- Copiar Origen desde Vivero Existente -->
+        <div class="grid grid-cols-1 gap-4 mb-4">
+          <div class="relative">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_vivero_select">
+              Buscar Origen desde Vivero existente (Autocompleta los campos de abajo)
+            </label>
+            <input
+              v-model="searchOrigenVivero"
+              @focus="showOrigenViveros = true"
+              @blur="hideOrigenViverosDelay"
+              @input="showOrigenViveros = true"
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="origen_vivero_select"
+              type="text"
+              placeholder="Escribe para buscar viveros por ID, hacienda o suerte..."
+              autocomplete="off"
+            />
+            <div
+              v-if="showOrigenViveros"
+              class="absolute z-10 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto sm:text-sm"
+            >
+              <div v-if="filteredOrigenViveros.length === 0" class="cursor-default select-none relative py-2 pl-3 pr-9 text-gray-500">
+                No se encontraron viveros coincidentes
+              </div>
+              <div
+                v-for="v in filteredOrigenViveros"
+                :key="v.id"
+                @mousedown="selectOrigenVivero(v)"
+                class="cursor-pointer select-none relative py-2 pl-3.5 pr-9 py-2.5 hover:bg-cenicana hover:text-white border-b border-gray-100 last:border-0"
+              >
+                <div class="font-bold font-mono text-xs">{{ v.identificador_unico }}</div>
+                <div class="text-[10px] text-gray-500 hover:text-white-50">
+                  {{ getIngenioName(v.ingenio) }} - {{ v.hacienda || 'N/A' }} - {{ v.suerte || 'N/A' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-8 gap-4 mb-6">
           <!-- Origen Ingenio -->
           <div class="mb-4 md:col-span-2">
@@ -732,6 +772,54 @@ const form = ref({
 });
 
 const isSubmitting = ref(false);
+
+const searchOrigenVivero = ref("");
+const showOrigenViveros = ref(false);
+const allViverosList = ref<any[]>([]);
+
+const filteredOrigenViveros = computed(() => {
+  if (!searchOrigenVivero.value) return allViverosList.value;
+  const q = searchOrigenVivero.value.toLowerCase();
+  return allViverosList.value.filter(v =>
+    (v.identificador_unico && v.identificador_unico.toLowerCase().includes(q)) ||
+    (v.hacienda && v.hacienda.toLowerCase().includes(q)) ||
+    (v.suerte && v.suerte.toLowerCase().includes(q))
+  );
+});
+
+const selectOrigenVivero = async (v: any) => {
+  form.value.origen_ingenio = v.ingenio || "";
+  form.value.origen_anio = v.fecha_siembra ? new Date(v.fecha_siembra).getFullYear() : null;
+  
+  await loadHaciendasOrigen(false);
+  form.value.origen_hacienda = v.hacienda || "";
+  
+  await loadSuertesOrigen(false);
+  form.value.origen_suerte = v.suerte || "";
+  
+  searchOrigenVivero.value = v.identificador_unico;
+  showOrigenViveros.value = false;
+};
+
+const hideOrigenViverosDelay = () => {
+  setTimeout(() => {
+    showOrigenViveros.value = false;
+  }, 200);
+};
+
+const loadAllViveros = async () => {
+  try {
+    const res = await viverosServices.getViveros();
+    allViverosList.value = res.data;
+  } catch (error) {
+    console.error("Error loading viveros for selection:", error);
+  }
+};
+
+const getIngenioName = (cd: string) => {
+  const ing = ingenios.value.find(i => i.cd_ingnio === cd);
+  return ing ? ing.nm_ingnio : cd;
+};
 
 // Drawer de variedades
 const isDrawerOpen = ref(false);
@@ -1276,7 +1364,7 @@ const resetAndLoad = async () => {
 
   try {
     // Load common data concurrently for better performance
-    await Promise.all([loadIngenios(), loadProyectos(), loadResponsables(), loadAmbientes()]);
+    await Promise.all([loadIngenios(), loadProyectos(), loadResponsables(), loadAmbientes(), loadAllViveros()]);
 
     if (isEditing.value) {
       const response = await viverosServices.getVivero(route.params.id as string);
