@@ -127,7 +127,8 @@
             </div>
             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">
               Ingenio: {{ decodeHTMLEntities(selectedIngenioName) }} <br>
-              Hacienda: {{ decodeHTMLEntities(getHaciendaName(lote.hacienda_codigo)) }}
+              Hacienda: {{ decodeHTMLEntities(getHaciendaName(lote.hacienda_codigo)) }} <br>
+              Parcelas/Vivero: {{ lote.total_parcelas_vivero ?? 10 }}
             </p>
 
             <!-- ProgressBar -->
@@ -205,6 +206,17 @@
                 class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
               />
             </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Total de Parcelas por Vivero</label>
+              <input
+                v-model.number="form.total_parcelas_vivero"
+                type="number"
+                min="1"
+                required
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+              />
+            </div>
           </div>
 
           <!-- Footer -->
@@ -251,6 +263,7 @@ const editingLoteId = ref<number | null>(null);
 const form = ref({
   nombre_lote: '',
   capacidad_maxima: 5,
+  total_parcelas_vivero: 10,
   hacienda_codigo: ''
 });
 
@@ -326,6 +339,7 @@ const openAddModal = () => {
   form.value = {
     nombre_lote: '',
     capacidad_maxima: 5,
+    total_parcelas_vivero: 10,
     hacienda_codigo: selectedHacienda.value
   };
   isModalOpen.value = true;
@@ -336,6 +350,7 @@ const openEditModal = (lote: any) => {
   form.value = {
     nombre_lote: lote.nombre_lote,
     capacidad_maxima: lote.capacidad_maxima,
+    total_parcelas_vivero: lote.total_parcelas_vivero || 10,
     hacienda_codigo: lote.hacienda_codigo || selectedHacienda.value
   };
   isModalOpen.value = true;

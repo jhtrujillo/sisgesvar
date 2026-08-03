@@ -16,7 +16,8 @@ class Lote extends Model
         'ingenio_codigo',
         'hacienda_codigo',
         'nombre_lote',
-        'capacidad_maxima'
+        'capacidad_maxima',
+        'total_parcelas_vivero'
     ];
 
     public function viveros()

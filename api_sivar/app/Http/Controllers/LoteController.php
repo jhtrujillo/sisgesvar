@@ -32,7 +32,8 @@ class LoteController extends Controller
             'ingenio_codigo' => 'required|string',
             'hacienda_codigo' => 'nullable|string',
             'nombre_lote' => 'required|string',
-            'capacidad_maxima' => 'required|integer|min:1'
+            'capacidad_maxima' => 'required|integer|min:1',
+            'total_parcelas_vivero' => 'nullable|integer|min:1'
         ]);
 
         $lote = Lote::create($request->all());
@@ -46,7 +47,8 @@ class LoteController extends Controller
         $request->validate([
             'hacienda_codigo' => 'sometimes|nullable|string',
             'nombre_lote' => 'sometimes|required|string',
-            'capacidad_maxima' => 'sometimes|required|integer|min:1'
+            'capacidad_maxima' => 'sometimes|required|integer|min:1',
+            'total_parcelas_vivero' => 'sometimes|nullable|integer|min:1'
         ]);
 
         $lote->update($request->all());
