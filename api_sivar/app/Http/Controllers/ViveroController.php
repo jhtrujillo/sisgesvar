@@ -12,7 +12,10 @@ class ViveroController extends Controller
 {
     public function index()
     {
-        $viveros = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter', 'lote', 'origenLote', 'origenVivero'])->orderBy('created_at', 'desc')->get();
+        $viveros = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter', 'lote', 'origenLote', 'origenVivero'])
+            ->whereNotNull('proyecto_id')
+            ->orderBy('created_at', 'desc')
+            ->get();
         foreach ($viveros as $vivero) {
             $vivero->id_vivero_origen_formateado = $this->formatIdViveroOrigen($vivero);
         }
@@ -69,32 +72,65 @@ class ViveroController extends Controller
             );
         }
 
-        $vivero = Vivero::create([
-            'identificador_unico' => $identificador,
-            'nombre' => $request->nombre ?: $identificador,
-            'ingenio' => $request->ingenio,
-            'hacienda' => $request->hacienda,
-            'suerte' => $request->suerte,
-            'proyecto_id' => $request->proyecto_id,
-            'ambiente' => $request->ambiente,
-            'responsable_id' => $request->responsable_id,
-            'fecha_siembra' => $request->fecha_siembra,
-            'numero_corte' => $request->numero_corte ?? 1,
-            'temporada_floracion' => $request->temporada_floracion,
-            'condicion' => $request->condicion,
-            'caracter_id' => $request->caracter_id,
-            'origen_ingenio' => $request->origen_ingenio,
-            'origen_hacienda' => $request->origen_hacienda,
-            'origen_suerte' => $request->origen_suerte,
-            'origen_anio' => $request->origen_anio,
-            'origen_parcela' => $request->origen_parcela,
-            'origen_lote_id' => $request->origen_lote_id,
-            'origen_vivero_id' => $request->origen_vivero_id,
-            'lote_id' => $request->lote_id,
-            'consecutivo_vivero_ingenio' => $consecutivoViveroIngenio,
-        ]);
+        $vivero = Vivero::where('lote_id', $request->lote_id)
+            ->where('consecutivo_vivero_ingenio', $consecutivoViveroIngenio)
+            ->first();
 
-        if ($vivero->lote_id) {
+        if ($vivero) {
+            $vivero->update([
+                'identificador_unico' => $identificador,
+                'nombre' => $request->nombre ?: $identificador,
+                'ingenio' => $request->ingenio,
+                'hacienda' => $request->hacienda,
+                'suerte' => $request->suerte,
+                'proyecto_id' => $request->proyecto_id,
+                'ambiente' => $request->ambiente,
+                'responsable_id' => $request->responsable_id,
+                'fecha_siembra' => $request->fecha_siembra,
+                'numero_corte' => $request->numero_corte ?? 1,
+                'temporada_floracion' => $request->temporada_floracion,
+                'condicion' => $request->condicion,
+                'caracter_id' => $request->caracter_id,
+                'origen_ingenio' => $request->origen_ingenio,
+                'origen_hacienda' => $request->origen_hacienda,
+                'origen_suerte' => $request->origen_suerte,
+                'origen_anio' => $request->origen_anio,
+                'origen_parcela' => $request->origen_parcela,
+                'origen_lote_id' => $request->origen_lote_id,
+                'origen_vivero_id' => $request->origen_vivero_id,
+            ]);
+        } else {
+            $vivero = Vivero::create([
+                'identificador_unico' => $identificador,
+                'nombre' => $request->nombre ?: $identificador,
+                'ingenio' => $request->ingenio,
+                'hacienda' => $request->hacienda,
+                'suerte' => $request->suerte,
+                'proyecto_id' => $request->proyecto_id,
+                'ambiente' => $request->ambiente,
+                'responsable_id' => $request->responsable_id,
+                'fecha_siembra' => $request->fecha_siembra,
+                'numero_corte' => $request->numero_corte ?? 1,
+                'temporada_floracion' => $request->temporada_floracion,
+                'condicion' => $request->condicion,
+                'caracter_id' => $request->caracter_id,
+                'origen_ingenio' => $request->origen_ingenio,
+                'origen_hacienda' => $request->origen_hacienda,
+                'origen_suerte' => $request->origen_suerte,
+                'origen_anio' => $request->origen_anio,
+                'origen_parcela' => $request->origen_parcela,
+                'origen_lote_id' => $request->origen_lote_id,
+                'origen_vivero_id' => $request->origen_vivero_id,
+                'lote_id' => $request->lote_id,
+                'consecutivo_vivero_ingenio' => $consecutivoViveroIngenio,
+            ]);
+        }
+
+        $hasHistory = \App\Models\ViveroLoteHistorial::where('vivero_id', $vivero->id)
+            ->where('lote_id', $vivero->lote_id)
+            ->exists();
+
+        if ($vivero->lote_id && !$hasHistory) {
             \App\Models\ViveroLoteHistorial::create([
                 'vivero_id' => $vivero->id,
                 'lote_id' => $vivero->lote_id,

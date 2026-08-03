@@ -995,8 +995,8 @@ const availableViveroNumbers = computed(() => {
   if (!selectedLote) return [];
   
   const capacity = selectedLote.capacidad_maxima || 5;
-  const takenNumbers = allViverosList.value
-    .filter(v => v.lote_id === form.value.lote_id && (!isEditing.value || v.id !== form.value.id))
+  const activeNumbers = allViverosList.value
+    .filter(v => v.lote_id === form.value.lote_id && v.proyecto_id && (!isEditing.value || v.id !== form.value.id))
     .map(v => v.consecutivo_vivero_ingenio);
     
   const options = [];
@@ -1004,7 +1004,7 @@ const availableViveroNumbers = computed(() => {
     options.push(form.value.consecutivo_vivero_ingenio);
   }
   for (let i = 1; i <= capacity; i++) {
-    if (!takenNumbers.includes(i) && !options.includes(i)) {
+    if (!activeNumbers.includes(i) && !options.includes(i)) {
       options.push(i);
     }
   }
