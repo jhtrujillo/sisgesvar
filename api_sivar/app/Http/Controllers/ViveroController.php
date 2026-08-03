@@ -21,7 +21,10 @@ class ViveroController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'proyecto_id' => 'required|integer|exists:proyectos,id_prycto',
+            'ingenio' => 'required|string',
+            'hacienda' => 'required|string',
             'nombre' => 'nullable|string|max:255',
             'fecha_siembra' => 'required|date',
             'origen_ingenio' => 'nullable|string',
@@ -32,6 +35,7 @@ class ViveroController extends Controller
             'origen_lote_id' => 'nullable|integer|exists:lotes,id',
             'origen_vivero_id' => 'nullable|integer|exists:viveros,id',
             'lote_id' => 'nullable|integer|exists:lotes,id',
+            'consecutivo_vivero_ingenio' => 'required|integer',
         ]);
 
         if ($validator->fails()) {
@@ -49,12 +53,7 @@ class ViveroController extends Controller
             }
         }
 
-        // Calculate global consecutivo for this ingenio
-        $consecutivoViveroIngenio = Vivero::where('ingenio', $request->ingenio)->count() + 1;
-
-        // Calculamos el consecutivo basándonos en la cantidad total de registros en la tabla
-        $maxId = Vivero::withTrashed()->max('id') ?? 0;
-        $consecutivo = $maxId + 1;
+        $consecutivoViveroIngenio = $request->consecutivo_vivero_ingenio;
         $esCorte = $request->es_corte || $request->query('es_corte') === 'true' || $request->query('es_corte') === 1;
 
         if ($request->origen_parcela && $esCorte) {
@@ -66,7 +65,7 @@ class ViveroController extends Controller
                 $request->hacienda,
                 $request->suerte,
                 $request->fecha_siembra,
-                $consecutivo
+                $consecutivoViveroIngenio
             );
         }
 

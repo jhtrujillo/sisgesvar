@@ -287,12 +287,22 @@
               </div>
             </div>
 
-            <!-- Consecutivo Global Vivero (Ingenio) -->
-            <div v-if="isEditing && form.consecutivo_vivero_ingenio">
-              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">N° Vivero (En Ingenio)</label>
-              <div class="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-black font-mono rounded-xl px-3.5 py-3 shadow-inner">
-                {{ form.consecutivo_vivero_ingenio }}
-              </div>
+            <!-- Vivero slot selection -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="consecutivo_vivero_id">Vivero <span class="text-red-500">*</span></label>
+              <select
+                v-model="form.consecutivo_vivero_ingenio"
+                :disabled="!form.lote_id || isEditing"
+                required
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.lote_id || isEditing }"
+                id="consecutivo_vivero_id"
+              >
+                <option value="">Seleccione Número de Vivero</option>
+                <option v-for="num in availableViveroNumbers" :key="'v_num_' + num" :value="num">
+                  Vivero {{ num }}
+                </option>
+              </select>
             </div>
           </div>
 
@@ -978,6 +988,40 @@ const parseViveroIdToFields = (viveroId: string) => {
   }
   return null;
 };
+
+const availableViveroNumbers = computed(() => {
+  if (!form.value.lote_id) return [];
+  const selectedLote = lotes.value.find(l => l.id === form.value.lote_id);
+  if (!selectedLote) return [];
+  
+  const capacity = selectedLote.capacidad_maxima || 5;
+  const takenNumbers = allViverosList.value
+    .filter(v => v.lote_id === form.value.lote_id && (!isEditing.value || v.id !== form.value.id))
+    .map(v => v.consecutivo_vivero_ingenio);
+    
+  const options = [];
+  if (isEditing.value && form.value.consecutivo_vivero_ingenio) {
+    options.push(form.value.consecutivo_vivero_ingenio);
+  }
+  for (let i = 1; i <= capacity; i++) {
+    if (!takenNumbers.includes(i) && !options.includes(i)) {
+      options.push(i);
+    }
+  }
+  return options.sort((a, b) => a - b);
+});
+
+watch(() => form.value.lote_id, (newLoteId) => {
+  const selectedLote = lotes.value.find(l => l.id === newLoteId);
+  if (selectedLote) {
+    form.value.suerte = selectedLote.nombre_lote;
+  } else {
+    form.value.suerte = "";
+  }
+  if (!isEditing.value) {
+    form.value.consecutivo_vivero_ingenio = null;
+  }
+});
 
 const lotesOrigen = ref<any[]>([]);
 const loadLotesOrigen = async () => {
