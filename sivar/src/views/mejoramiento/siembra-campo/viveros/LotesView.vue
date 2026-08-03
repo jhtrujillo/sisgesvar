@@ -25,26 +25,42 @@
 
     <!-- Main Card -->
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
-      <!-- Selector de Ingenio y Botón Agregar -->
-      <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
-        <div class="w-full sm:max-w-xs">
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Seleccionar Ingenio</label>
-          <select
-            v-model="selectedIngenio"
-            @change="loadLotes"
-            class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
-          >
-            <option value="" disabled>Seleccione un ingenio...</option>
-            <option v-for="ing in ingenios" :key="ing.cd_ingnio" :value="ing.cd_ingnio">
-              {{ decodeHTMLEntities(ing.nm_ingnio) }} ({{ ing.cd_ingnio }})
-            </option>
-          </select>
+      <!-- Selector de Ingenio, Hacienda y Botón Agregar -->
+      <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
+        <div class="flex flex-col sm:flex-row gap-4 w-full md:max-w-2xl">
+          <div class="w-full sm:max-w-xs">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Seleccionar Ingenio</label>
+            <select
+              v-model="selectedIngenio"
+              @change="loadHaciendas"
+              class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+            >
+              <option value="">Seleccione un ingenio...</option>
+              <option v-for="ing in ingenios" :key="ing.cd_ingnio" :value="ing.cd_ingnio">
+                {{ decodeHTMLEntities(ing.nm_ingnio) }} ({{ ing.cd_ingnio }})
+              </option>
+            </select>
+          </div>
+
+          <div class="w-full sm:max-w-xs" v-if="selectedIngenio">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Seleccionar Hacienda</label>
+            <select
+              v-model="selectedHacienda"
+              @change="loadLotes"
+              class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+            >
+              <option value="">Seleccione una hacienda...</option>
+              <option v-for="hda in haciendas" :key="hda.cd_hcnda" :value="hda.cd_hcnda">
+                {{ decodeHTMLEntities(hda.nm_hcnda) }}
+              </option>
+            </select>
+          </div>
         </div>
 
         <button
-          v-if="selectedIngenio"
+          v-if="selectedIngenio && selectedHacienda"
           @click="openAddModal"
-          class="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-cenicana hover:bg-emerald-800 rounded-xl transition-all shadow-md shadow-emerald-950/10 cursor-pointer self-end"
+          class="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-cenicana hover:bg-emerald-800 rounded-xl transition-all shadow-md shadow-emerald-950/10 cursor-pointer self-end md:self-auto"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -64,6 +80,16 @@
         <p class="text-xs text-slate-400 mt-1">Elige un ingenio de la lista para gestionar y visualizar sus lotes correspondientes.</p>
       </div>
 
+      <div v-else-if="!selectedHacienda" class="flex flex-col items-center justify-center py-16 text-center">
+        <div class="p-4 bg-slate-50 rounded-full border border-slate-100 text-slate-400 mb-3 shadow-inner">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          </svg>
+        </div>
+        <h3 class="text-sm font-bold text-slate-700">Selecciona una hacienda</h3>
+        <p class="text-xs text-slate-400 mt-1">Elige una hacienda para cargar y administrar sus lotes físicos.</p>
+      </div>
+
       <div v-else-if="loading" class="flex justify-center py-16">
         <div class="animate-spin rounded-full h-8 w-8 border-2 border-cenicana border-t-transparent"></div>
       </div>
@@ -75,7 +101,7 @@
           </svg>
         </div>
         <h3 class="text-sm font-bold text-slate-700">Sin lotes creados</h3>
-        <p class="text-xs text-slate-400 mt-1">No se encontraron lotes registrados para este ingenio. ¡Crea el primero!</p>
+        <p class="text-xs text-slate-400 mt-1">No se encontraron lotes registrados para esta hacienda. ¡Crea el primero!</p>
       </div>
 
       <!-- Lotes Grid -->
@@ -99,7 +125,10 @@
                 {{ lote.viveros_activos_count }} / {{ lote.capacidad_maxima }} Viveros
               </span>
             </div>
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Ingenio: {{ decodeHTMLEntities(selectedIngenioName) }}</p>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">
+              Ingenio: {{ decodeHTMLEntities(selectedIngenioName) }} <br>
+              Hacienda: {{ decodeHTMLEntities(getHaciendaName(lote.hacienda_codigo)) }}
+            </p>
 
             <!-- ProgressBar -->
             <div class="w-full bg-slate-200 rounded-full h-1.5 mt-4 overflow-hidden">
@@ -149,6 +178,12 @@
         <!-- Body -->
         <form @submit.prevent="submitForm">
           <div class="p-6 space-y-4">
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs font-semibold text-slate-600">
+              <span class="text-slate-400 font-bold uppercase tracking-wider block mb-1 text-[9px]">Ubicación Física</span>
+              Ingenio: {{ decodeHTMLEntities(selectedIngenioName) }} <br>
+              Hacienda: {{ decodeHTMLEntities(selectedHaciendaName) }}
+            </div>
+
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Nombre/Número del Lote</label>
               <input
@@ -203,8 +238,10 @@ import { useToast } from 'vue-toastification';
 const toast = useToast();
 
 const ingenios = ref<any[]>([]);
+const haciendas = ref<any[]>([]);
 const lotes = ref<any[]>([]);
 const selectedIngenio = ref('');
+const selectedHacienda = ref('');
 const loading = ref(false);
 const saving = ref(false);
 
@@ -213,7 +250,8 @@ const editingLoteId = ref<number | null>(null);
 
 const form = ref({
   nombre_lote: '',
-  capacidad_maxima: 5
+  capacidad_maxima: 5,
+  hacienda_codigo: ''
 });
 
 const decodeHTMLEntities = (text: string) => {
@@ -228,6 +266,16 @@ const selectedIngenioName = computed(() => {
   return ing ? ing.nm_ingnio : selectedIngenio.value;
 });
 
+const selectedHaciendaName = computed(() => {
+  const hda = haciendas.value.find(h => h.cd_hcnda === selectedHacienda.value);
+  return hda ? hda.nm_hcnda : selectedHacienda.value;
+});
+
+const getHaciendaName = (code: string) => {
+  const hda = haciendas.value.find(h => h.cd_hcnda === code);
+  return hda ? hda.nm_hcnda : code;
+};
+
 const loadIngenios = async () => {
   try {
     const res = await viverosServices.getIngenios();
@@ -238,15 +286,36 @@ const loadIngenios = async () => {
   }
 };
 
-const loadLotes = async () => {
+const loadHaciendas = async () => {
+  haciendas.value = [];
+  selectedHacienda.value = '';
+  lotes.value = [];
   if (!selectedIngenio.value) return;
+
+  try {
+    const res = await viverosServices.getHaciendas(selectedIngenio.value);
+    haciendas.value = res.data;
+  } catch (error) {
+    console.error('Error fetching haciendas:', error);
+    toast.error('Error al cargar las haciendas');
+  }
+};
+
+const loadLotes = async () => {
+  if (!selectedIngenio.value || !selectedHacienda.value) {
+    lotes.value = [];
+    return;
+  }
   loading.value = true;
   try {
-    const res = await viverosServices.getLotes({ ingenio_codigo: selectedIngenio.value });
+    const res = await viverosServices.getLotes({ 
+      ingenio_codigo: selectedIngenio.value,
+      hacienda_codigo: selectedHacienda.value 
+    });
     lotes.value = res.data;
   } catch (error) {
     console.error('Error fetching lotes:', error);
-    toast.error('Error al cargar los lotes del ingenio');
+    toast.error('Error al cargar los lotes');
   } finally {
     loading.value = false;
   }
@@ -256,7 +325,8 @@ const openAddModal = () => {
   editingLoteId.value = null;
   form.value = {
     nombre_lote: '',
-    capacidad_maxima: 5
+    capacidad_maxima: 5,
+    hacienda_codigo: selectedHacienda.value
   };
   isModalOpen.value = true;
 };
@@ -265,7 +335,8 @@ const openEditModal = (lote: any) => {
   editingLoteId.value = lote.id;
   form.value = {
     nombre_lote: lote.nombre_lote,
-    capacidad_maxima: lote.capacidad_maxima
+    capacidad_maxima: lote.capacidad_maxima,
+    hacienda_codigo: lote.hacienda_codigo || selectedHacienda.value
   };
   isModalOpen.value = true;
 };

@@ -14,6 +14,9 @@ class LoteController extends Controller
         if ($request->has('ingenio_codigo') && $request->ingenio_codigo) {
             $query->where('ingenio_codigo', $request->ingenio_codigo);
         }
+        if ($request->has('hacienda_codigo') && $request->hacienda_codigo) {
+            $query->where('hacienda_codigo', $request->hacienda_codigo);
+        }
         
         $lotes = $query->get()->map(function($lote) {
             $lote->viveros_activos_count = Vivero::where('lote_id', $lote->id)->count();
@@ -27,6 +30,7 @@ class LoteController extends Controller
     {
         $request->validate([
             'ingenio_codigo' => 'required|string',
+            'hacienda_codigo' => 'nullable|string',
             'nombre_lote' => 'required|string',
             'capacidad_maxima' => 'required|integer|min:1'
         ]);
@@ -40,6 +44,7 @@ class LoteController extends Controller
         $lote = Lote::findOrFail($id);
         
         $request->validate([
+            'hacienda_codigo' => 'sometimes|nullable|string',
             'nombre_lote' => 'sometimes|required|string',
             'capacidad_maxima' => 'sometimes|required|integer|min:1'
         ]);

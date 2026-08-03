@@ -14,6 +14,7 @@ class Lote extends Model
 
     protected $fillable = [
         'ingenio_codigo',
+        'hacienda_codigo',
         'nombre_lote',
         'capacidad_maxima'
     ];
