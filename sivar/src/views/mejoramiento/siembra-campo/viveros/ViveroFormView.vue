@@ -74,7 +74,7 @@
           </div>
 
           <!-- Hacienda -->
-          <div class="mb-4">
+          <div class="mb-4 md:col-span-2">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="hacienda">Hacienda</label>
             <select
               v-model="form.hacienda"
@@ -88,7 +88,7 @@
           </div>
 
           <!-- Lote -->
-          <div class="mb-4">
+          <div class="mb-4 md:col-span-2">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="lote_id">Lote <span class="text-red-500">*</span></label>
             <div class="flex gap-2">
               <select
@@ -115,7 +115,7 @@
           </div>
 
           <!-- Consecutivo Global Vivero (Ingenio) -->
-          <div class="mb-4" v-if="isEditing && form.consecutivo_vivero_ingenio">
+          <div class="mb-4 md:col-span-2" v-if="isEditing && form.consecutivo_vivero_ingenio">
             <label class="block text-gray-700 text-sm font-bold mb-2">N° Vivero (En Ingenio)</label>
             <div class="bg-gray-100 border rounded w-full py-2.5 px-3 text-gray-800 font-bold font-mono">
               {{ form.consecutivo_vivero_ingenio }}
