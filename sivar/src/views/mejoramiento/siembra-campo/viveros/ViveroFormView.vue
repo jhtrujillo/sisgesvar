@@ -1552,26 +1552,29 @@ const registrarCorteParcela = (p: any) => {
   }
 };
 
-watch(() => form.value.ingenio, (newIngenio) => {
-  if (!isEditing.value) {
-    form.value.lote_id = "";
-  }
-  loadLotesForIngenio(newIngenio);
-});
-
-const loadLotesForIngenio = async (ingenio: string) => {
-  if (!ingenio) {
+const loadLotesForLocation = async () => {
+  if (!form.value.ingenio || !form.value.hacienda) {
     lotes.value = [];
     return;
   }
   try {
-    const res = await viverosServices.getLotes({ ingenio_codigo: ingenio });
+    const res = await viverosServices.getLotes({ 
+      ingenio_codigo: form.value.ingenio,
+      hacienda_codigo: form.value.hacienda 
+    });
     lotes.value = res.data;
   } catch (error) {
     console.error("Error loading lotes:", error);
-    toast.error("Error al cargar los lotes del ingenio");
+    toast.error("Error al cargar los lotes");
   }
 };
+
+watch([() => form.value.ingenio, () => form.value.hacienda], () => {
+  if (!isEditing.value) {
+    form.value.lote_id = "";
+  }
+  loadLotesForLocation();
+});
 
 const formatDateTime = (dateString: string) => {
   if (!dateString) return '';
@@ -1709,8 +1712,8 @@ const resetAndLoad = async () => {
       }
       form.value = { ...vivero };
 
-      if (form.value.ingenio) {
-        await loadLotesForIngenio(form.value.ingenio);
+      if (form.value.ingenio && form.value.hacienda) {
+        await loadLotesForLocation();
       }
 
       if (form.value.origen_vivero_id) {
@@ -1825,10 +1828,6 @@ const resetAndLoad = async () => {
       }
       if (route.query.hacienda) {
         form.value.hacienda = route.query.hacienda as string;
-        await loadSuertes(false);
-      }
-      if (route.query.suerte) {
-        form.value.suerte = route.query.suerte as string;
       }
       if (route.query.proyecto_id) {
         form.value.proyecto_id = Number(route.query.proyecto_id);
