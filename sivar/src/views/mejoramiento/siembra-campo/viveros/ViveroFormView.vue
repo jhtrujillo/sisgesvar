@@ -80,19 +80,7 @@
               />
             </div>
 
-            <!-- Condición -->
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="condicion">Tipo de floración</label>
-              <select
-                v-model="form.condicion"
-                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
-                id="condicion"
-              >
-                <option value="">Seleccione un Tipo de floración</option>
-                <option value="Natural">Natural</option>
-                <option value="Fotoperiodo">Fotoperiodo</option>
-              </select>
-            </div>
+
 
             <!-- Ambiente -->
             <div>
