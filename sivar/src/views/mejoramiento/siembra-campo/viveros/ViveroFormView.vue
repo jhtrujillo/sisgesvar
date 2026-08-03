@@ -96,7 +96,7 @@
             </div>
 
             <!-- Responsable -->
-            <div class="relative">
+            <div class="relative md:col-span-2">
               <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="responsable_id">Responsable</label>
               <div class="relative">
                 <input
