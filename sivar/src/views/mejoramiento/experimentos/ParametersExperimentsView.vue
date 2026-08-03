@@ -1,5 +1,9 @@
 <template>
-  <div class="w-full flex-col pt-5 grid">
+  <div class="w-full flex-col pt-5 grid px-4">
+    <!-- Botón Volver -->
+    <div class="w-full max-w-7xl mx-auto mb-4">
+      <BackButton :to="{ name: 'mejoramiento.show' }" label="Volver a Mejoramiento" />
+    </div>
     <div class="w-full max-w-7xl mx-auto">
       <h1 class="text-center font-bold text-4xl mb-6 text-violet-800">Parámetros</h1>
     </div>
@@ -8,73 +12,105 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Programa/Servicio -->
         <div>
-          <label class="block uppercase tracking-wide text-violet-800 text-xs font-bold mb-2" for="nPrograma">
-            Programa/Servicio: </label>
-          <ComboBoxMultiple id="nPrograma" :data-list="dataListProgram" :column-value="columnValueProgram"
-            :column-to-show="columnToShowProgram" placeholder="Seleccione ..." v-model:selectedData="model.nPrograma"
-            class="w-full" />
+          <label class="block uppercase tracking-wide text-violet-800 text-xs font-bold mb-2" for="nPrograma"> Programa/Servicio: </label>
+          <ComboBoxMultiple
+            id="nPrograma"
+            :data-list="dataListProgram"
+            :column-value="columnValueProgram"
+            :column-to-show="columnToShowProgram"
+            placeholder="Seleccione ..."
+            v-model:selectedData="model.nPrograma"
+            class="w-full"
+          />
         </div>
 
         <!-- Área -->
         <div>
-          <label class="block uppercase tracking-wide text-violet-800 text-xs font-bold mb-2" for="nArea"> Área:
-          </label>
-          <ComboBoxMultiple :data-list="dataListAreas" :column-value="columnValueAreas"
-            :column-to-show="columnToShowAreas" placeholder="Seleccione ..." v-model:selectedData="model.nArea"
-            :disabled="!model.nPrograma" class="w-full" />
+          <label class="block uppercase tracking-wide text-violet-800 text-xs font-bold mb-2" for="nArea"> Área: </label>
+          <ComboBoxMultiple
+            :data-list="dataListAreas"
+            :column-value="columnValueAreas"
+            :column-to-show="columnToShowAreas"
+            placeholder="Seleccione ..."
+            v-model:selectedData="model.nArea"
+            :disabled="!model.nPrograma"
+            class="w-full"
+          />
         </div>
       </div>
 
       <!-- Proyecto -->
       <div class="mt-6">
-        <label class="block uppercase tracking-wide text-violet-800 text-xs font-bold mb-2" for="nProyecto"> Proyecto:
-        </label>
-        <ComboBoxMultiple :data-list="dataListProject" :column-value="columnValueProject"
-          :column-to-show="columnToShowProject" placeholder="Seleccione ..." v-model:selectedData="model.nProyecto"
-          :disabled="!model.nArea" class="w-full" />
+        <label class="block uppercase tracking-wide text-violet-800 text-xs font-bold mb-2" for="nProyecto"> Proyecto: </label>
+        <ComboBoxMultiple
+          :data-list="dataListProject"
+          :column-value="columnValueProject"
+          :column-to-show="columnToShowProject"
+          placeholder="Seleccione ..."
+          v-model:selectedData="model.nProyecto"
+          :disabled="!model.nArea"
+          class="w-full"
+        />
       </div>
 
       <!-- Grid para Serie y Estado -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <!-- Serie -->
         <div>
-          <label class="block uppercase tracking-wide text-violet-800 text-xs font-bold mb-2" for="nSerie"> Serie:
-          </label>
-          <ComboBoxMultiple :data-list="dataListSerie" :column-value="columnValueSerie"
-            :column-to-show="columnToShowSerie" placeholder="Seleccione ..." v-model:selectedData="model.nSerie"
-            :disabled="!model.nProyecto" class="w-full" />
+          <label class="block uppercase tracking-wide text-violet-800 text-xs font-bold mb-2" for="nSerie"> Serie: </label>
+          <ComboBoxMultiple
+            :data-list="dataListSerie"
+            :column-value="columnValueSerie"
+            :column-to-show="columnToShowSerie"
+            placeholder="Seleccione ..."
+            v-model:selectedData="model.nSerie"
+            :disabled="!model.nProyecto"
+            class="w-full"
+          />
         </div>
 
         <!-- Estado -->
         <div>
-          <label class="block uppercase tracking-wide text-violet-800 text-xs font-bold mb-2" for="nEstado"> Estado:
-          </label>
-          <ComboBoxMultiple :data-list="dataListEstado" :column-value="columnToShowEstado"
-            :column-to-show="columnToShowEstado" placeholder="Seleccione ..." v-model:selectedData="model.nEstado"
-            :disabled="!model.nSerie" class="w-full" />
+          <label class="block uppercase tracking-wide text-violet-800 text-xs font-bold mb-2" for="nEstado"> Estado: </label>
+          <ComboBoxMultiple
+            :data-list="dataListEstado"
+            :column-value="columnToShowEstado"
+            :column-to-show="columnToShowEstado"
+            placeholder="Seleccione ..."
+            v-model:selectedData="model.nEstado"
+            :disabled="!model.nSerie"
+            class="w-full"
+          />
         </div>
       </div>
     </div>
 
-    <div class="text-red-300 pl-2"
-      v-if="experimentsStore.experimentsFilter != null && Object.keys(experimentsStore.experimentsFilter.experimento).length === 0">
+    <div
+      class="text-red-300 pl-2"
+      v-if="experimentsStore.experimentsFilter != null && Object.keys(experimentsStore.experimentsFilter.experimento).length === 0"
+    >
       * No hay experimentos disponibles para los parámetros seleccionados.
     </div>
     <!-- Botones -->
     <div class="mt-6 text-center">
-      <button v-if="model.nPrograma || model.nArea || model.nProyecto" type="button"
+      <button
+        v-if="model.nPrograma || model.nArea || model.nProyecto"
+        type="button"
         class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring focus:ring-blue-400"
-        @click.prevent="buscarExperimento">
+        @click.prevent="buscarExperimento"
+      >
         Buscar Experimento
       </button>
-      <button v-else type="button"
+      <button
+        v-else
+        type="button"
         class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:ring focus:ring-gray-400"
-        @click.prevent="limpiarCampos">
+        @click.prevent="limpiarCampos"
+      >
         Limpiar
       </button>
     </div>
-    <div class="form-body"
-      v-if="experimentsStore.experimentsFilter && Object.keys(experimentsStore.experimentsFilter.experimento).length > 0">
+    <div class="form-body" v-if="experimentsStore.experimentsFilter && Object.keys(experimentsStore.experimentsFilter.experimento).length > 0">
       <h3 class="text-xl font-bold mb-4 text-violet-800">Paso 1: Selección de Tratamientos</h3>
       <div class="w-full max-w-10xl mx-auto bg-white shadow-lg rounded-lg p-6 mb-6">
         <div class="border-b pb-4 mb-6">
@@ -83,55 +119,88 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <!-- Selección de temporada -->
           <div>
-
             <label class="block text-sm font-medium text-violet-800 mb-2"> Seleccione temporada de cruzamientos:</label>
-            <ComboBoxMultiple :data-list="dataListTemporadas" :column-value="columnValueTemporadas"
-              :column-to-show="columnToShowTemporadas" placeholder="Seleccione ..."
-              v-model:selectedData="model.nTemporada" :disabled="!model.nProyecto" />
+            <ComboBoxMultiple
+              :data-list="dataListTemporadas"
+              :column-value="columnValueTemporadas"
+              :column-to-show="columnToShowTemporadas"
+              placeholder="Seleccione ..."
+              v-model:selectedData="model.nTemporada"
+              :disabled="!model.nProyecto"
+            />
           </div>
 
           <!-- Grupo cruzamiento Madre -->
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Grupo cruzamiento Madre:</label>
-            <ComboBoxMultiple :data-list="dataListCruzamientoMadre" :column-value="columnValueCruzamientoMadre"
-              :column-to-show="columnToShowCruzamientoMadre" placeholder="Seleccione ..."
-              v-model:selectedData="model.nCruzMadre" :disabled="!model.nTemporada" />
+            <ComboBoxMultiple
+              :data-list="dataListCruzamientoMadre"
+              :column-value="columnValueCruzamientoMadre"
+              :column-to-show="columnToShowCruzamientoMadre"
+              placeholder="Seleccione ..."
+              v-model:selectedData="model.nCruzMadre"
+              :disabled="!model.nTemporada"
+            />
           </div>
           <!-- Botón tratamientos disponibles -->
           <div class="flex items-center justify-center">
-            <button type="button" class="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600"
-              data-toggle="modal" data-target="#tablaTratamientos" @click.prevent="tratamientosDisponibles"
-              @click="openModal">
+            <button
+              type="button"
+              class="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600"
+              data-toggle="modal"
+              data-target="#tablaTratamientos"
+              @click.prevent="tratamientosDisponibles"
+              @click="openModal"
+            >
               Tratamientos disponibles
             </button>
           </div>
           <!-- Grupo cruzamiento Padre -->
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Grupo cruzamiento Padre:</label>
-            <ComboBoxMultiple :data-list="dataListCruzamientoPadre" :column-value="columnValueCruzamientoPadre"
-              :column-to-show="columnToShowCruzamientoPadre" placeholder="Seleccione ..."
-              v-model:selectedData="model.nCruzPadre" :disabled="!model.nCruzMadre" />
+            <ComboBoxMultiple
+              :data-list="dataListCruzamientoPadre"
+              :column-value="columnValueCruzamientoPadre"
+              :column-to-show="columnToShowCruzamientoPadre"
+              placeholder="Seleccione ..."
+              v-model:selectedData="model.nCruzPadre"
+              :disabled="!model.nCruzMadre"
+            />
           </div>
           <!-- Tipo de ensayo -->
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Tipo de ensayo:</label>
-            <ComboBoxMultiple :data-list="dataListTipoEnsayo" :column-value="columnValueTipoEnsayo"
-              :column-to-show="columnToShowTipoEnsayo" placeholder="Seleccione ..."
-              v-model:selectedData="model.cTipoEnsayo" :disabled="!model.nCruzPadre" />
+            <ComboBoxMultiple
+              :data-list="dataListTipoEnsayo"
+              :column-value="columnValueTipoEnsayo"
+              :column-to-show="columnToShowTipoEnsayo"
+              placeholder="Seleccione ..."
+              v-model:selectedData="model.cTipoEnsayo"
+              :disabled="!model.nCruzPadre"
+            />
           </div>
           <!-- Tipo de parcela -->
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Tipo de parcela:</label>
-            <ComboBoxMultiple :data-list="dataListTipoParcela" :column-value="columnValueTipoParcela"
-              :column-to-show="columnToShowTipoParcela" placeholder="Seleccione ..."
-              v-model:selectedData="model.nTipoParcela" :disabled="!model.cTipoEnsayo" />
+            <ComboBoxMultiple
+              :data-list="dataListTipoParcela"
+              :column-value="columnValueTipoParcela"
+              :column-to-show="columnToShowTipoParcela"
+              placeholder="Seleccione ..."
+              v-model:selectedData="model.nTipoParcela"
+              :disabled="!model.cTipoEnsayo"
+            />
           </div>
           <!-- Mínimo número de plantas -->
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Mínimo número de plantas:</label>
-            <input type="number" min="1"
+            <input
+              type="number"
+              min="1"
               class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              v-model="model.nMinimoPlantas" :disabled="!model.nTipoParcela" />
+              v-model="model.nMinimoPlantas"
+              :disabled="!model.nTipoParcela"
+            />
           </div>
           <!-- Total plantas -->
           <div>
@@ -139,25 +208,39 @@
               <div v-if="model.cTipoEnsayo && model.cTipoEnsayo === 'F'">Total plantas siembra Familias:</div>
               <div v-else-if="model.cTipoEnsayo && model.cTipoEnsayo === 'I'">Total plantas siembra Individual:</div>
             </label>
-            <input type="number" min="1"
+            <input
+              type="number"
+              min="1"
               class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              v-model="model.nTotalPlantas" :disabled="!model.nTipoParcela" />
+              v-model="model.nTotalPlantas"
+              :disabled="!model.nTipoParcela"
+            />
           </div>
         </div>
       </div>
     </div>
     <!-- Tabla de tratamientos -->
-    <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
-      id="tablaTratamientos" tabindex="-1" role="dialog" aria-hidden="true">
+    <div
+      v-if="isModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
+      id="tablaTratamientos"
+      tabindex="-1"
+      role="dialog"
+      aria-hidden="true"
+    >
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <!-- Modal Body -->
           <div class="modal-body">
             <div class="p-4 bg-white rounded-lg shadow">
               <div class="modal-header">
-                <button type="button"
+                <button
+                  type="button"
                   class="close bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded mr-1"
-                  data-dismiss="modal" aria-hidden="true" @click="closeModal">
+                  data-dismiss="modal"
+                  aria-hidden="true"
+                  @click="closeModal"
+                >
                   &times;
                 </button>
                 <h4 class="modal-title text-center p-2"><strong>Tratamientos Disponibles</strong></h4>
@@ -165,15 +248,10 @@
               <!-- Toolbar -->
               <div class="flex justify-center items-center mb-2">
                 <div>
-                  <button @click="selectAll"
-                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-2 rounded mr-4">Seleccionar
-                    Todos</button>
-                  <button @click="deselectAll"
-                    class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-2 rounded mr-4">Deseleccionar
-                    Todos</button>
+                  <button @click="selectAll" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-2 rounded mr-4">Seleccionar Todos</button>
+                  <button @click="deselectAll" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-2 rounded mr-4">Deseleccionar Todos</button>
                 </div>
-                <a href="javascript:;" @click="addSelected"
-                  class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-2 rounded mr-4">
+                <a href="javascript:;" @click="addSelected" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-2 rounded mr-4">
                   <i class="fa fa-plus"></i> Añadir Selección
                 </a>
               </div>
@@ -182,28 +260,15 @@
                 <table class="table-auto overflow-x-scroll w-min divide-y divide-gray-300">
                   <thead class="bg-gray-50">
                     <tr class="bg-gray-100">
-                      <th
-                        class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                      <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
                         <input type="checkbox" :checked="allSelected" @click="toggleAllSelection" />
                       </th>
-                      <th
-                        class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500 hidden">
-                        ID</th>
-                      <th
-                        class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                        Pedigree</th>
-                      <th
-                        class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                        Origen</th>
-                      <th
-                        class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                        Plántulas</th>
-                      <th
-                        class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                        Grupo cruz. madre</th>
-                      <th
-                        class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                        Grupo cruz. padre</th>
+                      <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500 hidden">ID</th>
+                      <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Pedigree</th>
+                      <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Origen</th>
+                      <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Plántulas</th>
+                      <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Grupo cruz. madre</th>
+                      <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Grupo cruz. padre</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-200 bg-white">
@@ -235,14 +300,19 @@
               </div>
               <!-- Controles de paginación -->
               <div class="flex justify-between items-center mt-4">
-                <button @click="currentPage > 1 && currentPage--"
-                  class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded" :disabled="currentPage === 1">
+                <button
+                  @click="currentPage > 1 && currentPage--"
+                  class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                  :disabled="currentPage === 1"
+                >
                   Anterior
                 </button>
                 <span>Página {{ currentPage }} de {{ totalPages }}</span>
-                <button @click="currentPage < totalPages && currentPage++"
+                <button
+                  @click="currentPage < totalPages && currentPage++"
                   class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                  :disabled="currentPage === totalPages">
+                  :disabled="currentPage === totalPages"
+                >
                   Siguiente
                 </button>
               </div>
@@ -252,8 +322,14 @@
       </div>
     </div>
     <!-- Tabla de tratamientos Familias -->
-    <div class="modal fade mb-6" id="tablaTratamientosFamilias" tabindex="-1" role="dialog" aria-hidden="true"
-      v-if="experimentsStore.experimentsFilter && Object.keys(experimentsStore.experimentsFilter.experimento).length > 0">
+    <div
+      class="modal fade mb-6"
+      id="tablaTratamientosFamilias"
+      tabindex="-1"
+      role="dialog"
+      aria-hidden="true"
+      v-if="experimentsStore.experimentsFilter && Object.keys(experimentsStore.experimentsFilter.experimento).length > 0"
+    >
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-body">
@@ -265,34 +341,50 @@
               <!-- Tabs -->
               <ul class="flex border-b mb-4">
                 <li class="mr-2">
-                  <a href="javascript:;" @click="setActiveTab('tratamientos')" :class="[
-                    'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
-                    activeTab === 'tratamientos' ? 'border-blue-500' : 'border-transparent'
-                  ]">
+                  <a
+                    href="javascript:;"
+                    @click="setActiveTab('tratamientos')"
+                    :class="[
+                      'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
+                      activeTab === 'tratamientos' ? 'border-blue-500' : 'border-transparent'
+                    ]"
+                  >
                     Tratamientos
                   </a>
                 </li>
                 <li class="mr-2">
-                  <a href="javascript:;" @click="setActiveTab('subparcelas')" :class="[
-                    'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
-                    activeTab === 'subparcelas' ? 'border-blue-500' : 'border-transparent'
-                  ]">
+                  <a
+                    href="javascript:;"
+                    @click="setActiveTab('subparcelas')"
+                    :class="[
+                      'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
+                      activeTab === 'subparcelas' ? 'border-blue-500' : 'border-transparent'
+                    ]"
+                  >
                     Subparcelas
                   </a>
                 </li>
                 <li class="mr-2">
-                  <a href="javascript:;" @click="setActiveTab('testigos')" :class="[
-                    'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
-                    activeTab === 'testigos' ? 'border-blue-500' : 'border-transparent'
-                  ]">
+                  <a
+                    href="javascript:;"
+                    @click="setActiveTab('testigos')"
+                    :class="[
+                      'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
+                      activeTab === 'testigos' ? 'border-blue-500' : 'border-transparent'
+                    ]"
+                  >
                     Testigos
                   </a>
                 </li>
                 <li class="mr-2">
-                  <a href="javascript:;" @click="setActiveTab('testigosMoviles')" :class="[
-                    'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
-                    activeTab === 'testigosMoviles' ? 'border-blue-500' : 'border-transparent'
-                  ]">
+                  <a
+                    href="javascript:;"
+                    @click="setActiveTab('testigosMoviles')"
+                    :class="[
+                      'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
+                      activeTab === 'testigosMoviles' ? 'border-blue-500' : 'border-transparent'
+                    ]"
+                  >
                     Testigos Móviles
                   </a>
                 </li>
@@ -301,16 +393,13 @@
               <div v-show="activeTab === 'tratamientos'">
                 <div class="flex justify-between items-center mb-4">
                   <div class="flex space-x-4">
-                    <button @click="selectAllTreatmentsExperimentsF"
-                      class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                    <button @click="selectAllTreatmentsExperimentsF" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
                       Seleccionar Todos
                     </button>
-                    <button @click="deselectAllTreatmentsExperimentsF"
-                      class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+                    <button @click="deselectAllTreatmentsExperimentsF" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
                       Deseleccionar Todos
                     </button>
-                    <button @click="addSelectedTreatmentsExperimentsF"
-                      class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                    <button @click="addSelectedTreatmentsExperimentsF" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
                       <i class="fa fa-plus"></i> Añadir Selección
                     </button>
                   </div>
@@ -320,31 +409,18 @@
                   <table class="table-auto w-full divide-y divide-gray-300">
                     <thead class="bg-gray-50">
                       <tr class="bg-gray-100">
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          <input type="checkbox" :checked="allSelectedTreatmentsExperimentsF"
-                            @click="toggleAllSelectionTreatmentsExperimentsF" />
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                          <input type="checkbox" :checked="allSelectedTreatmentsExperimentsF" @click="toggleAllSelectionTreatmentsExperimentsF" />
                         </th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Familia</th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Pedigree</th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Origen</th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          No. Plantas</th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Plantas Almacenadas</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Familia</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Pedigree</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Origen</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">No. Plantas</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Plantas Almacenadas</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
-                      <tr v-for="row in paginatedDataTreatmentsExperimentsF" :key="row.id_dsno_det"
-                        class="hover:bg-gray-50">
+                      <tr v-for="row in paginatedDataTreatmentsExperimentsF" :key="row.id_dsno_det" class="hover:bg-gray-50">
                         <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
                           <input type="checkbox" v-model="row.selected" />
                         </td>
@@ -359,16 +435,19 @@
                 </div>
                 <!-- Pagination Controls -->
                 <div class="flex justify-between items-center mt-4">
-                  <button @click="currentPageTreatmentsExperimentsF > 1 && currentPageTreatmentsExperimentsF--"
+                  <button
+                    @click="currentPageTreatmentsExperimentsF > 1 && currentPageTreatmentsExperimentsF--"
                     class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTreatmentsExperimentsF === 1">
+                    :disabled="currentPageTreatmentsExperimentsF === 1"
+                  >
                     Anterior
                   </button>
                   <span>Página {{ currentPageTreatmentsExperimentsF }} de {{ totalPagesTreatmentsExperimentsF }}</span>
                   <button
                     @click="currentPageTreatmentsExperimentsF < totalPagesTreatmentsExperimentsF && currentPageTreatmentsExperimentsF++"
                     class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTreatmentsExperimentsF === totalPagesTreatmentsExperimentsF">
+                    :disabled="currentPageTreatmentsExperimentsF === totalPagesTreatmentsExperimentsF"
+                  >
                     Siguiente
                   </button>
                 </div>
@@ -382,15 +461,11 @@
               <div v-show="activeTab === 'testigos'">
                 <div class="flex justify-between items-center mb-4">
                   <div class="flex space-x-4">
-                    <button @click="selectAllTestigosF"
-                      class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Seleccionar
-                      Todos</button>
-                    <button @click="deselectAllTestigosF"
-                      class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+                    <button @click="selectAllTestigosF" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Seleccionar Todos</button>
+                    <button @click="deselectAllTestigosF" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
                       Deseleccionar Todos
                     </button>
-                    <button @click="addSelectedTestigosF"
-                      class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                    <button @click="addSelectedTestigosF" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
                       <i class="fa fa-plus"></i> Añadir Selección
                     </button>
                   </div>
@@ -400,19 +475,12 @@
                   <table class="table-auto w-full divide-y divide-gray-300">
                     <thead class="bg-gray-50">
                       <tr class="bg-gray-100">
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
                           <input type="checkbox" :checked="allSelectedTestigosF" @click="toggleAllSelectionTestigosF" />
                         </th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Variedad</th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Pedigree</th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Origen</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Variedad</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Pedigree</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Origen</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
@@ -429,15 +497,19 @@
                 </div>
                 <!-- Pagination Controls -->
                 <div class="flex justify-between items-center mt-4">
-                  <button @click="currentPageTestigosF > 1 && currentPageTestigosF--"
+                  <button
+                    @click="currentPageTestigosF > 1 && currentPageTestigosF--"
                     class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTestigosF === 1">
+                    :disabled="currentPageTestigosF === 1"
+                  >
                     Anterior
                   </button>
                   <span>Página {{ currentPageTestigosF }} de {{ totalPagesTestigosF }}</span>
-                  <button @click="currentPageTestigosF < totalPagesTestigosF && currentPageTestigosF++"
+                  <button
+                    @click="currentPageTestigosF < totalPagesTestigosF && currentPageTestigosF++"
                     class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTestigosF === totalPagesTestigosF">
+                    :disabled="currentPageTestigosF === totalPagesTestigosF"
+                  >
                     Siguiente
                   </button>
                 </div>
@@ -445,15 +517,11 @@
               <div v-show="activeTab === 'testigosMoviles'">
                 <div class="flex justify-between items-center mb-4">
                   <div class="flex space-x-4">
-                    <button @click="selectAllTestigosM"
-                      class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Seleccionar
-                      Todos</button>
-                    <button @click="deselectAllTestigosM"
-                      class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+                    <button @click="selectAllTestigosM" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Seleccionar Todos</button>
+                    <button @click="deselectAllTestigosM" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
                       Deseleccionar Todos
                     </button>
-                    <button @click="addSelectedTestigosM"
-                      class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                    <button @click="addSelectedTestigosM" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
                       <i class="fa fa-plus"></i> Añadir Selección
                     </button>
                   </div>
@@ -463,19 +531,12 @@
                   <table class="table-auto w-full divide-y divide-gray-300">
                     <thead class="bg-gray-50">
                       <tr class="bg-gray-100">
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
                           <input type="checkbox" :checked="allSelectedTestigosM" @click="toggleAllSelectionTestigosM" />
                         </th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Variedad</th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Pedigree</th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Origen</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Variedad</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Pedigree</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Origen</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
@@ -492,15 +553,19 @@
                 </div>
                 <!-- Pagination Controls -->
                 <div class="flex justify-between items-center mt-4">
-                  <button @click="currentPageTestigosM > 1 && currentPageTestigosM--"
+                  <button
+                    @click="currentPageTestigosM > 1 && currentPageTestigosM--"
                     class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTestigosM === 1">
+                    :disabled="currentPageTestigosM === 1"
+                  >
                     Anterior
                   </button>
                   <span>Página {{ currentPageTestigosM }} de {{ totalPagesTestigosM }}</span>
-                  <button @click="currentPageTestigosM < totalPagesTestigosM && currentPageTestigosM++"
+                  <button
+                    @click="currentPageTestigosM < totalPagesTestigosM && currentPageTestigosM++"
                     class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTestigosM === totalPagesTestigosM">
+                    :disabled="currentPageTestigosM === totalPagesTestigosM"
+                  >
                     Siguiente
                   </button>
                 </div>
@@ -512,8 +577,14 @@
     </div>
 
     <!-- Tabla de tratamientos Individual -->
-    <div class="modal fade mb-6" id="tablaTratamientosIndividual" tabindex="-1" role="dialog" aria-hidden="true"
-      v-if="experimentsStore.experimentsFilter && Object.keys(experimentsStore.experimentsFilter.experimento).length > 0">
+    <div
+      class="modal fade mb-6"
+      id="tablaTratamientosIndividual"
+      tabindex="-1"
+      role="dialog"
+      aria-hidden="true"
+      v-if="experimentsStore.experimentsFilter && Object.keys(experimentsStore.experimentsFilter.experimento).length > 0"
+    >
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-body">
@@ -525,34 +596,50 @@
               <!-- Tabs -->
               <ul class="flex border-b mb-4">
                 <li class="mr-2">
-                  <a href="javascript:;" @click="setActiveTabI('tratamientosI')" :class="[
-                    'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
-                    activeTab === 'tratamientos' ? 'border-blue-500' : 'border-transparent'
-                  ]">
+                  <a
+                    href="javascript:;"
+                    @click="setActiveTabI('tratamientosI')"
+                    :class="[
+                      'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
+                      activeTab === 'tratamientos' ? 'border-blue-500' : 'border-transparent'
+                    ]"
+                  >
                     Tratamientos
                   </a>
                 </li>
                 <li class="mr-2">
-                  <a href="javascript:;" @click="setActiveTabI('subparcelasI')" :class="[
-                    'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
-                    activeTab === 'subparcelas' ? 'border-blue-500' : 'border-transparent'
-                  ]">
+                  <a
+                    href="javascript:;"
+                    @click="setActiveTabI('subparcelasI')"
+                    :class="[
+                      'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
+                      activeTab === 'subparcelas' ? 'border-blue-500' : 'border-transparent'
+                    ]"
+                  >
                     Subparcelas
                   </a>
                 </li>
                 <li class="mr-2">
-                  <a href="javascript:;" @click="setActiveTabI('testigosI')" :class="[
-                    'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
-                    activeTab === 'testigos' ? 'border-blue-500' : 'border-transparent'
-                  ]">
+                  <a
+                    href="javascript:;"
+                    @click="setActiveTabI('testigosI')"
+                    :class="[
+                      'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
+                      activeTab === 'testigos' ? 'border-blue-500' : 'border-transparent'
+                    ]"
+                  >
                     Testigos
                   </a>
                 </li>
                 <li class="mr-2">
-                  <a href="javascript:;" @click="setActiveTabI('testigosMovilesI')" :class="[
-                    'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
-                    activeTab === 'testigosMoviles' ? 'border-blue-500' : 'border-transparent'
-                  ]">
+                  <a
+                    href="javascript:;"
+                    @click="setActiveTabI('testigosMovilesI')"
+                    :class="[
+                      'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
+                      activeTab === 'testigosMoviles' ? 'border-blue-500' : 'border-transparent'
+                    ]"
+                  >
                     Testigos Móviles
                   </a>
                 </li>
@@ -561,17 +648,18 @@
               <div v-show="activeTabI === 'tratamientosI'">
                 <div class="flex justify-between items-center mb-2">
                   <div>
-                    <button @click="selectAllTreatmentsExperimentsI"
-                      class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-2 rounded mr-4">
+                    <button @click="selectAllTreatmentsExperimentsI" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-2 rounded mr-4">
                       Seleccionar Todos
                     </button>
-                    <button @click="deselectAllTreatmentsExperimentsI"
-                      class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-2 rounded mr-4">
+                    <button @click="deselectAllTreatmentsExperimentsI" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-2 rounded mr-4">
                       Deseleccionar Todos
                     </button>
                   </div>
-                  <a href="javascript:;" @click="addSelectedTreatmentsExperimentsI"
-                    class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-2 rounded mr-4">
+                  <a
+                    href="javascript:;"
+                    @click="addSelectedTreatmentsExperimentsI"
+                    class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-2 rounded mr-4"
+                  >
                     <i class="fa fa-plus"></i> Añadir Selección
                   </a>
                 </div>
@@ -580,31 +668,18 @@
                   <table class="table-auto overflow-x-scroll w-full divide-y divide-gray-300">
                     <thead class="bg-gray-50">
                       <tr class="bg-gray-100">
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          <input type="checkbox" :checked="allSelectedTreatmentsExperimentsI"
-                            @click="toggleAllSelectionTreatmentsExperimentsI" />
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                          <input type="checkbox" :checked="allSelectedTreatmentsExperimentsI" @click="toggleAllSelectionTreatmentsExperimentsI" />
                         </th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Familia</th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Pedigree</th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Origen</th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          No. Plantas</th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Plantas Almacenadas</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Familia</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Pedigree</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Origen</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">No. Plantas</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Plantas Almacenadas</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
-                      <tr v-for="row in paginatedDataTreatmentsExperimentsI" :key="row.id_dsno_det"
-                        class="hover:bg-gray-50">
+                      <tr v-for="row in paginatedDataTreatmentsExperimentsI" :key="row.id_dsno_det" class="hover:bg-gray-50">
                         <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
                           <input type="checkbox" v-model="row.selected" />
                         </td>
@@ -638,16 +713,19 @@
                 </div>
                 <!-- Controles de paginación -->
                 <div class="flex justify-between items-center mt-4">
-                  <button @click="currentPageTreatmentsExperimentsI > 1 && currentPageTreatmentsExperimentsI--"
+                  <button
+                    @click="currentPageTreatmentsExperimentsI > 1 && currentPageTreatmentsExperimentsI--"
                     class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTreatmentsExperimentsI === 1">
+                    :disabled="currentPageTreatmentsExperimentsI === 1"
+                  >
                     Anterior
                   </button>
                   <span>Página {{ currentPageTreatmentsExperimentsI }} de {{ totalPagesTreatmentsExperimentsI }}</span>
                   <button
                     @click="currentPageTreatmentsExperimentsI < totalPagesTreatmentsExperimentsI && currentPageTreatmentsExperimentsI++"
                     class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTreatmentsExperimentsI === totalPagesTreatmentsExperimentsI">
+                    :disabled="currentPageTreatmentsExperimentsI === totalPagesTreatmentsExperimentsI"
+                  >
                     Siguiente
                   </button>
                 </div>
@@ -661,15 +739,11 @@
               <div v-show="activeTabI === 'testigosI'">
                 <div class="flex justify-between items-center mb-4">
                   <div class="flex space-x-4">
-                    <button @click="selectAllTestigosFI"
-                      class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Seleccionar
-                      Todos</button>
-                    <button @click="deselectAllTestigosFI"
-                      class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+                    <button @click="selectAllTestigosFI" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Seleccionar Todos</button>
+                    <button @click="deselectAllTestigosFI" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
                       Deseleccionar Todos
                     </button>
-                    <button @click="addSelectedTestigosFI"
-                      class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                    <button @click="addSelectedTestigosFI" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
                       <i class="fa fa-plus"></i> Añadir Selección
                     </button>
                   </div>
@@ -679,20 +753,12 @@
                   <table class="table-auto w-full divide-y divide-gray-300">
                     <thead class="bg-gray-50">
                       <tr class="bg-gray-100">
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          <input type="checkbox" :checked="allSelectedTestigosFI"
-                            @click="toggleAllSelectionTestigosFI" />
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                          <input type="checkbox" :checked="allSelectedTestigosFI" @click="toggleAllSelectionTestigosFI" />
                         </th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Variedad</th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Pedigree</th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Origen</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Variedad</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Pedigree</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Origen</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
@@ -709,15 +775,19 @@
                 </div>
                 <!-- Pagination Controls -->
                 <div class="flex justify-between items-center mt-4">
-                  <button @click="currentPageTestigosFI > 1 && currentPageTestigosFI--"
+                  <button
+                    @click="currentPageTestigosFI > 1 && currentPageTestigosFI--"
                     class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTestigosFI === 1">
+                    :disabled="currentPageTestigosFI === 1"
+                  >
                     Anterior
                   </button>
                   <span>Página {{ currentPageTestigosFI }} de {{ totalPagesTestigosFI }}</span>
-                  <button @click="currentPageTestigosFI < totalPagesTestigosFI && currentPageTestigosFI++"
+                  <button
+                    @click="currentPageTestigosFI < totalPagesTestigosFI && currentPageTestigosFI++"
                     class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTestigosFI === totalPagesTestigosFI">
+                    :disabled="currentPageTestigosFI === totalPagesTestigosFI"
+                  >
                     Siguiente
                   </button>
                 </div>
@@ -725,15 +795,11 @@
               <div v-show="activeTabI === 'testigosMovilesI'">
                 <div class="flex justify-between items-center mb-4">
                   <div class="flex space-x-4">
-                    <button @click="selectAllTestigosMI"
-                      class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Seleccionar
-                      Todos</button>
-                    <button @click="deselectAllTestigosMI"
-                      class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+                    <button @click="selectAllTestigosMI" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Seleccionar Todos</button>
+                    <button @click="deselectAllTestigosMI" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
                       Deseleccionar Todos
                     </button>
-                    <button @click="addSelectedTestigosMI"
-                      class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                    <button @click="addSelectedTestigosMI" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
                       <i class="fa fa-plus"></i> Añadir Selección
                     </button>
                   </div>
@@ -743,20 +809,12 @@
                   <table class="table-auto w-full divide-y divide-gray-300">
                     <thead class="bg-gray-50">
                       <tr class="bg-gray-100">
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          <input type="checkbox" :checked="allSelectedTestigosMI"
-                            @click="toggleAllSelectionTestigosMI" />
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                          <input type="checkbox" :checked="allSelectedTestigosMI" @click="toggleAllSelectionTestigosMI" />
                         </th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Variedad</th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Pedigree</th>
-                        <th
-                          class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          Origen</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Variedad</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Pedigree</th>
+                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Origen</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
@@ -773,15 +831,19 @@
                 </div>
                 <!-- Pagination Controls -->
                 <div class="flex justify-between items-center mt-4">
-                  <button @click="currentPageTestigosMI > 1 && currentPageTestigosMI--"
+                  <button
+                    @click="currentPageTestigosMI > 1 && currentPageTestigosMI--"
                     class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTestigosMI === 1">
+                    :disabled="currentPageTestigosMI === 1"
+                  >
                     Anterior
                   </button>
                   <span>Página {{ currentPageTestigosMI }} de {{ totalPagesTestigosMI }}</span>
-                  <button @click="currentPageTestigosMI < totalPagesTestigosMI && currentPageTestigosMI++"
+                  <button
+                    @click="currentPageTestigosMI < totalPagesTestigosMI && currentPageTestigosMI++"
                     class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTestigosMI === totalPagesTestigosMI">
+                    :disabled="currentPageTestigosMI === totalPagesTestigosMI"
+                  >
                     Siguiente
                   </button>
                 </div>
@@ -792,8 +854,7 @@
       </div>
       <div class="modal-dialog modal-lg"></div>
     </div>
-    <div
-      v-if="experimentsStore.experimentsFilter && Object.keys(experimentsStore.experimentsFilter.experimento).length > 0">
+    <div v-if="experimentsStore.experimentsFilter && Object.keys(experimentsStore.experimentsFilter.experimento).length > 0">
       <h3 class="text-xl font-bold mb-4 text-violet-800">Paso 2: Definición Diseño Estadístico</h3>
       <div class="w-full max-w-10xl mx-auto bg-white shadow-lg rounded-lg p-6 mb-6">
         <div class="border-b pb-4 mb-6">
@@ -803,9 +864,15 @@
         <!-- Diseño Experimental -->
         <div class="mb-4">
           <label class="block text-sm font-medium text-violet-800 mb-2">Diseño Experimental:</label>
-          <ComboBoxMultiple :data-list="dataListDisenoExp" :column-value="columnValueTemporadas"
-            :column-to-show="columnToShowTemporadas" placeholder="Seleccione ..."
-            v-model:selectedData="model.nDisenoExpF" :disabled="!model.nProyecto" class="w-full" />
+          <ComboBoxMultiple
+            :data-list="dataListDisenoExp"
+            :column-value="columnValueTemporadas"
+            :column-to-show="columnToShowTemporadas"
+            placeholder="Seleccione ..."
+            v-model:selectedData="model.nDisenoExpF"
+            :disabled="!model.nProyecto"
+            class="w-full"
+          />
         </div>
 
         <!-- Grid para valores numéricos -->
@@ -813,14 +880,24 @@
           <!-- Localidades -->
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Localidades:</label>
-            <input type="number" min="0" v-model="model.nLocalidadesF"
-              class="w-full p-2 border rounded border-gray-300 shadow-md" :disabled="!model.nDisenoExpF" />
+            <input
+              type="number"
+              min="0"
+              v-model="model.nLocalidadesF"
+              class="w-full p-2 border rounded border-gray-300 shadow-md"
+              :disabled="!model.nDisenoExpF"
+            />
           </div>
           <!-- Repeticiones -->
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Repeticiones:</label>
-            <input type="number" min="0" v-model="model.nRepeticionesF"
-              class="w-full p-2 border rounde border-gray-300 shadow-md" :disabled="!model.nLocalidadesF" />
+            <input
+              type="number"
+              min="0"
+              v-model="model.nRepeticionesF"
+              class="w-full p-2 border rounde border-gray-300 shadow-md"
+              :disabled="!model.nLocalidadesF"
+            />
           </div>
         </div>
 
@@ -828,31 +905,31 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Tratamientos:</label>
-            <input type="number" v-model="model.nTratamientoF"
-              class="w-full p-2 border rounded border-gray-300 shadow-md" />
+            <input type="number" v-model="model.nTratamientoF" class="w-full p-2 border rounded border-gray-300 shadow-md" />
           </div>
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Testigos:</label>
-            <input type="number" v-model="model.nTestigosF"
-              class="w-full p-2 border rounded border-gray-300 shadow-md" />
+            <input type="number" v-model="model.nTestigosF" class="w-full p-2 border rounded border-gray-300 shadow-md" />
           </div>
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Testigos Móviles:</label>
-            <input type="number" v-model="model.nTestigosMovilF"
-              class="w-full p-2 border rounded border-gray-300 shadow-md" />
+            <input type="number" v-model="model.nTestigosMovilF" class="w-full p-2 border rounded border-gray-300 shadow-md" />
           </div>
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Parcela Principal:</label>
-            <input type="number" v-model="model.nParcelaPpalF"
-              class="w-full p-2 border rounded border-gray-300 shadow-md" />
+            <input type="number" v-model="model.nParcelaPpalF" class="w-full p-2 border rounded border-gray-300 shadow-md" />
           </div>
         </div>
 
         <!-- Descripción -->
         <div class="mt-4">
           <label class="block text-sm font-medium text-violet-800 mb-2">Descripción:</label>
-          <textarea v-model="model.cDescripcionF" class="w-full p-2 border rounded border-gray-300 shadow-md" rows="3"
-            :disabled="!model.nDisenoExpF"></textarea>
+          <textarea
+            v-model="model.cDescripcionF"
+            class="w-full p-2 border rounded border-gray-300 shadow-md"
+            rows="3"
+            :disabled="!model.nDisenoExpF"
+          ></textarea>
         </div>
 
         <!-- Botón de Guardar -->
@@ -868,9 +945,15 @@
         <!-- Diseño Experimental -->
         <div class="mb-4">
           <label class="block text-sm font-medium text-violet-800 mb-2">Diseño Experimental:</label>
-          <ComboBoxMultiple :data-list="dataListDisenoExp" :column-value="columnValueTemporadas"
-            :column-to-show="columnToShowTemporadas" placeholder="Seleccione ..."
-            v-model:selectedData="model.nDisenoExpI" :disabled="!model.nProyecto" class="w-full" />
+          <ComboBoxMultiple
+            :data-list="dataListDisenoExp"
+            :column-value="columnValueTemporadas"
+            :column-to-show="columnToShowTemporadas"
+            placeholder="Seleccione ..."
+            v-model:selectedData="model.nDisenoExpI"
+            :disabled="!model.nProyecto"
+            class="w-full"
+          />
         </div>
 
         <!-- Grid para valores numéricos -->
@@ -878,14 +961,24 @@
           <!-- Localidades -->
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Localidades:</label>
-            <input type="number" min="0" v-model="model.nLocalidadesI"
-              class="w-full p-2 border rounded border-gray-300 shadow-md" :disabled="!model.nDisenoExpI" />
+            <input
+              type="number"
+              min="0"
+              v-model="model.nLocalidadesI"
+              class="w-full p-2 border rounded border-gray-300 shadow-md"
+              :disabled="!model.nDisenoExpI"
+            />
           </div>
           <!-- Repeticiones -->
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Repeticiones:</label>
-            <input type="number" min="0" v-model="model.nRepeticionesI"
-              class="w-full p-2 border rounded border-gray-300 shadow-md" :disabled="!model.nLocalidadesI" />
+            <input
+              type="number"
+              min="0"
+              v-model="model.nRepeticionesI"
+              class="w-full p-2 border rounded border-gray-300 shadow-md"
+              :disabled="!model.nLocalidadesI"
+            />
           </div>
         </div>
 
@@ -893,31 +986,31 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Tratamientos:</label>
-            <input type="number" v-model="model.nTratamientoI"
-              class="w-full p-2 border rounded border-gray-300 shadow-md" />
+            <input type="number" v-model="model.nTratamientoI" class="w-full p-2 border rounded border-gray-300 shadow-md" />
           </div>
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Testigos:</label>
-            <input type="number" v-model="model.nTestigosI"
-              class="w-full p-2 border rounded border-gray-300 shadow-md" />
+            <input type="number" v-model="model.nTestigosI" class="w-full p-2 border rounded border-gray-300 shadow-md" />
           </div>
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Testigos Móviles:</label>
-            <input type="number" v-model="model.nTestigosMovilI"
-              class="w-full p-2 border rounded border-gray-300 shadow-md" />
+            <input type="number" v-model="model.nTestigosMovilI" class="w-full p-2 border rounded border-gray-300 shadow-md" />
           </div>
           <div>
             <label class="block text-sm font-medium text-violet-800 mb-2">Parcela Principal:</label>
-            <input type="number" v-model="model.nParcelaPpalI"
-              class="w-full p-2 border rounded border-gray-300 shadow-md" />
+            <input type="number" v-model="model.nParcelaPpalI" class="w-full p-2 border rounded border-gray-300 shadow-md" />
           </div>
         </div>
 
         <!-- Descripción -->
         <div class="mt-4">
           <label class="block text-sm font-medium text-violet-800 mb-2">Descripción:</label>
-          <textarea v-model="model.cDescripcionI" class="w-full p-2 border rounded border-gray-300 shadow-md" rows="3"
-            :disabled="!model.nDisenoExpI"></textarea>
+          <textarea
+            v-model="model.cDescripcionI"
+            class="w-full p-2 border rounded border-gray-300 shadow-md"
+            rows="3"
+            :disabled="!model.nDisenoExpI"
+          ></textarea>
         </div>
 
         <!-- Botón de Guardar -->
@@ -931,6 +1024,7 @@
 
 <script setup lang="ts">
 import { reactive, onMounted, watch, computed, ref } from "vue";
+import BackButton from "@/components/BackButton.vue";
 import { useSearchParametersStore } from "@/stores/parametersexperiments";
 import { useAreasProgramStore } from "@/stores/areasprogram";
 import { useProjectsAreaStore } from "@/stores/projectsarea";

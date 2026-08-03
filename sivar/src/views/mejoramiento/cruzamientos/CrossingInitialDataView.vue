@@ -1,24 +1,7 @@
 <template>
   <div class="space-y-8 w-full max-w-4xl mx-auto px-4 pt-6">
     <!-- Botón Volver -->
-    <div class="flex justify-start">
-      <router-link
-        class="group flex items-center px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-emerald-50 hover:text-cenicana hover:border-emerald-200 transition-all duration-200"
-        :to="{ name: 'cruzamientos.show' }"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-4 w-4 mr-2 transform transition-transform group-hover:-translate-x-1"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2.5"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-        Volver
-      </router-link>
-    </div>
+    <BackButton :to="{ name: 'cruzamientos.show' }" label="Volver" />
 
     <!-- Encabezado con Indicador de Progreso -->
     <div class="border-b border-slate-100 pb-6">
@@ -126,6 +109,7 @@ import { onMounted, ref, watch, reactive, computed } from "vue";
 import { useCrossingInitialDataStore } from "@/stores/crossinginitialdata";
 import ComboBoxMultiple from "@/components/ComboBoxMultiple.vue";
 import type { CrossingInitialData } from "@/services/types";
+import BackButton from "@/components/BackButton.vue";
 
 // Stores y variables
 const crossingInitialDataStore = useCrossingInitialDataStore();
