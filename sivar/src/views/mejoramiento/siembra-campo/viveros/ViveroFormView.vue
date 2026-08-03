@@ -1387,7 +1387,8 @@ const registrarCorteParcela = (p: any) => {
       }
     }
 
-    const idPlot = `${currentVivero.identificador_unico}-${p.numero_parcela}`;
+    const parcelLabel = p.numero_parcela_origen || p.numero_parcela;
+    const idPlot = `${currentVivero.identificador_unico}-${parcelLabel}`;
     
     router.push({
       name: "vivero_nuevo.show",
@@ -1401,7 +1402,8 @@ const registrarCorteParcela = (p: any) => {
         hacienda: currentVivero.hacienda || "",
         suerte: currentVivero.suerte || "",
         proyecto_id: currentVivero.proyecto_id || "",
-        caracter_id: currentVivero.caracter_id || ""
+        caracter_id: currentVivero.caracter_id || "",
+        es_corte: "true"
       }
     });
   } catch (error: any) {

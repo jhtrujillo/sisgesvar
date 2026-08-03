@@ -29,7 +29,8 @@ class ViveroParcela extends Model
             return [];
         }
 
-        $plotId = $vivero->identificador_unico . '-' . $this->numero_parcela;
+        $parcelLabel = $this->numero_parcela_origen ?: $this->numero_parcela;
+        $plotId = $vivero->identificador_unico . '-' . $parcelLabel;
 
         return Vivero::where('origen_parcela', $plotId)
             ->select('id', 'identificador_unico', 'nombre', 'fecha_siembra')
