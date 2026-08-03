@@ -371,11 +371,10 @@
           </div>
           <!-- Origen Parcela -->
           <div class="mb-4 md:col-span-2">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_parcela_text">Parcela <span class="text-red-500">*</span></label>
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_parcela_text">Parcela</label>
             <select
               v-if="origenParcelasOptions.length > 0"
               v-model="origenParcelaText"
-              required
               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               id="origen_parcela_text"
             >
@@ -392,7 +391,6 @@
               v-else
               v-model="origenParcelaText"
               type="text"
-              required
               placeholder="Ej. 1"
               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               id="origen_parcela_text"
