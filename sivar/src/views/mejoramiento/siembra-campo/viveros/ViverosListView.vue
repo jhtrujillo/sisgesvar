@@ -373,17 +373,17 @@
       </div>
     </div>
 
-    <!-- Modal de Estructura / Árbol Genealógico -->
+    <!-- Modal de Estructura / Trazabilidad de Cortes -->
     <div v-if="isEstructuraModalOpen" class="fixed inset-0 flex items-center justify-center bg-slate-900/60 z-50 transition-opacity duration-300">
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl mx-4 overflow-hidden border border-slate-100 max-h-[85vh] flex flex-col">
         <!-- Header -->
         <div class="flex justify-between items-center border-b border-slate-100 p-5 bg-slate-50">
-          <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Árbol Genealógico del Vivero</h4>
+          <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Trazabilidad de Cortes</h4>
           <button @click="closeEstructuraModal" class="text-slate-400 hover:text-slate-600 transition-colors text-2xl">&times;</button>
         </div>
 
         <!-- Body -->
-        <div class="p-6 overflow-y-auto flex-1">
+        <div class="p-6 overflow-y-auto flex-1 flex flex-col min-h-0">
           <div v-if="loadingEstructura" class="flex justify-center py-12">
             <svg class="animate-spin h-8 w-8 text-cenicana" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -391,12 +391,35 @@
             </svg>
           </div>
 
-          <div v-else-if="viveroEstructura" class="space-y-4">
-            <p class="text-xs text-slate-500 mb-4 bg-blue-50/50 p-3 rounded-xl border border-blue-100/50">
-              A continuación se muestra el árbol genealógico del vivero <strong>{{ viveroEstructura.identificador_unico }}</strong>. Se detallan todas las parcelas (plots) del vivero y los cortes generados consecutivamente a partir de cada una de ellas de forma recursiva.
-            </p>
-            <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/20 max-h-[50vh] overflow-y-auto">
-              <ViveroTreeComponent :node="viveroEstructura" />
+          <div v-else-if="viveroEstructura" class="space-y-4 flex-1 flex flex-col min-h-0">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <p class="text-xs text-slate-500 bg-blue-50/50 p-3 rounded-xl border border-blue-100/50 flex-1">
+                Visualización de procedencia y linaje del vivero <strong>{{ viveroEstructura.identificador_unico }}</strong>. Se detallan todas las parcelas (plots) del vivero y los cortes generados consecutivamente de forma recursiva.
+              </p>
+              
+              <!-- Search inside the tree -->
+              <div class="w-full md:w-80 relative">
+                <input
+                  v-model="searchTreeQuery"
+                  type="text"
+                  placeholder="Buscar en el árbol por variedad, plot..."
+                  class="shadow-sm border border-slate-200 rounded-xl w-full py-2 pl-9 pr-3 text-xs text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-cenicana focus:border-cenicana"
+                  autocomplete="off"
+                />
+                <div class="absolute left-3 top-2.5 text-slate-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="border border-slate-200 rounded-xl p-4 bg-slate-50/20 flex-1 overflow-y-auto max-h-[50vh]">
+              <ViveroTreeComponent 
+                :node="viveroEstructura" 
+                :search-query="searchTreeQuery" 
+                @close-modal="closeEstructuraModal"
+              />
             </div>
           </div>
         </div>
@@ -435,8 +458,10 @@ const toggleRow = (id: string | number) => {
 const isEstructuraModalOpen = ref(false);
 const loadingEstructura = ref(false);
 const viveroEstructura = ref<any>(null);
+const searchTreeQuery = ref("");
 
 const openEstructuraModal = async (id: number) => {
+  searchTreeQuery.value = "";
   isEstructuraModalOpen.value = true;
   loadingEstructura.value = true;
   try {
@@ -454,6 +479,7 @@ const openEstructuraModal = async (id: number) => {
 const closeEstructuraModal = () => {
   isEstructuraModalOpen.value = false;
   viveroEstructura.value = null;
+  searchTreeQuery.value = "";
 };
 
 const isCosechaModalOpen = ref(false);
