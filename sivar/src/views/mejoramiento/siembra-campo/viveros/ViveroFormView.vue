@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto p-6 max-w-3xl">
+  <div class="container mx-auto p-6 max-w-4xl">
     <div class="mb-6">
       <div class="mb-4">
         <router-link
@@ -30,117 +30,303 @@
     </div>
 
     <template v-else>
-      <form @submit.prevent="submitForm" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Identificador Único -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="identificador_unico">ID Vivero</label>
-            <input
-              v-model="form.identificador_unico"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-500 bg-gray-100 leading-tight focus:outline-none focus:shadow-outline cursor-not-allowed"
-              id="identificador_unico"
-              type="text"
-              placeholder="Generado automáticamente por el sistema"
-              disabled
-            />
+      <form @submit.prevent="submitForm" class="space-y-6">
+        <!-- CARD 1: IDENTIFICACIÓN Y GENERALES -->
+        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-5">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <div class="p-1.5 bg-slate-100 text-slate-700 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Información General del Vivero</h3>
           </div>
 
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Identificador Único -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="identificador_unico">ID Vivero</label>
+              <input
+                v-model="form.identificador_unico"
+                class="w-full bg-slate-100 border border-slate-200 text-slate-500 text-xs font-semibold rounded-xl px-3.5 py-3 outline-none cursor-not-allowed shadow-inner"
+                id="identificador_unico"
+                type="text"
+                placeholder="Generado automáticamente por el sistema"
+                disabled
+              />
+            </div>
 
-          <!-- Fecha Siembra -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="fecha_siembra"> Fecha de Siembra / Corte <span class="text-red-500">*</span> </label>
-            <input
-              v-model="form.fecha_siembra"
-              required
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="fecha_siembra"
-              type="date"
-            />
-          </div>
-
-          <!-- Ingenio -->
-          <div class="mb-4 md:col-span-2">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="ingenio">Ingenio</label>
-            <select
-              v-model="form.ingenio"
-              @change="loadHaciendas(true)"
-              :disabled="isEditing"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="ingenio"
-            >
-              <option value="">Seleccione un Ingenio</option>
-              <option v-for="ing in ingenios" :key="ing.cd_ingnio" :value="ing.cd_ingnio" v-html="ing.nm_ingnio"></option>
-            </select>
-          </div>
-
-          <!-- Hacienda -->
-          <div class="mb-4 md:col-span-2">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="hacienda">Hacienda</label>
-            <select
-              v-model="form.hacienda"
-              :disabled="!form.ingenio || haciendas.length === 0"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="hacienda"
-            >
-              <option value="">Seleccione una Hacienda</option>
-              <option v-for="hda in haciendas" :key="hda.cd_hcnda" :value="hda.cd_hcnda" v-html="hda.nm_hcnda"></option>
-            </select>
-          </div>
-
-          <!-- Lote -->
-          <div class="mb-4 md:col-span-2">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="lote_id">Lote <span class="text-red-500">*</span></label>
-            <div class="flex gap-2">
-              <select
-                v-model="form.lote_id"
-                :disabled="!form.ingenio || isEditing"
+            <!-- Fecha Siembra -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="fecha_siembra">Fecha de Siembra / Corte <span class="text-red-500">*</span></label>
+              <input
+                v-model="form.fecha_siembra"
                 required
-                class="shadow appearance-none border rounded w-full py-2.5 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="lote_id"
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                id="fecha_siembra"
+                type="date"
+              />
+            </div>
+
+            <!-- Temporada Floración -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="temporada_floracion">Temporada de cruzamientos</label>
+              <input
+                v-model="form.temporada_floracion"
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                id="temporada_floracion"
+                type="text"
+                placeholder="Ej. Invierno 2024"
+              />
+            </div>
+
+            <!-- Condición -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="condicion">Tipo de floración</label>
+              <select
+                v-model="form.condicion"
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                id="condicion"
               >
-                <option value="">Seleccione un Lote</option>
-                <option v-for="lote in lotes" :key="lote.id" :value="lote.id">
-                  {{ lote.nombre_lote }} (Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
-                </option>
+                <option value="">Seleccione un Tipo de floración</option>
+                <option value="Natural">Natural</option>
+                <option value="Fotoperiodo">Fotoperiodo</option>
               </select>
-              <button
-                v-if="isEditing"
-                type="button"
-                @click="openTrasladoModal"
-                class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-2.5 rounded shadow transition-colors whitespace-nowrap"
+            </div>
+
+            <!-- Ambiente -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="ambiente">Mega Ambiente</label>
+              <select
+                v-model="form.ambiente"
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                id="ambiente"
               >
-                Trasladar Lote
-              </button>
+                <option value="">Vacío (Sin Mega Ambiente)</option>
+                <option v-for="amb in ambientes" :key="amb.id_ambnte" :value="amb.id_ambnte" v-html="amb.nm_ambnte"></option>
+              </select>
+            </div>
+
+            <!-- Responsable -->
+            <div class="relative">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="responsable_id">Responsable</label>
+              <div class="relative">
+                <input
+                  type="text"
+                  v-model="searchResponsable"
+                  @focus="showResponsables = true"
+                  @blur="hideResponsablesDelay"
+                  placeholder="Escribe para buscar un responsable..."
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                />
+                <button v-if="form.responsable_id" @click="clearResponsable" type="button" class="absolute right-3.5 top-3 text-slate-400 hover:text-red-500 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+                <div
+                  v-if="showResponsables"
+                  class="absolute z-20 w-full mt-1 bg-white shadow-xl max-h-60 rounded-xl py-1 text-xs ring-1 ring-black/5 overflow-auto border border-slate-100"
+                >
+                  <div v-if="filteredResponsables.length === 0" class="cursor-default select-none py-2 px-3.5 text-slate-400 font-medium">
+                    No se encontraron responsables
+                  </div>
+                  <div
+                    v-for="usr in filteredResponsables"
+                    :key="usr.id_usrio"
+                    @mousedown="selectResponsable(usr)"
+                    class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
+                    :class="form.responsable_id === usr.id_usrio ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
+                    v-html="usr.nmbre"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Proyecto -->
+            <div class="relative md:col-span-2">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="proyecto_id">Proyecto (Mejoramiento)</label>
+              <div class="relative">
+                <textarea
+                  v-model="searchProyecto"
+                  @focus="showProyectos = true"
+                  @blur="hideProyectosDelay"
+                  placeholder="Escribe para buscar un proyecto..."
+                  rows="2"
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm resize-none"
+                ></textarea>
+                <button v-if="form.proyecto_id" @click="clearProyecto" type="button" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-red-500 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+                <div
+                  v-if="showProyectos"
+                  class="absolute z-20 w-full mt-1 bg-white shadow-xl max-h-60 rounded-xl py-1 text-xs ring-1 ring-black/5 overflow-auto border border-slate-100"
+                >
+                  <div v-if="filteredProyectos.length === 0" class="cursor-default select-none py-2 px-3.5 text-slate-400 font-medium">
+                    No se encontraron proyectos
+                  </div>
+                  <div
+                    v-for="pry in filteredProyectos"
+                    :key="pry.id_prycto"
+                    @mousedown="selectProyecto(pry)"
+                    class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
+                    :class="form.proyecto_id === pry.id_prycto ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
+                    v-html="formatProjectName(pry)"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Carácter -->
+            <div class="relative md:col-span-2">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="caracter_id">Carácter (Opcional)</label>
+              <div class="relative">
+                <input
+                  type="text"
+                  v-model="searchCaracter"
+                  @focus="showCaracteres = true"
+                  @blur="hideCaracteresDelay"
+                  placeholder="Buscar o agregar..."
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                  :disabled="!form.proyecto_id"
+                  :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.proyecto_id }"
+                />
+                <button v-if="form.caracter_id" @click="clearCaracter" type="button" class="absolute right-3.5 top-3 text-slate-400 hover:text-red-500 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+                <div
+                  v-if="showCaracteres && form.proyecto_id"
+                  class="absolute z-20 w-full mt-1 bg-white shadow-xl max-h-60 rounded-xl py-1 text-xs ring-1 ring-black/5 overflow-auto border border-slate-100"
+                >
+                  <div
+                    v-if="searchCaracter && !exactMatchCaracter"
+                    @mousedown="selectNewCaracter"
+                    class="cursor-pointer select-none py-2 px-3.5 hover:bg-emerald-50 text-cenicana font-bold border-b border-slate-100 transition-colors"
+                  >
+                    + Agregar nuevo: "{{ searchCaracter }}"
+                  </div>
+                  <div v-if="filteredCaracteres.length === 0 && !searchCaracter" class="cursor-default select-none py-2 px-3.5 text-slate-400 font-medium">
+                    No hay caracteres (escribe para crear)
+                  </div>
+                  <div
+                    v-for="car in filteredCaracteres"
+                    :key="car.id"
+                    @mousedown="selectCaracter(car)"
+                    class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
+                    :class="form.caracter_id === car.id ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
+                  >
+                    {{ car.nombre }}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
-          <!-- Consecutivo Global Vivero (Ingenio) -->
-          <div class="mb-4 md:col-span-2" v-if="isEditing && form.consecutivo_vivero_ingenio">
-            <label class="block text-gray-700 text-sm font-bold mb-2">N° Vivero (En Ingenio)</label>
-            <div class="bg-gray-100 border rounded w-full py-2.5 px-3 text-gray-800 font-bold font-mono">
-              {{ form.consecutivo_vivero_ingenio }}
+        <!-- CARD 2: UBICACIÓN FÍSICA -->
+        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-5">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <div class="p-1.5 bg-emerald-50 text-cenicana rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Ubicación Física en Campo</h3>
+          </div>
+
+          <div class="grid grid-cols-1 gap-5">
+            <!-- Ingenio -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="ingenio">Ingenio</label>
+              <select
+                v-model="form.ingenio"
+                @change="loadHaciendas(true)"
+                :disabled="isEditing"
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                :class="{ 'bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed shadow-inner': isEditing }"
+                id="ingenio"
+              >
+                <option value="">Seleccione un Ingenio</option>
+                <option v-for="ing in ingenios" :key="ing.cd_ingnio" :value="ing.cd_ingnio" v-html="ing.nm_ingnio"></option>
+              </select>
+            </div>
+
+            <!-- Hacienda -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="hacienda">Hacienda</label>
+              <select
+                v-model="form.hacienda"
+                :disabled="!form.ingenio || haciendas.length === 0"
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.ingenio || haciendas.length === 0 }"
+                id="hacienda"
+              >
+                <option value="">Seleccione una Hacienda</option>
+                <option v-for="hda in haciendas" :key="hda.cd_hcnda" :value="hda.cd_hcnda" v-html="hda.nm_hcnda"></option>
+              </select>
+            </div>
+
+            <!-- Lote -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="lote_id">Lote <span class="text-red-500">*</span></label>
+              <div class="flex gap-2">
+                <select
+                  v-model="form.lote_id"
+                  :disabled="!form.ingenio || isEditing"
+                  required
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                  :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.ingenio || isEditing }"
+                  id="lote_id"
+                >
+                  <option value="">Seleccione un Lote</option>
+                  <option v-for="lote in lotes" :key="lote.id" :value="lote.id">
+                    {{ lote.nombre_lote }} (Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
+                  </option>
+                </select>
+                <button
+                  v-if="isEditing"
+                  type="button"
+                  @click="openTrasladoModal"
+                  class="inline-flex items-center justify-center px-4 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-md shadow-blue-950/10 cursor-pointer whitespace-nowrap"
+                >
+                  Trasladar Lote
+                </button>
+              </div>
+            </div>
+
+            <!-- Consecutivo Global Vivero (Ingenio) -->
+            <div v-if="isEditing && form.consecutivo_vivero_ingenio">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">N° Vivero (En Ingenio)</label>
+              <div class="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-black font-mono rounded-xl px-3.5 py-3 shadow-inner">
+                {{ form.consecutivo_vivero_ingenio }}
+              </div>
             </div>
           </div>
 
           <!-- Bitácora de Lotes/Traslados (Solo en edición) -->
-          <div class="md:col-span-3 bg-slate-50 rounded-xl p-4 border border-slate-200 mt-2 mb-4" v-if="isEditing && form.historial_lotes && form.historial_lotes.length > 0">
-            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Bitácora / Historial de Lotes</h4>
-            <div class="overflow-x-auto">
-              <table class="min-w-full bg-white text-xs rounded-lg overflow-hidden border border-slate-100">
-                <thead class="bg-slate-100 text-slate-600 uppercase font-semibold">
+          <div class="bg-slate-50/50 rounded-2xl p-4 border border-slate-100 mt-4 space-y-3" v-if="isEditing && form.historial_lotes && form.historial_lotes.length > 0">
+            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Bitácora / Historial de Lotes</h4>
+            <div class="overflow-x-auto rounded-xl border border-slate-100 bg-white">
+              <table class="min-w-full text-xs">
+                <thead class="bg-slate-55 border-b border-slate-100 text-slate-500 uppercase font-bold text-[9px] tracking-wider">
                   <tr>
-                    <th class="py-2 px-3 text-left">Lote</th>
-                    <th class="py-2 px-3 text-left">Fecha Ingreso</th>
-                    <th class="py-2 px-3 text-left">Fecha Salida</th>
-                    <th class="py-2 px-3 text-center">Estado</th>
+                    <th class="py-2.5 px-4 text-left">Lote</th>
+                    <th class="py-2.5 px-4 text-left">Fecha Ingreso</th>
+                    <th class="py-2.5 px-4 text-left">Fecha Salida</th>
+                    <th class="py-2.5 px-4 text-center">Estado</th>
                   </tr>
                 </thead>
-                <tbody class="text-slate-600 font-light">
-                  <tr v-for="hist in form.historial_lotes" :key="hist.id" class="border-b border-slate-100 hover:bg-slate-50/50">
-                    <td class="py-2 px-3 font-semibold">{{ hist.lote?.nombre_lote || 'N/A' }}</td>
-                    <td class="py-2 px-3">{{ formatDateTime(hist.fecha_inicio) }}</td>
-                    <td class="py-2 px-3">{{ hist.fecha_fin ? formatDateTime(hist.fecha_fin) : '-' }}</td>
-                    <td class="py-2 px-3 text-center">
+                <tbody class="text-slate-600 font-medium">
+                  <tr v-for="hist in form.historial_lotes" :key="hist.id" class="border-b border-slate-100 last:border-0 hover:bg-slate-50/30">
+                    <td class="py-2.5 px-4 font-bold text-slate-800">{{ hist.lote?.nombre_lote || 'N/A' }}</td>
+                    <td class="py-2.5 px-4">{{ formatDateTime(hist.fecha_inicio) }}</td>
+                    <td class="py-2.5 px-4">{{ hist.fecha_fin ? formatDateTime(hist.fecha_fin) : '-' }}</td>
+                    <td class="py-2.5 px-4 text-center">
                       <span
                         class="px-2 py-0.5 rounded-full text-[9px] font-bold"
                         :class="[hist.activo ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-slate-100 text-slate-500 border border-slate-200']"
@@ -153,182 +339,22 @@
               </table>
             </div>
           </div>
-
-          <!-- Temporada Floración -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="temporada_floracion"> Temporada de cruzamientos </label>
-            <input
-              v-model="form.temporada_floracion"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="temporada_floracion"
-              type="text"
-              placeholder="Ej. Invierno 2024"
-            />
-          </div>
-
-          <!-- Proyecto -->
-          <div class="mb-4 relative md:col-span-2">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="proyecto_id">Proyecto (Mejoramiento)</label>
-            <div class="relative">
-              <textarea
-                v-model="searchProyecto"
-                @focus="showProyectos = true"
-                @blur="hideProyectosDelay"
-                placeholder="Escribe para buscar un proyecto..."
-                rows="2"
-                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline resize-none"
-              ></textarea>
-              <button v-if="form.proyecto_id" @click="clearProyecto" type="button" class="absolute right-2 top-2 text-gray-400 hover:text-red-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </button>
-              <div
-                v-if="showProyectos"
-                class="absolute z-10 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto sm:text-sm"
-              >
-                <div v-if="filteredProyectos.length === 0" class="cursor-default select-none relative py-2 pl-3 pr-9 text-gray-500">
-                  No se encontraron proyectos
-                </div>
-                <div
-                  v-for="pry in filteredProyectos"
-                  :key="pry.id_prycto"
-                  @mousedown="selectProyecto(pry)"
-                  class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-cenicana hover:text-white break-words whitespace-normal leading-tight"
-                  :class="form.proyecto_id === pry.id_prycto ? 'bg-cenicana-50 text-cenicana-800 font-semibold' : 'text-gray-900'"
-                  v-html="formatProjectName(pry)"
-                ></div>
-              </div>
-            </div>
-          </div>
-          <!-- Carácter -->
-          <div class="mb-4 relative md:col-span-1">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="caracter_id">Carácter (Opcional)</label>
-            <div class="relative">
-              <input
-                type="text"
-                v-model="searchCaracter"
-                @focus="showCaracteres = true"
-                @blur="hideCaracteresDelay"
-                placeholder="Buscar o agregar..."
-                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                :disabled="!form.proyecto_id"
-                :class="{ 'bg-gray-100 cursor-not-allowed': !form.proyecto_id }"
-              />
-              <button v-if="form.caracter_id" @click="clearCaracter" type="button" class="absolute right-2 top-2 text-gray-400 hover:text-red-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </button>
-              <div
-                v-if="showCaracteres && form.proyecto_id"
-                class="absolute z-10 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto sm:text-sm"
-              >
-                <div
-                  v-if="searchCaracter && !exactMatchCaracter"
-                  @mousedown="selectNewCaracter"
-                  class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-green-100 text-green-700 font-semibold border-b border-gray-100"
-                >
-                  + Agregar nuevo: "{{ searchCaracter }}"
-                </div>
-                <div v-if="filteredCaracteres.length === 0 && !searchCaracter" class="cursor-default select-none relative py-2 pl-3 pr-9 text-gray-500">
-                  No hay caracteres (escribe para crear)
-                </div>
-                <div
-                  v-for="car in filteredCaracteres"
-                  :key="car.id"
-                  @mousedown="selectCaracter(car)"
-                  class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-cenicana hover:text-white"
-                  :class="form.caracter_id === car.id ? 'bg-cenicana-50 text-cenicana-800 font-semibold' : 'text-gray-900'"
-                >
-                  {{ car.nombre }}
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- Condición -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="condicion">Tipo de floración</label>
-            <select
-              v-model="form.condicion"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="condicion"
-            >
-              <option value="">Seleccione un Tipo de floración</option>
-              <option value="Natural">Natural</option>
-              <option value="Fotoperiodo">Fotoperiodo</option>
-            </select>
-          </div>
-          <!-- Ambiente -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="ambiente">Mega Ambiente</label>
-            <select
-              v-model="form.ambiente"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="ambiente"
-            >
-              <option value="">Vacío (Sin Mega Ambiente)</option>
-              <option v-for="amb in ambientes" :key="amb.id_ambnte" :value="amb.id_ambnte" v-html="amb.nm_ambnte"></option>
-            </select>
-          </div>
-
-          <!-- Responsable -->
-          <div class="mb-4 relative">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="responsable_id">Responsable</label>
-            <div class="relative">
-              <input
-                type="text"
-                v-model="searchResponsable"
-                @focus="showResponsables = true"
-                @blur="hideResponsablesDelay"
-                placeholder="Escribe para buscar un responsable..."
-                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              />
-              <button v-if="form.responsable_id" @click="clearResponsable" type="button" class="absolute right-2 top-2 text-gray-400 hover:text-red-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </button>
-              <div
-                v-if="showResponsables"
-                class="absolute z-10 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto sm:text-sm"
-              >
-                <div v-if="filteredResponsables.length === 0" class="cursor-default select-none relative py-2 pl-3 pr-9 text-gray-500">
-                  No se encontraron responsables
-                </div>
-                <div
-                  v-for="usr in filteredResponsables"
-                  :key="usr.id_usrio"
-                  @mousedown="selectResponsable(usr)"
-                  class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-cenicana hover:text-white"
-                  :class="form.responsable_id === usr.id_usrio ? 'bg-cenicana-50 text-cenicana-800 font-semibold' : 'text-gray-900'"
-                  v-html="usr.nmbre"
-                ></div>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <div class="mt-6 mb-4 border-b pb-2">
-          <h3 class="text-lg font-semibold text-gray-800">Origen de la Semilla</h3>
-        </div>
+        <!-- CARD 3: ORIGEN DE SEMILLA -->
+        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-5">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <div class="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Procedencia (Origen de Semilla)</h3>
+          </div>
 
-        <!-- Copiar Origen desde Vivero Existente -->
-        <div class="grid grid-cols-1 gap-4 mb-4">
+          <!-- Copiar Origen desde Vivero Existente -->
           <div class="relative">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_vivero_select">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_vivero_select">
               Buscar Origen desde Vivero existente (Autocompleta los campos de abajo)
             </label>
             <input
@@ -336,7 +362,7 @@
               @focus="showOrigenViveros = true"
               @blur="hideOrigenViverosDelay"
               @input="showOrigenViveros = true"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
               id="origen_vivero_select"
               type="text"
               placeholder="Escribe para buscar viveros por ID, hacienda o suerte..."
@@ -344,131 +370,141 @@
             />
             <div
               v-if="showOrigenViveros"
-              class="absolute z-10 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto sm:text-sm"
+              class="absolute z-20 w-full mt-1 bg-white shadow-xl max-h-60 rounded-xl py-1 text-xs ring-1 ring-black/5 overflow-auto border border-slate-100"
             >
-              <div v-if="filteredOrigenViveros.length === 0" class="cursor-default select-none relative py-2 pl-3 pr-9 text-gray-500">
+              <div v-if="filteredOrigenViveros.length === 0" class="cursor-default select-none py-2 px-3.5 text-slate-400 font-medium">
                 No se encontraron viveros coincidentes
               </div>
               <div
                 v-for="v in filteredOrigenViveros"
                 :key="v.id"
                 @mousedown="selectOrigenVivero(v)"
-                class="cursor-pointer select-none relative py-2 pl-3.5 pr-9 py-2.5 hover:bg-cenicana hover:text-white border-b border-gray-100 last:border-0"
+                class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 border-b border-slate-100 last:border-0 transition-colors"
               >
-                <div class="font-bold font-mono text-xs">{{ v.identificador_unico }}</div>
-                <div class="text-[10px] text-gray-500 hover:text-white-50">
+                <div class="font-bold font-mono text-xs text-slate-800">{{ v.identificador_unico }}</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">
                   {{ getIngenioName(v.ingenio) }} - {{ v.hacienda || 'N/A' }} - {{ v.suerte || 'N/A' }}
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-10 gap-4 mb-6">
-          <!-- Origen Ingenio -->
-          <div class="mb-4 md:col-span-2">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_ingenio">Ingenio <span class="text-red-500">*</span></label>
-            <select
-              v-model="form.origen_ingenio"
-              @change="loadHaciendasOrigen(true)"
-              required
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="origen_ingenio"
-            >
-              <option value="">Seleccione un Ingenio</option>
-              <option v-for="ing in ingenios" :key="'origen_ing_' + ing.cd_ingnio" :value="ing.cd_ingnio" v-html="ing.nm_ingnio"></option>
-            </select>
-          </div>
-          <!-- Origen Año -->
-          <div class="mb-4 md:col-span-1">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_anio">Año <span class="text-red-500">*</span></label>
-            <input
-              v-model="form.origen_anio"
-              type="number"
-              required
-              placeholder="Ej. 2024"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="origen_anio"
-            />
-          </div>
-          <!-- Origen Hacienda -->
-          <div class="mb-4 md:col-span-2">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_hacienda">Hacienda <span class="text-red-500">*</span></label>
-            <select
-              v-model="form.origen_hacienda"
-              @change="loadSuertesOrigen(true)"
-              :disabled="!form.origen_ingenio || haciendasOrigen.length === 0"
-              required
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="origen_hacienda"
-            >
-              <option value="">Seleccione una Hacienda</option>
-              <option v-for="hda in haciendasOrigen" :key="'origen_hda_' + hda.cd_hcnda" :value="hda.cd_hcnda" v-html="hda.nm_hcnda"></option>
-            </select>
-          </div>
-          <!-- Origen Suerte -->
-          <div class="mb-4 md:col-span-2">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_suerte">Suerte <span class="text-red-500">*</span></label>
-            <select
-              v-model="form.origen_suerte"
-              :disabled="!form.origen_hacienda || suertesOrigen.length === 0"
-              required
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="origen_suerte"
-            >
-              <option value="">Seleccione una Suerte</option>
-              <option v-for="ste in suertesOrigen" :key="'origen_ste_' + ste.cd_srte" :value="ste.cd_srte">
-                {{ ste.cd_srte }} (Área: {{ Number(ste.area).toFixed(2) }})
-              </option>
-            </select>
-          </div>
-          <!-- Origen Parcela -->
-          <div class="mb-4 md:col-span-2">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_parcela_text">Parcela</label>
-            <input
-              v-model="origenParcelaText"
-              type="text"
-              placeholder="Ej. 1"
-              list="origen_parcelas_list"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="origen_parcela_text"
-            />
-            <datalist id="origen_parcelas_list">
-              <option 
-                v-for="p in origenParcelasOptions" 
-                :key="'orig_p_' + p.id" 
-                :value="p.numero_parcela"
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+            <!-- Origen Ingenio -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_ingenio">Ingenio <span class="text-red-500">*</span></label>
+              <select
+                v-model="form.origen_ingenio"
+                @change="loadHaciendasOrigen(true)"
+                required
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                id="origen_ingenio"
               >
-                {{ p.numero_parcela }} ({{ p.variedad?.nm_vrdad || 'S/V' }})
-              </option>
-            </datalist>
-          </div>
-          <!-- Origen Corte -->
-          <div class="mb-4 md:col-span-1">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_corte_text">Corte</label>
-            <input
-              v-model="origenCorteText"
-              type="text"
-              placeholder="Ej. 2"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="origen_corte_text"
-            />
+                <option value="">Seleccione un Ingenio</option>
+                <option v-for="ing in ingenios" :key="'origen_ing_' + ing.cd_ingnio" :value="ing.cd_ingnio" v-html="ing.nm_ingnio"></option>
+              </select>
+            </div>
+
+            <!-- Origen Año -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_anio">Año <span class="text-red-500">*</span></label>
+              <input
+                v-model="form.origen_anio"
+                type="number"
+                required
+                placeholder="Ej. 2024"
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                id="origen_anio"
+              />
+            </div>
+
+            <!-- Origen Hacienda -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_hacienda">Hacienda <span class="text-red-500">*</span></label>
+              <select
+                v-model="form.origen_hacienda"
+                @change="loadSuertesOrigen(true)"
+                :disabled="!form.origen_ingenio || haciendasOrigen.length === 0"
+                required
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_ingenio || haciendasOrigen.length === 0 }"
+                id="origen_hacienda"
+              >
+                <option value="">Seleccione una Hacienda</option>
+                <option v-for="hda in haciendasOrigen" :key="'origen_hda_' + hda.cd_hcnda" :value="hda.cd_hcnda" v-html="hda.nm_hcnda"></option>
+              </select>
+            </div>
+
+            <!-- Origen Suerte -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_suerte">Suerte <span class="text-red-500">*</span></label>
+              <select
+                v-model="form.origen_suerte"
+                :disabled="!form.origen_hacienda || suertesOrigen.length === 0"
+                required
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_hacienda || suertesOrigen.length === 0 }"
+                id="origen_suerte"
+              >
+                <option value="">Seleccione una Suerte</option>
+                <option v-for="ste in suertesOrigen" :key="'origen_ste_' + ste.cd_srte" :value="ste.cd_srte">
+                  {{ ste.cd_srte }} (Área: {{ Number(ste.area).toFixed(2) }})
+                </option>
+              </select>
+            </div>
+
+            <!-- Origen Parcela -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_parcela_text">Parcela</label>
+              <input
+                v-model="origenParcelaText"
+                type="text"
+                placeholder="Ej. 1"
+                list="origen_parcelas_list"
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                id="origen_parcela_text"
+              />
+              <datalist id="origen_parcelas_list">
+                <option 
+                  v-for="p in origenParcelasOptions" 
+                  :key="'orig_p_' + p.id" 
+                  :value="p.numero_parcela"
+                >
+                  {{ p.numero_parcela }} ({{ p.variedad?.nm_vrdad || 'S/V' }})
+                </option>
+              </datalist>
+            </div>
+
+            <!-- Origen Corte -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_corte_text">Corte</label>
+              <input
+                v-model="origenCorteText"
+                type="text"
+                placeholder="Ej. 2"
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                id="origen_corte_text"
+              />
+            </div>
           </div>
         </div>
 
-        <div class="flex items-center justify-end">
+        <!-- ACCIONES FORMULARIO -->
+        <div class="flex items-center justify-end gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+          <router-link
+            :to="{ name: 'siembra_campo_viveros.show' }"
+            class="px-5 py-2.5 text-xs font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all"
+          >
+            Cancelar
+          </router-link>
           <button
-            class="flex items-center px-6 py-2.5 text-sm font-bold text-white bg-cenicana hover:bg-cenicana-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-md transition-all duration-200"
+            class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-md shadow-emerald-950/10 transition-all duration-200 cursor-pointer"
             type="submit"
             :disabled="isSubmitting"
           >
-            <svg v-if="isSubmitting" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg v-if="isSubmitting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             {{ isSubmitting ? "Guardando..." : isEditing ? "Actualizar Vivero" : "Guardar Vivero" }}
           </button>
