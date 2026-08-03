@@ -788,7 +788,8 @@ const form = ref({
   origen_suerte: "",
   origen_anio: "" as string | number,
   origen_parcela: "",
-  consecutivo_corte: null as number | null
+  consecutivo_corte: null as number | null,
+  es_corte: false
 });
 
 const isSubmitting = ref(false);
@@ -1555,6 +1556,9 @@ const resetAndLoad = async () => {
       if (route.query.origen_anio) {
         form.value.origen_anio = Number(route.query.origen_anio);
       }
+      if (route.query.es_corte) {
+        form.value.es_corte = route.query.es_corte === 'true';
+      }
       if (route.query.origen_parcela) {
         form.value.origen_parcela = route.query.origen_parcela as string;
         
@@ -1576,7 +1580,9 @@ const resetAndLoad = async () => {
         try {
           const res = await viverosServices.getNextCorteConsecutivo(form.value.origen_parcela);
           form.value.consecutivo_corte = res.data.consecutivo;
-          form.value.identificador_unico = `${form.value.origen_parcela}-${form.value.consecutivo_corte}`;
+          if (form.value.es_corte) {
+            form.value.identificador_unico = `${form.value.origen_parcela}-${form.value.consecutivo_corte}`;
+          }
         } catch (err) {
           console.error("Error fetching next consecutivo_corte:", err);
         }

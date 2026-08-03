@@ -38,8 +38,9 @@ class ViveroController extends Controller
         // Calculamos el consecutivo basándonos en la cantidad total de registros en la tabla
         $maxId = Vivero::withTrashed()->max('id') ?? 0;
         $consecutivo = $maxId + 1;
+        $esCorte = $request->es_corte || $request->query('es_corte') === 'true' || $request->query('es_corte') === 1;
 
-        if ($request->origen_parcela) {
+        if ($request->origen_parcela && $esCorte) {
             $cutNumber = Vivero::where('origen_parcela', $request->origen_parcela)->count() + 1;
             $identificador = $request->origen_parcela . '-' . $cutNumber;
         } else {
@@ -88,7 +89,9 @@ class ViveroController extends Controller
         $vivero = Vivero::findOrFail($id);
         $vivero->fill($request->except('identificador_unico'));
         
-        if ($vivero->origen_parcela) {
+        $esCorte = $request->es_corte || str_contains($vivero->identificador_unico, $vivero->origen_parcela);
+        
+        if ($vivero->origen_parcela && $esCorte) {
             $cutNumber = Vivero::where('origen_parcela', $vivero->origen_parcela)
                 ->where('id', '<=', $vivero->id)
                 ->count();
