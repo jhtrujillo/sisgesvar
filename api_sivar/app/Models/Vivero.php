@@ -30,7 +30,9 @@ class Vivero extends Model
         'origen_hacienda',
         'origen_suerte',
         'origen_anio',
-        'origen_parcela'
+        'origen_parcela',
+        'lote_id',
+        'consecutivo_vivero_ingenio'
     ];
 
     protected $casts = [
@@ -90,5 +92,15 @@ class Vivero extends Model
     public function parcelas()
     {
         return $this->hasMany(ViveroParcela::class, 'vivero_id');
+    }
+
+    public function lote()
+    {
+        return $this->belongsTo(Lote::class, 'lote_id');
+    }
+
+    public function historialLotes()
+    {
+        return $this->hasMany(ViveroLoteHistorial::class, 'vivero_id');
     }
 }

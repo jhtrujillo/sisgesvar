@@ -133,6 +133,13 @@ Route::group([
 
     Route::post('siembra-campo/viveros/{id}/cosechar', [\App\Http\Controllers\ViveroController::class, 'registrarCosecha']);
     Route::get('siembra-campo/viveros/{id}/cosechas', [\App\Http\Controllers\ViveroController::class, 'getHistorialCosechas']);
+    Route::post('siembra-campo/viveros/{id}/trasladar-lote', [\App\Http\Controllers\ViveroController::class, 'trasladarLote']);
+
+    // Módulo Siembra-Campo: Lotes por Ingenio
+    Route::get('siembra-campo/lotes', [\App\Http\Controllers\LoteController::class, 'index']);
+    Route::post('siembra-campo/lotes', [\App\Http\Controllers\LoteController::class, 'store']);
+    Route::put('siembra-campo/lotes/{id}', [\App\Http\Controllers\LoteController::class, 'update']);
+    Route::delete('siembra-campo/lotes/{id}', [\App\Http\Controllers\LoteController::class, 'destroy']);
 
     // Módulo Siembra-Campo: Vivero Parcelas
     Route::get('siembra-campo/viveros/{id}/parcelas', [\App\Http\Controllers\ViveroParcelaController::class, 'index']);

@@ -30,6 +30,7 @@ import {
   ROUTE_SIEMBRA_CAMPO_VIVEROS,
   ROUTE_SIEMBRA_CAMPO_VIVERO_NUEVO,
   ROUTE_SIEMBRA_CAMPO_VIVERO_EDITAR,
+  ROUTE_SIEMBRA_CAMPO_VIVEROS_LOTES,
   ROUTE_ABOUT
 } from "./routes";
 import { useUserStore } from "@/stores/user";
@@ -233,6 +234,12 @@ const routes = [
         component: () => import("@/views/mejoramiento/siembra-campo/viveros/ViveroFormView.vue"),
         beforeEnter: authGuard,
         props: true
+      },
+      {
+        path: ROUTE_SIEMBRA_CAMPO_VIVEROS_LOTES,
+        name: "siembra_campo_viveros_lotes.show",
+        component: () => import("@/views/mejoramiento/siembra-campo/viveros/LotesView.vue"),
+        beforeEnter: authGuard
       },
       {
         path: ROUTE_ABOUT,

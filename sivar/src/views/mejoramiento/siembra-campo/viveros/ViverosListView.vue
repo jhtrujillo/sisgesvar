@@ -14,12 +14,20 @@
       </div>
       <div class="flex justify-between items-center">
         <h1 class="text-2xl font-bold text-slate-800">Administración de Viveros</h1>
-        <router-link
-          :to="{ name: 'vivero_nuevo.show' }"
-          class="flex items-center px-6 py-2.5 text-sm font-bold text-white bg-cenicana hover:bg-cenicana-800 rounded-xl shadow-md transition-all duration-200"
-        >
-          Registrar Nuevo Vivero
-        </router-link>
+        <div class="flex gap-2">
+          <router-link
+            :to="{ name: 'siembra_campo_viveros_lotes.show' }"
+            class="flex items-center px-5 py-2.5 text-sm font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition-all duration-200"
+          >
+            Administrar Lotes
+          </router-link>
+          <router-link
+            :to="{ name: 'vivero_nuevo.show' }"
+            class="flex items-center px-5 py-2.5 text-sm font-bold text-white bg-cenicana hover:bg-cenicana-800 rounded-xl shadow-md transition-all duration-200"
+          >
+            Registrar Nuevo Vivero
+          </router-link>
+        </div>
       </div>
     </div>
 
@@ -55,6 +63,8 @@
           <tr>
             <th class="py-3 px-4 text-center w-12"></th>
             <th class="py-3 px-6 text-left">ID Vivero</th>
+            <th class="py-3 px-6 text-left">N° Vivero (Ingenio)</th>
+            <th class="py-3 px-6 text-left">Lote</th>
             <th class="py-3 px-6 text-left">Id Vivero Origen</th>
             <th class="py-3 px-6 text-left">Proyecto</th>
             <th class="py-3 px-6 text-left">Tipo de floración</th>
@@ -64,10 +74,10 @@
         </thead>
         <tbody class="text-gray-600 text-sm font-light">
           <tr v-if="loading" class="border-b border-gray-200">
-            <td colspan="7" class="py-3 px-6 text-center">Cargando viveros...</td>
+            <td colspan="9" class="py-3 px-6 text-center">Cargando viveros...</td>
           </tr>
           <tr v-else-if="filteredViveros.length === 0" class="border-b border-gray-200">
-            <td colspan="7" class="py-3 px-6 text-center">No se encontraron resultados.</td>
+            <td colspan="9" class="py-3 px-6 text-center">No se encontraron resultados.</td>
           </tr>
           <template v-else>
             <template v-for="vivero in paginatedViveros" :key="vivero.id">
@@ -92,6 +102,14 @@
                 </td>
                 <td class="py-3 px-6 text-left whitespace-nowrap">
                   <span class="font-medium text-slate-800">{{ vivero.identificador_unico }}</span>
+                </td>
+                <td class="py-3 px-6 text-left whitespace-nowrap font-bold font-mono text-slate-700">
+                  {{ vivero.consecutivo_vivero_ingenio || 'N/A' }}
+                </td>
+                <td class="py-3 px-6 text-left whitespace-nowrap">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                    {{ vivero.lote?.nombre_lote || 'N/A' }}
+                  </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900 font-mono" :title="vivero.origen_parcela || 'N/A'">

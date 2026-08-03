@@ -101,6 +101,72 @@
             </select>
           </div>
 
+          <!-- Lote -->
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="lote_id">Lote</label>
+            <div class="flex gap-2">
+              <select
+                v-model="form.lote_id"
+                :disabled="!form.ingenio || isEditing"
+                class="shadow appearance-none border rounded w-full py-2.5 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="lote_id"
+              >
+                <option value="">Seleccione un Lote</option>
+                <option v-for="lote in lotes" :key="lote.id" :value="lote.id">
+                  {{ lote.nombre_lote }} (Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
+                </option>
+              </select>
+              <button
+                v-if="isEditing"
+                type="button"
+                @click="openTrasladoModal"
+                class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-2.5 rounded shadow transition-colors whitespace-nowrap"
+              >
+                Trasladar Lote
+              </button>
+            </div>
+          </div>
+
+          <!-- Consecutivo Global Vivero (Ingenio) -->
+          <div class="mb-4" v-if="isEditing && form.consecutivo_vivero_ingenio">
+            <label class="block text-gray-700 text-sm font-bold mb-2">N° Vivero (En Ingenio)</label>
+            <div class="bg-gray-100 border rounded w-full py-2.5 px-3 text-gray-800 font-bold font-mono">
+              {{ form.consecutivo_vivero_ingenio }}
+            </div>
+          </div>
+
+          <!-- Bitácora de Lotes/Traslados (Solo en edición) -->
+          <div class="md:col-span-3 bg-slate-50 rounded-xl p-4 border border-slate-200 mt-2 mb-4" v-if="isEditing && form.historial_lotes && form.historial_lotes.length > 0">
+            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Bitácora / Historial de Lotes</h4>
+            <div class="overflow-x-auto">
+              <table class="min-w-full bg-white text-xs rounded-lg overflow-hidden border border-slate-100">
+                <thead class="bg-slate-100 text-slate-600 uppercase font-semibold">
+                  <tr>
+                    <th class="py-2 px-3 text-left">Lote</th>
+                    <th class="py-2 px-3 text-left">Fecha Ingreso</th>
+                    <th class="py-2 px-3 text-left">Fecha Salida</th>
+                    <th class="py-2 px-3 text-center">Estado</th>
+                  </tr>
+                </thead>
+                <tbody class="text-slate-600 font-light">
+                  <tr v-for="hist in form.historial_lotes" :key="hist.id" class="border-b border-slate-100 hover:bg-slate-50/50">
+                    <td class="py-2 px-3 font-semibold">{{ hist.lote?.nombre_lote || 'N/A' }}</td>
+                    <td class="py-2 px-3">{{ formatDateTime(hist.fecha_inicio) }}</td>
+                    <td class="py-2 px-3">{{ hist.fecha_fin ? formatDateTime(hist.fecha_fin) : '-' }}</td>
+                    <td class="py-2 px-3 text-center">
+                      <span
+                        class="px-2 py-0.5 rounded-full text-[9px] font-bold"
+                        :class="[hist.activo ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-slate-100 text-slate-500 border border-slate-200']"
+                      >
+                        {{ hist.activo ? 'Actual' : 'Pasado' }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <!-- Temporada Floración -->
           <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="temporada_floracion"> Temporada de cruzamientos </label>
@@ -758,6 +824,55 @@
       />
       <!-- Drawer de Hoja de Vida de la Variedad (Quick Drawer) -->
       <VarietyProfileDrawer v-model:isOpen="isDrawerOpen" :varietyName="selectedVarietyForDrawer" />
+
+      <!-- Modal para Trasladar Lote -->
+      <div v-if="isTrasladoModalOpen" class="fixed inset-0 flex items-center justify-center bg-slate-900/60 z-50 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden border border-slate-100">
+          <div class="flex justify-between items-center border-b border-slate-100 p-5 bg-slate-50">
+            <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Trasladar Vivero de Lote</h4>
+            <button type="button" @click="closeTrasladoModal" class="text-slate-400 hover:text-slate-600 transition-colors text-2xl">&times;</button>
+          </div>
+
+          <form @submit.prevent="submitTraslado">
+            <div class="p-6 space-y-4">
+              <div class="p-3 bg-blue-50 text-blue-900 text-xs font-semibold rounded-lg border border-blue-100">
+                Estás trasladando el vivero <strong class="font-black">{{ form.identificador_unico }}</strong> a un nuevo lote físico. El lote actual quedará liberado.
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Seleccionar Lote Destino</label>
+                <select
+                  v-model="trasladoLoteId"
+                  required
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+                >
+                  <option value="" disabled>Seleccione el lote destino...</option>
+                  <option v-for="lote in lotes" :key="lote.id" :value="lote.id" :disabled="lote.id === form.lote_id">
+                    {{ lote.nombre_lote }} (Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="border-t border-slate-100 p-5 bg-slate-50 flex justify-end gap-2">
+              <button
+                type="button"
+                @click="closeTrasladoModal"
+                class="px-4 py-2.5 text-xs font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                :disabled="savingTraslado"
+                class="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-xl transition-all shadow-md shadow-blue-950/10 cursor-pointer"
+              >
+                {{ savingTraslado ? 'Trasladando...' : 'Confirmar Traslado' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </template>
   </div>
 </template>
@@ -766,6 +881,7 @@
 import { ref, shallowRef, onMounted, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
+import dayjs from "dayjs";
 import viverosServices from "@/services/viveros.services";
 import varietysServices from "@/services/varietys.services";
 import ViveroParcelasImportWizard from "@/components/viveros/ViveroParcelasImportWizard.vue";
@@ -798,7 +914,10 @@ const form = ref({
   origen_anio: "" as string | number,
   origen_parcela: "",
   consecutivo_corte: null as number | null,
-  es_corte: false
+  es_corte: false,
+  lote_id: "",
+  consecutivo_vivero_ingenio: null as number | null,
+  historial_lotes: [] as any[]
 });
 
 const isSubmitting = ref(false);
@@ -810,6 +929,11 @@ const origenParcelasOptions = ref<any[]>([]);
 const viveroSeleccionadoOrigen = ref<any>(null);
 const origenParcelaText = ref("");
 const origenCorteText = ref("");
+
+const lotes = ref<any[]>([]);
+const isTrasladoModalOpen = ref(false);
+const trasladoLoteId = ref('');
+const savingTraslado = ref(false);
 
 const parseViveroIdToFields = (viveroId: string) => {
   const parts = viveroId.split("-");
@@ -1420,6 +1544,68 @@ const registrarCorteParcela = (p: any) => {
   }
 };
 
+const loadLotesForIngenio = async (ingenio: string) => {
+  if (!ingenio) {
+    lotes.value = [];
+    return;
+  }
+  try {
+    const res = await viverosServices.getLotes({ ingenio_codigo: ingenio });
+    lotes.value = res.data;
+  } catch (error) {
+    console.error("Error loading lotes:", error);
+    toast.error("Error al cargar los lotes del ingenio");
+  }
+};
+
+watch(() => form.value.ingenio, (newIngenio) => {
+  if (!isEditing.value) {
+    form.value.lote_id = "";
+  }
+  loadLotesForIngenio(newIngenio);
+});
+
+const formatDateTime = (dateString: string) => {
+  if (!dateString) return '';
+  return dayjs(dateString).format('YYYY-MM-DD HH:mm');
+};
+
+const openTrasladoModal = () => {
+  trasladoLoteId.value = "";
+  isTrasladoModalOpen.value = true;
+};
+
+const closeTrasladoModal = () => {
+  isTrasladoModalOpen.value = false;
+};
+
+const submitTraslado = async () => {
+  if (!trasladoLoteId.value) return;
+  savingTraslado.value = true;
+  try {
+    const response = await viverosServices.trasladarLote(route.params.id as string, {
+      lote_id: trasladoLoteId.value
+    });
+    toast.success("Vivero trasladado de lote correctamente");
+    const updatedVivero = response.data;
+    form.value.lote_id = updatedVivero.lote_id;
+    form.value.historial_lotes = updatedVivero.historial_lotes || [];
+    
+    // Refresh lotes to update their current active counts
+    if (form.value.ingenio) {
+      await loadLotesForIngenio(form.value.ingenio);
+    }
+    
+    isTrasladoModalOpen.value = false;
+  } catch (error: any) {
+    console.error("Error in submitTraslado:", error);
+    const msg = error.response?.data?.message || "Error al trasladar el vivero";
+    toast.error(msg);
+  } finally {
+    savingTraslado.value = false;
+  }
+};
+
 const confirmDeleteCorte = async (id: number, uniqueId: string) => {
   if (confirm(`¿Está seguro de que desea eliminar el corte ${uniqueId}?`)) {
     try {
@@ -1482,7 +1668,10 @@ const resetAndLoad = async () => {
     origen_hacienda: "",
     origen_suerte: "",
     origen_anio: null,
-    origen_parcela: ""
+    origen_parcela: "",
+    lote_id: "",
+    consecutivo_vivero_ingenio: null,
+    historial_lotes: []
   };
   searchProyecto.value = "";
   searchCaracter.value = "";
@@ -1511,6 +1700,10 @@ const resetAndLoad = async () => {
         vivero.fecha_siembra = vivero.fecha_siembra.substring(0, 10);
       }
       form.value = { ...vivero };
+
+      if (form.value.ingenio) {
+        await loadLotesForIngenio(form.value.ingenio);
+      }
 
       if (form.value.origen_parcela) {
         const parsed = parseOrigenParcelaString(form.value.origen_parcela);

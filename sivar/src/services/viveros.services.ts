@@ -84,5 +84,25 @@ export default {
 
   createCaracter(proyecto_id: string | number, payload: any) {
     return api.post(`${urls.API_PROYECTOS}/${proyecto_id}/caracteres`, payload);
+  },
+
+  getLotes(params?: any) {
+    return api.get('siembra-campo/lotes', { params });
+  },
+
+  createLote(data: any) {
+    return api.post('siembra-campo/lotes', data);
+  },
+
+  updateLote(id: number | string, data: any) {
+    return api.put(`siembra-campo/lotes/${id}`, data);
+  },
+
+  deleteLote(id: number | string) {
+    return api.delete(`siembra-campo/lotes/${id}`);
+  },
+
+  trasladarLote(id: number | string, data: any) {
+    return api.post(`${urls.API_VIVEROS}/${id}/trasladar-lote`, data);
   }
 };

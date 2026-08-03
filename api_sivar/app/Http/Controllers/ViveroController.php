@@ -12,7 +12,7 @@ class ViveroController extends Controller
 {
     public function index()
     {
-        $viveros = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])->orderBy('created_at', 'desc')->get();
+        $viveros = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter', 'lote'])->orderBy('created_at', 'desc')->get();
         foreach ($viveros as $vivero) {
             $vivero->id_vivero_origen_formateado = $this->formatIdViveroOrigen($vivero);
         }
@@ -29,11 +29,26 @@ class ViveroController extends Controller
             'origen_suerte' => 'nullable|string',
             'origen_anio' => 'nullable|integer',
             'origen_parcela' => 'nullable|string',
+            'lote_id' => 'nullable|integer|exists:lotes,id',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
+
+        // Validate lot capacity
+        if ($request->has('lote_id') && $request->lote_id) {
+            $lote = \App\Models\Lote::findOrFail($request->lote_id);
+            $activeCount = Vivero::where('lote_id', $lote->id)->count();
+            if ($activeCount >= $lote->capacidad_maxima) {
+                return response()->json([
+                    'message' => "El lote {$lote->nombre_lote} ha superado su capacidad máxima de {$lote->capacidad_maxima} viveros."
+                ], 400);
+            }
+        }
+
+        // Calculate global consecutivo for this ingenio
+        $consecutivoViveroIngenio = Vivero::where('ingenio', $request->ingenio)->count() + 1;
 
         // Calculamos el consecutivo basándonos en la cantidad total de registros en la tabla
         $maxId = Vivero::withTrashed()->max('id') ?? 0;
@@ -72,14 +87,25 @@ class ViveroController extends Controller
             'origen_suerte' => $request->origen_suerte,
             'origen_anio' => $request->origen_anio,
             'origen_parcela' => $request->origen_parcela,
+            'lote_id' => $request->lote_id,
+            'consecutivo_vivero_ingenio' => $consecutivoViveroIngenio,
         ]);
+
+        if ($vivero->lote_id) {
+            \App\Models\ViveroLoteHistorial::create([
+                'vivero_id' => $vivero->id,
+                'lote_id' => $vivero->lote_id,
+                'fecha_inicio' => now(),
+                'activo' => true
+            ]);
+        }
 
         return response()->json($vivero, 201);
     }
 
     public function show($id)
     {
-        $vivero = Vivero::with(['proyecto', 'responsable', 'caracter'])->findOrFail($id);
+        $vivero = Vivero::with(['proyecto', 'responsable', 'caracter', 'lote', 'historialLotes.lote'])->findOrFail($id);
         $vivero->id_vivero_origen_formateado = $this->formatIdViveroOrigen($vivero);
         return response()->json($vivero);
     }
@@ -87,6 +113,35 @@ class ViveroController extends Controller
     public function update(Request $request, $id)
     {
         $vivero = Vivero::findOrFail($id);
+
+        if ($request->has('lote_id') && $request->lote_id !== $vivero->lote_id) {
+            if ($request->lote_id) {
+                $lote = \App\Models\Lote::findOrFail($request->lote_id);
+                $activeCount = Vivero::where('lote_id', $lote->id)->where('id', '!=', $vivero->id)->count();
+                if ($activeCount >= $lote->capacidad_maxima) {
+                    return response()->json([
+                        'message' => "El lote {$lote->nombre_lote} ha superado su capacidad máxima de {$lote->capacidad_maxima} viveros."
+                    ], 400);
+                }
+            }
+
+            \App\Models\ViveroLoteHistorial::where('vivero_id', $vivero->id)
+                ->where('activo', true)
+                ->update([
+                    'activo' => false,
+                    'fecha_fin' => now()
+                ]);
+
+            if ($request->lote_id) {
+                \App\Models\ViveroLoteHistorial::create([
+                    'vivero_id' => $vivero->id,
+                    'lote_id' => $request->lote_id,
+                    'fecha_inicio' => now(),
+                    'activo' => true
+                ]);
+            }
+        }
+
         $vivero->fill($request->except('identificador_unico'));
         
         $esCorte = $request->es_corte || str_contains($vivero->identificador_unico, $vivero->origen_parcela);
@@ -121,6 +176,52 @@ class ViveroController extends Controller
             $vivero->nombre = $vivero->identificador_unico;
             $vivero->save();
         }
+
+        return response()->json($vivero);
+    }
+
+    public function trasladarLote(Request $request, $id)
+    {
+        $vivero = Vivero::findOrFail($id);
+        
+        $request->validate([
+            'lote_id' => 'required|integer|exists:lotes,id'
+        ]);
+
+        $newLoteId = $request->lote_id;
+
+        if ($vivero->lote_id == $newLoteId) {
+            return response()->json([
+                'message' => 'El vivero ya se encuentra en este lote.'
+            ], 400);
+        }
+
+        $lote = \App\Models\Lote::findOrFail($newLoteId);
+        $activeCount = Vivero::where('lote_id', $lote->id)->count();
+        if ($activeCount >= $lote->capacidad_maxima) {
+            return response()->json([
+                'message' => "El lote {$lote->nombre_lote} ha superado su capacidad máxima de {$lote->capacidad_maxima} viveros."
+            ], 400);
+        }
+
+        \App\Models\ViveroLoteHistorial::where('vivero_id', $vivero->id)
+            ->where('activo', true)
+            ->update([
+                'activo' => false,
+                'fecha_fin' => now()
+            ]);
+
+        \App\Models\ViveroLoteHistorial::create([
+            'vivero_id' => $vivero->id,
+            'lote_id' => $newLoteId,
+            'fecha_inicio' => now(),
+            'activo' => true
+        ]);
+
+        $vivero->lote_id = $newLoteId;
+        $vivero->save();
+
+        $vivero->load(['lote', 'historialLotes.lote']);
 
         return response()->json($vivero);
     }
