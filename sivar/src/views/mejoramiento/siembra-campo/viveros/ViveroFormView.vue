@@ -452,35 +452,72 @@
 
             <!-- Origen Vivero -->
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_vivero_id">Vivero <span class="text-red-500">*</span></label>
+              <div class="flex justify-between items-center mb-1.5">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider" for="origen_vivero_id">
+                  Vivero <span class="text-red-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  @click="origenViveroManual = !origenViveroManual"
+                  class="text-[9px] font-bold text-cenicana hover:text-emerald-700 transition-colors"
+                >
+                  {{ origenViveroManual ? 'Seleccionar de lista' : 'Escribir manualmente' }}
+                </button>
+              </div>
+
+              <!-- List Select -->
+              <select
+                v-if="!origenViveroManual"
+                v-model="form.origen_vivero_id"
+                :disabled="!form.origen_lote_id || viverosOrigenOptions.length === 0"
+                required
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_lote_id || viverosOrigenOptions.length === 0 }"
+                id="origen_vivero_id"
+              >
+                <option value="">Seleccione un Vivero</option>
+                <option v-for="v in viverosOrigenOptions" :key="'origen_vivero_' + v.id" :value="v.id">
+                  {{ v.identificador_unico }}
+                </option>
+              </select>
+
+              <!-- Manual Input -->
               <input
+                v-else
                 v-model="origenViveroInput"
                 type="text"
-                placeholder="Seleccione o escriba el Vivero Origen..."
-                list="origen_viveros_datalist"
+                placeholder="Escriba el identificador del vivero..."
                 required
                 class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                 id="origen_vivero_id"
               />
-              <datalist id="origen_viveros_datalist">
-                <option v-for="v in viverosOrigenOptions" :key="'origen_vivero_' + v.id" :value="v.identificador_unico">
-                  {{ v.identificador_unico }}
-                </option>
-              </datalist>
             </div>
 
             <!-- Origen Parcela -->
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_parcela_text">Parcela (Opcional)</label>
-              <input
+              <div class="flex justify-between items-center mb-1.5">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider" for="origen_parcela_text">
+                  Parcela (Opcional)
+                </label>
+                <button
+                  type="button"
+                  @click="origenParcelaManual = !origenParcelaManual"
+                  class="text-[9px] font-bold text-cenicana hover:text-emerald-700 transition-colors"
+                >
+                  {{ origenParcelaManual ? 'Seleccionar de lista' : 'Escribir manualmente' }}
+                </button>
+              </div>
+
+              <!-- List Select -->
+              <select
+                v-if="!origenParcelaManual"
                 v-model="origenParcelaText"
-                type="text"
-                placeholder="Ej. 1"
-                list="origen_parcelas_list"
+                :disabled="!form.origen_vivero_id || origenParcelasOptions.length === 0"
                 class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_vivero_id || origenParcelasOptions.length === 0 }"
                 id="origen_parcela_text"
-              />
-              <datalist id="origen_parcelas_list">
+              >
+                <option value="">Seleccione una Parcela (Opcional)</option>
                 <option 
                   v-for="p in origenParcelasOptions" 
                   :key="'orig_p_' + p.id" 
@@ -488,7 +525,17 @@
                 >
                   Parcela {{ p.numero_parcela }} ({{ p.variedad?.nm_vrdad || 'S/V' }})
                 </option>
-              </datalist>
+              </select>
+
+              <!-- Manual Input -->
+              <input
+                v-else
+                v-model="origenParcelaText"
+                type="text"
+                placeholder="Escriba el número de parcela..."
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                id="origen_parcela_text"
+              />
             </div>
           </div>
         </div>
@@ -957,6 +1004,8 @@ const allViverosList = ref<any[]>([]);
 const origenParcelasOptions = ref<any[]>([]);
 const viveroSeleccionadoOrigen = ref<any>(null);
 const origenViveroInput = ref("");
+const origenViveroManual = ref(false);
+const origenParcelaManual = ref(false);
 const origenParcelaText = ref("");
 const origenCorteText = ref("");
 
@@ -1052,19 +1101,43 @@ const viverosOrigenOptions = computed(() => {
   return allViverosList.value.filter(v => v.lote_id == form.value.origen_lote_id);
 });
 
+watch(() => form.value.origen_vivero_id, (newVal) => {
+  if (!origenViveroManual.value) {
+    const parent = allViverosList.value.find(v => v.id == newVal);
+    if (parent) {
+      origenViveroInput.value = parent.identificador_unico || "";
+      origenParcelasOptions.value = parent.parcelas || [];
+    } else {
+      origenViveroInput.value = "";
+      origenParcelasOptions.value = [];
+    }
+  }
+});
+
 watch(origenViveroInput, (newVal) => {
-  const parent = allViverosList.value.find(v => v.identificador_unico === newVal);
-  if (parent) {
-    form.value.origen_vivero_id = parent.id;
-    origenParcelasOptions.value = parent.parcelas || [];
-  } else {
+  if (origenViveroManual.value) {
+    const parent = allViverosList.value.find(v => v.identificador_unico === newVal);
+    if (parent) {
+      form.value.origen_vivero_id = parent.id;
+      origenParcelasOptions.value = parent.parcelas || [];
+    } else {
+      form.value.origen_vivero_id = "";
+      origenParcelasOptions.value = [];
+    }
+  }
+});
+
+watch(origenViveroManual, (isManual) => {
+  if (isManual) {
     form.value.origen_vivero_id = "";
     origenParcelasOptions.value = [];
+  } else {
+    origenViveroInput.value = "";
   }
 });
 
 watch([origenParcelaText, origenViveroInput, () => form.value.origen_vivero_id], () => {
-  if (form.value.origen_vivero_id) {
+  if (!origenViveroManual.value && form.value.origen_vivero_id) {
     const parent = allViverosList.value.find(v => v.id == form.value.origen_vivero_id);
     if (parent) {
       if (origenParcelaText.value) {
@@ -1075,7 +1148,7 @@ watch([origenParcelaText, origenViveroInput, () => form.value.origen_vivero_id],
       return;
     }
   }
-  // Fallback for manual inputs
+  
   if (origenViveroInput.value) {
     if (origenParcelaText.value) {
       form.value.origen_parcela = `${origenViveroInput.value}-${origenParcelaText.value}`;
@@ -1107,6 +1180,9 @@ const selectOrigenVivero = async (v: any) => {
   
   await loadLotesOrigen();
   form.value.origen_lote_id = v.lote_id || "";
+  
+  origenViveroManual.value = false;
+  origenParcelaManual.value = false;
   
   // Wait a tick for computed viverosOrigenOptions to resolve
   form.value.origen_vivero_id = v.id || "";
@@ -1786,18 +1862,32 @@ const resetAndLoad = async () => {
       }
 
       if (form.value.origen_vivero_id) {
-        const parentVivero = allViverosList.value.find(v => v.id === form.value.origen_vivero_id);
+        const parentVivero = allViverosList.value.find(v => v.id == form.value.origen_vivero_id);
         if (parentVivero) {
           viveroSeleccionadoOrigen.value = parentVivero;
           origenParcelasOptions.value = parentVivero.parcelas || [];
           searchOrigenVivero.value = parentVivero.identificador_unico;
+          origenViveroManual.value = false;
           
           if (form.value.origen_parcela && form.value.origen_parcela.startsWith(parentVivero.identificador_unico)) {
             const suffix = form.value.origen_parcela.substring(parentVivero.identificador_unico.length + 1);
             if (suffix) {
               origenParcelaText.value = suffix;
+              origenParcelaManual.value = false;
             }
           }
+        }
+      } else if (form.value.origen_parcela) {
+        origenViveroManual.value = true;
+        origenParcelaManual.value = true;
+        
+        const parts = form.value.origen_parcela.split("-");
+        if (parts.length >= 5) {
+          origenViveroInput.value = parts.slice(0, 4).join("-");
+          origenParcelaText.value = parts.slice(4).join("-");
+        } else {
+          origenViveroInput.value = form.value.origen_parcela;
+          origenParcelaText.value = "";
         }
       }
 
