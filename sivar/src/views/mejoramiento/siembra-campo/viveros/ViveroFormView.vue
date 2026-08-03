@@ -850,8 +850,7 @@ const parseOrigenParcelaString = (str: string) => {
 watch([origenParcelaText, origenCorteText, () => form.value.origen_ingenio, () => form.value.origen_anio, () => form.value.origen_hacienda, () => form.value.origen_suerte], () => {
   let baseId = "";
   if (viveroSeleccionadoOrigen.value) {
-    const parts = viveroSeleccionadoOrigen.value.identificador_unico.split("-");
-    baseId = parts.slice(0, 4).join("-");
+    baseId = viveroSeleccionadoOrigen.value.identificador_unico;
   }
   
   if (baseId && origenParcelaText.value) {

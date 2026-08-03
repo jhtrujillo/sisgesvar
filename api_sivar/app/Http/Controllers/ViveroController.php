@@ -273,19 +273,44 @@ class ViveroController extends Controller
 
     private function loadEstructuraRecursiva($vivero)
     {
+        // 1. Load cuts for each real parcel (exact match on plot ID)
         foreach ($vivero->parcelas as $parcela) {
             $parcelLabel = $parcela->numero_parcela_origen ?: $parcela->numero_parcela;
             $plotId = $vivero->identificador_unico . '-' . $parcelLabel;
             $cortes = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])
-                ->where(function($query) use ($plotId) {
-                    $query->where('origen_parcela', $plotId)
-                          ->orWhere('origen_parcela', 'like', $plotId . '-%');
-                })
+                ->where('origen_parcela', $plotId)
                 ->get();
             foreach ($cortes as $corte) {
                 $this->loadEstructuraRecursiva($corte);
             }
             $parcela->cortes = $cortes;
+        }
+
+        // 2. Load cuts that directly reference this nursery (e.g. legacy/direct cuts without parcel segment)
+        $directCortes = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])
+            ->where('origen_parcela', $vivero->identificador_unico)
+            ->get();
+        foreach ($directCortes as $corte) {
+            $this->loadEstructuraRecursiva($corte);
+        }
+
+        if ($directCortes->isNotEmpty()) {
+            $virtualParcela = new \stdClass();
+            $virtualParcela->id = 'virtual_' . $vivero->id;
+            $virtualParcela->numero_parcela = 'General';
+            $virtualParcela->numero_parcela_origen = 'General';
+            $virtualParcela->id_plot_origen = $vivero->identificador_unico;
+            $virtualParcela->variedad = null;
+            $virtualParcela->caracter = null;
+            $virtualParcela->cortes = $directCortes;
+
+            if (is_array($vivero->parcelas)) {
+                $parcelas = $vivero->parcelas;
+                $parcelas[] = $virtualParcela;
+                $vivero->parcelas = $parcelas;
+            } else {
+                $vivero->parcelas->push($virtualParcela);
+            }
         }
     }
 
