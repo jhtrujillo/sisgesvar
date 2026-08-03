@@ -1443,7 +1443,8 @@ const deleteParcela = async (parcelaId: string | number) => {
     await loadParcelas();
   } catch (error: any) {
     console.error("Error al eliminar parcela:", error);
-    toast.error("Error al eliminar la parcela");
+    const msg = error.response?.data?.message || "Error al eliminar la parcela";
+    toast.error(msg);
   }
 };
 
@@ -1456,7 +1457,8 @@ const deleteAllParcelas = async () => {
     await loadParcelas();
   } catch (error: any) {
     console.error("Error al eliminar parcelas:", error);
-    toast.error("Error al vaciar el vivero");
+    const msg = error.response?.data?.message || "Error al vaciar el vivero";
+    toast.error(msg);
   }
 };
 
