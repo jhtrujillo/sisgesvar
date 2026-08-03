@@ -58,41 +58,14 @@
             />
           </div>
 
-          <!-- Lote -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="lote_id">Lote <span class="text-red-500">*</span></label>
-            <div class="flex gap-2">
-              <select
-                v-model="form.lote_id"
-                @change="onLoteChange"
-                :disabled="isEditing"
-                required
-                class="shadow appearance-none border rounded w-full py-2.5 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="lote_id"
-              >
-                <option value="">Seleccione un Lote</option>
-                <option v-for="lote in lotes" :key="lote.id" :value="lote.id">
-                  {{ lote.nombre_lote }} (Ingenio: {{ lote.ingenio_codigo }}, Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
-                </option>
-              </select>
-              <button
-                v-if="isEditing"
-                type="button"
-                @click="openTrasladoModal"
-                class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-2.5 rounded shadow transition-colors whitespace-nowrap"
-              >
-                Trasladar Lote
-              </button>
-            </div>
-          </div>
-
           <!-- Ingenio -->
           <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="ingenio">Ingenio</label>
             <select
               v-model="form.ingenio"
-              disabled
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-800 leading-tight focus:outline-none focus:shadow-outline bg-gray-100"
+              @change="loadHaciendas(true)"
+              :disabled="isEditing"
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               id="ingenio"
             >
               <option value="">Seleccione un Ingenio</option>
@@ -112,6 +85,33 @@
               <option value="">Seleccione una Hacienda</option>
               <option v-for="hda in haciendas" :key="hda.cd_hcnda" :value="hda.cd_hcnda" v-html="hda.nm_hcnda"></option>
             </select>
+          </div>
+
+          <!-- Lote -->
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="lote_id">Lote <span class="text-red-500">*</span></label>
+            <div class="flex gap-2">
+              <select
+                v-model="form.lote_id"
+                :disabled="!form.ingenio || isEditing"
+                required
+                class="shadow appearance-none border rounded w-full py-2.5 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="lote_id"
+              >
+                <option value="">Seleccione un Lote</option>
+                <option v-for="lote in lotes" :key="lote.id" :value="lote.id">
+                  {{ lote.nombre_lote }} (Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
+                </option>
+              </select>
+              <button
+                v-if="isEditing"
+                type="button"
+                @click="openTrasladoModal"
+                class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-2.5 rounded shadow transition-colors whitespace-nowrap"
+              >
+                Trasladar Lote
+              </button>
+            </div>
           </div>
 
           <!-- Consecutivo Global Vivero (Ingenio) -->
@@ -1531,26 +1531,12 @@ const registrarCorteParcela = (p: any) => {
   }
 };
 
-const loadAllLotes = async () => {
-  try {
-    const res = await viverosServices.getLotes();
-    lotes.value = res.data;
-  } catch (error) {
-    console.error("Error loading lotes:", error);
-    toast.error("Error al cargar la lista de lotes");
+watch(() => form.value.ingenio, (newIngenio) => {
+  if (!isEditing.value) {
+    form.value.lote_id = "";
   }
-};
-
-const onLoteChange = () => {
-  const selected = lotes.value.find(l => l.id === form.value.lote_id);
-  if (selected) {
-    form.value.ingenio = selected.ingenio_codigo;
-    loadHaciendas(true);
-  } else {
-    form.value.ingenio = "";
-    haciendas.value = [];
-  }
-};
+  loadLotesForIngenio(newIngenio);
+});
 
 const loadLotesForIngenio = async (ingenio: string) => {
   if (!ingenio) {
@@ -1692,7 +1678,7 @@ const resetAndLoad = async () => {
 
   try {
     // Load common data concurrently for better performance
-    await Promise.all([loadIngenios(), loadProyectos(), loadResponsables(), loadAmbientes(), loadAllViveros(), loadAllLotes()]);
+    await Promise.all([loadIngenios(), loadProyectos(), loadResponsables(), loadAmbientes(), loadAllViveros()]);
 
     if (isEditing.value) {
       const response = await viverosServices.getVivero(route.params.id as string);
