@@ -76,10 +76,10 @@
         <template v-if="p.numero_parcela === 'General'">
           <!-- Render cuts directly without Parcela Card -->
           <div 
-            v-if="p.cortes && p.cortes.length > 0" 
+            v-if="p.cortes_recursivos && p.cortes_recursivos.length > 0" 
             class="pl-6 border-l border-dashed border-blue-200 ml-4 space-y-3 relative transition-all duration-200"
           >
-            <div v-for="c in p.cortes" :key="'tree_c_' + c.id" class="relative">
+            <div v-for="c in p.cortes_recursivos" :key="'tree_c_' + c.id" class="relative">
               <div class="absolute top-5 -left-6 w-6 border-t border-dashed border-blue-200"></div>
               <div class="absolute -top-2.5 left-0 text-[8px] font-bold uppercase text-blue-600 bg-blue-50 px-1 rounded border border-blue-100">
                 Hijo Directo
@@ -111,11 +111,11 @@
               </span>
               <!-- Toggle for cuts -->
               <button 
-                v-if="p.cortes && p.cortes.length > 0"
+                v-if="p.cortes_recursivos && p.cortes_recursivos.length > 0"
                 @click="toggleParcela(p.id)"
                 class="text-[9px] font-bold px-1.5 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-100 rounded-md transition-colors flex items-center gap-1"
               >
-                Cortes ({{ p.cortes.length }})
+                Cortes ({{ p.cortes_recursivos.length }})
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
                   class="h-2.5 w-2.5 transform transition-transform"
@@ -148,10 +148,10 @@
 
           <!-- Recursive Cuts (Cortes) -->
           <div 
-            v-if="p.cortes && p.cortes.length > 0 && expandedParcelas[p.id] !== false" 
+            v-if="p.cortes_recursivos && p.cortes_recursivos.length > 0 && expandedParcelas[p.id] !== false" 
             class="mt-3 pl-6 border-l border-dashed border-blue-200 ml-4 space-y-3 relative transition-all duration-200"
           >
-            <div v-for="c in p.cortes" :key="'tree_c_' + c.id" class="relative">
+            <div v-for="c in p.cortes_recursivos" :key="'tree_c_' + c.id" class="relative">
               <div class="absolute top-5 -left-6 w-6 border-t border-dashed border-blue-200"></div>
               <!-- Label to indicate this is a cut -->
               <div class="absolute -top-2.5 left-0 text-[8px] font-bold uppercase text-blue-600 bg-blue-50 px-1 rounded border border-blue-100">
@@ -229,8 +229,8 @@ const checkRecursiveMatch = (node: any, q: string): boolean => {
     if (p.variedad?.nm_vrdad?.toLowerCase().includes(q)) return true;
     if (p.variedad?.pdgree?.toLowerCase().includes(q)) return true;
     if (p.id_plot_origen?.toLowerCase().includes(q)) return true;
-    if (p.cortes && p.cortes.length > 0) {
-      if (p.cortes.some((c: any) => checkRecursiveMatch(c, q))) return true;
+    if (p.cortes_recursivos && p.cortes_recursivos.length > 0) {
+      if (p.cortes_recursivos.some((c: any) => checkRecursiveMatch(c, q))) return true;
     }
   }
   return false;
@@ -245,8 +245,8 @@ const hasAnyMatch = computed(() => {
   
   for (const p of props.node.parcelas || []) {
     if (matchesParcela(p)) return true;
-    if (p.cortes && p.cortes.length > 0) {
-      const cutsMatch = p.cortes.some((c: any) => checkRecursiveMatch(c, q));
+    if (p.cortes_recursivos && p.cortes_recursivos.length > 0) {
+      const cutsMatch = p.cortes_recursivos.some((c: any) => checkRecursiveMatch(c, q));
       if (cutsMatch) return true;
     }
   }
@@ -260,8 +260,8 @@ watch(() => props.searchQuery, (newVal) => {
     // Also auto-expand all parcelas that have matching cuts
     const q = newVal.toLowerCase();
     for (const p of props.node.parcelas || []) {
-      if (p.cortes && p.cortes.length > 0) {
-        const cutsMatch = p.cortes.some((c: any) => checkRecursiveMatch(c, q));
+      if (p.cortes_recursivos && p.cortes_recursivos.length > 0) {
+        const cutsMatch = p.cortes_recursivos.some((c: any) => checkRecursiveMatch(c, q));
         if (cutsMatch) {
           expandedParcelas.value[p.id] = true;
         }

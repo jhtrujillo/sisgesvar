@@ -283,7 +283,7 @@ class ViveroController extends Controller
             foreach ($cortes as $corte) {
                 $this->loadEstructuraRecursiva($corte);
             }
-            $parcela->cortes = $cortes;
+            $parcela->cortes_recursivos = $cortes;
         }
 
         // 2. Load cuts that directly reference this nursery (e.g. legacy/direct cuts without parcel segment)
@@ -302,7 +302,7 @@ class ViveroController extends Controller
             $virtualParcela->id_plot_origen = $vivero->identificador_unico;
             $virtualParcela->variedad = null;
             $virtualParcela->caracter = null;
-            $virtualParcela->cortes = $directCortes;
+            $virtualParcela->cortes_recursivos = $directCortes;
 
             if (is_array($vivero->parcelas)) {
                 $parcelas = $vivero->parcelas;
