@@ -818,8 +818,8 @@ const parseViveroIdToFields = (viveroId: string) => {
       hacienda: hacienda,
       suerte: suerte,
       consecutivo: consecutivo,
-      parcela: parcela,
-      corte: corte
+      parcel: parcela,
+      cut: corte
     };
   }
   return null;
