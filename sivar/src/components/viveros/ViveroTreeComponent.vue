@@ -48,6 +48,21 @@
           <div class="text-[10px] text-slate-500 font-medium max-w-md truncate" :title="node.proyecto?.nm_prycto">
             {{ node.proyecto?.nm_prycto }}
           </div>
+          <!-- Quick Stats Row -->
+          <div class="mt-1.5 flex items-center gap-1.5 text-[9px] text-slate-500 font-medium flex-wrap">
+            <span class="bg-white/80 px-1.5 py-0.5 rounded-md border border-slate-200/60 shadow-sm flex items-center gap-0.5">
+              📊 {{ node.parcelas?.filter((p: any) => p.numero_parcela !== 'General').length || 0 }} parcelas
+            </span>
+            <span class="bg-white/80 px-1.5 py-0.5 rounded-md border border-slate-200/60 shadow-sm flex items-center gap-0.5">
+              🌱 {{ getUniqueVarietiesCount(node) }} variedades
+            </span>
+            <span class="bg-white/80 px-1.5 py-0.5 rounded-md border border-slate-200/60 shadow-sm flex items-center gap-0.5">
+              🌿 {{ countRecursiveDescendants(node) }} desc.
+            </span>
+            <span class="bg-white/80 px-1.5 py-0.5 rounded-md border border-slate-200/60 shadow-sm flex items-center gap-0.5">
+              📅 {{ getNurseryAge(node.fecha_siembra) }}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -291,4 +306,37 @@ watch(() => props.searchQuery, (newVal) => {
     }
   }
 }, { immediate: true });
+
+// Quick stats helper functions
+const countRecursiveDescendants = (node: any): number => {
+  let count = 0;
+  for (const p of node.parcelas || []) {
+    if (p.cortes_recursivos && p.cortes_recursivos.length > 0) {
+      count += p.cortes_recursivos.length;
+      for (const c of p.cortes_recursivos) {
+        count += countRecursiveDescendants(c);
+      }
+    }
+  }
+  return count;
+};
+
+const getUniqueVarietiesCount = (node: any): number => {
+  if (!node.parcelas) return 0;
+  // Ignore virtual parcelas like 'General'
+  const realParcelas = node.parcelas.filter((p: any) => p.numero_parcela !== 'General');
+  const vars = realParcelas
+    .map((p: any) => p.variedad?.nm_vrdad)
+    .filter((v: any) => !!v);
+  return new Set(vars).size;
+};
+
+const getNurseryAge = (fecha: string) => {
+  if (!fecha) return 'N/A';
+  const diffMs = new Date().getTime() - new Date(fecha).getTime();
+  const diffMonths = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 30.4375));
+  if (diffMonths < 0) return 'Por sembrar';
+  if (diffMonths === 0) return 'Reciente';
+  return `${diffMonths} meses`;
+};
 </script>
