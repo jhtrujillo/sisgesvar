@@ -1426,9 +1426,10 @@ const confirmDeleteCorte = async (id: number, uniqueId: string) => {
       await viverosServices.deleteVivero(id);
       toast.success('Corte eliminado correctamente');
       await loadParcelas();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting corte:', error);
-      toast.error('Error al eliminar el corte');
+      const msg = error.response?.data?.message || 'Error al eliminar el corte';
+      toast.error(msg);
     }
   }
 };

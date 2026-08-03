@@ -508,9 +508,10 @@ const confirmDeleteCorte = async (id: number, uniqueId: string) => {
       if (isEstructuraModalOpen.value && viveroEstructura.value && viveroEstructura.value.id) {
         await loadEstructuraData(viveroEstructura.value.id);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting corte:', error);
-      toast.error('Error al eliminar el corte');
+      const msg = error.response?.data?.message || 'Error al eliminar el corte';
+      toast.error(msg);
     }
   }
 };
@@ -627,9 +628,10 @@ const deleteVivero = async (id: number) => {
       await viverosServices.deleteVivero(id);
       toast.success('Vivero eliminado correctamente');
       loadViveros();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting vivero:', error);
-      toast.error('Error al eliminar el vivero');
+      const msg = error.response?.data?.message || 'Error al eliminar el vivero';
+      toast.error(msg);
     }
   }
 };

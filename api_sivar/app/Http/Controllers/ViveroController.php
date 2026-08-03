@@ -128,6 +128,16 @@ class ViveroController extends Controller
     public function destroy($id)
     {
         $vivero = Vivero::findOrFail($id);
+        
+        // Check if there are active nurseries/cuts that depend on this nursery's plots/cuts
+        $hasChildren = Vivero::where('origen_parcela', 'like', $vivero->identificador_unico . '%')->exists();
+        if ($hasChildren) {
+            return response()->json([
+                'error' => 'dependency_exists',
+                'message' => 'No se puede eliminar este vivero porque existen otros viveros/cortes que dependen de su semilla.'
+            ], 400);
+        }
+        
         $vivero->delete();
         return response()->json(null, 204);
     }
