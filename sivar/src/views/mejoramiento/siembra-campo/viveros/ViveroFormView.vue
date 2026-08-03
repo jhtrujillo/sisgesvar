@@ -372,13 +372,15 @@
           <!-- Origen Parcela -->
           <div class="mb-4 md:col-span-2">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_parcela_text">Parcela</label>
-            <select
-              v-if="origenParcelasOptions.length > 0"
+            <input
               v-model="origenParcelaText"
+              type="text"
+              placeholder="Ej. 1"
+              list="origen_parcelas_list"
               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               id="origen_parcela_text"
-            >
-              <option value="">Seleccione</option>
+            />
+            <datalist id="origen_parcelas_list">
               <option 
                 v-for="p in origenParcelasOptions" 
                 :key="'orig_p_' + p.id" 
@@ -386,15 +388,7 @@
               >
                 {{ p.numero_parcela }} ({{ p.variedad?.nm_vrdad || 'S/V' }})
               </option>
-            </select>
-            <input
-              v-else
-              v-model="origenParcelaText"
-              type="text"
-              placeholder="Ej. 1"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="origen_parcela_text"
-            />
+            </datalist>
           </div>
           <!-- Origen Corte -->
           <div class="mb-4 md:col-span-1">
