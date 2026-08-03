@@ -36,7 +36,7 @@
           >
             <option value="" disabled>Seleccione un ingenio...</option>
             <option v-for="ing in ingenios" :key="ing.cd_ingnio" :value="ing.cd_ingnio">
-              {{ ing.nm_ingnio }} ({{ ing.cd_ingnio }})
+              {{ decodeHTMLEntities(ing.nm_ingnio) }} ({{ ing.cd_ingnio }})
             </option>
           </select>
         </div>
@@ -99,7 +99,7 @@
                 {{ lote.viveros_activos_count }} / {{ lote.capacidad_maxima }} Viveros
               </span>
             </div>
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Ingenio: {{ selectedIngenioName }}</p>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Ingenio: {{ decodeHTMLEntities(selectedIngenioName) }}</p>
 
             <!-- ProgressBar -->
             <div class="w-full bg-slate-200 rounded-full h-1.5 mt-4 overflow-hidden">
@@ -215,6 +215,13 @@ const form = ref({
   nombre_lote: '',
   capacidad_maxima: 5
 });
+
+const decodeHTMLEntities = (text: string) => {
+  if (!text) return '';
+  const textArea = document.createElement('textarea');
+  textArea.innerHTML = text;
+  return textArea.value;
+};
 
 const selectedIngenioName = computed(() => {
   const ing = ingenios.value.find(i => i.cd_ingnio === selectedIngenio.value);
