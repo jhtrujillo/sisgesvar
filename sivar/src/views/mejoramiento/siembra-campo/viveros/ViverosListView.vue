@@ -502,21 +502,29 @@ const currentPage = ref(1);
 const itemsPerPage = ref(10);
 
 const filteredViveros = computed(() => {
-  const mainViveros = viveros.value.filter(v => {
-    if (v.origen_parcela && v.origen_parcela.split("-").length > 3) {
-      return false;
+  // If there is a search query, search across ALL nurseries (including cuts)
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.toLowerCase().trim();
+    return viveros.value.filter(v => 
+      (v.nombre && v.nombre.toLowerCase().includes(q)) ||
+      (v.identificador_unico && v.identificador_unico.toLowerCase().includes(q)) ||
+      (v.hacienda && v.hacienda.toLowerCase().includes(q)) ||
+      (v.suerte && v.suerte.toLowerCase().includes(q))
+    );
+  }
+
+  // If no search query, show only main nurseries (exclude cuts with split length >= 5)
+  return viveros.value.filter(v => {
+    if (v.origen_parcela) {
+      const parts = v.origen_parcela.split("-");
+      if (parts.length >= 5) {
+        // Confirm it's a real structured cut code (first part ends in 4-digit year)
+        const isYear = /^\d{4}$/.test(parts[0].slice(-4));
+        if (isYear) return false;
+      }
     }
     return true;
   });
-
-  if (!searchQuery.value) return mainViveros;
-  const q = searchQuery.value.toLowerCase();
-  return mainViveros.filter(v => 
-    (v.nombre && v.nombre.toLowerCase().includes(q)) ||
-    (v.identificador_unico && v.identificador_unico.toLowerCase().includes(q)) ||
-    (v.hacienda && v.hacienda.toLowerCase().includes(q)) ||
-    (v.suerte && v.suerte.toLowerCase().includes(q))
-  );
 });
 
 const totalPages = computed(() => {
