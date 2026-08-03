@@ -277,7 +277,10 @@ class ViveroController extends Controller
             $parcelLabel = $parcela->numero_parcela_origen ?: $parcela->numero_parcela;
             $plotId = $vivero->identificador_unico . '-' . $parcelLabel;
             $cortes = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])
-                ->where('origen_parcela', $plotId)
+                ->where(function($query) use ($plotId) {
+                    $query->where('origen_parcela', $plotId)
+                          ->orWhere('origen_parcela', 'like', $plotId . '-%');
+                })
                 ->get();
             foreach ($cortes as $corte) {
                 $this->loadEstructuraRecursiva($corte);

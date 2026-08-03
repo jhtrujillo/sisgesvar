@@ -32,7 +32,10 @@ class ViveroParcela extends Model
         $parcelLabel = $this->numero_parcela_origen ?: $this->numero_parcela;
         $plotId = $vivero->identificador_unico . '-' . $parcelLabel;
 
-        return Vivero::where('origen_parcela', $plotId)
+        return Vivero::where(function($query) use ($plotId) {
+                $query->where('origen_parcela', $plotId)
+                      ->orWhere('origen_parcela', 'like', $plotId . '-%');
+            })
             ->select('id', 'identificador_unico', 'nombre', 'fecha_siembra')
             ->get()
             ->map(function ($item) {
