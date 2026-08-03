@@ -51,17 +51,32 @@
         </div>
       </div>
 
-      <!-- Action: Edit Direct Link -->
-      <router-link 
-        :to="{ name: 'vivero_editar.show', params: { id: node.id } }"
-        class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-        title="Editar este Vivero"
-        @click.native="emitClose"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-        </svg>
-      </router-link>
+      <div class="flex items-center gap-0.5">
+        <!-- Action: Edit Direct Link -->
+        <router-link 
+          :to="{ name: 'vivero_editar.show', params: { id: node.id } }"
+          class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+          title="Editar este Vivero"
+          @click.native="emitClose"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+        </router-link>
+
+        <!-- Action: Delete Link (only show if it is a cut nursery, i.e., has parent origin_parcela) -->
+        <button 
+          v-if="node.origen_parcela"
+          type="button"
+          @click="emitDelete(node.id, node.identificador_unico)"
+          class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+          title="Eliminar este Corte"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      </div>
     </div>
 
     <!-- Tree Branches (Parcelas and Cuts) -->
@@ -89,6 +104,7 @@
                   :node="c" 
                   :search-query="searchQuery" 
                   @close-modal="emitClose"
+                  @delete-node="(id, uid) => emit('delete-node', id, uid)"
                 />
               </div>
             </div>
@@ -162,6 +178,7 @@
                   :node="c" 
                   :search-query="searchQuery" 
                   @close-modal="emitClose"
+                  @delete-node="(id, uid) => emit('delete-node', id, uid)"
                 />
               </div>
             </div>
@@ -182,10 +199,15 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'close-modal'): void;
+  (e: 'delete-node', id: number, uniqueId: string): void;
 }>();
 
 const emitClose = () => {
   emit('close-modal');
+};
+
+const emitDelete = (id: number, uniqueId: string) => {
+  emit('delete-node', id, uniqueId);
 };
 
 const isExpanded = ref(true);

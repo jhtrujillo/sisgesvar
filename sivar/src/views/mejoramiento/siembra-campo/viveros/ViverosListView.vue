@@ -179,15 +179,24 @@
                             <td class="px-4 py-2.5 text-slate-600 font-mono">{{ p.id_plot_origen || 'N/A' }}</td>
                             <td class="px-4 py-2.5">
                               <div v-if="p.cortes && p.cortes.length > 0" class="flex flex-wrap gap-1.5">
-                                <router-link
+                                <div
                                   v-for="c in p.cortes"
                                   :key="'list_cut_' + c.id"
-                                  :to="{ name: 'vivero_editar.show', params: { id: c.id } }"
-                                  class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100 transition-colors shadow-sm"
-                                  title="Ver vivero destino de este corte"
+                                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100 transition-colors shadow-sm cursor-pointer"
+                                  title="Ver/Editar vivero destino de este corte"
                                 >
-                                  Corte {{ c.consecutivo_corte }}: {{ c.identificador_unico }}
-                                </router-link>
+                                  <router-link :to="{ name: 'vivero_editar.show', params: { id: c.id } }" class="hover:underline">
+                                    Corte {{ c.consecutivo_corte }}: {{ c.identificador_unico }}
+                                  </router-link>
+                                  <button 
+                                    type="button" 
+                                    @click.stop.prevent="confirmDeleteCorte(c.id, c.identificador_unico)"
+                                    class="text-red-400 hover:text-red-600 ml-0.5 transition-colors font-bold text-[10px]"
+                                    title="Eliminar este Corte"
+                                  >
+                                    &times;
+                                  </button>
+                                </div>
                               </div>
                               <span v-else class="text-slate-400 italic text-[10px]">Sin cortes registrados</span>
                             </td>
@@ -419,6 +428,7 @@
                 :node="viveroEstructura" 
                 :search-query="searchTreeQuery" 
                 @close-modal="closeEstructuraModal"
+                @delete-node="confirmDeleteCorte"
               />
             </div>
           </div>
@@ -460,9 +470,7 @@ const loadingEstructura = ref(false);
 const viveroEstructura = ref<any>(null);
 const searchTreeQuery = ref("");
 
-const openEstructuraModal = async (id: number) => {
-  searchTreeQuery.value = "";
-  isEstructuraModalOpen.value = true;
+const loadEstructuraData = async (id: number) => {
   loadingEstructura.value = true;
   try {
     const res = await viverosServices.getEstructura(id);
@@ -470,16 +478,41 @@ const openEstructuraModal = async (id: number) => {
   } catch (error) {
     console.error("Error fetching estructura:", error);
     toast.error("Error al cargar la estructura del vivero");
-    isEstructuraModalOpen.value = false;
   } finally {
     loadingEstructura.value = false;
   }
+};
+
+const openEstructuraModal = async (id: number) => {
+  searchTreeQuery.value = "";
+  isEstructuraModalOpen.value = true;
+  await loadEstructuraData(id);
 };
 
 const closeEstructuraModal = () => {
   isEstructuraModalOpen.value = false;
   viveroEstructura.value = null;
   searchTreeQuery.value = "";
+};
+
+const confirmDeleteCorte = async (id: number, uniqueId: string) => {
+  if (confirm(`¿Está seguro de que desea eliminar el corte ${uniqueId}?`)) {
+    try {
+      await viverosServices.deleteVivero(id);
+      toast.success('Corte eliminado correctamente');
+      
+      // Reload main table
+      await loadViveros();
+      
+      // If modal is open, reload structure
+      if (isEstructuraModalOpen.value && viveroEstructura.value && viveroEstructura.value.id) {
+        await loadEstructuraData(viveroEstructura.value.id);
+      }
+    } catch (error) {
+      console.error('Error deleting corte:', error);
+      toast.error('Error al eliminar el corte');
+    }
+  }
 };
 
 const isCosechaModalOpen = ref(false);
