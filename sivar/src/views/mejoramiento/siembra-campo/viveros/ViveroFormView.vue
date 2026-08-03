@@ -1049,7 +1049,7 @@ watch([() => form.value.origen_ingenio, () => form.value.origen_hacienda], () =>
 
 const viverosOrigenOptions = computed(() => {
   if (!form.value.origen_lote_id) return [];
-  return allViverosList.value.filter(v => v.lote_id === form.value.origen_lote_id);
+  return allViverosList.value.filter(v => v.lote_id == form.value.origen_lote_id);
 });
 
 watch(origenViveroInput, (newVal) => {
@@ -1065,7 +1065,7 @@ watch(origenViveroInput, (newVal) => {
 
 watch([origenParcelaText, origenViveroInput, () => form.value.origen_vivero_id], () => {
   if (form.value.origen_vivero_id) {
-    const parent = allViverosList.value.find(v => v.id === form.value.origen_vivero_id);
+    const parent = allViverosList.value.find(v => v.id == form.value.origen_vivero_id);
     if (parent) {
       if (origenParcelaText.value) {
         form.value.origen_parcela = `${parent.identificador_unico}-${origenParcelaText.value}`;
