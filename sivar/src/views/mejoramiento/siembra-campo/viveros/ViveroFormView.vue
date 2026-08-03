@@ -975,21 +975,27 @@ const parseViveroIdToFields = (viveroId: string) => {
 };
 
 const lotesOrigen = ref<any[]>([]);
-const loadLotesOrigen = async (ingenio: string) => {
-  if (!ingenio) {
+const loadLotesOrigen = async () => {
+  if (!form.value.origen_ingenio || !form.value.origen_hacienda) {
     lotesOrigen.value = [];
     return;
   }
   try {
-    const res = await viverosServices.getLotes({ ingenio_codigo: ingenio });
+    const res = await viverosServices.getLotes({ 
+      ingenio_codigo: form.value.origen_ingenio,
+      hacienda_codigo: form.value.origen_hacienda 
+    });
     lotesOrigen.value = res.data;
   } catch (error) {
     console.error("Error loading origin lotes:", error);
   }
 };
 
-watch(() => form.value.origen_ingenio, (newIng) => {
-  loadLotesOrigen(newIng);
+watch([() => form.value.origen_ingenio, () => form.value.origen_hacienda], () => {
+  if (!isEditing.value) {
+    form.value.origen_lote_id = "";
+  }
+  loadLotesOrigen();
 });
 
 const viverosOrigenOptions = computed(() => {
@@ -1758,7 +1764,7 @@ const resetAndLoad = async () => {
       // Load origin cascading data
       if (form.value.origen_ingenio) {
         await loadHaciendasOrigen(false);
-        await loadLotesOrigen(form.value.origen_ingenio);
+        await loadLotesOrigen();
       }
 
       // Load Parcelas
@@ -1772,7 +1778,7 @@ const resetAndLoad = async () => {
       if (route.query.origen_ingenio) {
         form.value.origen_ingenio = route.query.origen_ingenio as string;
         await loadHaciendasOrigen(false);
-        await loadLotesOrigen(form.value.origen_ingenio);
+        await loadLotesOrigen();
       }
       if (route.query.origen_hacienda) {
         form.value.origen_hacienda = route.query.origen_hacienda as string;
