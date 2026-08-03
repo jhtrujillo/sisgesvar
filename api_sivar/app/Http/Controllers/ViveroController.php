@@ -274,7 +274,8 @@ class ViveroController extends Controller
     private function loadEstructuraRecursiva($vivero)
     {
         foreach ($vivero->parcelas as $parcela) {
-            $plotId = $vivero->identificador_unico . '-' . $parcela->numero_parcela;
+            $parcelLabel = $parcela->numero_parcela_origen ?: $parcela->numero_parcela;
+            $plotId = $vivero->identificador_unico . '-' . $parcelLabel;
             $cortes = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])
                 ->where('origen_parcela', $plotId)
                 ->get();
