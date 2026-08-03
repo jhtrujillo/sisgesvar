@@ -624,15 +624,24 @@
                     <div>{{ p.numero_parcela }}</div>
                     <div v-if="p.cortes && p.cortes.length > 0" class="mt-1 flex flex-col gap-1 font-normal">
                       <span class="text-[9px] text-slate-400 uppercase font-bold">Cortes:</span>
-                      <router-link
+                      <div
                         v-for="c in p.cortes"
                         :key="'cut_' + c.id"
-                        :to="{ name: 'vivero_editar.show', params: { id: c.id } }"
-                        class="inline-flex items-center w-fit px-1 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100 transition-colors"
-                        title="Ver vivero hijo"
+                        class="inline-flex items-center gap-1 w-fit px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100 transition-colors cursor-pointer"
+                        title="Ver/Editar vivero hijo"
                       >
-                        Corte {{ c.consecutivo_corte }}: {{ c.identificador_unico }}
-                      </router-link>
+                        <router-link :to="{ name: 'vivero_editar.show', params: { id: c.id } }" class="hover:underline">
+                          Corte {{ c.consecutivo_corte }}: {{ c.identificador_unico }}
+                        </router-link>
+                        <button
+                          type="button"
+                          @click.stop.prevent="confirmDeleteCorte(c.id, c.identificador_unico)"
+                          class="text-red-400 hover:text-red-600 ml-0.5 transition-colors font-bold text-[10px]"
+                          title="Eliminar este Corte"
+                        >
+                          &times;
+                        </button>
+                      </div>
                     </div>
                   </td>
                   <td
@@ -1408,6 +1417,19 @@ const registrarCorteParcela = (p: any) => {
   } catch (error: any) {
     console.error("Error in registrarCorteParcela:", error);
     toast.error("Error al redirigir al corte: " + error.message);
+  }
+};
+
+const confirmDeleteCorte = async (id: number, uniqueId: string) => {
+  if (confirm(`¿Está seguro de que desea eliminar el corte ${uniqueId}?`)) {
+    try {
+      await viverosServices.deleteVivero(id);
+      toast.success('Corte eliminado correctamente');
+      await loadParcelas();
+    } catch (error) {
+      console.error('Error deleting corte:', error);
+      toast.error('Error al eliminar el corte');
+    }
   }
 };
 
