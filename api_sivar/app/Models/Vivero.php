@@ -31,6 +31,8 @@ class Vivero extends Model
         'origen_suerte',
         'origen_anio',
         'origen_parcela',
+        'origen_lote_id',
+        'origen_vivero_id',
         'lote_id',
         'consecutivo_vivero_ingenio'
     ];
@@ -38,6 +40,16 @@ class Vivero extends Model
     protected $casts = [
         'fecha_siembra' => 'date',
     ];
+
+    public function origenLote()
+    {
+        return $this->belongsTo(Lote::class, 'origen_lote_id');
+    }
+
+    public function origenVivero()
+    {
+        return $this->belongsTo(Vivero::class, 'origen_vivero_id');
+    }
 
     public function proyecto()
     {

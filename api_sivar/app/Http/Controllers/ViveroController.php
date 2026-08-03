@@ -12,7 +12,7 @@ class ViveroController extends Controller
 {
     public function index()
     {
-        $viveros = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter', 'lote'])->orderBy('created_at', 'desc')->get();
+        $viveros = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter', 'lote', 'origenLote', 'origenVivero'])->orderBy('created_at', 'desc')->get();
         foreach ($viveros as $vivero) {
             $vivero->id_vivero_origen_formateado = $this->formatIdViveroOrigen($vivero);
         }
@@ -29,6 +29,8 @@ class ViveroController extends Controller
             'origen_suerte' => 'nullable|string',
             'origen_anio' => 'nullable|integer',
             'origen_parcela' => 'nullable|string',
+            'origen_lote_id' => 'nullable|integer|exists:lotes,id',
+            'origen_vivero_id' => 'nullable|integer|exists:viveros,id',
             'lote_id' => 'nullable|integer|exists:lotes,id',
         ]);
 
@@ -87,6 +89,8 @@ class ViveroController extends Controller
             'origen_suerte' => $request->origen_suerte,
             'origen_anio' => $request->origen_anio,
             'origen_parcela' => $request->origen_parcela,
+            'origen_lote_id' => $request->origen_lote_id,
+            'origen_vivero_id' => $request->origen_vivero_id,
             'lote_id' => $request->lote_id,
             'consecutivo_vivero_ingenio' => $consecutivoViveroIngenio,
         ]);
@@ -105,7 +109,7 @@ class ViveroController extends Controller
 
     public function show($id)
     {
-        $vivero = Vivero::with(['proyecto', 'responsable', 'caracter', 'lote', 'historialLotes.lote'])->findOrFail($id);
+        $vivero = Vivero::with(['proyecto', 'responsable', 'caracter', 'lote', 'historialLotes.lote', 'origenLote', 'origenVivero'])->findOrFail($id);
         $vivero->id_vivero_origen_formateado = $this->formatIdViveroOrigen($vivero);
         return response()->json($vivero);
     }
@@ -437,6 +441,10 @@ class ViveroController extends Controller
 
     private function formatIdViveroOrigen($vivero)
     {
+        if ($vivero->origenVivero) {
+            return $vivero->origenVivero->identificador_unico;
+        }
+
         // Si tiene origen_parcela con formato de ID de parcela de Vivero (ej: CN2026-00EESA-00023D-2-4)
         if ($vivero->origen_parcela && count(explode('-', $vivero->origen_parcela)) > 3) {
             $parts = explode('-', $vivero->origen_parcela);
@@ -460,7 +468,15 @@ class ViveroController extends Controller
             $info[] = $ingenioAnio;
         }
         if ($vivero->origen_hacienda) $info[] = $vivero->origen_hacienda;
-        if ($vivero->origen_suerte) $info[] = $vivero->origen_suerte;
+        
+        $loteNombre = '';
+        if ($vivero->origenLote) {
+            $loteNombre = $vivero->origenLote->nombre_lote;
+        } else {
+            $loteNombre = $vivero->origen_suerte;
+        }
+        if ($loteNombre) $info[] = $loteNombre;
+        
         if ($vivero->origen_parcela) $info[] = $vivero->origen_parcela;
 
         return count($info) > 0 ? implode('-', $info) : 'N/A';

@@ -423,7 +423,6 @@
               <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_hacienda">Hacienda <span class="text-red-500">*</span></label>
               <select
                 v-model="form.origen_hacienda"
-                @change="loadSuertesOrigen(true)"
                 :disabled="!form.origen_ingenio || haciendasOrigen.length === 0"
                 required
                 class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
@@ -435,56 +434,59 @@
               </select>
             </div>
 
-            <!-- Origen Suerte -->
+            <!-- Origen Lote -->
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_suerte">Suerte <span class="text-red-500">*</span></label>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_lote">Lote <span class="text-red-500">*</span></label>
               <select
-                v-model="form.origen_suerte"
-                :disabled="!form.origen_hacienda || suertesOrigen.length === 0"
+                v-model="form.origen_lote_id"
+                :disabled="!form.origen_ingenio || lotesOrigen.length === 0"
                 required
                 class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
-                :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_hacienda || suertesOrigen.length === 0 }"
-                id="origen_suerte"
+                :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_ingenio || lotesOrigen.length === 0 }"
+                id="origen_lote"
               >
-                <option value="">Seleccione una Suerte</option>
-                <option v-for="ste in suertesOrigen" :key="'origen_ste_' + ste.cd_srte" :value="ste.cd_srte">
-                  {{ ste.cd_srte }} (Área: {{ Number(ste.area).toFixed(2) }})
+                <option value="">Seleccione un Lote</option>
+                <option v-for="l in lotesOrigen" :key="'origen_lote_' + l.id" :value="l.id">
+                  {{ l.nombre_lote }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Origen Vivero -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_vivero_id">Vivero <span class="text-red-500">*</span></label>
+              <select
+                v-model="form.origen_vivero_id"
+                :disabled="!form.origen_lote_id || viverosOrigenOptions.length === 0"
+                required
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_lote_id || viverosOrigenOptions.length === 0 }"
+                id="origen_vivero_id"
+              >
+                <option value="">Seleccione un Vivero</option>
+                <option v-for="v in viverosOrigenOptions" :key="'origen_vivero_' + v.id" :value="v.id">
+                  {{ v.identificador_unico }}
                 </option>
               </select>
             </div>
 
             <!-- Origen Parcela -->
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_parcela_text">Parcela</label>
-              <input
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_parcela_text">Parcela (Opcional)</label>
+              <select
                 v-model="origenParcelaText"
-                type="text"
-                placeholder="Ej. 1"
-                list="origen_parcelas_list"
                 class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                 id="origen_parcela_text"
-              />
-              <datalist id="origen_parcelas_list">
+              >
+                <option value="">Seleccione una Parcela (Opcional)</option>
                 <option 
                   v-for="p in origenParcelasOptions" 
                   :key="'orig_p_' + p.id" 
                   :value="p.numero_parcela"
                 >
-                  {{ p.numero_parcela }} ({{ p.variedad?.nm_vrdad || 'S/V' }})
+                  Parcela {{ p.numero_parcela }} ({{ p.variedad?.nm_vrdad || 'S/V' }})
                 </option>
-              </datalist>
-            </div>
-
-            <!-- Origen Corte -->
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_corte_text">Corte</label>
-              <input
-                v-model="origenCorteText"
-                type="text"
-                placeholder="Ej. 2"
-                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
-                id="origen_corte_text"
-              />
+              </select>
             </div>
           </div>
         </div>
@@ -934,6 +936,8 @@ const form = ref({
   origen_ingenio: "",
   origen_hacienda: "",
   origen_suerte: "",
+  origen_lote_id: "" as string | number,
+  origen_vivero_id: "" as string | number,
   origen_anio: "" as string | number,
   origen_parcela: "",
   consecutivo_corte: null as number | null,
@@ -982,49 +986,48 @@ const parseViveroIdToFields = (viveroId: string) => {
   return null;
 };
 
-const parseOrigenParcelaString = (str: string) => {
-  if (!str) return { parcel: "", cut: "" };
-  const parts = str.split("-");
-  if (parts.length >= 5) {
-    return {
-      parcel: parts[4] || "",
-      cut: parts[5] || ""
-    };
-  } else if (parts.length === 2) {
-    return {
-      parcel: parts[0],
-      cut: parts[1]
-    };
-  } else {
-    return {
-      parcel: str,
-      cut: ""
-    };
+const lotesOrigen = ref<any[]>([]);
+const loadLotesOrigen = async (ingenio: string) => {
+  if (!ingenio) {
+    lotesOrigen.value = [];
+    return;
+  }
+  try {
+    const res = await viverosServices.getLotes({ ingenio_codigo: ingenio });
+    lotesOrigen.value = res.data;
+  } catch (error) {
+    console.error("Error loading origin lotes:", error);
   }
 };
 
-watch([origenParcelaText, origenCorteText, () => form.value.origen_ingenio, () => form.value.origen_anio, () => form.value.origen_hacienda, () => form.value.origen_suerte], () => {
-  let baseId = "";
-  if (viveroSeleccionadoOrigen.value) {
-    baseId = viveroSeleccionadoOrigen.value.identificador_unico;
+watch(() => form.value.origen_ingenio, (newIng) => {
+  loadLotesOrigen(newIng);
+});
+
+const viverosOrigenOptions = computed(() => {
+  if (!form.value.origen_lote_id) return [];
+  return allViverosList.value.filter(v => v.lote_id === form.value.origen_lote_id);
+});
+
+watch(() => form.value.origen_vivero_id, (newViveroId) => {
+  const parent = allViverosList.value.find(v => v.id === newViveroId);
+  if (parent) {
+    origenParcelasOptions.value = parent.parcelas || [];
+  } else {
+    origenParcelasOptions.value = [];
   }
-  
-  if (baseId && origenParcelaText.value) {
-    if (origenCorteText.value) {
-      form.value.origen_parcela = `${baseId}-${origenParcelaText.value}-${origenCorteText.value}`;
+});
+
+watch([origenParcelaText, () => form.value.origen_vivero_id], () => {
+  const parent = allViverosList.value.find(v => v.id === form.value.origen_vivero_id);
+  if (parent) {
+    if (origenParcelaText.value) {
+      form.value.origen_parcela = `${parent.identificador_unico}-${origenParcelaText.value}`;
     } else {
-      form.value.origen_parcela = `${baseId}-${origenParcelaText.value}`;
+      form.value.origen_parcela = parent.identificador_unico;
     }
   } else {
-    if (origenParcelaText.value) {
-      if (origenCorteText.value) {
-        form.value.origen_parcela = `${origenParcelaText.value}-${origenCorteText.value}`;
-      } else {
-        form.value.origen_parcela = `${origenParcelaText.value}`;
-      }
-    } else {
-      form.value.origen_parcela = "";
-    }
+    form.value.origen_parcela = "";
   }
 });
 
@@ -1034,7 +1037,7 @@ const filteredOrigenViveros = computed(() => {
   return allViverosList.value.filter(v =>
     (v.identificador_unico && v.identificador_unico.toLowerCase().includes(q)) ||
     (v.hacienda && v.hacienda.toLowerCase().includes(q)) ||
-    (v.suerte && v.suerte.toLowerCase().includes(q))
+    (v.lote?.nombre_lote && v.lote.nombre_lote.toLowerCase().includes(q))
   );
 });
 
@@ -1046,20 +1049,14 @@ const selectOrigenVivero = async (v: any) => {
   await loadHaciendasOrigen(false);
   form.value.origen_hacienda = v.hacienda || "";
   
-  await loadSuertesOrigen(false);
-  form.value.origen_suerte = v.suerte || "";
+  await loadLotesOrigen(v.ingenio);
+  form.value.origen_lote_id = v.lote_id || "";
+  
+  // Wait a tick for computed viverosOrigenOptions to resolve
+  form.value.origen_vivero_id = v.id || "";
   
   origenParcelasOptions.value = v.parcelas || [];
-  
-  // Parse the selected Vivero's ID
-  const parsed = parseViveroIdToFields(v.identificador_unico);
-  if (parsed) {
-    origenParcelaText.value = parsed.parcel;
-    origenCorteText.value = parsed.cut;
-  } else {
-    origenParcelaText.value = "";
-    origenCorteText.value = "";
-  }
+  origenParcelaText.value = ""; // Default optional
   
   searchOrigenVivero.value = v.identificador_unico;
   showOrigenViveros.value = false;
@@ -1728,19 +1725,18 @@ const resetAndLoad = async () => {
         await loadLotesForIngenio(form.value.ingenio);
       }
 
-      if (form.value.origen_parcela) {
-        const parsed = parseOrigenParcelaString(form.value.origen_parcela);
-        origenParcelaText.value = parsed.parcel;
-        origenCorteText.value = parsed.cut;
-        
-        const parts = form.value.origen_parcela.split("-");
-        if (parts.length >= 5) {
-          const baseId = parts.slice(0, 4).join("-");
-          const parentVivero = allViverosList.value.find(v => v.identificador_unico === baseId);
-          if (parentVivero) {
-            viveroSeleccionadoOrigen.value = parentVivero;
-            origenParcelasOptions.value = parentVivero.parcelas || [];
-            searchOrigenVivero.value = parentVivero.identificador_unico;
+      if (form.value.origen_vivero_id) {
+        const parentVivero = allViverosList.value.find(v => v.id === form.value.origen_vivero_id);
+        if (parentVivero) {
+          viveroSeleccionadoOrigen.value = parentVivero;
+          origenParcelasOptions.value = parentVivero.parcelas || [];
+          searchOrigenVivero.value = parentVivero.identificador_unico;
+          
+          if (form.value.origen_parcela && form.value.origen_parcela.startsWith(parentVivero.identificador_unico)) {
+            const suffix = form.value.origen_parcela.substring(parentVivero.identificador_unico.length + 1);
+            if (suffix) {
+              origenParcelaText.value = suffix;
+            }
           }
         }
       }
@@ -1771,9 +1767,7 @@ const resetAndLoad = async () => {
       // Load origin cascading data
       if (form.value.origen_ingenio) {
         await loadHaciendasOrigen(false);
-      }
-      if (form.value.origen_hacienda) {
-        await loadSuertesOrigen(false);
+        await loadLotesOrigen(form.value.origen_ingenio);
       }
 
       // Load Parcelas
@@ -1787,13 +1781,16 @@ const resetAndLoad = async () => {
       if (route.query.origen_ingenio) {
         form.value.origen_ingenio = route.query.origen_ingenio as string;
         await loadHaciendasOrigen(false);
+        await loadLotesOrigen(form.value.origen_ingenio);
       }
       if (route.query.origen_hacienda) {
         form.value.origen_hacienda = route.query.origen_hacienda as string;
-        await loadSuertesOrigen(false);
       }
-      if (route.query.origen_suerte) {
-        form.value.origen_suerte = route.query.origen_suerte as string;
+      if (route.query.origen_lote_id) {
+        form.value.origen_lote_id = Number(route.query.origen_lote_id);
+      }
+      if (route.query.origen_vivero_id) {
+        form.value.origen_vivero_id = Number(route.query.origen_vivero_id);
       }
       if (route.query.origen_anio) {
         form.value.origen_anio = Number(route.query.origen_anio);
@@ -1804,18 +1801,21 @@ const resetAndLoad = async () => {
       if (route.query.origen_parcela) {
         form.value.origen_parcela = route.query.origen_parcela as string;
         
-        const parsed = parseOrigenParcelaString(form.value.origen_parcela);
-        origenParcelaText.value = parsed.parcel;
-        origenCorteText.value = parsed.cut;
-        
         const parts = form.value.origen_parcela.split("-");
-        if (parts.length >= 5) {
+        if (parts.length >= 4) {
           const baseId = parts.slice(0, 4).join("-");
           const parentVivero = allViverosList.value.find(v => v.identificador_unico === baseId);
           if (parentVivero) {
             viveroSeleccionadoOrigen.value = parentVivero;
+            form.value.origen_vivero_id = parentVivero.id;
+            form.value.origen_lote_id = parentVivero.lote_id || "";
             origenParcelasOptions.value = parentVivero.parcelas || [];
             searchOrigenVivero.value = parentVivero.identificador_unico;
+            
+            const suffix = parts[4];
+            if (suffix) {
+              origenParcelaText.value = suffix;
+            }
           }
         }
 
