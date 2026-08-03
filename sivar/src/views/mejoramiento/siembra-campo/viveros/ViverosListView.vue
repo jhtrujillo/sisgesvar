@@ -513,10 +513,10 @@ const filteredViveros = computed(() => {
     );
   }
 
-  // If no search query, show only main nurseries (exclude cuts with split length >= 5)
+  // If no search query, show only main nurseries (exclude cuts with split length >= 5 in their own ID)
   return viveros.value.filter(v => {
-    if (v.origen_parcela) {
-      const parts = v.origen_parcela.split("-");
+    if (v.identificador_unico) {
+      const parts = v.identificador_unico.split("-");
       if (parts.length >= 5) {
         // Confirm it's a real structured cut code (first part ends in 4-digit year)
         const isYear = /^\d{4}$/.test(parts[0].slice(-4));
