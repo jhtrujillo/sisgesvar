@@ -899,7 +899,7 @@ const selectOrigenVivero = async (v: any) => {
   const parsed = parseViveroIdToFields(v.identificador_unico);
   if (parsed) {
     origenParcelaText.value = parsed.parcel;
-    origenCorteText.value = parsed.corte;
+    origenCorteText.value = parsed.cut;
   } else {
     origenParcelaText.value = "";
     origenCorteText.value = "";
