@@ -311,7 +311,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-8 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-10 gap-4 mb-6">
           <!-- Origen Ingenio -->
           <div class="mb-4 md:col-span-2">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_ingenio">Ingenio <span class="text-red-500">*</span></label>
@@ -370,32 +370,43 @@
             </select>
           </div>
           <!-- Origen Parcela -->
-          <div class="mb-4 md:col-span-1">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_parcela">Parcela <span class="text-red-500">*</span></label>
+          <div class="mb-4 md:col-span-2">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_parcela_text">Parcela <span class="text-red-500">*</span></label>
             <select
               v-if="origenParcelasOptions.length > 0"
-              v-model="form.origen_parcela"
+              v-model="origenParcelaText"
               required
               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="origen_parcela"
+              id="origen_parcela_text"
             >
               <option value="">Seleccione</option>
               <option 
                 v-for="p in origenParcelasOptions" 
                 :key="'orig_p_' + p.id" 
-                :value="viveroSeleccionadoOrigen.identificador_unico + '-' + p.numero_parcela"
+                :value="p.numero_parcela"
               >
                 {{ p.numero_parcela }} ({{ p.variedad?.nm_vrdad || 'S/V' }})
               </option>
             </select>
             <input
               v-else
-              v-model="form.origen_parcela"
+              v-model="origenParcelaText"
               type="text"
               required
-              placeholder="Ej. A-12"
+              placeholder="Ej. 1"
               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="origen_parcela"
+              id="origen_parcela_text"
+            />
+          </div>
+          <!-- Origen Corte -->
+          <div class="mb-4 md:col-span-1">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_corte_text">Corte</label>
+            <input
+              v-model="origenCorteText"
+              type="text"
+              placeholder="Ej. 2"
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="origen_corte_text"
             />
           </div>
         </div>
@@ -795,6 +806,79 @@ const showOrigenViveros = ref(false);
 const allViverosList = ref<any[]>([]);
 const origenParcelasOptions = ref<any[]>([]);
 const viveroSeleccionadoOrigen = ref<any>(null);
+const origenParcelaText = ref("");
+const origenCorteText = ref("");
+
+const parseViveroIdToFields = (viveroId: string) => {
+  const parts = viveroId.split("-");
+  if (parts.length >= 4) {
+    const p0 = parts[0];
+    const ingenioCd = p0.slice(0, -4);
+    const anio = p0.slice(-4);
+    const hacienda = parts[1];
+    const suerte = parts[2];
+    const consecutivo = parts[3];
+    const parcela = parts[4] || "";
+    const corte = parts[5] || "";
+    return {
+      ingenio: ingenioCd,
+      anio: Number(anio),
+      hacienda: hacienda,
+      suerte: suerte,
+      consecutivo: consecutivo,
+      parcela: parcela,
+      corte: corte
+    };
+  }
+  return null;
+};
+
+const parseOrigenParcelaString = (str: string) => {
+  if (!str) return { parcel: "", cut: "" };
+  const parts = str.split("-");
+  if (parts.length >= 5) {
+    return {
+      parcel: parts[4] || "",
+      cut: parts[5] || ""
+    };
+  } else if (parts.length === 2) {
+    return {
+      parcel: parts[0],
+      cut: parts[1]
+    };
+  } else {
+    return {
+      parcel: str,
+      cut: ""
+    };
+  }
+};
+
+watch([origenParcelaText, origenCorteText, () => form.value.origen_ingenio, () => form.value.origen_anio, () => form.value.origen_hacienda, () => form.value.origen_suerte], () => {
+  let baseId = "";
+  if (viveroSeleccionadoOrigen.value) {
+    const parts = viveroSeleccionadoOrigen.value.identificador_unico.split("-");
+    baseId = parts.slice(0, 4).join("-");
+  }
+  
+  if (baseId && origenParcelaText.value) {
+    if (origenCorteText.value) {
+      form.value.origen_parcela = `${baseId}-${origenParcelaText.value}-${origenCorteText.value}`;
+    } else {
+      form.value.origen_parcela = `${baseId}-${origenParcelaText.value}`;
+    }
+  } else {
+    if (origenParcelaText.value) {
+      if (origenCorteText.value) {
+        form.value.origen_parcela = `${origenParcelaText.value}-${origenCorteText.value}`;
+      } else {
+        form.value.origen_parcela = `${origenParcelaText.value}`;
+      }
+    } else {
+      form.value.origen_parcela = "";
+    }
+  }
+});
 
 const filteredOrigenViveros = computed(() => {
   if (!searchOrigenVivero.value) return allViverosList.value;
@@ -818,7 +902,16 @@ const selectOrigenVivero = async (v: any) => {
   form.value.origen_suerte = v.suerte || "";
   
   origenParcelasOptions.value = v.parcelas || [];
-  form.value.origen_parcela = ""; // reset parcel selection when vivero changes
+  
+  // Parse the selected Vivero's ID
+  const parsed = parseViveroIdToFields(v.identificador_unico);
+  if (parsed) {
+    origenParcelaText.value = parsed.parcel;
+    origenCorteText.value = parsed.corte;
+  } else {
+    origenParcelaText.value = "";
+    origenCorteText.value = "";
+  }
   
   searchOrigenVivero.value = v.identificador_unico;
   showOrigenViveros.value = false;
@@ -1400,6 +1493,23 @@ const resetAndLoad = async () => {
       }
       form.value = { ...vivero };
 
+      if (form.value.origen_parcela) {
+        const parsed = parseOrigenParcelaString(form.value.origen_parcela);
+        origenParcelaText.value = parsed.parcel;
+        origenCorteText.value = parsed.cut;
+        
+        const parts = form.value.origen_parcela.split("-");
+        if (parts.length >= 5) {
+          const baseId = parts.slice(0, 4).join("-");
+          const parentVivero = allViverosList.value.find(v => v.identificador_unico === baseId);
+          if (parentVivero) {
+            viveroSeleccionadoOrigen.value = parentVivero;
+            origenParcelasOptions.value = parentVivero.parcelas || [];
+            searchOrigenVivero.value = parentVivero.identificador_unico;
+          }
+        }
+      }
+
       if (form.value.proyecto_id) {
         const pry = proyectos.value.find((p) => p.id_prycto == form.value.proyecto_id);
         if (pry) searchProyecto.value = formatProjectName(pry);
@@ -1455,6 +1565,22 @@ const resetAndLoad = async () => {
       }
       if (route.query.origen_parcela) {
         form.value.origen_parcela = route.query.origen_parcela as string;
+        
+        const parsed = parseOrigenParcelaString(form.value.origen_parcela);
+        origenParcelaText.value = parsed.parcel;
+        origenCorteText.value = parsed.cut;
+        
+        const parts = form.value.origen_parcela.split("-");
+        if (parts.length >= 5) {
+          const baseId = parts.slice(0, 4).join("-");
+          const parentVivero = allViverosList.value.find(v => v.identificador_unico === baseId);
+          if (parentVivero) {
+            viveroSeleccionadoOrigen.value = parentVivero;
+            origenParcelasOptions.value = parentVivero.parcelas || [];
+            searchOrigenVivero.value = parentVivero.identificador_unico;
+          }
+        }
+
         try {
           const res = await viverosServices.getNextCorteConsecutivo(form.value.origen_parcela);
           form.value.consecutivo_corte = res.data.consecutivo;
