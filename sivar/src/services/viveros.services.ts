@@ -87,19 +87,19 @@ export default {
   },
 
   getLotes(params?: any) {
-    return api.get('siembra-campo/lotes', { params });
+    return api.get(urls.API_LOTES, { params });
   },
 
   createLote(data: any) {
-    return api.post('siembra-campo/lotes', data);
+    return api.post(urls.API_LOTES, data);
   },
 
   updateLote(id: number | string, data: any) {
-    return api.put(`siembra-campo/lotes/${id}`, data);
+    return api.put(`${urls.API_LOTES}/${id}`, data);
   },
 
   deleteLote(id: number | string) {
-    return api.delete(`siembra-campo/lotes/${id}`);
+    return api.delete(`${urls.API_LOTES}/${id}`);
   },
 
   trasladarLote(id: number | string, data: any) {
