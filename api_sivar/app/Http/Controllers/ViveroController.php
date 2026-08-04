@@ -683,34 +683,91 @@ class ViveroController extends Controller
     public function getEstructura($id)
     {
         $vivero = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])->findOrFail($id);
-        $this->loadEstructuraRecursiva($vivero);
-        return response()->json($vivero);
+        
+        // Tracing upwards to find the absolute root parent nursery of this lineage
+        $rootVivero = $vivero;
+        $visited = [$rootVivero->id];
+        
+        while (true) {
+            $parent = null;
+            if ($rootVivero->origen_vivero_id) {
+                $parent = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])->find($rootVivero->origen_vivero_id);
+            }
+            
+            if (!$parent && $rootVivero->origen_parcela) {
+                $parts = explode('-', $rootVivero->origen_parcela);
+                if (count($parts) >= 4) {
+                    $baseId = implode('-', array_slice($parts, 0, 4));
+                    $parent = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])
+                        ->where('identificador_unico', $baseId)
+                        ->first();
+                }
+            }
+            
+            if ($parent && !in_array($parent->id, $visited)) {
+                $rootVivero = $parent;
+                $visited[] = $parent->id;
+            } else {
+                break;
+            }
+        }
+
+        $this->loadEstructuraRecursiva($rootVivero);
+        return response()->json($rootVivero);
     }
 
     private function loadEstructuraRecursiva($vivero)
     {
-        // 1. Load cuts for each real parcel (exact match on plot ID)
-        foreach ($vivero->parcelas as $parcela) {
-            $parcelLabel = $parcela->numero_parcela_origen ?: $parcela->numero_parcela;
-            $plotId = $vivero->identificador_unico . '-' . $parcelLabel;
-            $cortes = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])
-                ->where('origen_parcela', $plotId)
-                ->get();
-            foreach ($cortes as $corte) {
-                $this->loadEstructuraRecursiva($corte);
-            }
-            $parcela->cortes_recursivos = $cortes;
-        }
+        $viveroBaseId = implode('-', array_slice(explode('-', $vivero->identificador_unico), 0, 4));
 
-        // 2. Load cuts that directly reference this nursery (e.g. legacy/direct cuts without parcel segment)
-        $directCortes = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])
-            ->where('origen_parcela', $vivero->identificador_unico)
+        $children = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])
+            ->where('origen_vivero_id', $vivero->id)
+            ->orWhere(function($query) use ($viveroBaseId) {
+                $query->where('origen_parcela', 'like', $viveroBaseId . '%')
+                      ->whereNotNull('origen_parcela');
+            })
             ->get();
-        foreach ($directCortes as $corte) {
-            $this->loadEstructuraRecursiva($corte);
+
+        // Filter out self or circular references
+        $children = $children->filter(function($c) use ($vivero) {
+            return $c->id !== $vivero->id;
+        })->unique('id');
+
+        $generalCortes = collect();
+        $plotCortes = [];
+
+        foreach ($children as $child) {
+            $matchedPlot = null;
+            if ($child->origen_parcela) {
+                $parts = explode('-', $child->origen_parcela);
+                if (count($parts) >= 5 && is_numeric($parts[4])) {
+                    $matchedPlot = (int)$parts[4];
+                }
+            }
+
+            if ($matchedPlot !== null) {
+                if (!isset($plotCortes[$matchedPlot])) {
+                    $plotCortes[$matchedPlot] = collect();
+                }
+                $plotCortes[$matchedPlot]->push($child);
+            } else {
+                $generalCortes->push($child);
+            }
         }
 
-        if ($directCortes->isNotEmpty()) {
+        // Recursively load descendants
+        foreach ($children as $child) {
+            $this->loadEstructuraRecursiva($child);
+        }
+
+        // Distribute to actual parcelas
+        foreach ($vivero->parcelas as $parcela) {
+            $num = (int)$parcela->numero_parcela;
+            $parcela->cortes_recursivos = isset($plotCortes[$num]) ? $plotCortes[$num]->values() : collect();
+        }
+
+        // Distribute to general/virtual parcel
+        if ($generalCortes->isNotEmpty()) {
             $virtualParcela = new \stdClass();
             $virtualParcela->id = 'virtual_' . $vivero->id;
             $virtualParcela->numero_parcela = 'General';
@@ -718,7 +775,7 @@ class ViveroController extends Controller
             $virtualParcela->id_plot_origen = $vivero->identificador_unico;
             $virtualParcela->variedad = null;
             $virtualParcela->caracter = null;
-            $virtualParcela->cortes_recursivos = $directCortes;
+            $virtualParcela->cortes_recursivos = $generalCortes->values();
 
             if (is_array($vivero->parcelas)) {
                 $parcelas = $vivero->parcelas;
