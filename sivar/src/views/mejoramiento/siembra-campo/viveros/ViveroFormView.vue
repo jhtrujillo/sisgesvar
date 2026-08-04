@@ -1423,19 +1423,9 @@ const hideVariedadesDelay = () => {
 
 const updateIdPlotOrigen = () => {
   if (parcelaForm.value.numero_parcela_origen) {
-    const orig = form.value.origen_parcela;
-    if (orig && orig.includes("-") && orig.split("-").length > 3) {
-      const parts = orig.split("-");
-      parts.pop();
-      const parentViveroId = parts.join("-");
-      if (form.value.consecutivo_corte) {
-        parcelaForm.value.id_plot_origen = `${parentViveroId}-${parcelaForm.value.numero_parcela_origen}-${form.value.consecutivo_corte}`;
-      } else {
-        parcelaForm.value.id_plot_origen = `${parentViveroId}-${parcelaForm.value.numero_parcela_origen}`;
-      }
-    } else {
-      parcelaForm.value.id_plot_origen = `${form.value.identificador_unico}-${parcelaForm.value.numero_parcela_origen}`;
-    }
+    const parts = (form.value.identificador_unico || "").split("-");
+    const baseId = parts.slice(0, 4).join("-");
+    parcelaForm.value.id_plot_origen = `${baseId}-${parcelaForm.value.numero_parcela_origen}`;
   } else {
     parcelaForm.value.id_plot_origen = "";
   }
@@ -1757,19 +1747,9 @@ const cancelEditingPlot = () => {
 
 const updateEditingPlotIdOrigen = () => {
   if (editingPlotForm.value.numero_parcela_origen) {
-    const orig = form.value.origen_parcela;
-    if (orig && orig.includes("-") && orig.split("-").length > 3) {
-      const parts = orig.split("-");
-      parts.pop();
-      const parentViveroId = parts.join("-");
-      if (form.value.consecutivo_corte) {
-        editingPlotForm.value.id_plot_origen = `${parentViveroId}-${editingPlotForm.value.numero_parcela_origen}-${form.value.consecutivo_corte}`;
-      } else {
-        editingPlotForm.value.id_plot_origen = `${parentViveroId}-${editingPlotForm.value.numero_parcela_origen}`;
-      }
-    } else {
-      editingPlotForm.value.id_plot_origen = `${form.value.identificador_unico}-${editingPlotForm.value.numero_parcela_origen}`;
-    }
+    const parts = (form.value.identificador_unico || "").split("-");
+    const baseId = parts.slice(0, 4).join("-");
+    editingPlotForm.value.id_plot_origen = `${baseId}-${editingPlotForm.value.numero_parcela_origen}`;
   } else {
     editingPlotForm.value.id_plot_origen = "";
   }
