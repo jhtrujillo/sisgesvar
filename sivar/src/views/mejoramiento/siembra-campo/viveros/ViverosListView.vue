@@ -63,7 +63,7 @@
           <tr>
             <th class="py-3 px-4 text-center w-12"></th>
             <th class="py-3 px-6 text-left">ID Vivero</th>
-            <th class="py-3 px-6 text-left">N° Vivero (Ingenio)</th>
+            <th class="py-3 px-6 text-left">N° Vivero</th>
             <th class="py-3 px-6 text-left">Lote</th>
             <th class="py-3 px-6 text-left">Id Vivero Origen</th>
             <th class="py-3 px-6 text-left">Proyecto</th>
