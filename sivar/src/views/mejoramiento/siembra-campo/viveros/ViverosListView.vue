@@ -188,7 +188,7 @@
                           </tr>
                         </thead>
                         <tbody>
-                          <tr v-for="p in vivero.parcelas" :key="'list_parc_' + p.id" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                          <tr v-for="p in [...vivero.parcelas].sort((a, b) => a.numero_parcela - b.numero_parcela)" :key="'list_parc_' + p.id" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                             <td class="px-4 py-2.5 font-bold text-slate-800">{{ p.numero_parcela }}</td>
                             <td class="px-4 py-2.5 font-bold text-cenicana">{{ p.variedad?.nm_vrdad || 'N/A' }}</td>
                             <td class="px-4 py-2.5 text-slate-500">{{ p.variedad?.pdgree || 'N/A' }}</td>
