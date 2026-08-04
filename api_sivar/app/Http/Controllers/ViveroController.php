@@ -559,8 +559,9 @@ class ViveroController extends Controller
             $vivero->ambiente = $ambiente;
         }
 
-        // HU-003: Actualizar identificador_unico con el sufijo de corte
-        $identificadorBase = preg_replace('/-C?\d+$/', '', $vivero->identificador_unico);
+        // HU-003: Actualizar identificador_unico con el sufijo de corte (primeras 4 partes corresponden al código base del vivero)
+        $parts = explode('-', $vivero->identificador_unico);
+        $identificadorBase = implode('-', array_slice($parts, 0, 4));
         $vivero->identificador_unico = $identificadorBase . '-' . $vivero->numero_corte;
 
         $vivero->save();
