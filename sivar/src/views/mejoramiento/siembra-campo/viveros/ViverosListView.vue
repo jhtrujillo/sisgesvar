@@ -626,7 +626,6 @@ const currentPage = ref(1);
 const itemsPerPage = ref(10);
 
 const filteredViveros = computed(() => {
-  // If there is a search query, search across ALL nurseries (including cuts)
   if (searchQuery.value.trim()) {
     const q = searchQuery.value.toLowerCase().trim();
     return viveros.value.filter(v => 
@@ -637,18 +636,7 @@ const filteredViveros = computed(() => {
     );
   }
 
-  // If no search query, show only main nurseries (exclude cuts with split length >= 5 in their own ID)
-  return viveros.value.filter(v => {
-    if (v.identificador_unico) {
-      const parts = v.identificador_unico.split("-");
-      if (parts.length >= 5) {
-        // Confirm it's a real structured cut code (first part ends in 4-digit year)
-        const isYear = /^\d{4}$/.test(parts[0].slice(-4));
-        if (isYear) return false;
-      }
-    }
-    return true;
-  });
+  return viveros.value;
 });
 
 const totalPages = computed(() => {
