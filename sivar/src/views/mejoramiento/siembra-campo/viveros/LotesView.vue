@@ -207,15 +207,23 @@
               />
             </div>
 
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Total de Parcelas por Vivero</label>
-              <input
-                v-model.number="form.total_parcelas_vivero"
-                type="number"
-                min="1"
-                required
-                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
-              />
+            <!-- Individual Vivero Parcel capacity list -->
+            <div class="space-y-3">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                Total de Parcelas por Vivero
+              </label>
+              <div class="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-1">
+                <div v-for="i in form.capacidad_maxima" :key="'vivero_p_' + i" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-600">Vivero {{ i }}</span>
+                  <input
+                    v-model.number="form.parcelas_por_vivero[i]"
+                    type="number"
+                    min="1"
+                    required
+                    class="w-16 bg-white border border-slate-200 text-slate-800 text-xs font-black text-center rounded-lg py-1 focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -243,7 +251,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import viverosServices from '@/services/viveros.services';
 import { useToast } from 'vue-toastification';
 
@@ -264,7 +272,26 @@ const form = ref({
   nombre_lote: '',
   capacidad_maxima: 5,
   total_parcelas_vivero: 10,
-  hacienda_codigo: ''
+  hacienda_codigo: '',
+  parcelas_por_vivero: {} as Record<number, number>
+});
+
+watch(() => form.value.capacidad_maxima, (newVal) => {
+  const val = parseInt(newVal as any) || 1;
+  if (!form.value.parcelas_por_vivero) {
+    form.value.parcelas_por_vivero = {};
+  }
+  for (let i = 1; i <= val; i++) {
+    if (form.value.parcelas_por_vivero[i] === undefined) {
+      form.value.parcelas_por_vivero[i] = form.value.total_parcelas_vivero || 10;
+    }
+  }
+  Object.keys(form.value.parcelas_por_vivero).forEach(key => {
+    const k = parseInt(key);
+    if (k > val) {
+      delete form.value.parcelas_por_vivero[k];
+    }
+  });
 });
 
 const decodeHTMLEntities = (text: string) => {
@@ -340,18 +367,26 @@ const openAddModal = () => {
     nombre_lote: '',
     capacidad_maxima: 5,
     total_parcelas_vivero: 10,
-    hacienda_codigo: selectedHacienda.value
+    hacienda_codigo: selectedHacienda.value,
+    parcelas_por_vivero: {}
   };
   isModalOpen.value = true;
 };
 
 const openEditModal = (lote: any) => {
   editingLoteId.value = lote.id;
+  const pMap: Record<number, number> = {};
+  if (lote.viveros && lote.viveros.length > 0) {
+    lote.viveros.forEach((v: any) => {
+      pMap[v.consecutivo_vivero_ingenio] = v.total_parcelas || 10;
+    });
+  }
   form.value = {
     nombre_lote: lote.nombre_lote,
     capacidad_maxima: lote.capacidad_maxima,
     total_parcelas_vivero: lote.total_parcelas_vivero || 10,
-    hacienda_codigo: lote.hacienda_codigo || selectedHacienda.value
+    hacienda_codigo: lote.hacienda_codigo || selectedHacienda.value,
+    parcelas_por_vivero: pMap
   };
   isModalOpen.value = true;
 };

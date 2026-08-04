@@ -34,7 +34,8 @@ class Vivero extends Model
         'origen_lote_id',
         'origen_vivero_id',
         'lote_id',
-        'consecutivo_vivero_ingenio'
+        'consecutivo_vivero_ingenio',
+        'total_parcelas'
     ];
 
     protected $casts = [

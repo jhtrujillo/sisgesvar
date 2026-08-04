@@ -10,7 +10,7 @@ class LoteController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Lote::query();
+        $query = Lote::query()->with('viveros');
         if ($request->has('ingenio_codigo') && $request->ingenio_codigo) {
             $query->where('ingenio_codigo', $request->ingenio_codigo);
         }
@@ -19,7 +19,7 @@ class LoteController extends Controller
         }
         
         $lotes = $query->get()->map(function($lote) {
-            $lote->viveros_activos_count = Vivero::where('lote_id', $lote->id)->count();
+            $lote->viveros_activos_count = $lote->viveros->count();
             return $lote;
         });
 
@@ -111,19 +111,31 @@ class LoteController extends Controller
     private function syncViverosAndParcelas($lote)
     {
         $capacidad = $lote->capacidad_maxima;
-        $totalParcelas = $lote->total_parcelas_vivero ?: 10;
+        $parcelasPorViveroRequest = request('parcelas_por_vivero'); // Array of [consecutivo => total_parcelas]
 
         // Update suerte field for all existing viveros of this lote
         Vivero::where('lote_id', $lote->id)->update([
             'suerte' => $lote->nombre_lote
         ]);
 
-        // Get existing vivero numbers in this lote
-        $existingNumbers = Vivero::where('lote_id', $lote->id)
-            ->pluck('consecutivo_vivero_ingenio')
-            ->toArray();
+        // Get existing viveros in this lote
+        $existingViveros = Vivero::where('lote_id', $lote->id)->get();
+        $existingNumbers = $existingViveros->pluck('consecutivo_vivero_ingenio')->toArray();
 
         for ($i = 1; $i <= $capacidad; $i++) {
+            // Determine how many parcelas this specific Vivero should have
+            $totalParcelas = 10;
+            if ($parcelasPorViveroRequest && isset($parcelasPorViveroRequest[$i])) {
+                $totalParcelas = intval($parcelasPorViveroRequest[$i]);
+            } else {
+                $existingVivero = $existingViveros->where('consecutivo_vivero_ingenio', $i)->first();
+                if ($existingVivero && $existingVivero->total_parcelas) {
+                    $totalParcelas = $existingVivero->total_parcelas;
+                } else {
+                    $totalParcelas = $lote->total_parcelas_vivero ?: 10;
+                }
+            }
+
             if (!in_array($i, $existingNumbers)) {
                 // Generate unique identifier
                 $ingenio = $lote->ingenio_codigo ?: '00';
@@ -140,7 +152,8 @@ class LoteController extends Controller
                     'suerte' => $lote->nombre_lote,
                     'lote_id' => $lote->id,
                     'fecha_siembra' => now()->format('Y-m-d'),
-                    'consecutivo_vivero_ingenio' => $i
+                    'consecutivo_vivero_ingenio' => $i,
+                    'total_parcelas' => $totalParcelas
                 ]);
 
                 // Create default parcelas
@@ -155,12 +168,13 @@ class LoteController extends Controller
                         ]);
                 }
             } else {
-                // Vivero already exists, check if we need to add more parcelas
-                $vivero = Vivero::where('lote_id', $lote->id)
-                    ->where('consecutivo_vivero_ingenio', $i)
-                    ->first();
+                // Vivero already exists, check if we need to adjust its parcelas
+                $vivero = $existingViveros->where('consecutivo_vivero_ingenio', $i)->first();
 
                 if ($vivero) {
+                    // Update total_parcelas attribute
+                    $vivero->update(['total_parcelas' => $totalParcelas]);
+
                     $existingParcelCount = \Illuminate\Support\Facades\DB::connection('sivar')
                         ->table('vivero_parcelas')
                         ->where('vivero_id', $vivero->id)
@@ -177,6 +191,12 @@ class LoteController extends Controller
                                     'updated_at' => now()
                                 ]);
                         }
+                    } elseif ($existingParcelCount > $totalParcelas) {
+                        \Illuminate\Support\Facades\DB::connection('sivar')
+                            ->table('vivero_parcelas')
+                            ->where('vivero_id', $vivero->id)
+                            ->where('numero_parcela', '>', $totalParcelas)
+                            ->delete();
                     }
                 }
             }
