@@ -999,15 +999,45 @@
                 Estás trasladando el vivero <strong class="font-black">{{ form.identificador_unico }}</strong> a un nuevo lote físico. El lote actual quedará liberado.
               </div>
 
+               <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Ingenio Destino</label>
+                <select
+                  v-model="trasladoIngenio"
+                  required
+                  @change="handleTrasladoIngenioChange"
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none mb-3"
+                >
+                  <option value="" disabled>Seleccione el ingenio...</option>
+                  <option v-for="ing in ingenios" :key="'traslado_ing_' + ing.cd_ingnio" :value="ing.cd_ingnio" v-html="ing.nm_ingnio"></option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Hacienda Destina</label>
+                <select
+                  v-model="trasladoHacienda"
+                  required
+                  @change="handleTrasladoHaciendaChange"
+                  :disabled="!trasladoIngenio"
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none mb-3 disabled:opacity-50"
+                >
+                  <option value="" disabled>Seleccione la hacienda...</option>
+                  <option v-for="hac in trasladoHaciendas" :key="'traslado_hac_' + hac.cd_hcnda" :value="hac.cd_hcnda">
+                    {{ hac.nm_hcnda }}
+                  </option>
+                </select>
+              </div>
+
               <div>
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Seleccionar Lote Destino</label>
                 <select
                   v-model="trasladoLoteId"
                   required
-                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+                  :disabled="!trasladoHacienda"
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none disabled:opacity-50"
                 >
                   <option value="" disabled>Seleccione el lote destino...</option>
-                  <option v-for="lote in lotes" :key="lote.id" :value="lote.id" :disabled="lote.id === form.lote_id">
+                  <option v-for="lote in trasladoLotes" :key="lote.id" :value="lote.id" :disabled="lote.id === form.lote_id">
                     {{ lote.nombre_lote }} (Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
                   </option>
                 </select>
@@ -1098,6 +1128,10 @@ const origenCorteText = ref("");
 const lotes = ref<any[]>([]);
 const isTrasladoModalOpen = ref(false);
 const trasladoLoteId = ref('');
+const trasladoIngenio = ref('');
+const trasladoHacienda = ref('');
+const trasladoHaciendas = ref<any[]>([]);
+const trasladoLotes = ref<any[]>([]);
 const savingTraslado = ref(false);
 
 const parseViveroIdToFields = (viveroId: string) => {
@@ -1899,13 +1933,71 @@ const formatDateTime = (dateString: string) => {
   return dayjs(dateString).format('YYYY-MM-DD HH:mm');
 };
 
-const openTrasladoModal = () => {
+const openTrasladoModal = async () => {
+  trasladoIngenio.value = form.value.ingenio || "";
+  trasladoHacienda.value = form.value.hacienda || "";
   trasladoLoteId.value = "";
+  trasladoHaciendas.value = [];
+  trasladoLotes.value = [];
+  
+  if (trasladoIngenio.value) {
+    try {
+      const resHac = await viverosServices.getHaciendas(trasladoIngenio.value);
+      trasladoHaciendas.value = resHac.data;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  if (trasladoIngenio.value && trasladoHacienda.value) {
+    try {
+      const resLot = await viverosServices.getLotes({
+        ingenio_codigo: trasladoIngenio.value,
+        hacienda_codigo: trasladoHacienda.value
+      });
+      trasladoLotes.value = resLot.data;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  
   isTrasladoModalOpen.value = true;
 };
 
 const closeTrasladoModal = () => {
   isTrasladoModalOpen.value = false;
+};
+
+const handleTrasladoIngenioChange = async () => {
+  trasladoHacienda.value = "";
+  trasladoLoteId.value = "";
+  trasladoHaciendas.value = [];
+  trasladoLotes.value = [];
+  if (trasladoIngenio.value) {
+    try {
+      const res = await viverosServices.getHaciendas(trasladoIngenio.value);
+      trasladoHaciendas.value = res.data;
+    } catch (err) {
+      console.error(err);
+      toast.error("Error al cargar haciendas de traslado");
+    }
+  }
+};
+
+const handleTrasladoHaciendaChange = async () => {
+  trasladoLoteId.value = "";
+  trasladoLotes.value = [];
+  if (trasladoIngenio.value && trasladoHacienda.value) {
+    try {
+      const res = await viverosServices.getLotes({
+        ingenio_codigo: trasladoIngenio.value,
+        hacienda_codigo: trasladoHacienda.value
+      });
+      trasladoLotes.value = res.data;
+    } catch (err) {
+      console.error(err);
+      toast.error("Error al cargar lotes de traslado");
+    }
+  }
 };
 
 const submitTraslado = async () => {
@@ -1918,11 +2010,16 @@ const submitTraslado = async () => {
     toast.success("Vivero trasladado de lote correctamente");
     const updatedVivero = response.data;
     form.value.lote_id = updatedVivero.lote_id;
+    form.value.ingenio = updatedVivero.ingenio;
+    form.value.hacienda = updatedVivero.hacienda;
+    form.value.suerte = updatedVivero.suerte;
+    form.value.identificador_unico = updatedVivero.identificador_unico;
+    form.value.nombre = updatedVivero.nombre;
     form.value.historial_lotes = updatedVivero.historial_lotes || [];
     
     // Refresh lotes to update their current active counts
     if (form.value.ingenio) {
-      await loadLotesForIngenio(form.value.ingenio);
+      await loadLotesForLocation();
     }
     
     isTrasladoModalOpen.value = false;

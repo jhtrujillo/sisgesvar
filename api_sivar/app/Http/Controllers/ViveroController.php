@@ -294,6 +294,25 @@ class ViveroController extends Controller
         ]);
 
         $vivero->lote_id = $newLoteId;
+        $vivero->ingenio = $lote->ingenio_codigo;
+        $vivero->hacienda = $lote->hacienda_codigo;
+        $vivero->suerte = $lote->nombre_lote;
+
+        // Regenerate unique identifier
+        $parts = explode('-', $vivero->identificador_unico);
+        $consecutivo = end($parts);
+        if (!is_numeric($consecutivo) || intval($consecutivo) <= 0) {
+            $consecutivo = $vivero->id;
+        }
+        
+        $vivero->identificador_unico = $this->generarIdentificadorUnico(
+            $vivero->ingenio,
+            $vivero->hacienda,
+            $vivero->suerte,
+            $vivero->fecha_siembra,
+            $consecutivo
+        );
+
         $vivero->save();
 
         $vivero->load(['lote', 'historialLotes.lote']);
