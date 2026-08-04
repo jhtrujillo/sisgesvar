@@ -80,8 +80,11 @@ class Vivero extends Model
     public function getNombreAmbienteAttribute()
     {
         if (!$this->ambiente) return null;
-        $amb = \Illuminate\Support\Facades\DB::connection('sivar')->table('mega_ambiente')->where('id_ambnte', $this->ambiente)->first();
-        return $amb ? $amb->nm_ambnte : null;
+        if (is_numeric($this->ambiente)) {
+            $amb = \Illuminate\Support\Facades\DB::connection('sivar')->table('mega_ambiente')->where('id_ambnte', $this->ambiente)->first();
+            return $amb ? $amb->nm_ambnte : null;
+        }
+        return $this->ambiente;
     }
 
     public function getConsecutivoCorteAttribute()
