@@ -8,7 +8,7 @@ export default {
   getVivero(id: number | string) {
     return api.get(`${urls.API_VIVEROS}/${id}`);
   },
-  getNextCorteConsecutivo(params: any) {
+  getNextCorteConsecutivo(params: { origen_parcela?: string; origen_vivero_id?: number | string }) {
     return api.get(`${urls.API_VIVEROS}/next-corte-consecutivo`, { params });
   },
   getEstructura(id: number | string) {

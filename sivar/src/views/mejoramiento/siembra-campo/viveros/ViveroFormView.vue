@@ -1,34 +1,20 @@
 <template>
   <div class="container mx-auto p-6 max-w-7xl">
-    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div>
-        <div class="mb-4">
-          <router-link
-            :to="{ name: 'siembra_campo_viveros.show' }"
-            class="inline-flex items-center px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-800 rounded-full shadow-sm transition-all duration-200"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-            Volver a Viveros
-          </router-link>
-        </div>
-        <h1 class="text-2xl font-bold text-slate-800">
-          {{ isEditing ? "Editar Vivero" : "Registrar Vivero" }}
-        </h1>
-      </div>
-      <div v-if="isEditing && form.proyecto_id" class="flex items-center gap-3">
-        <button
-          type="button"
-          @click="registrarCorteDesdeEdicion"
-          class="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 rounded-xl shadow-md transition-all cursor-pointer"
+    <div class="mb-6">
+      <div class="mb-4">
+        <router-link
+          :to="{ name: 'siembra_campo_viveros.show' }"
+          class="inline-flex items-center px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-800 rounded-full shadow-sm transition-all duration-200"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-4.879-4.879L19 9.38M14.121 14.121a3 3 0 11-4.242-4.242 3 3 0 014.242 4.242zM5 19l4.879-4.879M5 9.38l4.879 4.879m0 0a3 3 0 104.243-4.243 3 3 0 00-4.243 4.243z" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
-          Registrar Corte de Vivero
-        </button>
+          Volver a Viveros
+        </router-link>
       </div>
+      <h1 class="text-2xl font-bold text-slate-800">
+        {{ isEditing ? "Editar Vivero" : "Registrar Vivero" }}
+      </h1>
     </div>
 
     <div v-if="isLoadingInfo" class="flex flex-col items-center justify-center py-20 bg-white shadow-md rounded px-8">
@@ -562,6 +548,14 @@
 
         <!-- ACCIONES FORMULARIO -->
         <div class="flex items-center justify-end gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+          <button
+            v-if="isEditing && form.proyecto_id"
+            type="button"
+            @click="navigateCorteVivero"
+            class="px-5 py-2.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-all shadow-sm cursor-pointer"
+          >
+            Registrar Corte de Vivero
+          </button>
           <router-link
             :to="{ name: 'siembra_campo_viveros.show' }"
             class="px-5 py-2.5 text-xs font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all"
@@ -782,27 +776,6 @@
                 <tr v-for="p in paginatedParcelas" :key="p.id" class="border-b border-slate-100 transition-colors" :class="{ 'bg-cenicana/5': editingPlotId === p.id, 'hover:bg-slate-50': editingPlotId !== p.id }">
                   <td class="px-4 py-3 font-bold text-slate-800">
                     <div>{{ p.numero_parcela }}</div>
-                    <div v-if="p.cortes && p.cortes.length > 0 && editingPlotId !== p.id" class="mt-1 flex flex-col gap-1 font-normal">
-                      <span class="text-[9px] text-slate-400 uppercase font-bold">Cortes:</span>
-                      <div
-                        v-for="c in p.cortes"
-                        :key="'cut_' + c.id"
-                        class="inline-flex items-center gap-1 w-fit px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100 transition-colors cursor-pointer"
-                        title="Ver/Editar vivero hijo"
-                      >
-                        <router-link :to="{ name: 'vivero_editar.show', params: { id: c.id } }" class="hover:underline">
-                          Corte {{ c.consecutivo_corte }}: {{ c.identificador_unico }}
-                        </router-link>
-                        <button
-                          type="button"
-                          @click.stop.prevent="confirmDeleteCorte(c.id, c.identificador_unico)"
-                          class="text-red-400 hover:text-red-600 ml-0.5 transition-colors font-bold text-[10px]"
-                          title="Eliminar este Corte"
-                        >
-                          &times;
-                        </button>
-                      </div>
-                    </div>
                   </td>
 
                   <template v-if="editingPlotId === p.id">
@@ -1932,12 +1905,11 @@ const submitParcela = async () => {
   }
 };
 
-const registrarCorteDesdeEdicion = () => {
+const navigateCorteVivero = () => {
   try {
-    const currentVivero = form.value;
     let origenAnio = new Date().getFullYear();
-    if (currentVivero.fecha_siembra) {
-      const dateStr = String(currentVivero.fecha_siembra);
+    if (form.value.fecha_siembra) {
+      const dateStr = String(form.value.fecha_siembra);
       const yearMatch = dateStr.match(/^(\d{4})/);
       if (yearMatch && yearMatch[1]) {
         origenAnio = parseInt(yearMatch[1], 10);
@@ -1947,22 +1919,18 @@ const registrarCorteDesdeEdicion = () => {
     router.push({
       name: "vivero_nuevo.show",
       query: {
-        origen_ingenio: currentVivero.ingenio || "",
-        origen_hacienda: currentVivero.hacienda || "",
-        origen_suerte: currentVivero.suerte || "",
-        origen_vivero_id: currentVivero.id,
+        origen_ingenio: form.value.ingenio || "",
+        origen_hacienda: form.value.hacienda || "",
+        origen_suerte: form.value.suerte || "",
         origen_anio: origenAnio,
-        proyecto_id: currentVivero.proyecto_id || "",
-        caracter_id: currentVivero.caracter_id || "",
-        responsable_id: currentVivero.responsable_id || "",
+        origen_vivero_id: form.value.id,
         es_corte: "true",
-        ingenio: currentVivero.ingenio || "",
-        hacienda: currentVivero.hacienda || "",
-        suerte: currentVivero.suerte || ""
+        proyecto_id: form.value.proyecto_id || "",
+        caracter_id: form.value.caracter_id || ""
       }
     });
   } catch (error: any) {
-    console.error("Error in registrarCorteDesdeEdicion:", error);
+    console.error("Error in navigateCorteVivero:", error);
     toast.error("Error al redirigir al corte: " + error.message);
   }
 };
@@ -2267,6 +2235,13 @@ const resetAndLoad = async () => {
         form.value.anio = currentYear;
       }
 
+      if (route.query.origen_anio) {
+        form.value.origen_anio = Number(route.query.origen_anio);
+      }
+      if (route.query.es_corte) {
+        form.value.es_corte = route.query.es_corte === 'true';
+      }
+
       if (route.query.origen_ingenio) {
         form.value.origen_ingenio = route.query.origen_ingenio as string;
         await loadHaciendasOrigen(false);
@@ -2286,28 +2261,18 @@ const resetAndLoad = async () => {
           form.value.origen_lote_id = parentVivero.lote_id || "";
           origenParcelasOptions.value = parentVivero.parcelas || [];
           searchOrigenVivero.value = parentVivero.identificador_unico;
-          origenViveroManual.value = false;
-
-          try {
-            const res = await viverosServices.getNextCorteConsecutivo({
-              origen_vivero_id: form.value.origen_vivero_id
-            });
-            form.value.consecutivo_corte = res.data.consecutivo;
-            if (form.value.es_corte) {
-              form.value.identificador_unico = `${parentVivero.identificador_unico}-${form.value.consecutivo_corte}`;
-            }
-          } catch (err) {
-            console.error("Error fetching next consecutivo_corte:", err);
-          }
         }
-      }
-      if (route.query.origen_anio) {
-        form.value.origen_anio = Number(route.query.origen_anio);
-      }
-      if (route.query.es_corte) {
-        form.value.es_corte = route.query.es_corte === 'true';
-      }
-      if (route.query.origen_parcela) {
+
+        try {
+          const res = await viverosServices.getNextCorteConsecutivo({ origen_vivero_id: form.value.origen_vivero_id });
+          form.value.consecutivo_corte = res.data.consecutivo;
+          if (form.value.es_corte && parentVivero) {
+            form.value.identificador_unico = `${parentVivero.identificador_unico}-${form.value.consecutivo_corte}`;
+          }
+        } catch (err) {
+          console.error("Error fetching next consecutivo_corte:", err);
+        }
+      } else if (route.query.origen_parcela) {
         form.value.origen_parcela = route.query.origen_parcela as string;
         
         const parts = form.value.origen_parcela.split("-");
@@ -2329,9 +2294,7 @@ const resetAndLoad = async () => {
         }
 
         try {
-          const res = await viverosServices.getNextCorteConsecutivo({
-            origen_parcela: form.value.origen_parcela
-          });
+          const res = await viverosServices.getNextCorteConsecutivo({ origen_parcela: form.value.origen_parcela });
           form.value.consecutivo_corte = res.data.consecutivo;
           if (form.value.es_corte) {
             form.value.identificador_unico = `${form.value.origen_parcela}-${form.value.consecutivo_corte}`;
