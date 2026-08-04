@@ -86,11 +86,15 @@ class ViveroController extends Controller
             );
         }
 
-        $vivero = Vivero::where('lote_id', $request->lote_id)
+        $vivero = Vivero::withTrashed()
+            ->where('lote_id', $request->lote_id)
             ->where('consecutivo_vivero_ingenio', $consecutivoViveroIngenio)
             ->first();
 
         if ($vivero) {
+            if ($vivero->trashed()) {
+                $vivero->restore();
+            }
             $vivero->update([
                 'identificador_unico' => $identificador,
                 'nombre' => $request->nombre ?: $identificador,

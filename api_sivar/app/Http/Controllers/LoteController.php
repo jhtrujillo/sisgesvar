@@ -118,8 +118,8 @@ class LoteController extends Controller
             'suerte' => $lote->nombre_lote
         ]);
 
-        // Get existing viveros in this lote
-        $existingViveros = Vivero::where('lote_id', $lote->id)->get();
+        // Get existing viveros in this lote (including soft-deleted ones to avoid unique constraint issues)
+        $existingViveros = Vivero::withTrashed()->where('lote_id', $lote->id)->get();
         $existingNumbers = $existingViveros->pluck('consecutivo_vivero_ingenio')->toArray();
 
         for ($i = 1; $i <= $capacidad; $i++) {
@@ -172,6 +172,11 @@ class LoteController extends Controller
                 $vivero = $existingViveros->where('consecutivo_vivero_ingenio', $i)->first();
 
                 if ($vivero) {
+                    // Restore if it was soft-deleted
+                    if ($vivero->trashed()) {
+                        $vivero->restore();
+                    }
+
                     // Update total_parcelas attribute
                     $vivero->update(['total_parcelas' => $totalParcelas]);
 
