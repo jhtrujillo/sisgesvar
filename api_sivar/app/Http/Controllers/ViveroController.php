@@ -306,7 +306,7 @@ class ViveroController extends Controller
                 'message' => 'El vivero ya se encuentra en este lote y puesto.'
             ], 400);
         }
-
+        
         // Save old Vivero A location properties
         $oldLoteId = $viveroA->lote_id;
         $oldConsecutivo = $viveroA->consecutivo_vivero_ingenio;
@@ -316,14 +316,29 @@ class ViveroController extends Controller
         $oldHacienda = $viveroA->hacienda;
         $oldSuerte = $viveroA->suerte;
 
-        // Perform the swap of location fields
-        $viveroA->lote_id = $viveroB->lote_id;
-        $viveroA->consecutivo_vivero_ingenio = $viveroB->consecutivo_vivero_ingenio;
-        $viveroA->identificador_unico = $viveroB->identificador_unico;
-        $viveroA->nombre = $viveroB->nombre;
-        $viveroA->ingenio = $viveroB->ingenio;
-        $viveroA->hacienda = $viveroB->hacienda;
-        $viveroA->suerte = $viveroB->suerte;
+        // Save target Vivero B location properties
+        $targetLoteId = $viveroB->lote_id;
+        $targetConsecutivo = $viveroB->consecutivo_vivero_ingenio;
+        $targetIdentificador = $viveroB->identificador_unico;
+        $targetNombre = $viveroB->nombre;
+        $targetIngenio = $viveroB->ingenio;
+        $targetHacienda = $viveroB->hacienda;
+        $targetSuerte = $viveroB->suerte;
+
+        if ($viveroB->id !== $viveroA->id) {
+            // Temporarily rename B to avoid unique constraint violation during swap
+            $viveroB->identificador_unico = 'temp-swap-' . $viveroB->id . '-' . uniqid();
+            $viveroB->save();
+        }
+
+        // Perform the swap of location fields on A
+        $viveroA->lote_id = $targetLoteId;
+        $viveroA->consecutivo_vivero_ingenio = $targetConsecutivo;
+        $viveroA->identificador_unico = $targetIdentificador;
+        $viveroA->nombre = $targetNombre;
+        $viveroA->ingenio = $targetIngenio;
+        $viveroA->hacienda = $targetHacienda;
+        $viveroA->suerte = $targetSuerte;
         $viveroA->save();
 
         if ($viveroB->id !== $viveroA->id) {
