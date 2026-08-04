@@ -44,13 +44,28 @@ class ViveroController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Validate lot capacity
+        // Validate lot capacity (counting only fully active nurseries other than the one being activated)
         if ($request->has('lote_id') && $request->lote_id) {
             $lote = \App\Models\Lote::findOrFail($request->lote_id);
-            $activeCount = Vivero::where('lote_id', $lote->id)->count();
+            
+            $preCreatedId = null;
+            if ($request->consecutivo_vivero_ingenio) {
+                $preCreated = Vivero::where('lote_id', $lote->id)
+                    ->where('consecutivo_vivero_ingenio', $request->consecutivo_vivero_ingenio)
+                    ->first();
+                if ($preCreated) {
+                    $preCreatedId = $preCreated->id;
+                }
+            }
+
+            $activeCount = Vivero::where('lote_id', $lote->id)
+                ->whereNotNull('proyecto_id')
+                ->where('id', '!=', $preCreatedId)
+                ->count();
+
             if ($activeCount >= $lote->capacidad_maxima) {
                 return response()->json([
-                    'message' => "El lote {$lote->nombre_lote} ha superado su capacidad máxima de {$lote->capacidad_maxima} viveros."
+                    'message' => "El lote {$lote->nombre_lote} ha superado su capacidad máxima de {$lote->capacidad_maxima} viveros activos."
                 ], 400);
             }
         }
