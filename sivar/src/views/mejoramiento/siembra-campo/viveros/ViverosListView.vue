@@ -137,16 +137,7 @@
                 <td class="py-3 px-6 text-center">
                   <div class="flex item-center justify-center">
 
-                    <button
-                      v-if="vivero.proyecto_id"
-                      @click="registrarCorteVivero(vivero)"
-                      class="w-4 mr-2 transform hover:text-emerald-500 hover:scale-110 cursor-pointer text-slate-400"
-                      title="Registrar Corte de Vivero"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7L5 5m7 7l-2.879 2.879M12 12L19 5m-7 7L5 19" />
-                      </svg>
-                    </button>
+
                     <button
                       v-if="vivero.proyecto_id"
                       @click="openCosechaModal(vivero)"
@@ -581,30 +572,7 @@ const confirmDeleteCorte = async (id: number, uniqueId: string) => {
   }
 };
 
-const registrarCorteVivero = (vivero: any) => {
-  let origenAnio = new Date().getFullYear();
-  if (vivero.fecha_siembra) {
-    const dateStr = String(vivero.fecha_siembra);
-    const yearMatch = dateStr.match(/^(\d{4})/);
-    if (yearMatch && yearMatch[1]) {
-      origenAnio = parseInt(yearMatch[1], 10);
-    }
-  }
 
-  router.push({
-    name: "vivero_nuevo.show",
-    query: {
-      origen_ingenio: vivero.ingenio || "",
-      origen_hacienda: vivero.hacienda || "",
-      origen_suerte: vivero.suerte || "",
-      origen_anio: origenAnio,
-      origen_vivero_id: vivero.id,
-      es_corte: "true",
-      proyecto_id: vivero.proyecto_id || "",
-      caracter_id: vivero.caracter_id || ""
-    }
-  });
-};
 
 const isCosechaModalOpen = ref(false);
 const isSubmittingCosecha = ref(false);

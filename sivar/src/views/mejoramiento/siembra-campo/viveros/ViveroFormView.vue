@@ -16,18 +16,7 @@
         </h1>
       </div>
       
-      <div v-if="isEditing && form.proyecto_id" class="flex gap-2">
-        <button
-          type="button"
-          @click="navigateCorteVivero"
-          class="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-950/10 transition-all cursor-pointer"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7L5 5m7 7l-2.879 2.879M12 12L19 5m-7 7L5 19" />
-          </svg>
-          Registrar Corte de Vivero
-        </button>
-      </div>
+      <div></div>
     </div>
 
     <div v-if="isLoadingInfo" class="flex flex-col items-center justify-center py-20 bg-white shadow-md rounded px-8">
@@ -561,14 +550,7 @@
 
         <!-- ACCIONES FORMULARIO -->
         <div class="flex items-center justify-end gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-          <button
-            v-if="isEditing && form.proyecto_id"
-            type="button"
-            @click="navigateCorteVivero"
-            class="px-5 py-2.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-all shadow-sm cursor-pointer"
-          >
-            Registrar Corte de Vivero
-          </button>
+
           <router-link
             :to="{ name: 'siembra_campo_viveros.show' }"
             class="px-5 py-2.5 text-xs font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all"
@@ -1918,35 +1900,7 @@ const submitParcela = async () => {
   }
 };
 
-const navigateCorteVivero = () => {
-  try {
-    let origenAnio = new Date().getFullYear();
-    if (form.value.fecha_siembra) {
-      const dateStr = String(form.value.fecha_siembra);
-      const yearMatch = dateStr.match(/^(\d{4})/);
-      if (yearMatch && yearMatch[1]) {
-        origenAnio = parseInt(yearMatch[1], 10);
-      }
-    }
-
-    router.push({
-      name: "vivero_nuevo.show",
-      query: {
-        origen_ingenio: form.value.ingenio || "",
-        origen_hacienda: form.value.hacienda || "",
-        origen_suerte: form.value.suerte || "",
-        origen_anio: origenAnio,
-        origen_vivero_id: form.value.id,
-        es_corte: "true",
-        proyecto_id: form.value.proyecto_id || "",
-        caracter_id: form.value.caracter_id || ""
-      }
-    });
-  } catch (error: any) {
-    console.error("Error in navigateCorteVivero:", error);
-    toast.error("Error al redirigir al corte: " + error.message);
-  }
-};
+;
 
 const loadLotesForLocation = async () => {
   if (!form.value.ingenio || !form.value.hacienda) {
