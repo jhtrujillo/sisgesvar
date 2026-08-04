@@ -162,7 +162,8 @@ class ViveroController extends Controller
                 'vivero_id' => $vivero->id,
                 'lote_id' => $vivero->lote_id,
                 'fecha_inicio' => now(),
-                'activo' => true
+                'activo' => true,
+                'accion' => 'Registro Inicial'
             ]);
         }
 
@@ -203,7 +204,8 @@ class ViveroController extends Controller
                     'vivero_id' => $vivero->id,
                     'lote_id' => $request->lote_id,
                     'fecha_inicio' => now(),
-                    'activo' => true
+                    'activo' => true,
+                    'accion' => 'Cambio de Lote'
                 ]);
             }
         }
@@ -372,8 +374,17 @@ class ViveroController extends Controller
             }
         }
 
-        // Manage Lote History if Lote changed
-        if ($oldLoteId != $newLoteId) {
+        // Manage Lote History (either Lote or slot changed!)
+        if ($oldLoteId != $newLoteId || $oldConsecutivo != $newConsecutivo) {
+            // Determine action type
+            if ($oldLoteId != $newLoteId && $oldConsecutivo != $newConsecutivo) {
+                $accionText = 'Traslado de Lote y Puesto';
+            } else if ($oldLoteId != $newLoteId) {
+                $accionText = 'Traslado de Lote';
+            } else {
+                $accionText = 'Cambio de Puesto';
+            }
+
             \App\Models\ViveroLoteHistorial::where('vivero_id', $viveroA->id)
                 ->where('activo', true)
                 ->update([
@@ -385,7 +396,8 @@ class ViveroController extends Controller
                 'vivero_id' => $viveroA->id,
                 'lote_id' => $newLoteId,
                 'fecha_inicio' => now(),
-                'activo' => true
+                'activo' => true,
+                'accion' => $accionText
             ]);
         }
 

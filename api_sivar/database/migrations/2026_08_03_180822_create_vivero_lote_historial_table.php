@@ -18,6 +18,7 @@ return new class extends Migration
             $table->dateTime('fecha_inicio');
             $table->dateTime('fecha_fin')->nullable();
             $table->boolean('activo')->default(true);
+            $table->string('accion')->default('Registro Inicial');
             $table->timestamps();
         });
     }

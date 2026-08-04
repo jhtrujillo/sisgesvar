@@ -314,6 +314,7 @@
                 <thead class="bg-slate-55 border-b border-slate-100 text-slate-500 uppercase font-bold text-[9px] tracking-wider">
                   <tr>
                     <th class="py-2.5 px-4 text-left">Lote</th>
+                    <th class="py-2.5 px-4 text-left">Acción</th>
                     <th class="py-2.5 px-4 text-left">Fecha Ingreso</th>
                     <th class="py-2.5 px-4 text-left">Fecha Salida</th>
                     <th class="py-2.5 px-4 text-center">Estado</th>
@@ -322,6 +323,11 @@
                 <tbody class="text-slate-600 font-medium">
                   <tr v-for="hist in form.historial_lotes" :key="hist.id" class="border-b border-slate-100 last:border-0 hover:bg-slate-50/30">
                     <td class="py-2.5 px-4 font-bold text-slate-800">{{ hist.lote?.nombre_lote || 'N/A' }}</td>
+                    <td class="py-2.5 px-4">
+                      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 shadow-sm">
+                        {{ hist.accion || 'Registro Inicial' }}
+                      </span>
+                    </td>
                     <td class="py-2.5 px-4">{{ formatDateTime(hist.fecha_inicio) }}</td>
                     <td class="py-2.5 px-4">{{ hist.fecha_fin ? formatDateTime(hist.fecha_fin) : '-' }}</td>
                     <td class="py-2.5 px-4 text-center">
