@@ -583,7 +583,7 @@
                 <input
                   type="text"
                   v-model="searchVariedad"
-                  @focus="showVariedades = true"
+                  @focus="showVariedades = true; loadVariedadesIfNeeded()"
                   @blur="hideVariedadesDelay"
                   placeholder="Buscar variedad..."
                   class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
@@ -759,10 +759,10 @@
                 <td colspan="7" class="text-center py-8 text-slate-500 bg-slate-50">No se encontraron parcelas que coincidan con la búsqueda.</td>
               </tr>
               <template v-else>
-                <tr v-for="p in paginatedParcelas" :key="p.id" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                <tr v-for="p in paginatedParcelas" :key="p.id" class="border-b border-slate-100 transition-colors" :class="{ 'bg-cenicana/5': editingPlotId === p.id, 'hover:bg-slate-50': editingPlotId !== p.id }">
                   <td class="px-4 py-3 font-bold text-slate-800">
                     <div>{{ p.numero_parcela }}</div>
-                    <div v-if="p.cortes && p.cortes.length > 0" class="mt-1 flex flex-col gap-1 font-normal">
+                    <div v-if="p.cortes && p.cortes.length > 0 && editingPlotId !== p.id" class="mt-1 flex flex-col gap-1 font-normal">
                       <span class="text-[9px] text-slate-400 uppercase font-bold">Cortes:</span>
                       <div
                         v-for="c in p.cortes"
@@ -784,50 +784,143 @@
                       </div>
                     </div>
                   </td>
-                  <td
-                    class="px-4 py-3 font-bold text-cenicana hover:text-emerald-800 cursor-pointer hover:underline transition-colors"
-                    @click="openVarietyProfile(p.variedad?.nm_vrdad)"
-                    title="Ver hoja de vida de la variedad"
-                  >
-                    {{ p.variedad?.nm_vrdad }}
-                  </td>
-                  <td class="px-4 py-3 text-slate-600 text-xs">{{ p.variedad?.pdgree || "N/A" }}</td>
-                  <td class="px-4 py-3 text-slate-600 text-xs">
-                    <span v-if="p.caracter?.nombre">{{ p.caracter.nombre }}</span>
-                    <span v-else-if="form.caracter_id && getCaracterGlobalNombre()" class="text-slate-400 italic" title="Heredado del Vivero">{{
-                      getCaracterGlobalNombre()
-                    }}</span>
-                    <span v-else>N/A</span>
-                  </td>
-                  <td class="px-4 py-3 text-slate-600 font-bold">{{ p.numero_parcela_origen || "N/A" }}</td>
-                  <td class="px-4 py-3 text-slate-600 font-mono text-xs">{{ p.id_plot_origen || "N/A" }}</td>
-                  <td class="px-4 py-3 text-center">
-                    <div class="flex items-center justify-center gap-2">
-                      <button
-                        type="button"
-                        @click="registrarCorteParcela(p)"
-                        class="text-emerald-600 hover:text-emerald-800 transition-colors bg-emerald-50 hover:bg-emerald-100 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm border border-emerald-200/50"
-                        title="Registrar Corte"
+
+                  <template v-if="editingPlotId === p.id">
+                    <td class="px-4 py-3 min-w-[200px]">
+                      <div class="relative">
+                        <input
+                          type="text"
+                          v-model="editingPlotForm.variedad_name"
+                          @focus="showEditingVariedades = true; loadVariedadesIfNeeded()"
+                          @blur="hideEditingVariedadesDelay"
+                          placeholder="Buscar variedad..."
+                          class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
+                        />
+                        <div
+                          v-if="showEditingVariedades"
+                          class="absolute z-50 w-full mt-1 bg-white shadow-xl max-h-40 rounded border border-slate-200 overflow-y-auto text-xs py-1"
+                        >
+                          <div v-if="filteredEditingVariedades.length === 0" class="p-2 text-slate-500">
+                            No se encontraron variedades
+                          </div>
+                          <div
+                            v-for="v in filteredEditingVariedades"
+                            :key="v.id_nm_vrdad"
+                            @mousedown="selectEditingVariedad(v)"
+                            class="cursor-pointer p-2 hover:bg-slate-100 transition-colors"
+                          >
+                            {{ v.nm_vrdad }}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-slate-400 text-xs italic">
+                      {{ variedades.find(v => v.id_nm_vrdad === editingPlotForm.variedad_id)?.pdgree || 'N/A' }}
+                    </td>
+                    <td class="px-4 py-3 min-w-[150px]">
+                      <select
+                        v-model="editingPlotForm.caracter_id"
+                        class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
                       >
-                        Corte
-                      </button>
-                      <button
-                        type="button"
-                        @click="deleteParcela(p.id)"
-                        class="text-red-400 hover:text-red-600 transition-colors bg-red-50 hover:bg-red-100 p-2 rounded-lg"
-                        title="Eliminar Parcela"
-                      >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          ></path>
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
+                        <option value="">Seleccione...</option>
+                        <option v-for="c in caracteres" :key="'edit_c_' + c.id" :value="c.id">{{ c.nombre }}</option>
+                      </select>
+                    </td>
+                    <td class="px-4 py-3 min-w-[100px]">
+                      <input
+                        v-model="editingPlotForm.numero_parcela_origen"
+                        @input="updateEditingPlotIdOrigen"
+                        type="number"
+                        placeholder="No."
+                        class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
+                      />
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 font-mono text-xs">
+                      {{ editingPlotForm.id_plot_origen || 'N/A' }}
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                      <div class="flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          @click="saveEditingPlot"
+                          :disabled="isSubmittingEditingPlot"
+                          class="bg-cenicana text-white hover:bg-cenicana-800 p-2 rounded-lg transition-colors disabled:opacity-50"
+                          title="Guardar Cambios"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          @click="cancelEditingPlot"
+                          class="bg-slate-100 text-slate-600 hover:bg-slate-200 p-2 rounded-lg transition-colors"
+                          title="Cancelar"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </template>
+
+                  <template v-else>
+                    <td
+                      class="px-4 py-3 font-bold text-cenicana hover:text-emerald-800 cursor-pointer hover:underline transition-colors"
+                      @click="openVarietyProfile(p.variedad?.nm_vrdad)"
+                      title="Ver hoja de vida de la variedad"
+                    >
+                      {{ p.variedad?.nm_vrdad }}
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 text-xs">{{ p.variedad?.pdgree || "N/A" }}</td>
+                    <td class="px-4 py-3 text-slate-600 text-xs">
+                      <span v-if="p.caracter?.nombre">{{ p.caracter.nombre }}</span>
+                      <span v-else-if="form.caracter_id && getCaracterGlobalNombre()" class="text-slate-400 italic" title="Heredado del Vivero">{{
+                        getCaracterGlobalNombre()
+                      }}</span>
+                      <span v-else>N/A</span>
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 font-bold">{{ p.numero_parcela_origen || "N/A" }}</td>
+                    <td class="px-4 py-3 text-slate-600 font-mono text-xs">{{ p.id_plot_origen || "N/A" }}</td>
+                    <td class="px-4 py-3 text-center">
+                      <div class="flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          @click="startEditingPlot(p)"
+                          class="text-amber-600 hover:text-amber-800 transition-colors bg-amber-50 hover:bg-amber-100 p-2 rounded-lg border border-amber-200/50"
+                          title="Editar Parcela"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          @click="registrarCorteParcela(p)"
+                          class="text-emerald-600 hover:text-emerald-800 transition-colors bg-emerald-50 hover:bg-emerald-100 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm border border-emerald-200/50"
+                          title="Registrar Corte"
+                        >
+                          Corte
+                        </button>
+                        <button
+                          type="button"
+                          @click="deleteParcela(p.id)"
+                          class="text-red-400 hover:text-red-600 transition-colors bg-red-50 hover:bg-red-100 p-2 rounded-lg"
+                          title="Eliminar Parcela"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            ></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </template>
                 </tr>
               </template>
             </tbody>
@@ -1239,6 +1332,17 @@ const loadingParcelas = ref(false);
 const isSubmittingParcela = ref(false);
 const searchVariedad = ref("");
 const showVariedades = ref(false);
+const editingPlotId = ref<number | null>(null);
+const editingPlotForm = ref({
+  id: null as number | null,
+  numero_parcela: 1,
+  variedad_id: "",
+  variedad_name: "",
+  numero_parcela_origen: "" as string | number,
+  id_plot_origen: "",
+  caracter_id: "" as string | number
+});
+const showEditingVariedades = ref(false);
 const searchParcela = ref("");
 const parcelaForm = ref({
   numero_parcela: 1,
@@ -1605,6 +1709,96 @@ const loadVariedades = async () => {
     variedades.value = res.data;
   } catch (error) {
     console.error("Error fetching variedades:", error);
+  }
+};
+
+const loadVariedadesIfNeeded = async () => {
+  if (variedades.value.length === 0) {
+    await loadVariedades();
+  }
+};
+
+const filteredEditingVariedades = computed(() => {
+  if (!editingPlotForm.value.variedad_name) return variedades.value;
+  return variedades.value.filter((v) =>
+    v.nm_vrdad.toLowerCase().includes(editingPlotForm.value.variedad_name.toLowerCase())
+  );
+});
+
+const hideEditingVariedadesDelay = () => {
+  setTimeout(() => {
+    showEditingVariedades.value = false;
+  }, 200);
+};
+
+const selectEditingVariedad = (v: any) => {
+  editingPlotForm.value.variedad_id = v.id_nm_vrdad;
+  editingPlotForm.value.variedad_name = v.nm_vrdad;
+  showEditingVariedades.value = false;
+};
+
+const startEditingPlot = (p: any) => {
+  editingPlotId.value = p.id;
+  editingPlotForm.value = {
+    id: p.id,
+    numero_parcela: p.numero_parcela,
+    variedad_id: p.variedad_id || "",
+    variedad_name: p.variedad?.nm_vrdad || "",
+    numero_parcela_origen: p.numero_parcela_origen || "",
+    id_plot_origen: p.id_plot_origen || "",
+    caracter_id: p.caracter_id || ""
+  };
+};
+
+const cancelEditingPlot = () => {
+  editingPlotId.value = null;
+};
+
+const updateEditingPlotIdOrigen = () => {
+  if (editingPlotForm.value.numero_parcela_origen) {
+    const orig = form.value.origen_parcela;
+    if (orig && orig.includes("-") && orig.split("-").length > 3) {
+      const parts = orig.split("-");
+      parts.pop();
+      const parentViveroId = parts.join("-");
+      if (form.value.consecutivo_corte) {
+        editingPlotForm.value.id_plot_origen = `${parentViveroId}-${editingPlotForm.value.numero_parcela_origen}-${form.value.consecutivo_corte}`;
+      } else {
+        editingPlotForm.value.id_plot_origen = `${parentViveroId}-${editingPlotForm.value.numero_parcela_origen}`;
+      }
+    } else {
+      editingPlotForm.value.id_plot_origen = `${form.value.identificador_unico}-${editingPlotForm.value.numero_parcela_origen}`;
+    }
+  } else {
+    editingPlotForm.value.id_plot_origen = "";
+  }
+};
+
+const isSubmittingEditingPlot = ref(false);
+const saveEditingPlot = async () => {
+  if (!editingPlotForm.value.variedad_id) {
+    toast.error("Debe seleccionar una variedad");
+    return;
+  }
+  isSubmittingEditingPlot.value = true;
+  try {
+    const payload = {
+      numero_parcela: editingPlotForm.value.numero_parcela,
+      variedad_id: editingPlotForm.value.variedad_id,
+      numero_parcela_origen: editingPlotForm.value.numero_parcela_origen || null,
+      id_plot_origen: editingPlotForm.value.id_plot_origen || null,
+      caracter_id: editingPlotForm.value.caracter_id || null
+    };
+    await viverosServices.updateParcela(route.params.id as string, editingPlotForm.value.id as any, payload);
+    toast.success("Parcela actualizada correctamente");
+    editingPlotId.value = null;
+    await loadParcelas();
+  } catch (error: any) {
+    console.error("Error updating parcela:", error);
+    const msg = error.response?.data?.message || "Error al actualizar la parcela";
+    toast.error(msg);
+  } finally {
+    isSubmittingEditingPlot.value = false;
   }
 };
 
@@ -2012,7 +2206,7 @@ const resetAndLoad = async () => {
     isLoadingInfo.value = false;
   }
 
-  await loadVariedades();
+
 };
 
 onMounted(resetAndLoad);

@@ -62,6 +62,10 @@ export default {
     return api.delete(`${urls.API_VIVEROS}/${vivero_id}/parcelas/${parcela_id}`);
   },
 
+  updateParcela(vivero_id: string | number, parcela_id: string | number, data: any) {
+    return api.put(`${urls.API_VIVEROS}/${vivero_id}/parcelas/${parcela_id}`, data);
+  },
+
   deleteAllParcelas(vivero_id: string | number) {
     return api.delete(`${urls.API_VIVEROS}/${vivero_id}/parcelas`);
   },
