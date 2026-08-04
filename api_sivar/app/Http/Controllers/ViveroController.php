@@ -158,12 +158,14 @@ class ViveroController extends Controller
             ->exists();
 
         if ($vivero->lote_id && !$hasHistory) {
+            $lote = \App\Models\Lote::find($vivero->lote_id);
+            $loteName = $lote ? $lote->nombre_lote : 'N/A';
             \App\Models\ViveroLoteHistorial::create([
                 'vivero_id' => $vivero->id,
                 'lote_id' => $vivero->lote_id,
                 'fecha_inicio' => now(),
                 'activo' => true,
-                'accion' => 'Registro Inicial'
+                'accion' => "Registro Inicial en {$loteName} (Vivero {$vivero->consecutivo_vivero_ingenio})"
             ]);
         }
 
@@ -182,6 +184,9 @@ class ViveroController extends Controller
         $vivero = Vivero::findOrFail($id);
 
         if ($request->has('lote_id') && $request->lote_id !== $vivero->lote_id) {
+            $oldLote = \App\Models\Lote::find($vivero->lote_id);
+            $oldLoteName = $oldLote ? $oldLote->nombre_lote : 'N/A';
+
             if ($request->lote_id) {
                 $lote = \App\Models\Lote::findOrFail($request->lote_id);
                 $activeCount = Vivero::where('lote_id', $lote->id)->where('id', '!=', $vivero->id)->count();
@@ -205,7 +210,7 @@ class ViveroController extends Controller
                     'lote_id' => $request->lote_id,
                     'fecha_inicio' => now(),
                     'activo' => true,
-                    'accion' => 'Cambio de Lote'
+                    'accion' => "Cambio de Lote del {$oldLoteName} al {$lote->nombre_lote}"
                 ]);
             }
         }
@@ -376,13 +381,18 @@ class ViveroController extends Controller
 
         // Manage Lote History (either Lote or slot changed!)
         if ($oldLoteId != $newLoteId || $oldConsecutivo != $newConsecutivo) {
-            // Determine action type
+            $oldLote = \App\Models\Lote::find($oldLoteId);
+            $oldLoteName = $oldLote ? $oldLote->nombre_lote : 'N/A';
+            $newLote = \App\Models\Lote::find($newLoteId);
+            $newLoteName = $newLote ? $newLote->nombre_lote : 'N/A';
+
+            // Determine action type and text
             if ($oldLoteId != $newLoteId && $oldConsecutivo != $newConsecutivo) {
-                $accionText = 'Traslado de Lote y Puesto';
+                $accionText = "Traslado del {$oldLoteName} (Vivero {$oldConsecutivo}) al {$newLoteName} (Vivero {$newConsecutivo})";
             } else if ($oldLoteId != $newLoteId) {
-                $accionText = 'Traslado de Lote';
+                $accionText = "Traslado del {$oldLoteName} al {$newLoteName}";
             } else {
-                $accionText = 'Cambio de Puesto';
+                $accionText = "Cambio de Puesto del Vivero {$oldConsecutivo} al Vivero {$newConsecutivo}";
             }
 
             \App\Models\ViveroLoteHistorial::where('vivero_id', $viveroA->id)
