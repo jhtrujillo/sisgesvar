@@ -87,6 +87,14 @@ class ViveroController extends Controller
             );
         }
 
+        $suerteVal = $request->suerte;
+        if (!$suerteVal && $request->lote_id) {
+            $lote = \App\Models\Lote::find($request->lote_id);
+            if ($lote) {
+                $suerteVal = $lote->nombre_lote;
+            }
+        }
+
         $vivero = Vivero::withTrashed()
             ->where('lote_id', $request->lote_id)
             ->where('consecutivo_vivero_ingenio', $consecutivoViveroIngenio)
@@ -101,7 +109,7 @@ class ViveroController extends Controller
                 'nombre' => $request->nombre ?: $identificador,
                 'ingenio' => $request->ingenio,
                 'hacienda' => $request->hacienda,
-                'suerte' => $request->suerte,
+                'suerte' => $suerteVal,
                 'proyecto_id' => $request->proyecto_id,
                 'ambiente' => $request->ambiente,
                 'responsable_id' => $request->responsable_id,
@@ -124,7 +132,7 @@ class ViveroController extends Controller
                 'nombre' => $request->nombre ?: $identificador,
                 'ingenio' => $request->ingenio,
                 'hacienda' => $request->hacienda,
-                'suerte' => $request->suerte,
+                'suerte' => $suerteVal,
                 'proyecto_id' => $request->proyecto_id,
                 'ambiente' => $request->ambiente,
                 'responsable_id' => $request->responsable_id,
@@ -201,6 +209,13 @@ class ViveroController extends Controller
         }
 
         $vivero->fill($request->except('identificador_unico'));
+        
+        if (!$vivero->suerte && $vivero->lote_id) {
+            $lote = \App\Models\Lote::find($vivero->lote_id);
+            if ($lote) {
+                $vivero->suerte = $lote->nombre_lote;
+            }
+        }
         
         $esCorte = $request->es_corte 
             || ($vivero->origen_vivero_id && $vivero->origen_vivero_id != $vivero->id)
