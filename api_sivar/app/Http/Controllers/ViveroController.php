@@ -552,7 +552,10 @@ class ViveroController extends Controller
             $lastPart = end($parts);
             if (is_numeric($lastPart)) {
                 array_pop($parts); // Remover número de parcela
-                return implode('-', $parts); // Retorna el Vivero ID padre
+                $cleanedParts = array_map(function($p) {
+                    return trim(preg_replace('/\b(lote|vivero)\b/i', '', $p));
+                }, $parts);
+                return implode('-', $cleanedParts); // Retorna el Vivero ID padre
             }
         }
 
@@ -576,9 +579,16 @@ class ViveroController extends Controller
         } else {
             $loteNombre = $vivero->origen_suerte;
         }
-        if ($loteNombre) $info[] = $loteNombre;
+        if ($loteNombre) {
+            $info[] = trim(preg_replace('/\b(lote|vivero)\b/i', '', $loteNombre));
+        }
         
-        if ($vivero->origen_parcela) $info[] = $vivero->origen_parcela;
+        if ($vivero->origen_parcela) {
+            $info[] = trim(preg_replace('/\b(lote|vivero)\b/i', '', $vivero->origen_parcela));
+        }
+
+        // Clean up empty elements
+        $info = array_filter(array_map('trim', $info));
 
         return count($info) > 0 ? implode('-', $info) : 'N/A';
     }
