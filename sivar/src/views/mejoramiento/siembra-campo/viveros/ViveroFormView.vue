@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto p-6 max-w-4xl">
+  <div class="container mx-auto p-6 max-w-7xl">
     <div class="mb-6">
       <div class="mb-4">
         <router-link
