@@ -477,7 +477,7 @@
               >
                 <option value="">Seleccione un Vivero</option>
                 <option v-for="v in viverosOrigenOptions" :key="'origen_vivero_' + v.id" :value="v.id">
-                  {{ v.identificador_unico }}
+                  {{ v.nombre }} ({{ v.identificador_unico }})
                 </option>
               </select>
 
