@@ -19,7 +19,7 @@ class LoteController extends Controller
         }
         
         $lotes = $query->get()->map(function($lote) {
-            $lote->viveros_activos_count = $lote->viveros->count();
+            $lote->viveros_activos_count = $lote->viveros()->whereNotNull('proyecto_id')->count();
             return $lote;
         });
 
