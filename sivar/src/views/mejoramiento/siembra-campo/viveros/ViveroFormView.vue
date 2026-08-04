@@ -1,7 +1,7 @@
 <template>
-  <div class="container mx-auto p-6 max-w-7xl">
-    <div class="mb-6">
-      <div class="mb-4">
+  <div class="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-4">
         <router-link
           :to="{ name: 'siembra_campo_viveros.show' }"
           class="inline-flex items-center px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-800 rounded-full shadow-sm transition-all duration-200"
@@ -11,10 +11,23 @@
           </svg>
           Volver a Viveros
         </router-link>
+        <h1 class="text-2xl font-bold text-slate-800">
+          {{ isEditing ? "Editar Vivero" : "Registrar Vivero" }}
+        </h1>
       </div>
-      <h1 class="text-2xl font-bold text-slate-800">
-        {{ isEditing ? "Editar Vivero" : "Registrar Vivero" }}
-      </h1>
+      
+      <div v-if="isEditing && form.proyecto_id" class="flex gap-2">
+        <button
+          type="button"
+          @click="navigateCorteVivero"
+          class="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-950/10 transition-all cursor-pointer"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7L5 5m7 7l-2.879 2.879M12 12L19 5m-7 7L5 19" />
+          </svg>
+          Registrar Corte de Vivero
+        </button>
+      </div>
     </div>
 
     <div v-if="isLoadingInfo" class="flex flex-col items-center justify-center py-20 bg-white shadow-md rounded px-8">
