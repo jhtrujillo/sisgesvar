@@ -67,17 +67,16 @@
             <th class="py-3 px-6 text-left">Lote</th>
             <th class="py-3 px-6 text-left">Id Vivero Origen</th>
             <th class="py-3 px-6 text-left">Proyecto</th>
-            <th class="py-3 px-6 text-left">Tipo de floración</th>
             <th class="py-3 px-6 text-left">Fecha Siembra</th>
             <th class="py-3 px-6 text-center">Acciones</th>
           </tr>
         </thead>
         <tbody class="text-gray-600 text-sm font-light">
           <tr v-if="loading" class="border-b border-gray-200">
-            <td colspan="9" class="py-3 px-6 text-center">Cargando viveros...</td>
+            <td colspan="8" class="py-3 px-6 text-center">Cargando viveros...</td>
           </tr>
           <tr v-else-if="filteredViveros.length === 0" class="border-b border-gray-200">
-            <td colspan="9" class="py-3 px-6 text-center">No se encontraron resultados.</td>
+            <td colspan="8" class="py-3 px-6 text-center">No se encontraron resultados.</td>
           </tr>
           <template v-else>
             <template v-for="vivero in paginatedViveros" :key="vivero.id">
@@ -124,9 +123,6 @@
                   <div class="text-sm text-gray-900" v-else>
                     <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 uppercase">Sin Sembrar / Vacío</span>
                   </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">{{ vivero.condicion || 'N/A' }}</div>
                 </td>
                 <td class="py-3 px-6 text-left">
                   <span v-if="vivero.proyecto_id">{{ formatDate(vivero.fecha_siembra) }}</span>
