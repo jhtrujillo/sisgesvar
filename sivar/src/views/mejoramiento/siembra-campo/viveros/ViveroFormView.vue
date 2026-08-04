@@ -1034,11 +1034,26 @@
                   v-model="trasladoLoteId"
                   required
                   :disabled="!trasladoHacienda"
-                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none disabled:opacity-50"
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none disabled:opacity-50 mb-3"
                 >
                   <option value="" disabled>Seleccione el lote destino...</option>
-                  <option v-for="lote in trasladoLotes" :key="lote.id" :value="lote.id" :disabled="lote.id === form.lote_id">
-                    {{ lote.nombre_lote }} (Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
+                  <option v-for="lote in trasladoLotes" :key="lote.id" :value="lote.id">
+                    {{ lote.nombre_lote }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Seleccionar Puesto Vivero</label>
+                <select
+                  v-model="trasladoConsecutivo"
+                  required
+                  :disabled="!trasladoLoteId || trasladoSlots.length === 0"
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none disabled:opacity-50"
+                >
+                  <option value="" disabled>Seleccione el puesto...</option>
+                  <option v-for="slot in trasladoSlots" :key="'slot_' + slot.consecutivo" :value="slot.consecutivo" :disabled="slot.disabled">
+                    {{ slot.nombre }} ({{ slot.identificador }}) {{ slot.isCurrent ? '- Actual' : (slot.disabled ? '- Ocupado' : '- Disponible') }}
                   </option>
                 </select>
               </div>
@@ -1128,11 +1143,44 @@ const origenCorteText = ref("");
 const lotes = ref<any[]>([]);
 const isTrasladoModalOpen = ref(false);
 const trasladoLoteId = ref('');
+const trasladoConsecutivo = ref<number | ''>('');
 const trasladoIngenio = ref('');
 const trasladoHacienda = ref('');
 const trasladoHaciendas = ref<any[]>([]);
 const trasladoLotes = ref<any[]>([]);
 const savingTraslado = ref(false);
+
+const trasladoSlots = computed(() => {
+  if (!trasladoLoteId.value) return [];
+  const selectedLote = trasladoLotes.value.find(l => l.id === Number(trasladoLoteId.value));
+  if (!selectedLote || !selectedLote.viveros) return [];
+  
+  return selectedLote.viveros.map((v: any) => {
+    const isOccupied = v.proyecto_id !== null && v.id !== form.value.id;
+    return {
+      id: v.id,
+      consecutivo: v.consecutivo_vivero_ingenio,
+      identificador: v.identificador_unico,
+      nombre: `Vivero ${v.consecutivo_vivero_ingenio}`,
+      disabled: isOccupied,
+      isCurrent: v.id === form.value.id
+    };
+  }).sort((a: any, b: any) => a.consecutivo - b.consecutivo);
+});
+
+watch(trasladoLoteId, (newLoteId) => {
+  trasladoConsecutivo.value = "";
+  if (newLoteId) {
+    if (Number(newLoteId) === form.value.lote_id) {
+      trasladoConsecutivo.value = form.value.consecutivo_vivero_ingenio;
+    } else {
+      const firstAvailable = trasladoSlots.value.find((s: any) => !s.disabled);
+      if (firstAvailable) {
+        trasladoConsecutivo.value = firstAvailable.consecutivo;
+      }
+    }
+  }
+});
 
 const parseViveroIdToFields = (viveroId: string) => {
   const parts = viveroId.split("-");
@@ -1937,6 +1985,7 @@ const openTrasladoModal = async () => {
   trasladoIngenio.value = form.value.ingenio || "";
   trasladoHacienda.value = form.value.hacienda || "";
   trasladoLoteId.value = "";
+  trasladoConsecutivo.value = "";
   trasladoHaciendas.value = [];
   trasladoLotes.value = [];
   
@@ -1970,6 +2019,7 @@ const closeTrasladoModal = () => {
 const handleTrasladoIngenioChange = async () => {
   trasladoHacienda.value = "";
   trasladoLoteId.value = "";
+  trasladoConsecutivo.value = "";
   trasladoHaciendas.value = [];
   trasladoLotes.value = [];
   if (trasladoIngenio.value) {
@@ -1985,6 +2035,7 @@ const handleTrasladoIngenioChange = async () => {
 
 const handleTrasladoHaciendaChange = async () => {
   trasladoLoteId.value = "";
+  trasladoConsecutivo.value = "";
   trasladoLotes.value = [];
   if (trasladoIngenio.value && trasladoHacienda.value) {
     try {
@@ -2001,15 +2052,17 @@ const handleTrasladoHaciendaChange = async () => {
 };
 
 const submitTraslado = async () => {
-  if (!trasladoLoteId.value) return;
+  if (!trasladoLoteId.value || !trasladoConsecutivo.value) return;
   savingTraslado.value = true;
   try {
     const response = await viverosServices.trasladarLote(route.params.id as string, {
-      lote_id: trasladoLoteId.value
+      lote_id: trasladoLoteId.value,
+      consecutivo: trasladoConsecutivo.value
     });
     toast.success("Vivero trasladado de lote correctamente");
     const updatedVivero = response.data;
     form.value.lote_id = updatedVivero.lote_id;
+    form.value.consecutivo_vivero_ingenio = updatedVivero.consecutivo_vivero_ingenio;
     form.value.ingenio = updatedVivero.ingenio;
     form.value.hacienda = updatedVivero.hacienda;
     form.value.suerte = updatedVivero.suerte;
