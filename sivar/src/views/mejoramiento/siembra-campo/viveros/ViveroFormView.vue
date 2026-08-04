@@ -523,7 +523,7 @@
                   :key="'orig_p_' + p.id" 
                   :value="p.numero_parcela"
                 >
-                  Parcela {{ p.numero_parcela }} ({{ p.variedad?.nm_vrdad || 'S/V' }})
+                  Parcela {{ p.numero_parcela }} ({{ p.variedad?.nm_vrdad || 'Sin variedad' }})
                 </option>
               </select>
 
