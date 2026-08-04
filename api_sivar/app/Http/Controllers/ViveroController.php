@@ -297,8 +297,53 @@ class ViveroController extends Controller
             ], 400);
         }
         
-        $vivero->delete();
-        return response()->json(null, 204);
+        if ($vivero->lote_id) {
+            // It is a slot within a lote, so we just clear its sowing fields to reset it to an empty slot!
+            $lote = $vivero->lote;
+            $ingenio = $lote->ingenio_codigo ?: '00';
+            $hacienda = $lote->hacienda_codigo ?: '00';
+            $suerte = $lote->nombre_lote ?: '00';
+            $anio = date('Y');
+            $identificadorDefault = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $hacienda, $suerte, $vivero->consecutivo_vivero_ingenio);
+
+            $vivero->update([
+                'identificador_unico' => $identificadorDefault,
+                'nombre' => "Vivero {$vivero->consecutivo_vivero_ingenio}",
+                'proyecto_id' => null,
+                'ambiente' => null,
+                'responsable_id' => null,
+                'fecha_siembra' => now()->format('Y-m-d'),
+                'numero_corte' => 1,
+                'temporada_floracion' => null,
+                'condicion' => null,
+                'caracter_id' => null,
+                'origen_ingenio' => null,
+                'origen_hacienda' => null,
+                'origen_suerte' => null,
+                'origen_anio' => null,
+                'origen_parcela' => null,
+                'origen_lote_id' => null,
+                'origen_vivero_id' => null,
+            ]);
+
+            // Also clear the varieties in all plots of this nursery!
+            \Illuminate\Support\Facades\DB::connection('sivar')
+                ->table('vivero_parcelas')
+                ->where('vivero_id', $vivero->id)
+                ->update([
+                    'variedad_id' => null,
+                    'updated_at' => now()
+                ]);
+
+            return response()->json([
+                'message' => 'El vivero ha sido vaciado/desactivado y el slot físico queda disponible.',
+                'vivero' => $vivero
+            ], 200);
+        } else {
+            // If it is a nursery that does NOT belong to any lote, delete it
+            $vivero->delete();
+            return response()->json(null, 204);
+        }
     }
 
     public function registrarCosecha(Request $request, $id)
