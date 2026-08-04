@@ -2086,6 +2086,7 @@ const resetAndLoad = async () => {
       if (form.value.hacienda) {
         await loadSuertes(false);
       }
+      await loadLotesForLocation();
 
       // Load origin cascading data
       if (form.value.origen_ingenio) {
