@@ -1748,6 +1748,7 @@ const startEditingPlot = (p: any) => {
     id_plot_origen: p.id_plot_origen || "",
     caracter_id: p.caracter_id || ""
   };
+  updateEditingPlotIdOrigen();
 };
 
 const cancelEditingPlot = () => {
