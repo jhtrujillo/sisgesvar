@@ -137,12 +137,13 @@ class LoteController extends Controller
             }
 
             if (!in_array($i, $existingNumbers)) {
-                // Generate unique identifier
+                // Generate unique identifier (excluding Lote/Vivero words)
                 $ingenio = $lote->ingenio_codigo ?: '00';
                 $hacienda = $lote->hacienda_codigo ?: '00';
                 $suerte = $lote->nombre_lote ?: '00';
+                $suerteCleaned = trim(preg_replace('/\b(lote|vivero)\b/i', '', $suerte));
                 $anio = date('Y');
-                $identificador = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $hacienda, $suerte, $i);
+                $identificador = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $hacienda, $suerteCleaned, $i);
 
                 $vivero = Vivero::create([
                     'identificador_unico' => $identificador,

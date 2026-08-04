@@ -303,8 +303,9 @@ class ViveroController extends Controller
             $ingenio = $lote->ingenio_codigo ?: '00';
             $hacienda = $lote->hacienda_codigo ?: '00';
             $suerte = $lote->nombre_lote ?: '00';
+            $suerteCleaned = trim(preg_replace('/\b(lote|vivero)\b/i', '', $suerte));
             $anio = date('Y');
-            $identificadorDefault = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $hacienda, $suerte, $vivero->consecutivo_vivero_ingenio);
+            $identificadorDefault = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $hacienda, $suerteCleaned, $vivero->consecutivo_vivero_ingenio);
 
             $vivero->update([
                 'identificador_unico' => $identificadorDefault,
@@ -533,9 +534,10 @@ class ViveroController extends Controller
         $ingenio = $ingenioCd ?: '00';
         $hacienda = $haciendaCd ?: '00';
         $suerte = $suerteCd ?: '00';
+        $suerteCleaned = trim(preg_replace('/\b(lote|vivero)\b/i', '', $suerte));
         $anioSiembra = $fechaSiembra ? date('Y', strtotime($fechaSiembra)) : date('Y');
 
-        return sprintf('%s%s-%s-%s-%d', $ingenio, $anioSiembra, $hacienda, $suerte, $consecutivo);
+        return sprintf('%s%s-%s-%s-%d', $ingenio, $anioSiembra, $hacienda, $suerteCleaned, $consecutivo);
     }
 
     private function formatIdViveroOrigen($vivero)
