@@ -24,7 +24,7 @@ class ViveroController extends Controller
     public function store(Request $request)
     {
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'proyecto_id' => 'required|integer|exists:proyectos,id_prycto',
+            'proyecto_id' => 'required|integer|exists:sivar.remote_pg_sipro,id_prycto',
             'ingenio' => 'required|string',
             'hacienda' => 'required|string',
             'nombre' => 'nullable|string|max:255',
