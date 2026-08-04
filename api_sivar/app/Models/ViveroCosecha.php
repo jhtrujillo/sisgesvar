@@ -16,6 +16,7 @@ class ViveroCosecha extends Model
         'fecha_cosecha',
         'nueva_fecha_siembra',
         'numero_corte_anterior',
+        'ambiente',
     ];
 
     protected $casts = [

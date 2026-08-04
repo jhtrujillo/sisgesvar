@@ -148,6 +148,26 @@
                       </svg>
                     </button>
                     <button
+                      v-if="vivero.proyecto_id"
+                      @click="openCosechaModal(vivero)"
+                      class="w-4 mr-2 transform hover:text-emerald-600 hover:scale-110 cursor-pointer text-slate-400"
+                      title="Registrar Corte (Regeneración)"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                      </svg>
+                    </button>
+                    <button
+                      v-if="vivero.proyecto_id"
+                      @click="openHistorialModal(vivero)"
+                      class="w-4 mr-2 transform hover:text-indigo-500 hover:scale-110 cursor-pointer text-slate-400"
+                      title="Ver Historial de Cortes"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                    <button
                       @click="openEstructuraModal(vivero.id)"
                       class="w-4 mr-2 transform hover:text-green-500 hover:scale-110 cursor-pointer text-slate-400"
                       title="Ver Estructura / Árbol Genealógico"
@@ -278,12 +298,12 @@
       </div>
     </div>
 
-    <!-- Modal de Cosecha -->
+    <!-- Modal de Corte -->
     <div v-if="isCosechaModalOpen" class="fixed inset-0 flex items-center justify-center bg-slate-900/60 z-50 transition-opacity duration-300">
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden border border-slate-100">
         <!-- Header -->
         <div class="flex justify-between items-center border-b border-slate-100 p-5 bg-slate-50">
-          <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Registrar Cosecha</h4>
+          <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Registrar Corte</h4>
           <button @click="closeCosechaModal" class="text-slate-400 hover:text-slate-600 transition-colors text-2xl">&times;</button>
         </div>
 
@@ -291,11 +311,11 @@
         <form @submit.prevent="submitCosecha">
           <div class="p-6 space-y-4">
             <div class="p-3 bg-emerald-50/50 text-emerald-900 text-xs font-semibold rounded-lg border border-emerald-100/50">
-              Registrando cosecha para el vivero <span class="font-bold">{{ viveroSeleccionado?.nombre }}</span> (Corte Actual: {{ viveroSeleccionado?.numero_corte }}).
+              Registrando corte para el vivero <span class="font-bold">{{ viveroSeleccionado?.nombre }}</span> (Corte Actual: {{ viveroSeleccionado?.numero_corte }}).
             </div>
 
             <div>
-              <label for="fecha_cosecha" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Fecha de Cosecha <span class="text-red-500">*</span></label>
+              <label for="fecha_cosecha" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Fecha del Corte <span class="text-red-500">*</span></label>
               <input
                 v-model="cosechaForm.fecha_cosecha"
                 id="fecha_cosecha"
@@ -306,14 +326,16 @@
             </div>
 
             <div>
-              <label for="nueva_fecha_siembra" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nueva Fecha de Siembra <span class="text-red-500">*</span></label>
-              <input
-                v-model="cosechaForm.nueva_fecha_siembra"
-                id="nueva_fecha_siembra"
-                type="date"
+              <label for="ambiente" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Uso para la Floración <span class="text-red-500">*</span></label>
+              <select
+                v-model="cosechaForm.ambiente"
+                id="ambiente"
                 required
-                class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-100 focus:border-emerald-400 outline-none transition-all"
-              />
+                class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-100 focus:border-emerald-400 outline-none transition-all bg-white"
+              >
+                <option value="Natural">Natural</option>
+                <option value="Fotoperiodo">Fotoperiodo</option>
+              </select>
             </div>
           </div>
 
@@ -335,19 +357,19 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Guardar Cosecha
+              Guardar Corte
             </button>
           </div>
         </form>
       </div>
     </div>
 
-    <!-- Modal de Historial de Cosechas -->
+    <!-- Modal de Historial de Cortes -->
     <div v-if="isHistorialModalOpen" class="fixed inset-0 flex items-center justify-center bg-slate-900/60 z-50 transition-opacity duration-300">
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl mx-4 overflow-hidden border border-slate-100">
         <!-- Header -->
         <div class="flex justify-between items-center border-b border-slate-100 p-5 bg-slate-50">
-          <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Historial de Cosechas</h4>
+          <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Historial de Cortes</h4>
           <button @click="closeHistorialModal" class="text-slate-400 hover:text-slate-600 transition-colors text-2xl">&times;</button>
         </div>
 
@@ -355,7 +377,7 @@
         <div class="p-6">
           <div class="mb-4 flex flex-col gap-2">
             <div class="text-sm text-slate-600">
-              Historial de cosechas para el vivero <span class="font-bold text-slate-800" v-html="viveroSeleccionado?.nombre"></span> (<span class="font-mono text-xs">{{ viveroSeleccionado?.identificador_unico }}</span>)
+              Historial de cortes para el vivero <span class="font-bold text-slate-800" v-html="viveroSeleccionado?.nombre"></span> (<span class="font-mono text-xs">{{ viveroSeleccionado?.identificador_unico }}</span>)
             </div>
             <div class="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-2">
               <div><span class="font-bold block uppercase">Ingenio</span> <span v-html="getIngenioName(viveroSeleccionado?.ingenio)"></span></div>
@@ -377,7 +399,7 @@
           </div>
 
           <div v-else-if="historial.length === 0" class="text-center py-8 text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-            No hay historial de cosechas para este vivero.
+            No hay historial de cortes para este vivero.
           </div>
 
           <div v-else class="overflow-x-auto border border-slate-200 rounded-xl">
@@ -385,8 +407,8 @@
               <thead class="text-xs text-slate-600 uppercase bg-slate-50 border-b border-slate-200">
                 <tr>
                   <th scope="col" class="px-4 py-3">Código Histórico</th>
-                  <th scope="col" class="px-4 py-3">Fecha de Cosecha</th>
-                  <th scope="col" class="px-4 py-3">Nueva Siembra</th>
+                  <th scope="col" class="px-4 py-3">Fecha del Corte</th>
+                  <th scope="col" class="px-4 py-3">Uso Floración</th>
                   <th scope="col" class="px-4 py-3 text-center">Corte Anterior</th>
                 </tr>
               </thead>
@@ -396,7 +418,11 @@
                     <span class="font-mono text-xs">{{ getHistoricalCode(viveroSeleccionado?.identificador_unico, item.numero_corte_anterior) }}</span>
                   </td>
                   <td class="px-4 py-3 font-medium text-slate-800">{{ formatDate(item.fecha_cosecha) }}</td>
-                  <td class="px-4 py-3 text-slate-600">{{ formatDate(item.nueva_fecha_siembra) }}</td>
+                  <td class="px-4 py-3 text-slate-600">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                      {{ item.ambiente || 'Natural' }}
+                    </span>
+                  </td>
                   <td class="px-4 py-3 text-center">
                     <span class="bg-indigo-50 text-indigo-700 font-bold py-1 px-3 rounded-full text-xs">
                       {{ item.numero_corte_anterior }}
@@ -585,7 +611,7 @@ const isSubmittingCosecha = ref(false);
 const viveroSeleccionado = ref<any>(null);
 const cosechaForm = ref({
   fecha_cosecha: '',
-  nueva_fecha_siembra: ''
+  ambiente: 'Natural'
 });
 
 const isHistorialModalOpen = ref(false);
@@ -709,7 +735,7 @@ const openCosechaModal = (vivero: any) => {
   viveroSeleccionado.value = vivero;
   cosechaForm.value = {
     fecha_cosecha: '',
-    nueva_fecha_siembra: ''
+    ambiente: 'Natural'
   };
   isCosechaModalOpen.value = true;
 };
@@ -736,12 +762,12 @@ const submitCosecha = async () => {
   isSubmittingCosecha.value = true;
   try {
     await viverosServices.registrarCosecha(viveroSeleccionado.value.id, cosechaForm.value);
-    toast.success('Cosecha registrada y vivero actualizado correctamente');
+    toast.success('Corte registrado y vivero actualizado correctamente');
     closeCosechaModal();
     loadViveros(); // Reload table
   } catch (error) {
-    console.error('Error registering cosecha:', error);
-    toast.error('Error al registrar la cosecha');
+    console.error('Error registering corte:', error);
+    toast.error('Error al registrar el corte');
   } finally {
     isSubmittingCosecha.value = false;
   }

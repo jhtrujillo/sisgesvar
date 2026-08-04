@@ -536,21 +536,28 @@ class ViveroController extends Controller
     {
         $request->validate([
             'fecha_cosecha' => 'required|date',
-            'nueva_fecha_siembra' => 'required|date',
+            'ambiente' => 'nullable|string|max:255',
         ]);
 
         $vivero = Vivero::findOrFail($id);
 
+        $fechaCorte = $request->fecha_cosecha;
+        $ambiente = $request->ambiente;
+
         // Guardar el registro histórico de la cosecha
         $vivero->cosechas()->create([
-            'fecha_cosecha' => $request->fecha_cosecha,
-            'nueva_fecha_siembra' => $request->nueva_fecha_siembra,
+            'fecha_cosecha' => $fechaCorte,
+            'nueva_fecha_siembra' => $fechaCorte,
             'numero_corte_anterior' => $vivero->numero_corte,
+            'ambiente' => $ambiente,
         ]);
 
         // Actualizar el vivero para el nuevo ciclo
         $vivero->numero_corte += 1;
-        $vivero->fecha_siembra = $request->nueva_fecha_siembra;
+        $vivero->fecha_siembra = $fechaCorte;
+        if ($ambiente) {
+            $vivero->ambiente = $ambiente;
+        }
 
         // HU-003: Actualizar identificador_unico con el sufijo de corte
         $identificadorBase = preg_replace('/-C?\d+$/', '', $vivero->identificador_unico);
@@ -559,7 +566,7 @@ class ViveroController extends Controller
         $vivero->save();
 
         return response()->json([
-            'message' => 'Cosecha registrada y vivero actualizado correctamente',
+            'message' => 'Corte registrado y vivero actualizado correctamente',
             'vivero' => $vivero
         ]);
     }

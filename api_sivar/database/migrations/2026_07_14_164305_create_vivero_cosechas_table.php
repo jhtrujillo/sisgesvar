@@ -17,6 +17,7 @@ return new class extends Migration
             $table->date('fecha_cosecha');
             $table->date('nueva_fecha_siembra');
             $table->integer('numero_corte_anterior');
+            $table->string('ambiente')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
