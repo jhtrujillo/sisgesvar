@@ -376,8 +376,7 @@ class ViveroController extends Controller
 
         $viveroA->load(['lote', 'historialLotes.lote']);
 
-        return response()->json($viveroA);
-    }  }
+    }
 
     public function destroy($id)
     {
