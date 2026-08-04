@@ -211,7 +211,6 @@
                             <th class="px-4 py-2.5 border-b border-slate-200">Carácter</th>
                             <th class="px-4 py-2.5 border-b border-slate-200">Parcela Orig.</th>
                             <th class="px-4 py-2.5 border-b border-slate-200">ID Plot Orig.</th>
-                            <th class="px-4 py-2.5 border-b border-slate-200">Cortes Realizados (Historial)</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -226,29 +225,6 @@
                             </td>
                             <td class="px-4 py-2.5 text-slate-600 font-bold">{{ p.numero_parcela_origen || 'N/A' }}</td>
                             <td class="px-4 py-2.5 text-slate-600 font-mono">{{ p.id_plot_origen || 'N/A' }}</td>
-                            <td class="px-4 py-2.5">
-                              <div v-if="p.cortes && p.cortes.length > 0" class="flex flex-wrap gap-1.5">
-                                <div
-                                  v-for="c in p.cortes"
-                                  :key="'list_cut_' + c.id"
-                                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100 transition-colors shadow-sm cursor-pointer"
-                                  title="Ver/Editar vivero destino de este corte"
-                                >
-                                  <router-link :to="{ name: 'vivero_editar.show', params: { id: c.id } }" class="hover:underline">
-                                    Corte {{ c.consecutivo_corte }}: {{ c.identificador_unico }}
-                                  </router-link>
-                                  <button 
-                                    type="button" 
-                                    @click.stop.prevent="confirmDeleteCorte(c.id, c.identificador_unico)"
-                                    class="text-red-400 hover:text-red-600 ml-0.5 transition-colors font-bold text-[10px]"
-                                    title="Eliminar este Corte"
-                                  >
-                                    &times;
-                                  </button>
-                                </div>
-                              </div>
-                              <span v-else class="text-slate-400 italic text-[10px]">Sin cortes registrados</span>
-                            </td>
                           </tr>
                         </tbody>
                       </table>
