@@ -13,7 +13,6 @@ class ViveroController extends Controller
     public function index()
     {
         $viveros = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter', 'lote', 'origenLote', 'origenVivero'])
-            ->whereNotNull('proyecto_id')
             ->orderBy('created_at', 'desc')
             ->get();
         foreach ($viveros as $vivero) {

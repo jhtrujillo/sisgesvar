@@ -117,13 +117,21 @@
                   </div>
                 </td>
 
-                <td class="px-6 py-4">
-                  <div class="text-sm text-gray-900" :title="vivero.proyecto?.nm_prycto || 'N/A'" v-html="vivero.proyecto?.nm_prycto || 'N/A'"></div>
+                 <td class="px-6 py-4">
+                  <div class="text-sm text-gray-900" v-if="vivero.proyecto_id">
+                    <span :title="vivero.proyecto?.nm_prycto || 'N/A'" v-html="vivero.proyecto?.nm_prycto || 'N/A'"></span>
+                  </div>
+                  <div class="text-sm text-gray-900" v-else>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 uppercase">Sin Sembrar / Vacío</span>
+                  </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900">{{ vivero.condicion || 'N/A' }}</div>
                 </td>
-                <td class="py-3 px-6 text-left">{{ formatDate(vivero.fecha_siembra) }}</td>
+                <td class="py-3 px-6 text-left">
+                  <span v-if="vivero.proyecto_id">{{ formatDate(vivero.fecha_siembra) }}</span>
+                  <span v-else class="text-slate-400 font-mono italic">N/A</span>
+                </td>
                 <td class="py-3 px-6 text-center">
                   <div class="flex item-center justify-center">
 
