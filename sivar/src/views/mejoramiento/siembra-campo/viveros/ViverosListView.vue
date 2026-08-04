@@ -146,6 +146,16 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v7m0 0H8m4 0h4m-8 4h8M4 16h4m8 0h4" />
                       </svg>
                     </button>
+                    <button
+                      v-if="vivero.proyecto_id"
+                      @click="registrarCorteVivero(vivero)"
+                      class="w-4 mr-2 transform hover:text-orange-500 hover:scale-110 cursor-pointer text-slate-400"
+                      title="Registrar Corte de Vivero"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-4.879-4.879L19 9.38M14.121 14.121a3 3 0 11-4.242-4.242 3 3 0 014.242 4.242zM5 19l4.879-4.879M5 9.38l4.879 4.879m0 0a3 3 0 104.243-4.243 3 3 0 00-4.243 4.243z" />
+                      </svg>
+                    </button>
                     <router-link
                       :to="{ name: 'vivero_editar.show', params: { id: vivero.id } }"
                       class="w-4 mr-2 transform hover:text-blue-500 hover:scale-110 cursor-pointer text-slate-400"
@@ -486,6 +496,7 @@ import { useToast } from 'vue-toastification';
 import ViveroTreeComponent from '@/components/viveros/ViveroTreeComponent.vue';
 
 const toast = useToast();
+const router = useRouter();
 const viveros = ref<any[]>([]);
 const loading = ref(true);
 const expandedViveros = ref<Record<string | number, boolean>>({});
@@ -731,6 +742,40 @@ const closeHistorialModal = () => {
   isHistorialModalOpen.value = false;
   viveroSeleccionado.value = null;
   historial.value = [];
+};
+
+const registrarCorteVivero = (vivero: any) => {
+  try {
+    let origenAnio = new Date().getFullYear();
+    if (vivero.fecha_siembra) {
+      const dateStr = String(vivero.fecha_siembra);
+      const yearMatch = dateStr.match(/^(\d{4})/);
+      if (yearMatch && yearMatch[1]) {
+        origenAnio = parseInt(yearMatch[1], 10);
+      }
+    }
+
+    router.push({
+      name: "vivero_nuevo.show",
+      query: {
+        origen_ingenio: vivero.ingenio || "",
+        origen_hacienda: vivero.hacienda || "",
+        origen_suerte: vivero.suerte || "",
+        origen_vivero_id: vivero.id,
+        origen_anio: origenAnio,
+        proyecto_id: vivero.proyecto_id || "",
+        caracter_id: vivero.caracter_id || "",
+        responsable_id: vivero.responsable_id || "",
+        es_corte: "true",
+        ingenio: vivero.ingenio || "",
+        hacienda: vivero.hacienda || "",
+        suerte: vivero.suerte || ""
+      }
+    });
+  } catch (error: any) {
+    console.error("Error in registrarCorteVivero:", error);
+    toast.error("Error al redirigir al corte: " + error.message);
+  }
 };
 
 onMounted(() => {

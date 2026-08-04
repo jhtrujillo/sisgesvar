@@ -74,10 +74,20 @@ class ViveroController extends Controller
         $consecutivoViveroIngenio = $request->consecutivo_vivero_ingenio;
         $esCorte = $request->es_corte || $request->query('es_corte') === 'true' || $request->query('es_corte') === 1;
 
-        if ($request->origen_parcela && $esCorte) {
-            $cutNumber = Vivero::where('origen_parcela', $request->origen_parcela)->count() + 1;
-            $identificador = $request->origen_parcela . '-' . $cutNumber;
-        } else {
+        if ($esCorte) {
+            if ($request->origen_vivero_id) {
+                $parent = Vivero::find($request->origen_vivero_id);
+                if ($parent) {
+                    $cutNumber = Vivero::where('origen_vivero_id', $parent->id)->count() + 1;
+                    $identificador = $parent->identificador_unico . '-' . $cutNumber;
+                }
+            } else if ($request->origen_parcela) {
+                $cutNumber = Vivero::where('origen_parcela', $request->origen_parcela)->count() + 1;
+                $identificador = $request->origen_parcela . '-' . $cutNumber;
+            }
+        }
+
+        if (!isset($identificador)) {
             $identificador = $this->generarIdentificadorUnico(
                 $request->ingenio,
                 $request->hacienda,
@@ -167,6 +177,50 @@ class ViveroController extends Controller
                 'activo' => true,
                 'accion' => "Registro Inicial en {$loteName} (Vivero {$vivero->consecutivo_vivero_ingenio})"
             ]);
+        }
+
+        if ($esCorte && $request->origen_vivero_id) {
+            // Delete any existing parcelas for this nursery
+            \DB::connection('sivar')
+                ->table('vivero_parcelas')
+                ->where('vivero_id', $vivero->id)
+                ->delete();
+
+            // Fetch parcelas from the parent nursery
+            $parentParcelas = \DB::connection('sivar')
+                ->table('vivero_parcelas')
+                ->where('vivero_id', $request->origen_vivero_id)
+                ->orderBy('numero_parcela')
+                ->get();
+
+            // Recalculate ID Plot for the new cut
+            $parts = explode('-', $vivero->identificador_unico);
+            $baseId = array_slice($parts, 0, 4);
+            $baseIdStr = implode('-', $baseId);
+
+            foreach ($parentParcelas as $p) {
+                $newIdPlot = null;
+                if ($p->numero_parcela) {
+                    $newIdPlot = $baseIdStr . '-' . $p->numero_parcela;
+                }
+
+                \DB::connection('sivar')
+                    ->table('vivero_parcelas')
+                    ->insert([
+                        'vivero_id' => $vivero->id,
+                        'numero_parcela' => $p->numero_parcela,
+                        'variedad_id' => $p->variedad_id,
+                        'numero_parcela_origen' => $p->numero_parcela,
+                        'id_plot_origen' => $newIdPlot,
+                        'caracter_id' => $p->caracter_id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+            }
+            
+            // Sync count of total_parcelas
+            $vivero->total_parcelas = count($parentParcelas);
+            $vivero->save();
         }
 
         return response()->json($vivero, 201);
@@ -602,12 +656,20 @@ class ViveroController extends Controller
 
     public function getNextCorteConsecutivo(Request $request)
     {
-        $origen = $request->query('origen_parcela');
-        if (!$origen) {
-            return response()->json(['consecutivo' => 1]);
+        $origenViveroId = $request->query('origen_vivero_id');
+        $origenParcela = $request->query('origen_parcela');
+        
+        if ($origenViveroId) {
+            $count = Vivero::where('origen_vivero_id', $origenViveroId)->count();
+            return response()->json(['consecutivo' => $count + 1]);
         }
-        $count = Vivero::where('origen_parcela', $origen)->count();
-        return response()->json(['consecutivo' => $count + 1]);
+        
+        if ($origenParcela) {
+            $count = Vivero::where('origen_parcela', $origenParcela)->count();
+            return response()->json(['consecutivo' => $count + 1]);
+        }
+
+        return response()->json(['consecutivo' => 1]);
     }
 
     public function getEstructura($id)

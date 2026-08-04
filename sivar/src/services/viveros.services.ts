@@ -8,8 +8,8 @@ export default {
   getVivero(id: number | string) {
     return api.get(`${urls.API_VIVEROS}/${id}`);
   },
-  getNextCorteConsecutivo(origen_parcela: string) {
-    return api.get(`${urls.API_VIVEROS}/next-corte-consecutivo`, { params: { origen_parcela } });
+  getNextCorteConsecutivo(params: any) {
+    return api.get(`${urls.API_VIVEROS}/next-corte-consecutivo`, { params });
   },
   getEstructura(id: number | string) {
     return api.get(`${urls.API_VIVEROS}/${id}/estructura`);
