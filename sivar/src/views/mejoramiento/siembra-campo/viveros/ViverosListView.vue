@@ -63,8 +63,10 @@
           <tr>
             <th class="py-3 px-4 text-center w-12"></th>
             <th class="py-3 px-6 text-left">ID Vivero</th>
-            <th class="py-3 px-6 text-left">N° Vivero</th>
+            <th class="py-3 px-6 text-left">Ingenio</th>
+            <th class="py-3 px-6 text-left">Hacienda</th>
             <th class="py-3 px-6 text-left">Lote</th>
+            <th class="py-3 px-6 text-left">N° Vivero</th>
             <th class="py-3 px-6 text-left">Id Vivero Origen</th>
             <th class="py-3 px-6 text-left">Proyecto</th>
             <th class="py-3 px-6 text-left">Fecha Siembra</th>
@@ -73,10 +75,10 @@
         </thead>
         <tbody class="text-gray-600 text-sm font-light">
           <tr v-if="loading" class="border-b border-gray-200">
-            <td colspan="8" class="py-3 px-6 text-center">Cargando viveros...</td>
+            <td colspan="10" class="py-3 px-6 text-center">Cargando viveros...</td>
           </tr>
           <tr v-else-if="filteredViveros.length === 0" class="border-b border-gray-200">
-            <td colspan="8" class="py-3 px-6 text-center">No se encontraron resultados.</td>
+            <td colspan="10" class="py-3 px-6 text-center">No se encontraron resultados.</td>
           </tr>
           <template v-else>
             <template v-for="vivero in paginatedViveros" :key="vivero.id">
@@ -102,13 +104,17 @@
                 <td class="py-3 px-6 text-left whitespace-nowrap">
                   <span class="font-medium text-slate-800">{{ vivero.identificador_unico }}</span>
                 </td>
-                <td class="py-3 px-6 text-left whitespace-nowrap font-bold font-mono text-slate-700">
-                  {{ vivero.consecutivo_vivero_ingenio || 'N/A' }}
+                <td class="py-3 px-6 text-left whitespace-nowrap" v-html="getIngenioName(vivero.ingenio)"></td>
+                <td class="py-3 px-6 text-left whitespace-nowrap font-medium text-slate-700">
+                  {{ vivero.hacienda || 'N/A' }}
                 </td>
                 <td class="py-3 px-6 text-left whitespace-nowrap">
                   <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                     {{ vivero.lote?.nombre_lote || 'N/A' }}
                   </span>
+                </td>
+                <td class="py-3 px-6 text-left whitespace-nowrap font-bold font-mono text-slate-700">
+                  {{ vivero.consecutivo_vivero_ingenio || 'N/A' }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900 font-mono" :title="vivero.origen_parcela || 'N/A'">
@@ -163,7 +169,7 @@
               </tr>
               <!-- Detalle de Parcelas Colapsable -->
               <tr v-if="expandedViveros[vivero.id]">
-                <td colspan="7" class="bg-slate-50 border-b border-gray-200 p-4">
+                <td colspan="10" class="bg-slate-50 border-b border-gray-200 p-4">
                   <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
                     <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cenicana" fill="none" viewBox="0 0 24 24" stroke="currentColor">
