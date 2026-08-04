@@ -202,7 +202,9 @@ class ViveroController extends Controller
 
         $vivero->fill($request->except('identificador_unico'));
         
-        $esCorte = $request->es_corte || str_contains($vivero->identificador_unico, $vivero->origen_parcela);
+        $esCorte = $request->es_corte 
+            || ($vivero->origen_vivero_id && $vivero->origen_vivero_id != $vivero->id)
+            || (count(explode('-', $vivero->identificador_unico)) >= 5);
         
         if ($vivero->origen_parcela && $esCorte) {
             $cutNumber = Vivero::where('origen_parcela', $vivero->origen_parcela)
