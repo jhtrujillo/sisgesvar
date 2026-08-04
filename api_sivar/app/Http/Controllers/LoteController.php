@@ -10,7 +10,7 @@ class LoteController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Lote::query()->with('viveros');
+        $query = Lote::query()->with('viveros')->orderBy('nombre_lote', 'asc');
         if ($request->has('ingenio_codigo') && $request->ingenio_codigo) {
             $query->where('ingenio_codigo', $request->ingenio_codigo);
         }

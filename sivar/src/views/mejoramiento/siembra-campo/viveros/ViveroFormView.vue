@@ -1098,7 +1098,12 @@ watch([() => form.value.origen_ingenio, () => form.value.origen_hacienda], () =>
 
 const viverosOrigenOptions = computed(() => {
   if (!form.value.origen_lote_id) return [];
-  return allViverosList.value.filter(v => v.lote_id == form.value.origen_lote_id);
+  const filtered = allViverosList.value.filter(v => v.lote_id == form.value.origen_lote_id);
+  return filtered.sort((a, b) => {
+    const nameA = (a.nombre || "").toString().toLowerCase();
+    const nameB = (b.nombre || "").toString().toLowerCase();
+    return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: "base" });
+  });
 });
 
 watch(() => form.value.origen_vivero_id, (newVal) => {
