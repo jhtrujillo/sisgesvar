@@ -77,11 +77,20 @@ class Vivero extends Model
         return $this->responsable ? $this->responsable->nmbre : null;
     }
 
+    protected static $megaAmbientesCache = null;
+    protected static $consecutivoCorteCache = [];
+
     public function getNombreAmbienteAttribute()
     {
         if (!$this->ambiente) return null;
         if (is_numeric($this->ambiente)) {
-            $amb = \Illuminate\Support\Facades\DB::connection('sivar')->table('mega_ambiente')->where('id_ambnte', $this->ambiente)->first();
+            if (self::$megaAmbientesCache === null) {
+                self::$megaAmbientesCache = \Illuminate\Support\Facades\DB::connection('sivar')
+                    ->table('mega_ambiente')
+                    ->get()
+                    ->keyBy('id_ambnte');
+            }
+            $amb = self::$megaAmbientesCache->get($this->ambiente);
             return $amb ? $amb->nm_ambnte : null;
         }
         return $this->ambiente;
@@ -93,9 +102,17 @@ class Vivero extends Model
             return null;
         }
 
-        return self::where('origen_parcela', $this->origen_parcela)
-            ->where('id', '<=', $this->id)
-            ->count();
+        $key = $this->origen_parcela;
+        if (!isset(self::$consecutivoCorteCache[$key])) {
+            self::$consecutivoCorteCache[$key] = self::where('origen_parcela', $key)
+                ->orderBy('id')
+                ->pluck('id')
+                ->toArray();
+        }
+
+        $ids = self::$consecutivoCorteCache[$key];
+        $index = array_search($this->id, $ids);
+        return $index !== false ? ($index + 1) : 1;
     }
 
     protected $appends = ['nombre_proyecto', 'nombre_responsable', 'nombre_ambiente', 'consecutivo_corte'];

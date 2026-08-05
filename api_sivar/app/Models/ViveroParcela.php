@@ -20,7 +20,7 @@ class ViveroParcela extends Model
         'caracter_id',
     ];
 
-    protected $appends = ['cortes'];
+    // protected $appends = ['cortes'];
 
     public function getCortesAttribute()
     {
