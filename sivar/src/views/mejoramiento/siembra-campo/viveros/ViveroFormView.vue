@@ -385,6 +385,7 @@
             </div>
           </div>
         </div>
+        </div>
 
         <!-- CARD 3: ORIGEN DE SEMILLA -->
         <div v-show="activeTab === 'origen'" class="space-y-6">
