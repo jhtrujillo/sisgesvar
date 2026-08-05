@@ -1,7 +1,7 @@
 <template>
-  <div class="container mx-auto p-6 max-w-3xl">
-    <div class="mb-6">
-      <div class="mb-4">
+  <div class="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-4">
         <router-link
           :to="{ name: 'siembra_campo_viveros.show' }"
           class="inline-flex items-center px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-800 rounded-full shadow-sm transition-all duration-200"
@@ -11,10 +11,12 @@
           </svg>
           Volver a Viveros
         </router-link>
+        <h1 class="text-2xl font-bold text-slate-800">
+          {{ isEditing ? "Editar Vivero" : "Registrar Vivero" }}
+        </h1>
       </div>
-      <h1 class="text-2xl font-bold text-slate-800">
-        {{ isEditing ? "Editar Vivero" : "Registrar Vivero" }}
-      </h1>
+      
+      <div></div>
     </div>
 
     <div v-if="isLoadingInfo" class="flex flex-col items-center justify-center py-20 bg-white shadow-md rounded px-8">
@@ -30,320 +32,581 @@
     </div>
 
     <template v-else>
-      <form @submit.prevent="submitForm" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Identificador Único -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="identificador_unico">IDPlot</label>
-            <input
-              v-model="form.identificador_unico"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-500 bg-gray-100 leading-tight focus:outline-none focus:shadow-outline cursor-not-allowed"
-              id="identificador_unico"
-              type="text"
-              placeholder="Generado automáticamente por el sistema"
-              disabled
-            />
-          </div>
+      <!-- Pestañas de Navegación del Formulario -->
+      <div class="flex border-b border-slate-200 mb-6 bg-white p-2 rounded-2xl shadow-sm gap-2">
+        <button
+          type="button"
+          @click="activeTab = 'generales'"
+          class="flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
+          :class="activeTab === 'generales' ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          Datos Generales y Ubicación
+        </button>
+        <button
+          type="button"
+          @click="activeTab = 'origen'"
+          class="flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
+          :class="activeTab === 'origen' ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Origen de Semilla
+        </button>
+        <button
+          v-if="isEditing"
+          type="button"
+          @click="activeTab = 'parcelas'"
+          class="flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
+          :class="activeTab === 'parcelas' ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+          </svg>
+          Distribución de Parcelas ({{ parcelas.length }} Plots)
+        </button>
+      </div>
 
-          <!-- Nombre -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="nombre"> Nombre del Vivero <span class="text-red-500">*</span> </label>
-            <input
-              v-model="form.nombre"
-              required
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="nombre"
-              type="text"
-              placeholder="Ej. Vivero Principal"
-            />
-          </div>
-
-          <!-- Fecha Siembra -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="fecha_siembra"> Fecha de Siembra / Corte <span class="text-red-500">*</span> </label>
-            <input
-              v-model="form.fecha_siembra"
-              required
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="fecha_siembra"
-              type="date"
-            />
-          </div>
-
-          <!-- Ingenio -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="ingenio">Ingenio</label>
-            <select
-              v-model="form.ingenio"
-              @change="loadHaciendas(true)"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="ingenio"
-            >
-              <option value="">Seleccione un Ingenio</option>
-              <option v-for="ing in ingenios" :key="ing.cd_ingnio" :value="ing.cd_ingnio" v-html="ing.nm_ingnio"></option>
-            </select>
-          </div>
-
-          <!-- Hacienda -->
-          <div class="mb-4 md:col-span-2">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="hacienda">Hacienda</label>
-            <select
-              v-model="form.hacienda"
-              @change="loadSuertes(true)"
-              :disabled="!form.ingenio || haciendas.length === 0"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="hacienda"
-            >
-              <option value="">Seleccione una Hacienda</option>
-              <option v-for="hda in haciendas" :key="hda.cd_hcnda" :value="hda.cd_hcnda" v-html="hda.nm_hcnda"></option>
-            </select>
-          </div>
-
-          <!-- Suerte -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="suerte">Suerte</label>
-            <select
-              v-model="form.suerte"
-              :disabled="!form.hacienda || suertes.length === 0"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="suerte"
-            >
-              <option value="">Seleccione una Suerte</option>
-              <option v-for="ste in suertes" :key="ste.cd_srte" :value="ste.cd_srte">{{ ste.cd_srte }} (Área: {{ Number(ste.area).toFixed(2) }})</option>
-            </select>
-          </div>
-
-          <!-- Temporada Floración -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="temporada_floracion"> Temporada de cruzamientos </label>
-            <input
-              v-model="form.temporada_floracion"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="temporada_floracion"
-              type="text"
-              placeholder="Ej. Invierno 2024"
-            />
-          </div>
-
-          <!-- Proyecto -->
-          <div class="mb-4 relative md:col-span-2">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="proyecto_id">Proyecto (Mejoramiento)</label>
-            <div class="relative">
-              <textarea
-                v-model="searchProyecto"
-                @focus="showProyectos = true"
-                @blur="hideProyectosDelay"
-                placeholder="Escribe para buscar un proyecto..."
-                rows="2"
-                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline resize-none"
-              ></textarea>
-              <button v-if="form.proyecto_id" @click="clearProyecto" type="button" class="absolute right-2 top-2 text-gray-400 hover:text-red-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </button>
-              <div
-                v-if="showProyectos"
-                class="absolute z-10 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto sm:text-sm"
-              >
-                <div v-if="filteredProyectos.length === 0" class="cursor-default select-none relative py-2 pl-3 pr-9 text-gray-500">
-                  No se encontraron proyectos
-                </div>
-                <div
-                  v-for="pry in filteredProyectos"
-                  :key="pry.id_prycto"
-                  @mousedown="selectProyecto(pry)"
-                  class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-cenicana hover:text-white break-words whitespace-normal leading-tight"
-                  :class="form.proyecto_id === pry.id_prycto ? 'bg-cenicana-50 text-cenicana-800 font-semibold' : 'text-gray-900'"
-                  v-html="formatProjectName(pry)"
-                ></div>
-              </div>
+      <form @submit.prevent="submitForm" class="space-y-6">
+        <div v-show="activeTab === 'generales'" class="space-y-6">
+          <!-- CARD 1: IDENTIFICACIÓN Y GENERALES -->
+        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-5">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <div class="p-1.5 bg-slate-100 text-slate-700 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
             </div>
+            <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Información General del Vivero</h3>
           </div>
-          <!-- Carácter -->
-          <div class="mb-4 relative md:col-span-1">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="caracter_id">Carácter (Opcional)</label>
-            <div class="relative">
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Identificador Único -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="identificador_unico">ID Vivero</label>
               <input
+                v-model="form.identificador_unico"
+                class="w-full bg-slate-100 border border-slate-200 text-slate-500 text-xs font-semibold rounded-xl px-3.5 py-3 outline-none cursor-not-allowed shadow-inner"
+                id="identificador_unico"
                 type="text"
-                v-model="searchCaracter"
-                @focus="showCaracteres = true"
-                @blur="hideCaracteresDelay"
-                placeholder="Buscar o agregar..."
-                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                :disabled="!form.proyecto_id"
-                :class="{ 'bg-gray-100 cursor-not-allowed': !form.proyecto_id }"
+                placeholder="Generado automáticamente por el sistema"
+                disabled
               />
-              <button v-if="form.caracter_id" @click="clearCaracter" type="button" class="absolute right-2 top-2 text-gray-400 hover:text-red-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </button>
-              <div
-                v-if="showCaracteres && form.proyecto_id"
-                class="absolute z-10 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto sm:text-sm"
-              >
-                <div
-                  v-if="searchCaracter && !exactMatchCaracter"
-                  @mousedown="selectNewCaracter"
-                  class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-green-100 text-green-700 font-semibold border-b border-gray-100"
-                >
-                  + Agregar nuevo: "{{ searchCaracter }}"
-                </div>
-                <div v-if="filteredCaracteres.length === 0 && !searchCaracter" class="cursor-default select-none relative py-2 pl-3 pr-9 text-gray-500">
-                  No hay caracteres (escribe para crear)
-                </div>
-                <div
-                  v-for="car in filteredCaracteres"
-                  :key="car.id"
-                  @mousedown="selectCaracter(car)"
-                  class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-cenicana hover:text-white"
-                  :class="form.caracter_id === car.id ? 'bg-cenicana-50 text-cenicana-800 font-semibold' : 'text-gray-900'"
-                >
-                  {{ car.nombre }}
-                </div>
-              </div>
             </div>
-          </div>
-          <!-- Condición -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="condicion">Tipo de floración</label>
-            <select
-              v-model="form.condicion"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="condicion"
-            >
-              <option value="">Seleccione un Tipo de floración</option>
-              <option value="Natural">Natural</option>
-              <option value="Fotoperiodo">Fotoperiodo</option>
-            </select>
-          </div>
-          <!-- Ambiente -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="ambiente">Mega Ambiente</label>
-            <select
-              v-model="form.ambiente"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="ambiente"
-            >
-              <option value="">Vacío (Sin Mega Ambiente)</option>
-              <option v-for="amb in ambientes" :key="amb.id_ambnte" :value="amb.id_ambnte" v-html="amb.nm_ambnte"></option>
-            </select>
-          </div>
 
-          <!-- Responsable -->
-          <div class="mb-4 relative">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="responsable_id">Responsable</label>
-            <div class="relative">
+            <!-- Fecha Siembra -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="fecha_siembra">Fecha de Siembra / Corte <span class="text-red-500">*</span></label>
               <input
-                type="text"
-                v-model="searchResponsable"
-                @focus="showResponsables = true"
-                @blur="hideResponsablesDelay"
-                placeholder="Escribe para buscar un responsable..."
-                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                v-model="form.fecha_siembra"
+                required
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                id="fecha_siembra"
+                type="date"
               />
-              <button v-if="form.responsable_id" @click="clearResponsable" type="button" class="absolute right-2 top-2 text-gray-400 hover:text-red-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </button>
-              <div
-                v-if="showResponsables"
-                class="absolute z-10 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto sm:text-sm"
+            </div>
+
+            <!-- Temporada Floración -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="temporada_floracion">Temporada de cruzamientos</label>
+              <input
+                v-model="form.temporada_floracion"
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                id="temporada_floracion"
+                type="text"
+                placeholder="Ej. Invierno 2024"
+              />
+            </div>
+
+
+
+            <!-- Ambiente -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="ambiente">Mega Ambiente</label>
+              <select
+                v-model="form.ambiente"
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                id="ambiente"
               >
-                <div v-if="filteredResponsables.length === 0" class="cursor-default select-none relative py-2 pl-3 pr-9 text-gray-500">
-                  No se encontraron responsables
-                </div>
+                <option value="">Vacío (Sin Mega Ambiente)</option>
+                <option v-for="amb in ambientes" :key="amb.id_ambnte" :value="amb.id_ambnte" v-html="amb.nm_ambnte"></option>
+              </select>
+            </div>
+
+            <!-- Responsable -->
+            <div class="relative md:col-span-2">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="responsable_id">Responsable</label>
+              <div class="relative">
+                <input
+                  type="text"
+                  v-model="searchResponsable"
+                  @focus="showResponsables = true"
+                  @blur="hideResponsablesDelay"
+                  placeholder="Escribe para buscar un responsable..."
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                />
+                <button v-if="form.responsable_id" @click="clearResponsable" type="button" class="absolute right-3.5 top-3 text-slate-400 hover:text-red-500 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                  </svg>
+                </button>
                 <div
-                  v-for="usr in filteredResponsables"
-                  :key="usr.id_usrio"
-                  @mousedown="selectResponsable(usr)"
-                  class="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-cenicana hover:text-white"
-                  :class="form.responsable_id === usr.id_usrio ? 'bg-cenicana-50 text-cenicana-800 font-semibold' : 'text-gray-900'"
-                  v-html="usr.nmbre"
-                ></div>
+                  v-if="showResponsables"
+                  class="absolute z-20 w-full mt-1 bg-white shadow-xl max-h-60 rounded-xl py-1 text-xs ring-1 ring-black/5 overflow-auto border border-slate-100"
+                >
+                  <div v-if="filteredResponsables.length === 0" class="cursor-default select-none py-2 px-3.5 text-slate-400 font-medium">
+                    No se encontraron responsables
+                  </div>
+                  <div
+                    v-for="usr in filteredResponsables"
+                    :key="usr.id_usrio"
+                    @mousedown="selectResponsable(usr)"
+                    class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
+                    :class="form.responsable_id === usr.id_usrio ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
+                    v-html="usr.nmbre"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Proyecto -->
+            <div class="relative md:col-span-2">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="proyecto_id">Proyecto (Mejoramiento)</label>
+              <div class="relative">
+                <textarea
+                  v-model="searchProyecto"
+                  @focus="showProyectos = true"
+                  @blur="hideProyectosDelay"
+                  placeholder="Escribe para buscar un proyecto..."
+                  rows="2"
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm resize-none"
+                ></textarea>
+                <button v-if="form.proyecto_id" @click="clearProyecto" type="button" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-red-500 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+                <div
+                  v-if="showProyectos"
+                  class="absolute z-20 w-full mt-1 bg-white shadow-xl max-h-60 rounded-xl py-1 text-xs ring-1 ring-black/5 overflow-auto border border-slate-100"
+                >
+                  <div v-if="filteredProyectos.length === 0" class="cursor-default select-none py-2 px-3.5 text-slate-400 font-medium">
+                    No se encontraron proyectos
+                  </div>
+                  <div
+                    v-for="pry in filteredProyectos"
+                    :key="pry.id_prycto"
+                    @mousedown="selectProyecto(pry)"
+                    class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
+                    :class="form.proyecto_id === pry.id_prycto ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
+                    v-html="formatProjectName(pry)"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Carácter -->
+            <div class="relative md:col-span-2">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="caracter_id">Carácter (Opcional)</label>
+              <div class="relative">
+                <input
+                  type="text"
+                  v-model="searchCaracter"
+                  @focus="showCaracteres = true"
+                  @blur="hideCaracteresDelay"
+                  placeholder="Buscar o agregar..."
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                  :disabled="!form.proyecto_id"
+                  :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.proyecto_id }"
+                />
+                <button v-if="form.caracter_id" @click="clearCaracter" type="button" class="absolute right-3.5 top-3 text-slate-400 hover:text-red-500 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+                <div
+                  v-if="showCaracteres && form.proyecto_id"
+                  class="absolute z-20 w-full mt-1 bg-white shadow-xl max-h-60 rounded-xl py-1 text-xs ring-1 ring-black/5 overflow-auto border border-slate-100"
+                >
+                  <div
+                    v-if="searchCaracter && !exactMatchCaracter"
+                    @mousedown="selectNewCaracter"
+                    class="cursor-pointer select-none py-2 px-3.5 hover:bg-emerald-50 text-cenicana font-bold border-b border-slate-100 transition-colors"
+                  >
+                    + Agregar nuevo: "{{ searchCaracter }}"
+                  </div>
+                  <div v-if="filteredCaracteres.length === 0 && !searchCaracter" class="cursor-default select-none py-2 px-3.5 text-slate-400 font-medium">
+                    No hay caracteres (escribe para crear)
+                  </div>
+                  <div
+                    v-for="car in filteredCaracteres"
+                    :key="car.id"
+                    @mousedown="selectCaracter(car)"
+                    class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
+                    :class="form.caracter_id === car.id ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
+                  >
+                    {{ car.nombre }}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="mt-6 mb-4 border-b pb-2">
-          <h3 class="text-lg font-semibold text-gray-800">Origen de la Semilla</h3>
+        <!-- CARD 2: UBICACIÓN FÍSICA -->
+        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-5">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <div class="p-1.5 bg-emerald-50 text-cenicana rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Ubicación Física en Campo</h3>
+          </div>
+
+          <div class="grid grid-cols-1 gap-5">
+            <!-- Ingenio -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="ingenio">Ingenio</label>
+              <select
+                v-model="form.ingenio"
+                @change="loadHaciendas(true)"
+                :disabled="isEditing"
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                :class="{ 'bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed shadow-inner': isEditing }"
+                id="ingenio"
+              >
+                <option value="">Seleccione un Ingenio</option>
+                <option v-for="ing in ingenios" :key="ing.cd_ingnio" :value="ing.cd_ingnio" v-html="ing.nm_ingnio"></option>
+              </select>
+            </div>
+
+            <!-- Hacienda -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="hacienda">Hacienda</label>
+              <select
+                v-model="form.hacienda"
+                :disabled="!form.ingenio || haciendas.length === 0"
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.ingenio || haciendas.length === 0 }"
+                id="hacienda"
+              >
+                <option value="">Seleccione una Hacienda</option>
+                <option v-for="hda in haciendas" :key="hda.cd_hcnda" :value="hda.cd_hcnda" v-html="hda.nm_hcnda"></option>
+              </select>
+            </div>
+
+            <!-- Lote -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="lote_id">Lote <span class="text-red-500">*</span></label>
+              <div class="flex gap-2">
+                <select
+                  v-model="form.lote_id"
+                  :disabled="!form.ingenio || isEditing"
+                  required
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                  :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.ingenio || isEditing }"
+                  id="lote_id"
+                >
+                  <option value="">Seleccione un Lote</option>
+                  <option v-for="lote in lotes" :key="lote.id" :value="lote.id">
+                    {{ lote.nombre_lote }} (Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
+                  </option>
+                </select>
+                <button
+                  v-if="isEditing"
+                  type="button"
+                  @click="openTrasladoModal"
+                  class="inline-flex items-center justify-center px-4 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-md shadow-blue-950/10 cursor-pointer whitespace-nowrap"
+                >
+                  Trasladar Lote
+                </button>
+              </div>
+            </div>
+
+            <!-- Vivero slot selection -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="consecutivo_vivero_id">Vivero <span class="text-red-500">*</span></label>
+              <select
+                v-model="form.consecutivo_vivero_ingenio"
+                :disabled="!form.lote_id || isEditing"
+                required
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.lote_id || isEditing }"
+                id="consecutivo_vivero_id"
+              >
+                <option value="">Seleccione Número de Vivero</option>
+                <option v-for="num in availableViveroNumbers" :key="'v_num_' + num" :value="num">
+                  Vivero {{ num }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Bitácora de Lotes/Traslados (Solo en edición) -->
+          <div class="bg-slate-50/50 rounded-2xl p-4 border border-slate-100 mt-4 space-y-3" v-if="isEditing && form.historial_lotes && form.historial_lotes.length > 0">
+            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Bitácora / Historial de Lotes</h4>
+            <div class="overflow-x-auto rounded-xl border border-slate-100 bg-white">
+              <table class="min-w-full text-xs">
+                <thead class="bg-slate-55 border-b border-slate-100 text-slate-500 uppercase font-bold text-[9px] tracking-wider">
+                  <tr>
+                    <th class="py-2.5 px-4 text-left">Lote</th>
+                    <th class="py-2.5 px-4 text-left">Acción</th>
+                    <th class="py-2.5 px-4 text-left">Fecha Ingreso</th>
+                    <th class="py-2.5 px-4 text-left">Fecha Salida</th>
+                    <th class="py-2.5 px-4 text-center">Estado</th>
+                  </tr>
+                </thead>
+                <tbody class="text-slate-600 font-medium">
+                  <tr v-for="hist in form.historial_lotes" :key="hist.id" class="border-b border-slate-100 last:border-0 hover:bg-slate-50/30">
+                    <td class="py-2.5 px-4 font-bold text-slate-800">{{ hist.lote?.nombre_lote || 'N/A' }}</td>
+                    <td class="py-2.5 px-4">
+                      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 shadow-sm">
+                        {{ hist.accion || 'Registro Inicial' }}
+                      </span>
+                    </td>
+                    <td class="py-2.5 px-4">{{ formatDateTime(hist.fecha_inicio) }}</td>
+                    <td class="py-2.5 px-4">{{ hist.fecha_fin ? formatDateTime(hist.fecha_fin) : '-' }}</td>
+                    <td class="py-2.5 px-4 text-center">
+                      <span
+                        class="px-2 py-0.5 rounded-full text-[9px] font-bold"
+                        :class="[hist.activo ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-slate-100 text-slate-500 border border-slate-200']"
+                      >
+                        {{ hist.activo ? 'Actual' : 'Pasado' }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <!-- Origen Ingenio -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_ingenio">Ingenio <span class="text-red-500">*</span></label>
-            <select
-              v-model="form.origen_ingenio"
-              @change="loadHaciendasOrigen(true)"
-              required
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="origen_ingenio"
-            >
-              <option value="">Seleccione un Ingenio</option>
-              <option v-for="ing in ingenios" :key="'origen_ing_' + ing.cd_ingnio" :value="ing.cd_ingnio" v-html="ing.nm_ingnio"></option>
-            </select>
-          </div>
-          <!-- Origen Hacienda -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_hacienda">Hacienda <span class="text-red-500">*</span></label>
-            <select
-              v-model="form.origen_hacienda"
-              @change="loadSuertesOrigen(true)"
-              :disabled="!form.origen_ingenio || haciendasOrigen.length === 0"
-              required
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="origen_hacienda"
-            >
-              <option value="">Seleccione una Hacienda</option>
-              <option v-for="hda in haciendasOrigen" :key="'origen_hda_' + hda.cd_hcnda" :value="hda.cd_hcnda" v-html="hda.nm_hcnda"></option>
-            </select>
-          </div>
-          <!-- Origen Suerte -->
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="origen_suerte">Suerte <span class="text-red-500">*</span></label>
-            <select
-              v-model="form.origen_suerte"
-              :disabled="!form.origen_hacienda || suertesOrigen.length === 0"
-              required
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="origen_suerte"
-            >
-              <option value="">Seleccione una Suerte</option>
-              <option v-for="ste in suertesOrigen" :key="'origen_ste_' + ste.cd_srte" :value="ste.cd_srte">
-                {{ ste.cd_srte }} (Área: {{ Number(ste.area).toFixed(2) }})
-              </option>
-            </select>
-          </div>
         </div>
 
-        <div class="flex items-center justify-end">
+        <!-- CARD 3: ORIGEN DE SEMILLA -->
+        <div v-show="activeTab === 'origen'" class="space-y-6">
+        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-5">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <div class="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">Procedencia (Origen de Semilla)</h3>
+          </div>
+
+          <!-- Copiar Origen desde Vivero Existente -->
+          <div class="relative">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_vivero_select">
+              Buscar Origen desde Vivero existente (Autocompleta los campos de abajo)
+            </label>
+            <input
+              v-model="searchOrigenVivero"
+              @focus="showOrigenViveros = true"
+              @blur="hideOrigenViverosDelay"
+              @input="showOrigenViveros = true"
+              class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+              id="origen_vivero_select"
+              type="text"
+              placeholder="Escribe para buscar viveros por ID, hacienda o suerte..."
+              autocomplete="off"
+            />
+            <div
+              v-if="showOrigenViveros"
+              class="absolute z-20 w-full mt-1 bg-white shadow-xl max-h-60 rounded-xl py-1 text-xs ring-1 ring-black/5 overflow-auto border border-slate-100"
+            >
+              <div v-if="filteredOrigenViveros.length === 0" class="cursor-default select-none py-2 px-3.5 text-slate-400 font-medium">
+                No se encontraron viveros coincidentes
+              </div>
+              <div
+                v-for="v in filteredOrigenViveros"
+                :key="v.id"
+                @mousedown="selectOrigenVivero(v)"
+                class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 border-b border-slate-100 last:border-0 transition-colors"
+              >
+                <div class="font-bold font-mono text-xs text-slate-800">{{ v.identificador_unico }}</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">
+                  {{ getIngenioName(v.ingenio) }} - {{ v.hacienda || 'N/A' }} - {{ v.suerte || 'N/A' }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+            <!-- Origen Ingenio -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_ingenio">Ingenio <span class="text-red-500">*</span></label>
+              <select
+                v-model="form.origen_ingenio"
+                @change="loadHaciendasOrigen(true)"
+                required
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                id="origen_ingenio"
+              >
+                <option value="">Seleccione un Ingenio</option>
+                <option v-for="ing in ingenios" :key="'origen_ing_' + ing.cd_ingnio" :value="ing.cd_ingnio" v-html="ing.nm_ingnio"></option>
+              </select>
+            </div>
+
+            <!-- Origen Año -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_anio">Año <span class="text-red-500">*</span></label>
+              <input
+                v-model="form.origen_anio"
+                type="number"
+                required
+                placeholder="Ej. 2024"
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                id="origen_anio"
+              />
+            </div>
+
+            <!-- Origen Hacienda -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_hacienda">Hacienda <span class="text-red-500">*</span></label>
+              <select
+                v-model="form.origen_hacienda"
+                :disabled="!form.origen_ingenio || haciendasOrigen.length === 0"
+                required
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_ingenio || haciendasOrigen.length === 0 }"
+                id="origen_hacienda"
+              >
+                <option value="">Seleccione una Hacienda</option>
+                <option v-for="hda in haciendasOrigen" :key="'origen_hda_' + hda.cd_hcnda" :value="hda.cd_hcnda" v-html="hda.nm_hcnda"></option>
+              </select>
+            </div>
+
+            <!-- Origen Lote -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="origen_lote">Lote <span class="text-red-500">*</span></label>
+              <select
+                v-model="form.origen_lote_id"
+                :disabled="!form.origen_ingenio || lotesOrigen.length === 0"
+                required
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_ingenio || lotesOrigen.length === 0 }"
+                id="origen_lote"
+              >
+                <option value="">Seleccione un Lote</option>
+                <option v-for="l in lotesOrigen" :key="'origen_lote_' + l.id" :value="l.id">
+                  {{ l.nombre_lote }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Origen Vivero -->
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider" for="origen_vivero_id">
+                  Vivero <span class="text-red-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  @click="origenViveroManual = !origenViveroManual"
+                  class="text-[9px] font-bold text-cenicana hover:text-emerald-700 transition-colors"
+                >
+                  {{ origenViveroManual ? 'Seleccionar de lista' : 'Escribir manualmente' }}
+                </button>
+              </div>
+
+              <!-- List Select -->
+              <select
+                v-if="!origenViveroManual"
+                v-model="form.origen_vivero_id"
+                :disabled="!form.origen_lote_id || viverosOrigenOptions.length === 0"
+                required
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_lote_id || viverosOrigenOptions.length === 0 }"
+                id="origen_vivero_id"
+              >
+                <option value="">Seleccione un Vivero</option>
+                <option v-for="v in viverosOrigenOptions" :key="'origen_vivero_' + v.id" :value="v.id">
+                  {{ v.nombre }} ({{ v.identificador_unico }})
+                </option>
+              </select>
+
+              <!-- Manual Input -->
+              <input
+                v-else
+                v-model="origenViveroInput"
+                type="text"
+                placeholder="Escriba el identificador del vivero..."
+                required
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                id="origen_vivero_id"
+              />
+            </div>
+
+            <!-- Origen Parcela -->
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider" for="origen_parcela_text">
+                  Parcela (Opcional)
+                </label>
+                <button
+                  type="button"
+                  @click="origenParcelaManual = !origenParcelaManual"
+                  class="text-[9px] font-bold text-cenicana hover:text-emerald-700 transition-colors"
+                >
+                  {{ origenParcelaManual ? 'Seleccionar de lista' : 'Escribir manualmente' }}
+                </button>
+              </div>
+
+              <!-- List Select -->
+              <select
+                v-if="!origenParcelaManual"
+                v-model="origenParcelaText"
+                :disabled="!form.origen_vivero_id || origenParcelasOptions.length === 0"
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_vivero_id || origenParcelasOptions.length === 0 }"
+                id="origen_parcela_text"
+              >
+                <option value="">Seleccione una Parcela (Opcional)</option>
+                <option 
+                  v-for="p in origenParcelasOptions" 
+                  :key="'orig_p_' + p.id" 
+                  :value="p.numero_parcela"
+                >
+                  Parcela {{ p.numero_parcela }} ({{ p.variedad?.nm_vrdad || 'Sin variedad' }})
+                </option>
+              </select>
+
+              <!-- Manual Input -->
+              <input
+                v-else
+                v-model="origenParcelaText"
+                type="text"
+                placeholder="Escriba el número de parcela..."
+                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                id="origen_parcela_text"
+              />
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <!-- ACCIONES FORMULARIO -->
+        <div v-show="activeTab !== 'parcelas'" class="flex items-center justify-end gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+
+          <router-link
+            :to="{ name: 'siembra_campo_viveros.show' }"
+            class="px-5 py-2.5 text-xs font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all"
+          >
+            Cancelar
+          </router-link>
           <button
-            class="flex items-center px-6 py-2.5 text-sm font-bold text-white bg-cenicana hover:bg-cenicana-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-md transition-all duration-200"
+            class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-md shadow-emerald-950/10 transition-all duration-200 cursor-pointer"
             type="submit"
             :disabled="isSubmitting"
           >
-            <svg v-if="isSubmitting" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg v-if="isSubmitting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             {{ isSubmitting ? "Guardando..." : isEditing ? "Actualizar Vivero" : "Guardar Vivero" }}
           </button>
@@ -351,7 +614,7 @@
       </form>
 
       <!-- Administrar Parcelas (Solo visible en edición) -->
-      <div v-if="isEditing" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 border-t-4 border-cenicana">
+      <div v-show="isEditing && activeTab === 'parcelas'" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 border-t-4 border-cenicana">
         <h3 class="text-lg font-bold text-gray-800 mb-4 uppercase tracking-wide">Administrar Parcelas</h3>
 
         <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 mb-6 shadow-sm">
@@ -371,7 +634,7 @@
                 <input
                   type="text"
                   v-model="searchVariedad"
-                  @focus="showVariedades = true"
+                  @focus="showVariedades = true; loadVariedadesIfNeeded()"
                   @blur="hideVariedadesDelay"
                   placeholder="Buscar variedad..."
                   class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
@@ -415,7 +678,7 @@
               </select>
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Plot Origen</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Parcela</label>
               <input
                 v-model="parcelaForm.numero_parcela_origen"
                 @input="updateIdPlotOrigen"
@@ -425,7 +688,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">ID Plot Origen</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">ID Plot</label>
               <input
                 v-model="parcelaForm.id_plot_origen"
                 type="text"
@@ -526,8 +789,8 @@
                 <th class="px-4 py-3 border-b border-slate-200">Variedad</th>
                 <th class="px-4 py-3 border-b border-slate-200">Pedigree</th>
                 <th class="px-4 py-3 border-b border-slate-200">Carácter</th>
-                <th class="px-4 py-3 border-b border-slate-200">Plot Origen</th>
-                <th class="px-4 py-3 border-b border-slate-200">ID Plot Origen</th>
+                <th class="px-4 py-3 border-b border-slate-200">Parcela</th>
+                <th class="px-4 py-3 border-b border-slate-200">ID Plot</th>
                 <th class="px-4 py-3 border-b border-slate-200 text-center">Acciones</th>
               </tr>
             </thead>
@@ -547,42 +810,140 @@
                 <td colspan="7" class="text-center py-8 text-slate-500 bg-slate-50">No se encontraron parcelas que coincidan con la búsqueda.</td>
               </tr>
               <template v-else>
-                <tr v-for="p in paginatedParcelas" :key="p.id" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                  <td class="px-4 py-3 font-bold text-slate-800">{{ p.numero_parcela }}</td>
-                  <td
-                    class="px-4 py-3 font-bold text-cenicana hover:text-emerald-800 cursor-pointer hover:underline transition-colors"
-                    @click="openVarietyProfile(p.variedad?.nm_vrdad)"
-                    title="Ver hoja de vida de la variedad"
-                  >
-                    {{ p.variedad?.nm_vrdad }}
+                <tr v-for="p in paginatedParcelas" :key="p.id" class="border-b border-slate-100 transition-colors" :class="{ 'bg-cenicana/5': editingPlotId === p.id, 'hover:bg-slate-50': editingPlotId !== p.id }">
+                  <td class="px-4 py-3 font-bold text-slate-800">
+                    <div>{{ p.numero_parcela }}</div>
                   </td>
-                  <td class="px-4 py-3 text-slate-600 text-xs">{{ p.variedad?.pdgree || "N/A" }}</td>
-                  <td class="px-4 py-3 text-slate-600 text-xs">
-                    <span v-if="p.caracter?.nombre">{{ p.caracter.nombre }}</span>
-                    <span v-else-if="form.caracter_id && getCaracterGlobalNombre()" class="text-slate-400 italic" title="Heredado del Vivero">{{
-                      getCaracterGlobalNombre()
-                    }}</span>
-                    <span v-else>N/A</span>
-                  </td>
-                  <td class="px-4 py-3 text-slate-600 font-bold">{{ p.numero_parcela_origen || "N/A" }}</td>
-                  <td class="px-4 py-3 text-slate-600 font-mono text-xs">{{ p.id_plot_origen || "N/A" }}</td>
-                  <td class="px-4 py-3 text-center">
-                    <button
-                      type="button"
-                      @click="deleteParcela(p.id)"
-                      class="text-red-400 hover:text-red-600 transition-colors bg-red-50 hover:bg-red-100 p-2 rounded-lg"
-                      title="Eliminar Parcela"
+
+                  <template v-if="editingPlotId === p.id">
+                    <td class="px-4 py-3 min-w-[200px]">
+                      <div class="relative">
+                        <input
+                          type="text"
+                          v-model="editingPlotForm.variedad_name"
+                          @focus="showEditingVariedades = true; loadVariedadesIfNeeded()"
+                          @blur="hideEditingVariedadesDelay"
+                          placeholder="Buscar variedad..."
+                          class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
+                        />
+                        <div
+                          v-if="showEditingVariedades"
+                          class="absolute z-50 w-full mt-1 bg-white shadow-xl max-h-40 rounded border border-slate-200 overflow-y-auto text-xs py-1"
+                        >
+                          <div v-if="filteredEditingVariedades.length === 0" class="p-2 text-slate-500">
+                            No se encontraron variedades
+                          </div>
+                          <div
+                            v-for="v in filteredEditingVariedades"
+                            :key="v.id_nm_vrdad"
+                            @mousedown="selectEditingVariedad(v)"
+                            class="cursor-pointer p-2 hover:bg-slate-100 transition-colors"
+                          >
+                            {{ v.nm_vrdad }}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-slate-400 text-xs italic">
+                      {{ variedades.find(v => v.id_nm_vrdad === editingPlotForm.variedad_id)?.pdgree || 'N/A' }}
+                    </td>
+                    <td class="px-4 py-3 min-w-[150px]">
+                      <select
+                        v-model="editingPlotForm.caracter_id"
+                        class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
+                      >
+                        <option value="">Seleccione...</option>
+                        <option v-for="c in caracteres" :key="'edit_c_' + c.id" :value="c.id">{{ c.nombre }}</option>
+                      </select>
+                    </td>
+                    <td class="px-4 py-3 min-w-[100px]">
+                      <input
+                        v-model="editingPlotForm.numero_parcela_origen"
+                        @input="updateEditingPlotIdOrigen"
+                        type="number"
+                        placeholder="No."
+                        class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
+                      />
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 font-mono text-xs">
+                      {{ editingPlotForm.id_plot_origen || 'N/A' }}
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                      <div class="flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          @click="saveEditingPlot"
+                          :disabled="isSubmittingEditingPlot"
+                          class="bg-cenicana text-white hover:bg-cenicana-800 p-2 rounded-lg transition-colors disabled:opacity-50"
+                          title="Guardar Cambios"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          @click="cancelEditingPlot"
+                          class="bg-slate-100 text-slate-600 hover:bg-slate-200 p-2 rounded-lg transition-colors"
+                          title="Cancelar"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </template>
+
+                  <template v-else>
+                    <td
+                      class="px-4 py-3 font-bold text-cenicana hover:text-emerald-800 cursor-pointer hover:underline transition-colors"
+                      @click="openVarietyProfile(p.variedad?.nm_vrdad)"
+                      title="Ver hoja de vida de la variedad"
                     >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        ></path>
-                      </svg>
-                    </button>
-                  </td>
+                      {{ p.variedad?.nm_vrdad }}
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 text-xs">{{ p.variedad?.pdgree || "N/A" }}</td>
+                    <td class="px-4 py-3 text-slate-600 text-xs">
+                      <span v-if="p.caracter?.nombre">{{ p.caracter.nombre }}</span>
+                      <span v-else-if="form.caracter_id && getCaracterGlobalNombre()" class="text-slate-400 italic" title="Heredado del Vivero">{{
+                        getCaracterGlobalNombre()
+                      }}</span>
+                      <span v-else>N/A</span>
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 font-bold">{{ p.numero_parcela_origen || "N/A" }}</td>
+                    <td class="px-4 py-3 text-slate-600 font-mono text-xs">{{ p.id_plot_origen || "N/A" }}</td>
+                    <td class="px-4 py-3 text-center">
+                      <div class="flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          @click="startEditingPlot(p)"
+                          class="text-amber-600 hover:text-amber-800 transition-colors bg-amber-50 hover:bg-amber-100 p-2 rounded-lg border border-amber-200/50"
+                          title="Editar Parcela"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+
+                        <button
+                          type="button"
+                          @click="deleteParcela(p.id)"
+                          class="text-red-400 hover:text-red-600 transition-colors bg-red-50 hover:bg-red-100 p-2 rounded-lg"
+                          title="Eliminar Parcela"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            ></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </template>
                 </tr>
               </template>
             </tbody>
@@ -639,19 +1000,114 @@
         </div>
       </div>
 
-      <!-- Import Wizard Modal -->
       <ViveroParcelasImportWizard
         v-if="isEditing && route.params.id"
         :show="showImportWizard"
         :variedades="variedades"
         :viveroId="route.params.id"
         :viveroIdentificador="form.identificador_unico"
+        :origenParcela="form.origen_parcela"
+        :consecutivoCorte="form.consecutivo_corte"
         :caracterId="form.caracter_id"
         @close="showImportWizard = false"
         @imported="loadParcelas"
       />
       <!-- Drawer de Hoja de Vida de la Variedad (Quick Drawer) -->
       <VarietyProfileDrawer v-model:isOpen="isDrawerOpen" :varietyName="selectedVarietyForDrawer" />
+
+      <!-- Modal para Trasladar Lote -->
+      <div v-if="isTrasladoModalOpen" class="fixed inset-0 flex items-center justify-center bg-slate-900/60 z-50 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden border border-slate-100">
+          <div class="flex justify-between items-center border-b border-slate-100 p-5 bg-slate-50">
+            <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Trasladar Vivero de Lote</h4>
+            <button type="button" @click="closeTrasladoModal" class="text-slate-400 hover:text-slate-600 transition-colors text-2xl">&times;</button>
+          </div>
+
+          <form @submit.prevent="submitTraslado">
+            <div class="p-6 space-y-4">
+              <div class="p-3 bg-blue-50 text-blue-900 text-xs font-semibold rounded-lg border border-blue-100">
+                Estás trasladando el vivero <strong class="font-black">{{ form.identificador_unico }}</strong> a un nuevo lote físico. El lote actual quedará liberado.
+              </div>
+
+               <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Ingenio Destino</label>
+                <select
+                  v-model="trasladoIngenio"
+                  required
+                  @change="handleTrasladoIngenioChange"
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none mb-3"
+                >
+                  <option value="" disabled>Seleccione el ingenio...</option>
+                  <option v-for="ing in ingenios" :key="'traslado_ing_' + ing.cd_ingnio" :value="ing.cd_ingnio" v-html="ing.nm_ingnio"></option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Hacienda Destina</label>
+                <select
+                  v-model="trasladoHacienda"
+                  required
+                  @change="handleTrasladoHaciendaChange"
+                  :disabled="!trasladoIngenio"
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none mb-3 disabled:opacity-50"
+                >
+                  <option value="" disabled>Seleccione la hacienda...</option>
+                  <option v-for="hac in trasladoHaciendas" :key="'traslado_hac_' + hac.cd_hcnda" :value="hac.cd_hcnda">
+                    {{ hac.nm_hcnda }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Seleccionar Lote Destino</label>
+                <select
+                  v-model="trasladoLoteId"
+                  required
+                  :disabled="!trasladoHacienda"
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none disabled:opacity-50 mb-3"
+                >
+                  <option value="" disabled>Seleccione el lote destino...</option>
+                  <option v-for="lote in trasladoLotes" :key="lote.id" :value="lote.id">
+                    {{ lote.nombre_lote }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Seleccionar Puesto Vivero</label>
+                <select
+                  v-model="trasladoConsecutivo"
+                  required
+                  :disabled="!trasladoLoteId || trasladoSlots.length === 0"
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none disabled:opacity-50"
+                >
+                  <option value="" disabled>Seleccione el puesto...</option>
+                  <option v-for="slot in trasladoSlots" :key="'slot_' + slot.consecutivo" :value="slot.consecutivo" :disabled="slot.disabled">
+                    {{ slot.nombre }} ({{ slot.identificador }}) {{ slot.isCurrent ? '- Actual' : (slot.disabled ? '- Ocupado' : '- Disponible') }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="border-t border-slate-100 p-5 bg-slate-50 flex justify-end gap-2">
+              <button
+                type="button"
+                @click="closeTrasladoModal"
+                class="px-4 py-2.5 text-xs font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                :disabled="savingTraslado"
+                class="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-xl transition-all shadow-md shadow-blue-950/10 cursor-pointer"
+              >
+                {{ savingTraslado ? 'Trasladando...' : 'Confirmar Traslado' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </template>
   </div>
 </template>
@@ -660,6 +1116,7 @@
 import { ref, shallowRef, onMounted, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
+import dayjs from "dayjs";
 import viverosServices from "@/services/viveros.services";
 import varietysServices from "@/services/varietys.services";
 import ViveroParcelasImportWizard from "@/components/viveros/ViveroParcelasImportWizard.vue";
@@ -670,6 +1127,7 @@ const router = useRouter();
 const toast = useToast();
 
 const isEditing = ref(false);
+const activeTab = ref("generales");
 const showImportWizard = ref(false);
 const isLoadingInfo = ref(false);
 const form = ref({
@@ -688,10 +1146,278 @@ const form = ref({
   caracter_id: "",
   origen_ingenio: "",
   origen_hacienda: "",
-  origen_suerte: ""
+  origen_suerte: "",
+  origen_lote_id: "" as string | number,
+  origen_vivero_id: "" as string | number,
+  origen_anio: "" as string | number,
+  origen_parcela: "",
+  consecutivo_corte: null as number | null,
+  es_corte: false,
+  lote_id: "",
+  consecutivo_vivero_ingenio: null as number | null,
+  historial_lotes: [] as any[]
 });
 
 const isSubmitting = ref(false);
+
+const searchOrigenVivero = ref("");
+const showOrigenViveros = ref(false);
+const allViverosList = ref<any[]>([]);
+const origenParcelasOptions = ref<any[]>([]);
+const viveroSeleccionadoOrigen = ref<any>(null);
+const origenViveroInput = ref("");
+const origenViveroManual = ref(false);
+const origenParcelaManual = ref(false);
+const origenParcelaText = ref("");
+const origenCorteText = ref("");
+
+const lotes = ref<any[]>([]);
+const isTrasladoModalOpen = ref(false);
+const trasladoLoteId = ref('');
+const trasladoConsecutivo = ref<number | ''>('');
+const trasladoIngenio = ref('');
+const trasladoHacienda = ref('');
+const trasladoHaciendas = ref<any[]>([]);
+const trasladoLotes = ref<any[]>([]);
+const savingTraslado = ref(false);
+
+const trasladoSlots = computed(() => {
+  if (!trasladoLoteId.value) return [];
+  const selectedLote = trasladoLotes.value.find(l => l.id === Number(trasladoLoteId.value));
+  if (!selectedLote || !selectedLote.viveros) return [];
+  
+  return selectedLote.viveros.map((v: any) => {
+    const isOccupied = v.proyecto_id !== null && v.id !== form.value.id;
+    return {
+      id: v.id,
+      consecutivo: v.consecutivo_vivero_ingenio,
+      identificador: v.identificador_unico,
+      nombre: `Vivero ${v.consecutivo_vivero_ingenio}`,
+      disabled: isOccupied,
+      isCurrent: v.id === form.value.id
+    };
+  }).sort((a: any, b: any) => a.consecutivo - b.consecutivo);
+});
+
+watch(trasladoLoteId, (newLoteId) => {
+  trasladoConsecutivo.value = "";
+  if (newLoteId) {
+    if (Number(newLoteId) === form.value.lote_id) {
+      trasladoConsecutivo.value = form.value.consecutivo_vivero_ingenio;
+    } else {
+      const firstAvailable = trasladoSlots.value.find((s: any) => !s.disabled);
+      if (firstAvailable) {
+        trasladoConsecutivo.value = firstAvailable.consecutivo;
+      }
+    }
+  }
+});
+
+const parseViveroIdToFields = (viveroId: string) => {
+  const parts = viveroId.split("-");
+  if (parts.length >= 4) {
+    const p0 = parts[0];
+    const ingenioCd = p0.slice(0, -4);
+    const anio = p0.slice(-4);
+    const hacienda = parts[1];
+    const suerte = parts[2];
+    const consecutivo = parts[3];
+    const parcela = parts[4] || "";
+    const corte = parts[5] || "";
+    return {
+      ingenio: ingenioCd,
+      anio: Number(anio),
+      hacienda: hacienda,
+      suerte: suerte,
+      consecutivo: consecutivo,
+      parcel: parcela,
+      cut: corte
+    };
+  }
+  return null;
+};
+
+const availableViveroNumbers = computed(() => {
+  if (!form.value.lote_id) return [];
+  const selectedLote = lotes.value.find(l => l.id === form.value.lote_id);
+  if (!selectedLote) return [];
+  
+  const capacity = selectedLote.capacidad_maxima || 5;
+  const activeNumbers = allViverosList.value
+    .filter(v => v.lote_id === form.value.lote_id && v.proyecto_id && (!isEditing.value || v.id !== form.value.id))
+    .map(v => v.consecutivo_vivero_ingenio);
+    
+  const options = [];
+  if (isEditing.value && form.value.consecutivo_vivero_ingenio) {
+    options.push(form.value.consecutivo_vivero_ingenio);
+  }
+  for (let i = 1; i <= capacity; i++) {
+    if (!activeNumbers.includes(i) && !options.includes(i)) {
+      options.push(i);
+    }
+  }
+  return options.sort((a, b) => a - b);
+});
+
+watch(() => form.value.lote_id, (newLoteId) => {
+  const selectedLote = lotes.value.find(l => l.id === newLoteId);
+  if (selectedLote) {
+    form.value.suerte = selectedLote.nombre_lote;
+  } else {
+    form.value.suerte = "";
+  }
+  if (!isEditing.value) {
+    form.value.consecutivo_vivero_ingenio = null;
+  }
+});
+
+const lotesOrigen = ref<any[]>([]);
+const loadLotesOrigen = async () => {
+  if (!form.value.origen_ingenio || !form.value.origen_hacienda) {
+    lotesOrigen.value = [];
+    return;
+  }
+  try {
+    const res = await viverosServices.getLotes({ 
+      ingenio_codigo: form.value.origen_ingenio,
+      hacienda_codigo: form.value.origen_hacienda 
+    });
+    lotesOrigen.value = res.data;
+  } catch (error) {
+    console.error("Error loading origin lotes:", error);
+  }
+};
+
+watch([() => form.value.origen_ingenio, () => form.value.origen_hacienda], () => {
+  if (!isEditing.value) {
+    form.value.origen_lote_id = "";
+  }
+  loadLotesOrigen();
+});
+
+const viverosOrigenOptions = computed(() => {
+  if (!form.value.origen_lote_id) return [];
+  const filtered = allViverosList.value.filter(v => v.lote_id == form.value.origen_lote_id);
+  return filtered.sort((a, b) => {
+    const nameA = (a.nombre || "").toString().toLowerCase();
+    const nameB = (b.nombre || "").toString().toLowerCase();
+    return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: "base" });
+  });
+});
+
+watch(() => form.value.origen_vivero_id, (newVal) => {
+  if (!origenViveroManual.value) {
+    const parent = allViverosList.value.find(v => v.id == newVal);
+    if (parent) {
+      origenViveroInput.value = parent.identificador_unico || "";
+      origenParcelasOptions.value = parent.parcelas || [];
+    } else {
+      origenViveroInput.value = "";
+      origenParcelasOptions.value = [];
+    }
+  }
+});
+
+watch(origenViveroInput, (newVal) => {
+  if (origenViveroManual.value) {
+    const parent = allViverosList.value.find(v => v.identificador_unico === newVal);
+    if (parent) {
+      form.value.origen_vivero_id = parent.id;
+      origenParcelasOptions.value = parent.parcelas || [];
+    } else {
+      form.value.origen_vivero_id = "";
+      origenParcelasOptions.value = [];
+    }
+  }
+});
+
+watch(origenViveroManual, (isManual) => {
+  if (isManual) {
+    form.value.origen_vivero_id = "";
+    origenParcelasOptions.value = [];
+  } else {
+    origenViveroInput.value = "";
+  }
+});
+
+watch([origenParcelaText, origenViveroInput, () => form.value.origen_vivero_id], () => {
+  if (!origenViveroManual.value && form.value.origen_vivero_id) {
+    const parent = allViverosList.value.find(v => v.id == form.value.origen_vivero_id);
+    if (parent) {
+      if (origenParcelaText.value) {
+        form.value.origen_parcela = `${parent.identificador_unico}-${origenParcelaText.value}`;
+      } else {
+        form.value.origen_parcela = parent.identificador_unico;
+      }
+      return;
+    }
+  }
+  
+  if (origenViveroInput.value) {
+    if (origenParcelaText.value) {
+      form.value.origen_parcela = `${origenViveroInput.value}-${origenParcelaText.value}`;
+    } else {
+      form.value.origen_parcela = origenViveroInput.value;
+    }
+  } else {
+    form.value.origen_parcela = "";
+  }
+});
+
+const filteredOrigenViveros = computed(() => {
+  if (!searchOrigenVivero.value) return allViverosList.value;
+  const q = searchOrigenVivero.value.toLowerCase();
+  return allViverosList.value.filter(v =>
+    (v.identificador_unico && v.identificador_unico.toLowerCase().includes(q)) ||
+    (v.hacienda && v.hacienda.toLowerCase().includes(q)) ||
+    (v.lote?.nombre_lote && v.lote.nombre_lote.toLowerCase().includes(q))
+  );
+});
+
+const selectOrigenVivero = async (v: any) => {
+  viveroSeleccionadoOrigen.value = v;
+  form.value.origen_ingenio = v.ingenio || "";
+  form.value.origen_anio = v.fecha_siembra ? new Date(v.fecha_siembra).getFullYear() : null;
+  
+  await loadHaciendasOrigen(false);
+  form.value.origen_hacienda = v.hacienda || "";
+  
+  await loadLotesOrigen();
+  form.value.origen_lote_id = v.lote_id || "";
+  
+  origenViveroManual.value = false;
+  origenParcelaManual.value = false;
+  
+  // Wait a tick for computed viverosOrigenOptions to resolve
+  form.value.origen_vivero_id = v.id || "";
+  origenViveroInput.value = v.identificador_unico || "";
+  
+  origenParcelasOptions.value = v.parcelas || [];
+  origenParcelaText.value = ""; // Default optional
+  
+  searchOrigenVivero.value = v.identificador_unico;
+  showOrigenViveros.value = false;
+};
+
+const hideOrigenViverosDelay = () => {
+  setTimeout(() => {
+    showOrigenViveros.value = false;
+  }, 200);
+};
+
+const loadAllViveros = async () => {
+  try {
+    const res = await viverosServices.getViveros({ slim: 'true' });
+    allViverosList.value = res.data;
+  } catch (error) {
+    console.error("Error loading viveros for selection:", error);
+  }
+};
+
+const getIngenioName = (cd: string) => {
+  const ing = ingenios.value.find(i => i.cd_ingnio === cd);
+  return ing ? ing.nm_ingnio : cd;
+};
 
 // Drawer de variedades
 const isDrawerOpen = ref(false);
@@ -712,6 +1438,17 @@ const loadingParcelas = ref(false);
 const isSubmittingParcela = ref(false);
 const searchVariedad = ref("");
 const showVariedades = ref(false);
+const editingPlotId = ref<number | null>(null);
+const editingPlotForm = ref({
+  id: null as number | null,
+  numero_parcela: 1,
+  variedad_id: "",
+  variedad_name: "",
+  numero_parcela_origen: "" as string | number,
+  id_plot_origen: "",
+  caracter_id: "" as string | number
+});
+const showEditingVariedades = ref(false);
 const searchParcela = ref("");
 const parcelaForm = ref({
   numero_parcela: 1,
@@ -792,7 +1529,9 @@ const hideVariedadesDelay = () => {
 
 const updateIdPlotOrigen = () => {
   if (parcelaForm.value.numero_parcela_origen) {
-    parcelaForm.value.id_plot_origen = `${form.value.identificador_unico}-${parcelaForm.value.numero_parcela_origen}`;
+    const parts = (form.value.identificador_unico || "").split("-");
+    const baseId = parts.slice(0, 4).join("-");
+    parcelaForm.value.id_plot_origen = `${baseId}-${parcelaForm.value.numero_parcela_origen}`;
   } else {
     parcelaForm.value.id_plot_origen = "";
   }
@@ -1039,72 +1778,6 @@ const loadAmbientes = async () => {
   }
 };
 
-onMounted(async () => {
-  if (route.params.id) {
-    isEditing.value = true;
-  }
-  isLoadingInfo.value = true;
-
-  try {
-    // Load common data concurrently for better performance
-    await Promise.all([loadIngenios(), loadProyectos(), loadResponsables(), loadAmbientes()]);
-
-    if (isEditing.value) {
-      const response = await viverosServices.getVivero(route.params.id as string);
-      const vivero = response.data;
-      if (vivero.fecha_siembra) {
-        vivero.fecha_siembra = vivero.fecha_siembra.substring(0, 10);
-      }
-      form.value = { ...vivero };
-
-      if (form.value.proyecto_id) {
-        const pry = proyectos.value.find((p) => p.id_prycto == form.value.proyecto_id);
-        if (pry) searchProyecto.value = formatProjectName(pry);
-
-        await loadCaracteres(form.value.proyecto_id);
-        if (form.value.caracter_id) {
-          const car = caracteres.value.find((c) => c.id == form.value.caracter_id);
-          if (car) searchCaracter.value = car.nombre;
-        }
-      }
-      if (form.value.responsable_id) {
-        const usr = responsables.value.find((u) => u.id_usrio == form.value.responsable_id);
-        if (usr) searchResponsable.value = usr.nmbre;
-      }
-
-      // Load cascading data without resetting values
-      if (form.value.ingenio) {
-        await loadHaciendas(false);
-      }
-      if (form.value.hacienda) {
-        await loadSuertes(false);
-      }
-
-      // Load origin cascading data
-      if (form.value.origen_ingenio) {
-        await loadHaciendasOrigen(false);
-      }
-      if (form.value.origen_hacienda) {
-        await loadSuertesOrigen(false);
-      }
-
-      // Load Parcelas
-      await loadParcelas();
-    } else {
-      const currentYear = new Date().getFullYear();
-      if (!form.value.anio) {
-        form.value.anio = currentYear;
-      }
-    }
-  } catch (error) {
-    console.error("Error in onMounted:", error);
-    toast.error("Error al cargar la información inicial o del vivero");
-  } finally {
-    isLoadingInfo.value = false;
-  }
-
-  await loadVariedades();
-});
 
 const submitForm = async () => {
   isSubmitting.value = true;
@@ -1135,6 +1808,87 @@ const loadVariedades = async () => {
   }
 };
 
+const loadVariedadesIfNeeded = async () => {
+  if (variedades.value.length === 0) {
+    await loadVariedades();
+  }
+};
+
+const filteredEditingVariedades = computed(() => {
+  if (!editingPlotForm.value.variedad_name) return variedades.value;
+  return variedades.value.filter((v) =>
+    v.nm_vrdad.toLowerCase().includes(editingPlotForm.value.variedad_name.toLowerCase())
+  );
+});
+
+const hideEditingVariedadesDelay = () => {
+  setTimeout(() => {
+    showEditingVariedades.value = false;
+  }, 200);
+};
+
+const selectEditingVariedad = (v: any) => {
+  editingPlotForm.value.variedad_id = v.id_nm_vrdad;
+  editingPlotForm.value.variedad_name = v.nm_vrdad;
+  showEditingVariedades.value = false;
+};
+
+const startEditingPlot = (p: any) => {
+  editingPlotId.value = p.id;
+  editingPlotForm.value = {
+    id: p.id,
+    numero_parcela: p.numero_parcela,
+    variedad_id: p.variedad_id || "",
+    variedad_name: p.variedad?.nm_vrdad || "",
+    numero_parcela_origen: p.numero_parcela_origen || "",
+    id_plot_origen: p.id_plot_origen || "",
+    caracter_id: p.caracter_id || ""
+  };
+  updateEditingPlotIdOrigen();
+};
+
+const cancelEditingPlot = () => {
+  editingPlotId.value = null;
+};
+
+const updateEditingPlotIdOrigen = () => {
+  if (editingPlotForm.value.numero_parcela_origen) {
+    const parts = (form.value.identificador_unico || "").split("-");
+    const baseId = parts.slice(0, 4).join("-");
+    editingPlotForm.value.id_plot_origen = `${baseId}-${editingPlotForm.value.numero_parcela_origen}`;
+  } else {
+    editingPlotForm.value.id_plot_origen = "";
+  }
+};
+
+const isSubmittingEditingPlot = ref(false);
+const saveEditingPlot = async () => {
+  if (!editingPlotForm.value.variedad_id) {
+    toast.error("Debe seleccionar una variedad");
+    return;
+  }
+  isSubmittingEditingPlot.value = true;
+  try {
+    const payload = {
+      numero_parcela: editingPlotForm.value.numero_parcela,
+      variedad_id: editingPlotForm.value.variedad_id,
+      numero_parcela_origen: editingPlotForm.value.numero_parcela_origen || null,
+      id_plot_origen: editingPlotForm.value.id_plot_origen || null,
+      caracter_id: editingPlotForm.value.caracter_id || null
+    };
+    await viverosServices.updateParcela(route.params.id as string, editingPlotForm.value.id as any, payload);
+    toast.success("Parcela actualizada correctamente");
+    editingPlotId.value = null;
+    await loadParcelas();
+  } catch (error: any) {
+    console.error("Error updating parcela:", error);
+    const msg = error.response?.data?.message || "Error al actualizar la parcela";
+    toast.error(msg);
+  } finally {
+    isSubmittingEditingPlot.value = false;
+  }
+};
+
 const loadParcelas = async () => {
   if (!isEditing.value) return;
   loadingParcelas.value = true;
@@ -1147,6 +1901,16 @@ const loadParcelas = async () => {
       parcelaForm.value.numero_parcela = maxPlot + 1;
     } else {
       parcelaForm.value.numero_parcela = 1;
+    }
+
+    // Auto-extract origin parcel number and calculate id_plot_origen if it's a cut nursery
+    if (form.value.origen_parcela && form.value.origen_parcela.split("-").length > 3) {
+      const parts = form.value.origen_parcela.split("-");
+      const lastPart = parts[parts.length - 1];
+      if (lastPart && !isNaN(Number(lastPart))) {
+        parcelaForm.value.numero_parcela_origen = Number(lastPart);
+      }
+      updateIdPlotOrigen();
     }
   } catch (error) {
     console.error("Error fetching parcelas:", error);
@@ -1179,6 +1943,155 @@ const submitParcela = async () => {
   }
 };
 
+;
+
+const loadLotesForLocation = async () => {
+  if (!form.value.ingenio || !form.value.hacienda) {
+    lotes.value = [];
+    return;
+  }
+  try {
+    const res = await viverosServices.getLotes({ 
+      ingenio_codigo: form.value.ingenio,
+      hacienda_codigo: form.value.hacienda 
+    });
+    lotes.value = res.data;
+  } catch (error) {
+    console.error("Error loading lotes:", error);
+    toast.error("Error al cargar los lotes");
+  }
+};
+
+watch([() => form.value.ingenio, () => form.value.hacienda], () => {
+  if (!isEditing.value) {
+    form.value.lote_id = "";
+  }
+  loadLotesForLocation();
+});
+
+const formatDateTime = (dateString: string) => {
+  if (!dateString) return '';
+  return dayjs(dateString).format('YYYY-MM-DD HH:mm');
+};
+
+const openTrasladoModal = async () => {
+  trasladoIngenio.value = form.value.ingenio || "";
+  trasladoHacienda.value = form.value.hacienda || "";
+  trasladoLoteId.value = "";
+  trasladoConsecutivo.value = "";
+  trasladoHaciendas.value = [];
+  trasladoLotes.value = [];
+  
+  if (trasladoIngenio.value) {
+    try {
+      const resHac = await viverosServices.getHaciendas(trasladoIngenio.value);
+      trasladoHaciendas.value = resHac.data;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  if (trasladoIngenio.value && trasladoHacienda.value) {
+    try {
+      const resLot = await viverosServices.getLotes({
+        ingenio_codigo: trasladoIngenio.value,
+        hacienda_codigo: trasladoHacienda.value
+      });
+      trasladoLotes.value = resLot.data;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  
+  isTrasladoModalOpen.value = true;
+};
+
+const closeTrasladoModal = () => {
+  isTrasladoModalOpen.value = false;
+};
+
+const handleTrasladoIngenioChange = async () => {
+  trasladoHacienda.value = "";
+  trasladoLoteId.value = "";
+  trasladoConsecutivo.value = "";
+  trasladoHaciendas.value = [];
+  trasladoLotes.value = [];
+  if (trasladoIngenio.value) {
+    try {
+      const res = await viverosServices.getHaciendas(trasladoIngenio.value);
+      trasladoHaciendas.value = res.data;
+    } catch (err) {
+      console.error(err);
+      toast.error("Error al cargar haciendas de traslado");
+    }
+  }
+};
+
+const handleTrasladoHaciendaChange = async () => {
+  trasladoLoteId.value = "";
+  trasladoConsecutivo.value = "";
+  trasladoLotes.value = [];
+  if (trasladoIngenio.value && trasladoHacienda.value) {
+    try {
+      const res = await viverosServices.getLotes({
+        ingenio_codigo: trasladoIngenio.value,
+        hacienda_codigo: trasladoHacienda.value
+      });
+      trasladoLotes.value = res.data;
+    } catch (err) {
+      console.error(err);
+      toast.error("Error al cargar lotes de traslado");
+    }
+  }
+};
+
+const submitTraslado = async () => {
+  if (!trasladoLoteId.value || !trasladoConsecutivo.value) return;
+  savingTraslado.value = true;
+  try {
+    const response = await viverosServices.trasladarLote(route.params.id as string, {
+      lote_id: trasladoLoteId.value,
+      consecutivo: trasladoConsecutivo.value
+    });
+    toast.success("Vivero trasladado de lote correctamente");
+    const updatedVivero = response.data;
+    form.value.lote_id = updatedVivero.lote_id;
+    form.value.consecutivo_vivero_ingenio = updatedVivero.consecutivo_vivero_ingenio;
+    form.value.ingenio = updatedVivero.ingenio;
+    form.value.hacienda = updatedVivero.hacienda;
+    form.value.suerte = updatedVivero.suerte;
+    form.value.identificador_unico = updatedVivero.identificador_unico;
+    form.value.nombre = updatedVivero.nombre;
+    form.value.historial_lotes = updatedVivero.historial_lotes || [];
+    
+    // Refresh lotes to update their current active counts
+    if (form.value.ingenio) {
+      await loadLotesForLocation();
+    }
+    
+    isTrasladoModalOpen.value = false;
+  } catch (error: any) {
+    console.error("Error in submitTraslado:", error);
+    const msg = error.response?.data?.message || "Error al trasladar el vivero";
+    toast.error(msg);
+  } finally {
+    savingTraslado.value = false;
+  }
+};
+
+const confirmDeleteCorte = async (id: number, uniqueId: string) => {
+  if (confirm(`¿Está seguro de que desea eliminar el corte ${uniqueId}?`)) {
+    try {
+      await viverosServices.deleteVivero(id);
+      toast.success('Corte eliminado correctamente');
+      await loadParcelas();
+    } catch (error: any) {
+      console.error('Error deleting corte:', error);
+      const msg = error.response?.data?.message || 'Error al eliminar el corte';
+      toast.error(msg);
+    }
+  }
+};
+
 const deleteParcela = async (parcelaId: string | number) => {
   if (!confirm("¿Está seguro de eliminar esta parcela?")) return;
 
@@ -1188,7 +2101,8 @@ const deleteParcela = async (parcelaId: string | number) => {
     await loadParcelas();
   } catch (error: any) {
     console.error("Error al eliminar parcela:", error);
-    toast.error("Error al eliminar la parcela");
+    const msg = error.response?.data?.message || "Error al eliminar la parcela";
+    toast.error(msg);
   }
 };
 
@@ -1201,7 +2115,236 @@ const deleteAllParcelas = async () => {
     await loadParcelas();
   } catch (error: any) {
     console.error("Error al eliminar parcelas:", error);
-    toast.error("Error al vaciar el vivero");
+    const msg = error.response?.data?.message || "Error al vaciar el vivero";
+    toast.error(msg);
   }
 };
+
+const resetAndLoad = async () => {
+  // Reset form and variables to default empty state
+  form.value = {
+    identificador_unico: "",
+    nombre: "",
+    ingenio: "",
+    hacienda: "",
+    suerte: "",
+    proyecto_id: "",
+    ambiente: "",
+    responsable_id: "",
+    fecha_siembra: "",
+    numero_corte: 1,
+    temporada_floracion: "",
+    condicion: "",
+    caracter_id: "",
+    origen_ingenio: "",
+    origen_hacienda: "",
+    origen_suerte: "",
+    origen_anio: null,
+    origen_parcela: "",
+    lote_id: "",
+    consecutivo_vivero_ingenio: null,
+    historial_lotes: []
+  };
+  searchProyecto.value = "";
+  searchCaracter.value = "";
+  searchResponsable.value = "";
+  searchOrigenVivero.value = "";
+  origenParcelasOptions.value = [];
+  viveroSeleccionadoOrigen.value = null;
+  parcelas.value = [];
+
+  if (route.params.id) {
+    isEditing.value = true;
+  } else {
+    isEditing.value = false;
+  }
+  
+  isLoadingInfo.value = true;
+
+  try {
+    // Load common data concurrently for better performance
+    await Promise.all([loadIngenios(), loadProyectos(), loadResponsables(), loadAmbientes(), loadAllViveros()]);
+
+    if (isEditing.value) {
+      const response = await viverosServices.getVivero(route.params.id as string);
+      const vivero = response.data;
+      if (vivero.fecha_siembra) {
+        vivero.fecha_siembra = vivero.fecha_siembra.substring(0, 10);
+      }
+      form.value = { ...vivero };
+
+      if (form.value.ingenio && form.value.hacienda) {
+        await loadLotesForLocation();
+      }
+
+      if (form.value.origen_vivero_id) {
+        const parentVivero = allViverosList.value.find(v => v.id == form.value.origen_vivero_id);
+        if (parentVivero) {
+          viveroSeleccionadoOrigen.value = parentVivero;
+          origenParcelasOptions.value = parentVivero.parcelas || [];
+          searchOrigenVivero.value = parentVivero.identificador_unico;
+          origenViveroManual.value = false;
+          
+          if (form.value.origen_parcela && form.value.origen_parcela.startsWith(parentVivero.identificador_unico)) {
+            const suffix = form.value.origen_parcela.substring(parentVivero.identificador_unico.length + 1);
+            if (suffix) {
+              origenParcelaText.value = suffix;
+              origenParcelaManual.value = false;
+            }
+          }
+        }
+      } else if (form.value.origen_parcela) {
+        origenViveroManual.value = true;
+        origenParcelaManual.value = true;
+        
+        const parts = form.value.origen_parcela.split("-");
+        if (parts.length >= 5) {
+          origenViveroInput.value = parts.slice(0, 4).join("-");
+          origenParcelaText.value = parts.slice(4).join("-");
+        } else {
+          origenViveroInput.value = form.value.origen_parcela;
+          origenParcelaText.value = "";
+        }
+      }
+
+      if (form.value.proyecto_id) {
+        const pry = proyectos.value.find((p) => p.id_prycto == form.value.proyecto_id);
+        if (pry) searchProyecto.value = formatProjectName(pry);
+
+        await loadCaracteres(form.value.proyecto_id);
+        if (form.value.caracter_id) {
+          const car = caracteres.value.find((c) => c.id == form.value.caracter_id);
+          if (car) searchCaracter.value = car.nombre;
+        }
+      }
+      if (form.value.responsable_id) {
+        const usr = responsables.value.find((u) => u.id_usrio == form.value.responsable_id);
+        if (usr) searchResponsable.value = usr.nmbre;
+      }
+
+      // Load cascading data without resetting values
+      if (form.value.ingenio) {
+        await loadHaciendas(false);
+      }
+      if (form.value.hacienda) {
+        await loadSuertes(false);
+      }
+      await loadLotesForLocation();
+
+      // Load origin cascading data
+      if (form.value.origen_ingenio) {
+        await loadHaciendasOrigen(false);
+        await loadLotesOrigen();
+      }
+
+      // Load Parcelas
+      await loadParcelas();
+    } else {
+      const currentYear = new Date().getFullYear();
+      if (!form.value.anio) {
+        form.value.anio = currentYear;
+      }
+
+      if (route.query.origen_anio) {
+        form.value.origen_anio = Number(route.query.origen_anio);
+      }
+      if (route.query.es_corte) {
+        form.value.es_corte = route.query.es_corte === 'true';
+      }
+
+      if (route.query.origen_ingenio) {
+        form.value.origen_ingenio = route.query.origen_ingenio as string;
+        await loadHaciendasOrigen(false);
+        await loadLotesOrigen();
+      }
+      if (route.query.origen_hacienda) {
+        form.value.origen_hacienda = route.query.origen_hacienda as string;
+      }
+      if (route.query.origen_lote_id) {
+        form.value.origen_lote_id = Number(route.query.origen_lote_id);
+      }
+      if (route.query.origen_vivero_id) {
+        form.value.origen_vivero_id = Number(route.query.origen_vivero_id);
+        const parentVivero = allViverosList.value.find(v => v.id === form.value.origen_vivero_id);
+        if (parentVivero) {
+          viveroSeleccionadoOrigen.value = parentVivero;
+          form.value.origen_lote_id = parentVivero.lote_id || "";
+          origenParcelasOptions.value = parentVivero.parcelas || [];
+          searchOrigenVivero.value = parentVivero.identificador_unico;
+        }
+
+        try {
+          const res = await viverosServices.getNextCorteConsecutivo({ origen_vivero_id: form.value.origen_vivero_id });
+          form.value.consecutivo_corte = res.data.consecutivo;
+          if (form.value.es_corte && parentVivero) {
+            form.value.identificador_unico = `${parentVivero.identificador_unico}-${form.value.consecutivo_corte}`;
+          }
+        } catch (err) {
+          console.error("Error fetching next consecutivo_corte:", err);
+        }
+      } else if (route.query.origen_parcela) {
+        form.value.origen_parcela = route.query.origen_parcela as string;
+        
+        const parts = form.value.origen_parcela.split("-");
+        if (parts.length >= 4) {
+          const baseId = parts.slice(0, 4).join("-");
+          const parentVivero = allViverosList.value.find(v => v.identificador_unico === baseId);
+          if (parentVivero) {
+            viveroSeleccionadoOrigen.value = parentVivero;
+            form.value.origen_vivero_id = parentVivero.id;
+            form.value.origen_lote_id = parentVivero.lote_id || "";
+            origenParcelasOptions.value = parentVivero.parcelas || [];
+            searchOrigenVivero.value = parentVivero.identificador_unico;
+            
+            const suffix = parts[4];
+            if (suffix) {
+              origenParcelaText.value = suffix;
+            }
+          }
+        }
+
+        try {
+          const res = await viverosServices.getNextCorteConsecutivo({ origen_parcela: form.value.origen_parcela });
+          form.value.consecutivo_corte = res.data.consecutivo;
+          if (form.value.es_corte) {
+            form.value.identificador_unico = `${form.value.origen_parcela}-${form.value.consecutivo_corte}`;
+          }
+        } catch (err) {
+          console.error("Error fetching next consecutivo_corte:", err);
+        }
+      }
+
+      // Pre-fill nursery fields from query parameters
+      if (route.query.ingenio) {
+        form.value.ingenio = route.query.ingenio as string;
+        await loadHaciendas(false);
+      }
+      if (route.query.hacienda) {
+        form.value.hacienda = route.query.hacienda as string;
+      }
+      if (route.query.proyecto_id) {
+        form.value.proyecto_id = Number(route.query.proyecto_id);
+        const pry = proyectos.value.find((p) => p.id_prycto == form.value.proyecto_id);
+        if (pry) searchProyecto.value = formatProjectName(pry);
+        await loadCaracteres(form.value.proyecto_id);
+      }
+      if (route.query.caracter_id) {
+        form.value.caracter_id = Number(route.query.caracter_id);
+        const car = caracteres.value.find((c) => c.id == form.value.caracter_id);
+        if (car) searchCaracter.value = car.nombre;
+      }
+    }
+  } catch (error) {
+    console.error("Error in resetAndLoad:", error);
+    toast.error("Error al cargar la información del vivero");
+  } finally {
+    isLoadingInfo.value = false;
+  }
+
+
+};
+
+onMounted(resetAndLoad);
+
+watch(() => route.path, resetAndLoad);
 </script>

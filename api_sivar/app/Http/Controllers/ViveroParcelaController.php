@@ -118,17 +118,98 @@ class ViveroParcelaController extends Controller
 
     public function destroy($vivero_id, $parcela_id)
     {
+        $vivero = Vivero::findOrFail($vivero_id);
         $parcela = ViveroParcela::where('vivero_id', $vivero_id)->findOrFail($parcela_id);
+        
+        $parcelLabel = $parcela->numero_parcela_origen ?: $parcela->numero_parcela;
+        $plotId = $vivero->identificador_unico . '-' . $parcelLabel;
+        
+        // Check if any cuts depend on this specific plot/parcela
+        $hasCuts = Vivero::where('origen_parcela', 'like', $plotId . '%')->exists();
+        if ($hasCuts) {
+            return response()->json([
+                'message' => 'No se puede eliminar esta parcela porque existen cortes o viveros registrados que dependen de ella.'
+            ], 400);
+        }
+        
         $parcela->delete();
-
         return response()->json(null, 204);
     }
 
     public function destroyAll($vivero_id)
     {
         $vivero = Vivero::findOrFail($vivero_id);
+        
+        // Check if any parcelas have depending cuts/nurseries
+        foreach ($vivero->parcelas as $parcela) {
+            $parcelLabel = $parcela->numero_parcela_origen ?: $parcela->numero_parcela;
+            $plotId = $vivero->identificador_unico . '-' . $parcelLabel;
+            
+            $hasCuts = Vivero::where('origen_parcela', 'like', $plotId . '%')->exists();
+            if ($hasCuts) {
+                return response()->json([
+                    'message' => 'No se pueden eliminar las parcelas porque existen cortes o viveros registrados que dependen de algunas de ellas.'
+                ], 400);
+            }
+        }
+        
         $vivero->parcelas()->delete();
-
         return response()->json(['message' => 'Todas las parcelas han sido eliminadas correctamente.']);
+    }
+
+    public function update(Request $request, $vivero_id, $parcela_id)
+    {
+        $vivero = Vivero::findOrFail($vivero_id);
+        $parcela = ViveroParcela::where('vivero_id', $vivero_id)->findOrFail($parcela_id);
+
+        $data = $request->all();
+        if (isset($data['numero_parcela_origen']) && $data['numero_parcela_origen'] === '') {
+            $data['numero_parcela_origen'] = null;
+        }
+        if (isset($data['id_plot_origen']) && $data['id_plot_origen'] === '') {
+            $data['id_plot_origen'] = null;
+        }
+
+        $validator = Validator::make($data, [
+            'numero_parcela' => 'required|numeric',
+            'variedad_id' => 'required',
+            'numero_parcela_origen' => 'nullable|numeric',
+            'id_plot_origen' => 'nullable',
+            'caracter_id' => 'nullable|numeric',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // Validar que no se duplique el plot con otra parcela, excluyendo la actual
+        $existsPlot = $vivero->parcelas()
+            ->where('numero_parcela', $data['numero_parcela'])
+            ->where('id', '!=', $parcela_id)
+            ->exists();
+        if ($existsPlot) {
+            return response()->json(['message' => 'El número de parcela ya existe para este vivero.'], 422);
+        }
+
+        // Validar que no se duplique la variedad con otra parcela, excluyendo la actual
+        $existsVariedad = $vivero->parcelas()
+            ->where('variedad_id', $data['variedad_id'])
+            ->where('id', '!=', $parcela_id)
+            ->exists();
+        if ($existsVariedad) {
+            return response()->json(['message' => 'Esta variedad ya fue agregada a este vivero.'], 422);
+        }
+
+        $parcela->update([
+            'numero_parcela' => $data['numero_parcela'],
+            'variedad_id' => $data['variedad_id'],
+            'numero_parcela_origen' => $data['numero_parcela_origen'] ?? null,
+            'id_plot_origen' => $data['id_plot_origen'] ?? null,
+            'caracter_id' => $data['caracter_id'] ?? null,
+        ]);
+
+        $parcela->load(['variedad', 'caracter']);
+
+        return response()->json($parcela);
     }
 }

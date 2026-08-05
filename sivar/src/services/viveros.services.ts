@@ -2,11 +2,17 @@ import api from "./api";
 import urls from "./urls";
 
 export default {
-  getViveros() {
-    return api.get(urls.API_VIVEROS);
+  getViveros(params?: any) {
+    return api.get(urls.API_VIVEROS, { params });
   },
   getVivero(id: number | string) {
     return api.get(`${urls.API_VIVEROS}/${id}`);
+  },
+  getNextCorteConsecutivo(params: { origen_parcela?: string; origen_vivero_id?: number | string }) {
+    return api.get(`${urls.API_VIVEROS}/next-corte-consecutivo`, { params });
+  },
+  getEstructura(id: number | string) {
+    return api.get(`${urls.API_VIVEROS}/${id}/estructura`);
   },
   createVivero(data: any) {
     return api.post(urls.API_VIVEROS, data);
@@ -56,6 +62,10 @@ export default {
     return api.delete(`${urls.API_VIVEROS}/${vivero_id}/parcelas/${parcela_id}`);
   },
 
+  updateParcela(vivero_id: string | number, parcela_id: string | number, data: any) {
+    return api.put(`${urls.API_VIVEROS}/${vivero_id}/parcelas/${parcela_id}`, data);
+  },
+
   deleteAllParcelas(vivero_id: string | number) {
     return api.delete(`${urls.API_VIVEROS}/${vivero_id}/parcelas`);
   },
@@ -78,5 +88,25 @@ export default {
 
   createCaracter(proyecto_id: string | number, payload: any) {
     return api.post(`${urls.API_PROYECTOS}/${proyecto_id}/caracteres`, payload);
+  },
+
+  getLotes(params?: any) {
+    return api.get(urls.API_LOTES, { params });
+  },
+
+  createLote(data: any) {
+    return api.post(urls.API_LOTES, data);
+  },
+
+  updateLote(id: number | string, data: any) {
+    return api.put(`${urls.API_LOTES}/${id}`, data);
+  },
+
+  deleteLote(id: number | string) {
+    return api.delete(`${urls.API_LOTES}/${id}`);
+  },
+
+  trasladarLote(id: number | string, data: any) {
+    return api.post(`${urls.API_VIVEROS}/${id}/trasladar-lote`, data);
   }
 };

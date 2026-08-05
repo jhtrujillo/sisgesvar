@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vivero_cosechas', function (Blueprint $table) {
+        Schema::create('vivero_lote_historial', function (Blueprint $table) {
             $table->id();
             $table->foreignId('vivero_id')->constrained('viveros')->onDelete('cascade');
-            $table->date('fecha_cosecha');
-            $table->date('nueva_fecha_siembra');
-            $table->integer('numero_corte_anterior');
-            $table->string('ambiente')->nullable();
+            $table->foreignId('lote_id')->constrained('lotes')->onDelete('cascade');
+            $table->dateTime('fecha_inicio');
+            $table->dateTime('fecha_fin')->nullable();
+            $table->boolean('activo')->default(true);
+            $table->string('accion')->default('Registro Inicial');
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('vivero_cosechas');
+        Schema::dropIfExists('vivero_lote_historial');
     }
 };

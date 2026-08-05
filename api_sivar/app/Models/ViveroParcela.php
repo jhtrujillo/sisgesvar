@@ -20,6 +20,32 @@ class ViveroParcela extends Model
         'caracter_id',
     ];
 
+    // protected $appends = ['cortes'];
+
+    public function getCortesAttribute()
+    {
+        $vivero = $this->vivero;
+        if (!$vivero) {
+            return [];
+        }
+
+        $parcelLabel = $this->numero_parcela_origen ?: $this->numero_parcela;
+        $plotId = $vivero->identificador_unico . '-' . $parcelLabel;
+
+        return Vivero::where('origen_parcela', $plotId)
+            ->select('id', 'identificador_unico', 'nombre', 'fecha_siembra')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'identificador_unico' => $item->identificador_unico,
+                    'nombre' => $item->nombre,
+                    'fecha_siembra' => $item->fecha_siembra ? $item->fecha_siembra->format('Y-m-d') : null,
+                    'consecutivo_corte' => $item->consecutivo_corte
+                ];
+            });
+    }
+
     public function vivero()
     {
         return $this->belongsTo(Vivero::class, 'vivero_id');
