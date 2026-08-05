@@ -603,30 +603,34 @@ class ViveroController extends Controller
 
     public function getProyectos()
     {
-        $proyectos = \App\Models\Proyecto::where('id_area_trbjo', 5)->get();
+        $proyectos = cache()->remember('vivero_proyectos_array', 3600, function() {
+            return \App\Models\Proyecto::with('area')->where('id_area_trbjo', 5)->get()->toArray();
+        });
         return response()->json($proyectos);
     }
 
     public function getResponsables()
     {
         // 1 = VARIEDADES, 5 = Mejoramiento Genético
-        $usuarios = \App\Models\User::where('id_area', 1)
+        $usuarios = cache()->remember('vivero_responsables_array', 3600, function() {
+            $users = \App\Models\User::where('id_area', 1)
                                       ->where('id_area_trbjo', 5)
                                       ->where('estdo', '0') // Asumiendo que 0 es activo, u omitir si todos valen
                                       ->get();
-
-        // Si la tabla usuario no tiene id_area_trbjo poblado correctamente en todos, 
-        // y quieres asegurar traerlos:
-        if ($usuarios->isEmpty()) {
-             $usuarios = \App\Models\User::where('id_area', 1)->get();
-        }
+            if ($users->isEmpty()) {
+                 $users = \App\Models\User::where('id_area', 1)->get();
+            }
+            return $users->toArray();
+        });
 
         return response()->json($usuarios);
     }
 
     public function getAmbientes()
     {
-        $ambientes = DB::connection('sivar')->table('mega_ambiente')->get();
+        $ambientes = cache()->remember('vivero_ambientes_array', 3600, function() {
+            return DB::connection('sivar')->table('mega_ambiente')->get()->toArray();
+        });
         return response()->json($ambientes);
     }
 
