@@ -32,8 +32,47 @@
     </div>
 
     <template v-else>
+      <!-- Pestañas de Navegación del Formulario -->
+      <div class="flex border-b border-slate-200 mb-6 bg-white p-2 rounded-2xl shadow-sm gap-2">
+        <button
+          type="button"
+          @click="activeTab = 'generales'"
+          class="flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
+          :class="activeTab === 'generales' ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          Datos Generales y Ubicación
+        </button>
+        <button
+          type="button"
+          @click="activeTab = 'origen'"
+          class="flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
+          :class="activeTab === 'origen' ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Origen de Semilla
+        </button>
+        <button
+          v-if="isEditing"
+          type="button"
+          @click="activeTab = 'parcelas'"
+          class="flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
+          :class="activeTab === 'parcelas' ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+          </svg>
+          Distribución de Parcelas ({{ parcelas.length }} Plots)
+        </button>
+      </div>
+
       <form @submit.prevent="submitForm" class="space-y-6">
-        <!-- CARD 1: IDENTIFICACIÓN Y GENERALES -->
+        <div v-show="activeTab === 'generales'" class="space-y-6">
+          <!-- CARD 1: IDENTIFICACIÓN Y GENERALES -->
         <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-5">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
             <div class="p-1.5 bg-slate-100 text-slate-700 rounded-lg">
@@ -348,6 +387,7 @@
         </div>
 
         <!-- CARD 3: ORIGEN DE SEMILLA -->
+        <div v-show="activeTab === 'origen'" class="space-y-6">
         <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-5">
           <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
             <div class="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
@@ -547,9 +587,10 @@
             </div>
           </div>
         </div>
+        </div>
 
         <!-- ACCIONES FORMULARIO -->
-        <div class="flex items-center justify-end gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+        <div v-show="activeTab !== 'parcelas'" class="flex items-center justify-end gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
 
           <router-link
             :to="{ name: 'siembra_campo_viveros.show' }"
@@ -572,7 +613,7 @@
       </form>
 
       <!-- Administrar Parcelas (Solo visible en edición) -->
-      <div v-if="isEditing" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 border-t-4 border-cenicana">
+      <div v-show="isEditing && activeTab === 'parcelas'" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 border-t-4 border-cenicana">
         <h3 class="text-lg font-bold text-gray-800 mb-4 uppercase tracking-wide">Administrar Parcelas</h3>
 
         <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 mb-6 shadow-sm">
@@ -1085,6 +1126,7 @@ const router = useRouter();
 const toast = useToast();
 
 const isEditing = ref(false);
+const activeTab = ref("generales");
 const showImportWizard = ref(false);
 const isLoadingInfo = ref(false);
 const form = ref({
