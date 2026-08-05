@@ -1364,7 +1364,7 @@ const hideOrigenViverosDelay = () => {
 
 const loadAllViveros = async () => {
   try {
-    const res = await viverosServices.getViveros();
+    const res = await viverosServices.getViveros({ slim: 'true' });
     allViverosList.value = res.data;
   } catch (error) {
     console.error("Error loading viveros for selection:", error);

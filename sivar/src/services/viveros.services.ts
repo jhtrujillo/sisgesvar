@@ -2,8 +2,8 @@ import api from "./api";
 import urls from "./urls";
 
 export default {
-  getViveros() {
-    return api.get(urls.API_VIVEROS);
+  getViveros(params?: any) {
+    return api.get(urls.API_VIVEROS, { params });
   },
   getVivero(id: number | string) {
     return api.get(`${urls.API_VIVEROS}/${id}`);

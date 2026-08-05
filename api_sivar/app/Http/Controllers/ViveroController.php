@@ -10,8 +10,21 @@ use Illuminate\Support\Facades\DB;
 
 class ViveroController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        if ($request->query('slim') === 'true') {
+            $viveros = Vivero::with(['parcelas:id,vivero_id,numero_parcela,numero_parcela_origen,id_plot_origen'])
+                ->whereNotNull('proyecto_id')
+                ->orderBy('created_at', 'desc')
+                ->get(['id', 'identificador_unico', 'nombre', 'lote_id', 'ingenio', 'hacienda', 'suerte', 'fecha_siembra', 'proyecto_id']);
+
+            $viveros->each(function($v) {
+                $v->makeHidden(['nombre_proyecto', 'nombre_responsable', 'nombre_ambiente', 'consecutivo_corte']);
+            });
+
+            return response()->json($viveros);
+        }
+
         $viveros = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter', 'lote', 'origenLote', 'origenVivero'])
             ->whereNotNull('proyecto_id')
             ->orderBy('created_at', 'desc')

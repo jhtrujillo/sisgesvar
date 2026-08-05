@@ -10,7 +10,13 @@ class LoteController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Lote::query()->with('viveros')->orderBy('nombre_lote', 'asc');
+        $query = Lote::query()
+            ->with('viveros')
+            ->withCount(['viveros as viveros_activos_count' => function($q) {
+                $q->whereNotNull('proyecto_id');
+            }])
+            ->orderBy('nombre_lote', 'asc');
+
         if ($request->has('ingenio_codigo') && $request->ingenio_codigo) {
             $query->where('ingenio_codigo', $request->ingenio_codigo);
         }
@@ -18,10 +24,7 @@ class LoteController extends Controller
             $query->where('hacienda_codigo', $request->hacienda_codigo);
         }
         
-        $lotes = $query->get()->map(function($lote) {
-            $lote->viveros_activos_count = $lote->viveros()->whereNotNull('proyecto_id')->count();
-            return $lote;
-        });
+        $lotes = $query->get();
 
         return response()->json($lotes);
     }
