@@ -66,9 +66,9 @@
               @click="showHijosDirectos = !showHijosDirectos"
               class="bg-white/80 px-1.5 py-0.5 rounded-md border shadow-sm flex items-center gap-1 hover:bg-slate-100 transition-colors cursor-pointer"
               :class="showHijosDirectos ? 'border-slate-300' : 'border-slate-200/60 opacity-60 text-slate-400'"
-              title="Ocultar o Mostrar los cortes generales de este vivero"
+              title="Ocultar o Mostrar los Viveros Hijos"
             >
-              <span>✂️ {{ node.hijos_directos.length }} cortes</span>
+              <span>🌿 {{ node.hijos_directos.length }} Viveros Hijos</span>
               <span class="text-[8px] uppercase font-bold px-1 rounded" :class="showHijosDirectos ? 'bg-slate-200 text-slate-600' : 'bg-slate-100 text-slate-400'">
                 {{ showHijosDirectos ? 'Ocultar' : 'Mostrar' }}
               </span>
@@ -211,7 +211,7 @@
           <!-- Horizontal line connecting to branch -->
           <div class="absolute top-6 -left-6 w-6 border-t border-dashed border-slate-300"></div>
           <div class="absolute -top-2.5 left-0 text-[8px] font-bold uppercase text-blue-600 bg-blue-50 px-1 rounded border border-blue-100">
-            Hijo Directo
+            Vivero Hijo
           </div>
           <div class="pt-2">
             <ViveroTreeComponent 
