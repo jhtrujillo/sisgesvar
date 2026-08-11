@@ -102,7 +102,6 @@
               <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="fecha_siembra">Fecha de Siembra / Corte <span class="text-red-500">*</span></label>
               <input
                 v-model="form.fecha_siembra"
-                required
                 class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                 id="fecha_siembra"
                 type="date"
@@ -307,7 +306,6 @@
                 <select
                   v-model="form.lote_id"
                   :disabled="!form.ingenio || isEditing"
-                  required
                   class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                   :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.ingenio || isEditing }"
                   id="lote_id"
@@ -334,7 +332,6 @@
               <select
                 v-model="form.consecutivo_vivero_ingenio"
                 :disabled="!form.lote_id || isEditing"
-                required
                 class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                 :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.lote_id || isEditing }"
                 id="consecutivo_vivero_id"
@@ -443,7 +440,6 @@
               <select
                 v-model="form.origen_ingenio"
                 @change="loadHaciendasOrigen(true)"
-                required
                 class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                 id="origen_ingenio"
               >
@@ -458,7 +454,6 @@
               <input
                 v-model="form.origen_anio"
                 type="number"
-                required
                 placeholder="Ej. 2024"
                 class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                 id="origen_anio"
@@ -471,7 +466,6 @@
               <select
                 v-model="form.origen_hacienda"
                 :disabled="!form.origen_ingenio || haciendasOrigen.length === 0"
-                required
                 class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                 :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_ingenio || haciendasOrigen.length === 0 }"
                 id="origen_hacienda"
@@ -487,7 +481,6 @@
               <select
                 v-model="form.origen_lote_id"
                 :disabled="!form.origen_ingenio || lotesOrigen.length === 0"
-                required
                 class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                 :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_ingenio || lotesOrigen.length === 0 }"
                 id="origen_lote"
@@ -519,7 +512,6 @@
                 v-if="!origenViveroManual"
                 v-model="form.origen_vivero_id"
                 :disabled="!form.origen_lote_id || viverosOrigenOptions.length === 0"
-                required
                 class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                 :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_lote_id || viverosOrigenOptions.length === 0 }"
                 id="origen_vivero_id"
@@ -536,7 +528,6 @@
                 v-model="origenViveroInput"
                 type="text"
                 placeholder="Escriba el identificador del vivero..."
-                required
                 class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                 id="origen_vivero_id"
               />
@@ -1823,8 +1814,72 @@ const loadAmbientes = async () => {
 
 
 const submitForm = async () => {
+  // Validar Datos Generales
+  if (!form.value.ingenio) {
+    activeTab.value = "generales";
+    toast.error("El Ingenio es obligatorio.");
+    return;
+  }
+  if (!form.value.hacienda) {
+    activeTab.value = "generales";
+    toast.error("La Hacienda es obligatoria.");
+    return;
+  }
+  if (!form.value.lote_id) {
+    activeTab.value = "generales";
+    toast.error("El Lote es obligatorio.");
+    return;
+  }
+  if (!form.value.consecutivo_vivero_ingenio) {
+    activeTab.value = "generales";
+    toast.error("El Número de Vivero es obligatorio.");
+    return;
+  }
+  if (!form.value.fecha_siembra) {
+    activeTab.value = "generales";
+    toast.error("La Fecha de Siembra es obligatoria.");
+    return;
+  }
+  if (!form.value.proyecto_id) {
+    activeTab.value = "generales";
+    toast.error("El Proyecto es obligatorio.");
+    return;
+  }
+
+  // Validar Origen de Semilla
+  if (!form.value.origen_ingenio) {
+    activeTab.value = "origen";
+    toast.error("El Ingenio de Origen es obligatorio.");
+    return;
+  }
+  if (!form.value.origen_anio) {
+    activeTab.value = "origen";
+    toast.error("El Año de Origen es obligatorio.");
+    return;
+  }
+  if (!form.value.origen_hacienda) {
+    activeTab.value = "origen";
+    toast.error("La Hacienda de Origen es obligatoria.");
+    return;
+  }
+  if (!form.value.origen_lote_id) {
+    activeTab.value = "origen";
+    toast.error("El Lote de Origen es obligatorio.");
+    return;
+  }
+  if (!form.value.origen_vivero_id && !origenViveroInput.value) {
+    activeTab.value = "origen";
+    toast.error("El Vivero de Origen es obligatorio.");
+    return;
+  }
+
   isSubmitting.value = true;
   try {
+    // Sincronizar el input manual si está activo
+    if (origenViveroManual.value) {
+      form.value.origen_parcela = origenViveroInput.value;
+    }
+
     if (isEditing.value) {
       await viverosServices.updateVivero(route.params.id as string, form.value);
       toast.success("Vivero actualizado correctamente");
@@ -1833,9 +1888,10 @@ const submitForm = async () => {
       toast.success("Vivero registrado correctamente");
     }
     router.push({ name: "siembra_campo_viveros.show" });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error saving vivero:", error);
-    toast.error("Error al guardar el vivero");
+    const msg = error.response?.data?.message || "Error al guardar el vivero";
+    toast.error(msg);
   } finally {
     isSubmitting.value = false;
   }
