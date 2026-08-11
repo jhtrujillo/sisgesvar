@@ -605,13 +605,21 @@ class ViveroController extends Controller
         $haciendas = DB::connection('sivar')->table('remote_pg_hacienda')
             ->where('cd_ingnio', $ingenio)
             ->get();
+
+        $haciendas->each(function($hda) {
+            $hda->cd_hcnda = ltrim($hda->cd_hcnda, '0');
+            $hda->nm_hcnda = str_replace('_00', '_', $hda->nm_hcnda);
+        });
+
         return response()->json($haciendas);
     }
 
     public function getSuertes($hacienda)
     {
+        $haciendaPadded = str_pad($hacienda, 6, '0', STR_PAD_LEFT);
+
         $suertes = DB::connection('sivar')->table('remote_pg_suerte')
-            ->where('cd_hcnda', $hacienda)
+            ->where('cd_hcnda', $haciendaPadded)
             ->get();
         return response()->json($suertes);
     }
