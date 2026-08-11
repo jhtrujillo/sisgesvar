@@ -151,7 +151,7 @@
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
                   class="h-2.5 w-2.5 transform transition-transform"
-                  :class="{ 'rotate-180': expandedParcelas[p.id] !== false }"
+                  :class="{ 'rotate-180': expandedParcelas[p.id] === true }"
                   fill="none" 
                   viewBox="0 0 24 24" 
                   stroke="currentColor"
@@ -178,9 +178,8 @@
             </div>
           </div>
 
-          <!-- Recursive Cuts (Cortes) -->
           <div 
-            v-if="p.cortes_recursivos && p.cortes_recursivos.length > 0 && expandedParcelas[p.id] !== false" 
+            v-if="p.cortes_recursivos && p.cortes_recursivos.length > 0 && expandedParcelas[p.id] === true" 
             class="mt-3 pl-6 border-l border-dashed border-blue-200 ml-4 space-y-3 relative transition-all duration-200"
           >
             <div v-for="c in p.cortes_recursivos" :key="'tree_c_' + c.id" class="relative">
@@ -250,16 +249,12 @@ const emitDelete = (id: number, uniqueId: string) => {
 };
 
 const isExpanded = ref(true);
-const showParcelas = ref(true);
-const showHijosDirectos = ref(true);
+const showParcelas = ref(false);
+const showHijosDirectos = ref(false);
 const expandedParcelas = ref<Record<string | number, boolean>>({});
 
 const toggleParcela = (id: string | number) => {
-  if (expandedParcelas.value[id] === false) {
-    expandedParcelas.value[id] = true;
-  } else {
-    expandedParcelas.value[id] = false;
-  }
+  expandedParcelas.value[id] = !expandedParcelas.value[id];
 };
 
 // Check if this Vivero node matches the search query
