@@ -50,9 +50,17 @@
           </div>
           <!-- Quick Stats Row -->
           <div class="mt-1.5 flex items-center gap-1.5 text-[9px] text-slate-500 font-medium flex-wrap">
-            <span class="bg-white/80 px-1.5 py-0.5 rounded-md border border-slate-200/60 shadow-sm flex items-center gap-0.5">
-              📊 {{ node.parcelas?.filter((p: any) => p.numero_parcela !== 'General').length || 0 }} parcelas
-            </span>
+            <button 
+              @click="showParcelas = !showParcelas"
+              class="bg-white/80 px-1.5 py-0.5 rounded-md border shadow-sm flex items-center gap-1 hover:bg-slate-100 transition-colors cursor-pointer"
+              :class="showParcelas ? 'border-slate-300' : 'border-slate-200/60 opacity-60 text-slate-400'"
+              title="Ocultar o Mostrar las parcelas de este vivero"
+            >
+              <span>📊 {{ node.parcelas?.filter((p: any) => p.numero_parcela !== 'General').length || 0 }} parcelas</span>
+              <span class="text-[8px] uppercase font-bold px-1 rounded" :class="showParcelas ? 'bg-slate-200 text-slate-600' : 'bg-slate-100 text-slate-400'">
+                {{ showParcelas ? 'Ocultar' : 'Mostrar' }}
+              </span>
+            </button>
             <span class="bg-white/80 px-1.5 py-0.5 rounded-md border border-slate-200/60 shadow-sm flex items-center gap-0.5">
               🌱 {{ getUniqueVarietiesCount(node) }} variedades
             </span>
@@ -99,7 +107,7 @@
       v-if="isExpanded"
       class="pl-6 border-l border-dashed border-slate-300 ml-5 space-y-3 transition-all duration-200"
     >
-      <div v-show="props.showAllParcelas !== false" v-for="p in node.parcelas" :key="'tree_p_' + p.id" class="relative">
+      <div v-show="showParcelas" v-for="p in node.parcelas" :key="'tree_p_' + p.id" class="relative">
         <!-- Horizontal line connecting to branch -->
         <div class="absolute top-6 -left-6 w-6 border-t border-dashed border-slate-300"></div>
         
@@ -173,7 +181,6 @@
                 <ViveroTreeComponent 
                   :node="c" 
                   :search-query="searchQuery" 
-                  :show-all-parcelas="props.showAllParcelas"
                   @close-modal="emitClose"
                   @delete-node="(id, uid) => emit('delete-node', id, uid)"
                 />
@@ -198,7 +205,6 @@
             <ViveroTreeComponent 
               :node="c" 
               :search-query="searchQuery" 
-              :show-all-parcelas="props.showAllParcelas"
               @close-modal="emitClose"
               @delete-node="(id, uid) => emit('delete-node', id, uid)"
             />
@@ -215,7 +221,6 @@ import { defineProps, defineEmits, ref, computed, watch } from 'vue';
 const props = defineProps<{
   node: any;
   searchQuery?: string;
-  showAllParcelas?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -232,6 +237,7 @@ const emitDelete = (id: number, uniqueId: string) => {
 };
 
 const isExpanded = ref(true);
+const showParcelas = ref(true);
 const expandedParcelas = ref<Record<string | number, boolean>>({});
 
 const toggleParcela = (id: string | number) => {

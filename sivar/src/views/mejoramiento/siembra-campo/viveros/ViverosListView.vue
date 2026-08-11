@@ -437,10 +437,6 @@
                 Visualización de procedencia y linaje del vivero <strong>{{ viveroEstructura.identificador_unico }}</strong>. Se detallan todas las parcelas (plots) del vivero y los cortes generados consecutivamente de forma recursiva.
               </p>
               <div class="flex items-center gap-3 w-full md:w-auto">
-                <label class="flex items-center gap-2 cursor-pointer bg-white border border-slate-200 px-3 py-1.5 rounded-xl shadow-sm hover:bg-slate-50 transition-colors">
-                  <input type="checkbox" v-model="showAllParcelas" class="rounded text-cenicana focus:ring-cenicana border-slate-300 w-4 h-4" />
-                  <span class="text-xs font-bold text-slate-700">Mostrar Parcelas</span>
-                </label>
                 <!-- Search inside the tree -->
                 <div class="w-full md:w-80 relative">
                   <input
@@ -463,7 +459,6 @@
               <ViveroTreeComponent 
                 :node="viveroEstructura" 
                 :search-query="searchTreeQuery" 
-                :show-all-parcelas="showAllParcelas"
                 @close-modal="closeEstructuraModal"
                 @delete-node="confirmDeleteCorte"
               />
@@ -507,7 +502,6 @@ const isEstructuraModalOpen = ref(false);
 const loadingEstructura = ref(false);
 const viveroEstructura = ref<any>(null);
 const searchTreeQuery = ref("");
-const showAllParcelas = ref(true);
 
 const loadEstructuraData = async (id: number) => {
   loadingEstructura.value = true;
