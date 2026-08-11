@@ -63,7 +63,6 @@
             </button>
 
             <button 
-              v-if="cortesGenerales.length > 0"
               @click="showCortesGenerales = !showCortesGenerales"
               class="bg-white/80 px-1.5 py-0.5 rounded-md border shadow-sm flex items-center gap-1 hover:bg-slate-100 transition-colors cursor-pointer"
               :class="showCortesGenerales ? 'border-slate-300' : 'border-slate-200/60 opacity-60 text-slate-400'"

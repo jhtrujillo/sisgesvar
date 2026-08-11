@@ -769,6 +769,26 @@ class ViveroController extends Controller
 
         // Assign direct children to the vivero object
         $vivero->hijos_directos = $generalCortes->values();
+
+        // Also, inject historical cuts (cosechas) as "Corte" nodes!
+        // These are not separate viveros in the DB, but they conceptually exist as cuts of this vivero.
+        $cosechas = $vivero->cosechas()->orderBy('numero_corte_anterior', 'asc')->get();
+        foreach ($cosechas as $cosecha) {
+            $numCorte = $cosecha->numero_corte_anterior;
+            $fakeCorte = [
+                'id' => 'cosecha_' . $cosecha->id,
+                'identificador_unico' => $vivero->identificador_unico . '-' . $numCorte,
+                'nombre' => $vivero->nombre . ' (Corte ' . $numCorte . ')',
+                'numero_corte' => $numCorte,
+                'fecha_siembra' => $cosecha->fecha_cosecha,
+                'ambiente' => $cosecha->ambiente,
+                'is_historical_cut' => true,
+                'hijos_directos' => [],
+                'parcelas' => [],
+                'cosechas' => []
+            ];
+            $vivero->hijos_directos->push($fakeCorte);
+        }
     }
 
     private function generarIdentificadorUnico($ingenioCd, $haciendaCd, $suerteCd, $fechaSiembra, $consecutivo)
