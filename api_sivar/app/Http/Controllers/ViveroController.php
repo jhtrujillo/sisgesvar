@@ -349,10 +349,11 @@ class ViveroController extends Controller
             $lote = \App\Models\Lote::findOrFail($newLoteId);
             $ingenio = $lote->ingenio_codigo ?: '00';
             $hacienda = $lote->hacienda_codigo ?: '00';
+            $haciendaCleaned = ltrim($hacienda, '0');
             $suerte = $lote->nombre_lote ?: '00';
             $suerteCleaned = trim(preg_replace('/\b(lote|vivero)\b/i', '', $suerte));
             $anio = date('Y', strtotime($viveroA->fecha_siembra));
-            $identificadorB = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $hacienda, $suerteCleaned, $newConsecutivo);
+            $identificadorB = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $haciendaCleaned, $suerteCleaned, $newConsecutivo);
 
             $viveroB = Vivero::create([
                 'identificador_unico' => $identificadorB,
@@ -500,10 +501,11 @@ class ViveroController extends Controller
             $lote = $vivero->lote;
             $ingenio = $lote->ingenio_codigo ?: '00';
             $hacienda = $lote->hacienda_codigo ?: '00';
+            $haciendaCleaned = ltrim($hacienda, '0');
             $suerte = $lote->nombre_lote ?: '00';
             $suerteCleaned = trim(preg_replace('/\b(lote|vivero)\b/i', '', $suerte));
             $anio = date('Y');
-            $identificadorDefault = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $hacienda, $suerteCleaned, $vivero->consecutivo_vivero_ingenio);
+            $identificadorDefault = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $haciendaCleaned, $suerteCleaned, $vivero->consecutivo_vivero_ingenio);
 
             $vivero->update([
                 'identificador_unico' => $identificadorDefault,
@@ -808,11 +810,12 @@ class ViveroController extends Controller
     {
         $ingenio = $ingenioCd ?: '00';
         $hacienda = $haciendaCd ?: '00';
+        $haciendaCleaned = ltrim($hacienda, '0');
         $suerte = $suerteCd ?: '00';
         $suerteCleaned = trim(preg_replace('/\b(lote|vivero)\b/i', '', $suerte));
         $anioSiembra = $fechaSiembra ? date('Y', strtotime($fechaSiembra)) : date('Y');
 
-        return sprintf('%s%s-%s-%s-%d', $ingenio, $anioSiembra, $hacienda, $suerteCleaned, $consecutivo);
+        return sprintf('%s%s-%s-%s-%d', $ingenio, $anioSiembra, $haciendaCleaned, $suerteCleaned, $consecutivo);
     }
 
     private function formatIdViveroOrigen($vivero)
