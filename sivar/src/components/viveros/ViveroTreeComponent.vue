@@ -61,6 +61,18 @@
                 {{ showParcelas ? 'Ocultar' : 'Mostrar' }}
               </span>
             </button>
+            <button 
+              v-if="node.hijos_directos && node.hijos_directos.length > 0"
+              @click="showHijosDirectos = !showHijosDirectos"
+              class="bg-white/80 px-1.5 py-0.5 rounded-md border shadow-sm flex items-center gap-1 hover:bg-slate-100 transition-colors cursor-pointer"
+              :class="showHijosDirectos ? 'border-slate-300' : 'border-slate-200/60 opacity-60 text-slate-400'"
+              title="Ocultar o Mostrar los cortes generales de este vivero"
+            >
+              <span>✂️ {{ node.hijos_directos.length }} cortes</span>
+              <span class="text-[8px] uppercase font-bold px-1 rounded" :class="showHijosDirectos ? 'bg-slate-200 text-slate-600' : 'bg-slate-100 text-slate-400'">
+                {{ showHijosDirectos ? 'Ocultar' : 'Mostrar' }}
+              </span>
+            </button>
             <span class="bg-white/80 px-1.5 py-0.5 rounded-md border border-slate-200/60 shadow-sm flex items-center gap-0.5">
               🌱 {{ getUniqueVarietiesCount(node) }} variedades
             </span>
@@ -193,7 +205,8 @@
       <!-- Render Hijos Directos (Cortes Generales) -->
       <div 
         v-if="node.hijos_directos && node.hijos_directos.length > 0" 
-        class="relative mt-2"
+        v-show="showHijosDirectos"
+        class="relative mt-2 pl-6 border-l border-dashed border-blue-200 ml-5"
       >
         <div v-for="c in node.hijos_directos" :key="'tree_c_gen_' + c.id" class="relative mt-3">
           <!-- Horizontal line connecting to branch -->
@@ -238,6 +251,7 @@ const emitDelete = (id: number, uniqueId: string) => {
 
 const isExpanded = ref(true);
 const showParcelas = ref(true);
+const showHijosDirectos = ref(true);
 const expandedParcelas = ref<Record<string | number, boolean>>({});
 
 const toggleParcela = (id: string | number) => {
