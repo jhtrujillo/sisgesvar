@@ -63,15 +63,27 @@
             </button>
 
             <button 
-              v-if="node.hijos_directos && node.hijos_directos.length > 0"
-              @click="showHijosDirectos = !showHijosDirectos"
+              v-if="cortesGenerales.length > 0"
+              @click="showCortesGenerales = !showCortesGenerales"
               class="bg-white/80 px-1.5 py-0.5 rounded-md border shadow-sm flex items-center gap-1 hover:bg-slate-100 transition-colors cursor-pointer"
-              :class="showHijosDirectos ? 'border-slate-300' : 'border-slate-200/60 opacity-60 text-slate-400'"
+              :class="showCortesGenerales ? 'border-slate-300' : 'border-slate-200/60 opacity-60 text-slate-400'"
               title="Ocultar o Mostrar los Cortes de este vivero"
             >
-              <span>✂️ {{ node.hijos_directos.length }} Cortes</span>
-              <span class="text-[8px] uppercase font-bold px-1 rounded" :class="showHijosDirectos ? 'bg-slate-200 text-slate-600' : 'bg-slate-100 text-slate-400'">
-                {{ showHijosDirectos ? 'Ocultar' : 'Mostrar' }}
+              <span>✂️ {{ cortesGenerales.length }} Cortes</span>
+              <span class="text-[8px] uppercase font-bold px-1 rounded" :class="showCortesGenerales ? 'bg-slate-200 text-slate-600' : 'bg-slate-100 text-slate-400'">
+                {{ showCortesGenerales ? 'Ocultar' : 'Mostrar' }}
+              </span>
+            </button>
+            <button 
+              v-if="viverosHijos.length > 0"
+              @click="showViverosHijos = !showViverosHijos"
+              class="bg-white/80 px-1.5 py-0.5 rounded-md border shadow-sm flex items-center gap-1 hover:bg-slate-100 transition-colors cursor-pointer"
+              :class="showViverosHijos ? 'border-slate-300' : 'border-slate-200/60 opacity-60 text-slate-400'"
+              title="Ocultar o Mostrar los Viveros Hijos"
+            >
+              <span>🌿 {{ viverosHijos.length }} Viveros Hijos</span>
+              <span class="text-[8px] uppercase font-bold px-1 rounded" :class="showViverosHijos ? 'bg-slate-200 text-slate-600' : 'bg-slate-100 text-slate-400'">
+                {{ showViverosHijos ? 'Ocultar' : 'Mostrar' }}
               </span>
             </button>
             <span class="bg-white/80 px-1.5 py-0.5 rounded-md border border-slate-200/60 shadow-sm flex items-center gap-0.5">
@@ -202,17 +214,40 @@
         </template>
       </div>
 
-      <!-- Render Hijos Directos (Cortes Generales) -->
+      <!-- Render Cortes -->
       <div 
-        v-if="node.hijos_directos && node.hijos_directos.length > 0" 
-        v-show="showHijosDirectos"
+        v-if="cortesGenerales.length > 0" 
+        v-show="showCortesGenerales"
+        class="relative mt-2 pl-6 border-l border-dashed border-orange-200 ml-5"
+      >
+        <div v-for="c in cortesGenerales" :key="'tree_c_corte_' + c.id" class="relative mt-3">
+          <!-- Horizontal line connecting to branch -->
+          <div class="absolute top-6 -left-6 w-6 border-t border-dashed border-slate-300"></div>
+          <div class="absolute -top-2.5 left-0 text-[8px] font-bold uppercase text-orange-600 bg-orange-50 px-1 rounded border border-orange-100 flex items-center gap-1">
+            <span>Corte</span>
+          </div>
+          <div class="pt-2">
+            <ViveroTreeComponent 
+              :node="c" 
+              :search-query="searchQuery" 
+              @close-modal="emitClose"
+              @delete-node="(id, uid) => emit('delete-node', id, uid)"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Render Viveros Hijos -->
+      <div 
+        v-if="viverosHijos.length > 0" 
+        v-show="showViverosHijos"
         class="relative mt-2 pl-6 border-l border-dashed border-blue-200 ml-5"
       >
-        <div v-for="c in node.hijos_directos" :key="'tree_c_gen_' + c.id" class="relative mt-3">
+        <div v-for="c in viverosHijos" :key="'tree_c_hijo_' + c.id" class="relative mt-3">
           <!-- Horizontal line connecting to branch -->
           <div class="absolute top-6 -left-6 w-6 border-t border-dashed border-slate-300"></div>
           <div class="absolute -top-2.5 left-0 text-[8px] font-bold uppercase text-blue-600 bg-blue-50 px-1 rounded border border-blue-100">
-            Corte
+            Vivero Hijo
           </div>
           <div class="pt-2">
             <ViveroTreeComponent 
@@ -251,8 +286,25 @@ const emitDelete = (id: number, uniqueId: string) => {
 
 const isExpanded = ref(true);
 const showParcelas = ref(false);
-const showHijosDirectos = ref(false);
+const showViverosHijos = ref(false);
+const showCortesGenerales = ref(false);
 const expandedParcelas = ref<Record<string | number, boolean>>({});
+
+const viverosHijos = computed(() => {
+  if (!props.node.hijos_directos) return [];
+  const parentId = props.node.identificador_unico;
+  return props.node.hijos_directos.filter((c: any) => {
+    return !c.identificador_unico?.startsWith(parentId + '-');
+  });
+});
+
+const cortesGenerales = computed(() => {
+  if (!props.node.hijos_directos) return [];
+  const parentId = props.node.identificador_unico;
+  return props.node.hijos_directos.filter((c: any) => {
+    return c.identificador_unico?.startsWith(parentId + '-');
+  });
+});
 
 const toggleParcela = (id: string | number) => {
   expandedParcelas.value[id] = !expandedParcelas.value[id];
