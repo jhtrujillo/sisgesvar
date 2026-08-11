@@ -591,25 +591,68 @@
         </div>
 
         <!-- ACCIONES FORMULARIO -->
-        <div v-show="activeTab !== 'parcelas'" class="flex items-center justify-end gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+        <div v-show="activeTab !== 'parcelas'" class="flex items-center justify-between gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+          <div>
+            <!-- Cancel / Back Buttons -->
+            <router-link
+              v-show="activeTab === 'generales'"
+              :to="{ name: 'siembra_campo_viveros.show' }"
+              class="px-5 py-2.5 text-xs font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all"
+            >
+              Cancelar
+            </router-link>
+            <button
+              v-show="activeTab === 'origen'"
+              type="button"
+              @click="activeTab = 'generales'"
+              class="px-5 py-2.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all inline-flex items-center gap-1.5 cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+              Anterior
+            </button>
+          </div>
 
-          <router-link
-            :to="{ name: 'siembra_campo_viveros.show' }"
-            class="px-5 py-2.5 text-xs font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all"
-          >
-            Cancelar
-          </router-link>
-          <button
-            class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-md shadow-emerald-950/10 transition-all duration-200 cursor-pointer"
-            type="submit"
-            :disabled="isSubmitting"
-          >
-            <svg v-if="isSubmitting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            {{ isSubmitting ? "Guardando..." : isEditing ? "Actualizar Vivero" : "Guardar Vivero" }}
-          </button>
+          <div class="flex items-center gap-2">
+            <!-- Next / Save Buttons -->
+            <button
+              v-show="activeTab === 'generales'"
+              type="button"
+              @click="activeTab = 'origen'"
+              class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md transition-all duration-200 cursor-pointer"
+            >
+              Siguiente
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <button
+              v-show="activeTab === 'origen' && isEditing"
+              type="button"
+              @click="activeTab = 'parcelas'"
+              class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold text-slate-700 bg-slate-200 hover:bg-slate-300 rounded-xl transition-all duration-200 cursor-pointer mr-1"
+            >
+              Ir a Parcelas
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <button
+              v-show="activeTab === 'origen'"
+              class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-md shadow-emerald-950/10 transition-all duration-200 cursor-pointer"
+              type="submit"
+              :disabled="isSubmitting"
+            >
+              <svg v-if="isSubmitting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ isSubmitting ? "Guardando..." : isEditing ? "Actualizar Vivero" : "Guardar Vivero" }}
+            </button>
+          </div>
         </div>
       </form>
 
