@@ -633,7 +633,7 @@ class ViveroController extends Controller
                                       ->where('estdo', '0') // Asumiendo que 0 es activo, u omitir si todos valen
                                       ->get();
             if ($users->isEmpty()) {
-                 $users = \App\Models\User::where('id_area', 1)->get();
+                 $users = \App\Models\User::whereIn('id_area', [1, 4])->get();
             }
             return $users->toArray();
         });
