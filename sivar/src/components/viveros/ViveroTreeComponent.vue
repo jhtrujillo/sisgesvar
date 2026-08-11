@@ -73,6 +73,18 @@
                 {{ showHijosDirectos ? 'Ocultar' : 'Mostrar' }}
               </span>
             </button>
+            <button 
+              v-if="allCortesDelVivero.length > 0"
+              @click="showTodosLosCortes = !showTodosLosCortes"
+              class="bg-white/80 px-1.5 py-0.5 rounded-md border shadow-sm flex items-center gap-1 hover:bg-slate-100 transition-colors cursor-pointer"
+              :class="showTodosLosCortes ? 'border-slate-300' : 'border-slate-200/60 opacity-60 text-slate-400'"
+              title="Ocultar o Mostrar todos los Cortes generados por este vivero"
+            >
+              <span>✂️ {{ allCortesDelVivero.length }} Cortes</span>
+              <span class="text-[8px] uppercase font-bold px-1 rounded" :class="showTodosLosCortes ? 'bg-slate-200 text-slate-600' : 'bg-slate-100 text-slate-400'">
+                {{ showTodosLosCortes ? 'Ocultar' : 'Mostrar' }}
+              </span>
+            </button>
             <span class="bg-white/80 px-1.5 py-0.5 rounded-md border border-slate-200/60 shadow-sm flex items-center gap-0.5">
               🌱 {{ getUniqueVarietiesCount(node) }} variedades
             </span>
@@ -223,6 +235,28 @@
           </div>
         </div>
       </div>
+      <!-- Render Todos los Cortes (Extraídos de las parcelas) -->
+      <div 
+        v-if="allCortesDelVivero.length > 0" 
+        v-show="showTodosLosCortes"
+        class="relative mt-2 pl-6 border-l border-dashed border-orange-200 ml-5"
+      >
+        <div v-for="c in allCortesDelVivero" :key="'tree_all_c_' + c.id" class="relative mt-3">
+          <!-- Horizontal line connecting to branch -->
+          <div class="absolute top-6 -left-6 w-6 border-t border-dashed border-slate-300"></div>
+          <div class="absolute -top-2.5 left-0 text-[8px] font-bold uppercase text-orange-600 bg-orange-50 px-1 rounded border border-orange-100 flex items-center gap-1">
+            <span>Corte de Plot {{ c._origen_parcela_num }}</span>
+          </div>
+          <div class="pt-2">
+            <ViveroTreeComponent 
+              :node="c" 
+              :search-query="searchQuery" 
+              @close-modal="emitClose"
+              @delete-node="(id, uid) => emit('delete-node', id, uid)"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -251,11 +285,27 @@ const emitDelete = (id: number, uniqueId: string) => {
 const isExpanded = ref(true);
 const showParcelas = ref(false);
 const showHijosDirectos = ref(false);
+const showTodosLosCortes = ref(false);
 const expandedParcelas = ref<Record<string | number, boolean>>({});
 
 const toggleParcela = (id: string | number) => {
   expandedParcelas.value[id] = !expandedParcelas.value[id];
 };
+
+const allCortesDelVivero = computed(() => {
+  const cortes: any[] = [];
+  if (props.node?.parcelas) {
+    props.node.parcelas.forEach((p: any) => {
+      if (p.cortes_recursivos && p.cortes_recursivos.length > 0) {
+        p.cortes_recursivos.forEach((c: any) => {
+          // Attach plot number to the cut for display purposes
+          cortes.push({ ...c, _origen_parcela_num: p.numero_parcela });
+        });
+      }
+    });
+  }
+  return cortes;
+});
 
 // Check if this Vivero node matches the search query
 const matchesNursery = computed(() => {
