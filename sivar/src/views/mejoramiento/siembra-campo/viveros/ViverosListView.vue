@@ -679,7 +679,7 @@ const closeCosechaModal = () => {
 
 const getBaseCode = (currentCode: string) => {
   if (!currentCode) return '';
-  return currentCode.replace(/-C?\d+$/, '');
+  return currentCode; // Ya no quitamos la última parte porque el identificador no incluye el número de corte
 };
 
 

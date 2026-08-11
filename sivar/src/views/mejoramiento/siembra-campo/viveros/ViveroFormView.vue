@@ -1442,7 +1442,28 @@ const hideOrigenViverosDelay = () => {
 const loadAllViveros = async () => {
   try {
     const res = await viverosServices.getViveros({ slim: 'true' });
-    allViverosList.value = res.data;
+    const rawViveros = res.data;
+    const expandedViveros = [];
+    
+    for (const v of rawViveros) {
+      // Agregar el vivero base
+      expandedViveros.push(v);
+      
+      // Si el vivero tiene cortes registrados, agregarlos como opciones adicionales
+      // Iteramos hasta numero_corte - 1 para mostrar solo los cortes históricos generados
+      if (v.numero_corte && v.numero_corte > 1) {
+        for (let i = 1; i < v.numero_corte; i++) {
+          expandedViveros.push({
+            ...v,
+            identificador_unico: `${v.identificador_unico}-${i}`,
+            isCorteOption: true,
+            corteNumber: i
+          });
+        }
+      }
+    }
+    
+    allViverosList.value = expandedViveros;
   } catch (error) {
     console.error("Error loading viveros for selection:", error);
   }
@@ -2375,9 +2396,7 @@ const resetAndLoad = async () => {
         try {
           const res = await viverosServices.getNextCorteConsecutivo({ origen_vivero_id: form.value.origen_vivero_id });
           form.value.consecutivo_corte = res.data.consecutivo;
-          if (form.value.es_corte && parentVivero) {
-            form.value.identificador_unico = `${parentVivero.identificador_unico}-${form.value.consecutivo_corte}`;
-          }
+          // Ya no concatenamos el número de corte al identificador según la solicitud del usuario
         } catch (err) {
           console.error("Error fetching next consecutivo_corte:", err);
         }
@@ -2405,9 +2424,7 @@ const resetAndLoad = async () => {
         try {
           const res = await viverosServices.getNextCorteConsecutivo({ origen_parcela: form.value.origen_parcela });
           form.value.consecutivo_corte = res.data.consecutivo;
-          if (form.value.es_corte) {
-            form.value.identificador_unico = `${form.value.origen_parcela}-${form.value.consecutivo_corte}`;
-          }
+          // Ya no concatenamos el número de corte al identificador según la solicitud del usuario
         } catch (err) {
           console.error("Error fetching next consecutivo_corte:", err);
         }

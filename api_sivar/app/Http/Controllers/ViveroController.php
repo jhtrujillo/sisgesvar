@@ -16,7 +16,7 @@ class ViveroController extends Controller
             $viveros = Vivero::with(['parcelas:id,vivero_id,numero_parcela,numero_parcela_origen,id_plot_origen'])
                 ->whereNotNull('proyecto_id')
                 ->orderBy('created_at', 'desc')
-                ->get(['id', 'identificador_unico', 'nombre', 'lote_id', 'ingenio', 'hacienda', 'suerte', 'fecha_siembra', 'proyecto_id']);
+                ->get(['id', 'identificador_unico', 'nombre', 'lote_id', 'ingenio', 'hacienda', 'suerte', 'fecha_siembra', 'proyecto_id', 'numero_corte', 'consecutivo_vivero_ingenio']);
 
             $viveros->each(function($v) {
                 $v->makeHidden(['nombre_proyecto', 'nombre_responsable', 'nombre_ambiente', 'consecutivo_corte']);
@@ -87,18 +87,8 @@ class ViveroController extends Controller
         $consecutivoViveroIngenio = $request->consecutivo_vivero_ingenio;
         $esCorte = $request->es_corte || $request->query('es_corte') === 'true' || $request->query('es_corte') === 1;
 
-        if ($esCorte) {
-            if ($request->origen_vivero_id) {
-                $parent = Vivero::find($request->origen_vivero_id);
-                if ($parent) {
-                    $cutNumber = Vivero::where('origen_vivero_id', $parent->id)->count() + 1;
-                    $identificador = $parent->identificador_unico . '-' . $cutNumber;
-                }
-            } else if ($request->origen_parcela) {
-                $cutNumber = Vivero::where('origen_parcela', $request->origen_parcela)->count() + 1;
-                $identificador = $request->origen_parcela . '-' . $cutNumber;
-            }
-        }
+        // Ya no se genera el identificador concatenando el número de corte, 
+        // siempre se generará por el consecutivo normal del slot.
 
         if (!isset($identificador)) {
             $identificador = $this->generarIdentificadorUnico(
@@ -291,33 +281,20 @@ class ViveroController extends Controller
             }
         }
         
-        $esCorte = $request->es_corte 
-            || ($vivero->origen_vivero_id && $vivero->origen_vivero_id != $vivero->id)
-            || (count(explode('-', $vivero->identificador_unico)) >= 5);
-        
-        if ($vivero->origen_parcela && $esCorte) {
-            $cutNumber = Vivero::where('origen_parcela', $vivero->origen_parcela)
-                ->where('id', '<=', $vivero->id)
-                ->count();
-            if ($cutNumber === 0) {
-                $cutNumber = 1;
-            }
-            $vivero->identificador_unico = $vivero->origen_parcela . '-' . $cutNumber;
-        } else {
-            // Always regenerate the identificador_unico using the helper method on update
-            $parts = explode('-', $vivero->identificador_unico);
-            $consecutivo = end($parts);
-            if (!is_numeric($consecutivo) || intval($consecutivo) <= 0) {
-                $consecutivo = $vivero->id;
-            }
-            $vivero->identificador_unico = $this->generarIdentificadorUnico(
-                $vivero->ingenio,
-                $vivero->hacienda,
-                $vivero->suerte,
-                $vivero->fecha_siembra,
-                $consecutivo
-            );
+        // Siempre generar el identificador_unico usando el método helper en el update
+        // (ya no se concatena el número de corte)
+        $parts = explode('-', $vivero->identificador_unico);
+        $consecutivo = end($parts);
+        if (!is_numeric($consecutivo) || intval($consecutivo) <= 0) {
+            $consecutivo = $vivero->id;
         }
+        $vivero->identificador_unico = $this->generarIdentificadorUnico(
+            $vivero->ingenio,
+            $vivero->hacienda,
+            $vivero->suerte,
+            $vivero->fecha_siembra,
+            $consecutivo
+        );
         
         $vivero->save();
 
@@ -574,10 +551,7 @@ class ViveroController extends Controller
             $vivero->ambiente = $ambiente;
         }
 
-        // HU-003: Actualizar identificador_unico con el sufijo de corte (primeras 4 partes corresponden al código base del vivero)
-        $parts = explode('-', $vivero->identificador_unico);
-        $identificadorBase = implode('-', array_slice($parts, 0, 4));
-        $vivero->identificador_unico = $identificadorBase . '-' . $vivero->numero_corte;
+        // Ya no se actualiza el identificador_unico con el sufijo de corte según solicitud del usuario
 
         $vivero->save();
 
