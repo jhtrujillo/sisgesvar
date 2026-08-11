@@ -767,25 +767,8 @@ class ViveroController extends Controller
             $parcela->cortes_recursivos = isset($plotCortes[$num]) ? $plotCortes[$num]->values() : collect();
         }
 
-        // Distribute to general/virtual parcel
-        if ($generalCortes->isNotEmpty()) {
-            $virtualParcela = new \stdClass();
-            $virtualParcela->id = 'virtual_' . $vivero->id;
-            $virtualParcela->numero_parcela = 'General';
-            $virtualParcela->numero_parcela_origen = 'General';
-            $virtualParcela->id_plot_origen = $vivero->identificador_unico;
-            $virtualParcela->variedad = null;
-            $virtualParcela->caracter = null;
-            $virtualParcela->cortes_recursivos = $generalCortes->values();
-
-            if (is_array($vivero->parcelas)) {
-                $parcelas = $vivero->parcelas;
-                $parcelas[] = $virtualParcela;
-                $vivero->parcelas = $parcelas;
-            } else {
-                $vivero->parcelas->push($virtualParcela);
-            }
-        }
+        // Assign direct children to the vivero object
+        $vivero->hijos_directos = $generalCortes->values();
     }
 
     private function generarIdentificadorUnico($ingenioCd, $haciendaCd, $suerteCd, $fechaSiembra, $consecutivo)

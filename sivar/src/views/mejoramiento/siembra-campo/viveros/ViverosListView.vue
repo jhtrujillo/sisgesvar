@@ -436,20 +436,25 @@
               <p class="text-xs text-slate-500 bg-blue-50/50 p-3 rounded-xl border border-blue-100/50 flex-1">
                 Visualización de procedencia y linaje del vivero <strong>{{ viveroEstructura.identificador_unico }}</strong>. Se detallan todas las parcelas (plots) del vivero y los cortes generados consecutivamente de forma recursiva.
               </p>
-              
-              <!-- Search inside the tree -->
-              <div class="w-full md:w-80 relative">
-                <input
-                  v-model="searchTreeQuery"
-                  type="text"
-                  placeholder="Buscar en el árbol por variedad, plot..."
-                  class="shadow-sm border border-slate-200 rounded-xl w-full py-2 pl-9 pr-3 text-xs text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-cenicana focus:border-cenicana"
-                  autocomplete="off"
-                />
-                <div class="absolute left-3 top-2.5 text-slate-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+              <div class="flex items-center gap-3 w-full md:w-auto">
+                <label class="flex items-center gap-2 cursor-pointer bg-white border border-slate-200 px-3 py-1.5 rounded-xl shadow-sm hover:bg-slate-50 transition-colors">
+                  <input type="checkbox" v-model="showAllParcelas" class="rounded text-cenicana focus:ring-cenicana border-slate-300 w-4 h-4" />
+                  <span class="text-xs font-bold text-slate-700">Mostrar Parcelas</span>
+                </label>
+                <!-- Search inside the tree -->
+                <div class="w-full md:w-80 relative">
+                  <input
+                    v-model="searchTreeQuery"
+                    type="text"
+                    placeholder="Buscar en el árbol por variedad, plot..."
+                    class="shadow-sm border border-slate-200 rounded-xl w-full py-2 pl-9 pr-3 text-xs text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-cenicana focus:border-cenicana"
+                    autocomplete="off"
+                  />
+                  <div class="absolute left-3 top-2.5 text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
@@ -458,6 +463,7 @@
               <ViveroTreeComponent 
                 :node="viveroEstructura" 
                 :search-query="searchTreeQuery" 
+                :show-all-parcelas="showAllParcelas"
                 @close-modal="closeEstructuraModal"
                 @delete-node="confirmDeleteCorte"
               />
@@ -501,6 +507,7 @@ const isEstructuraModalOpen = ref(false);
 const loadingEstructura = ref(false);
 const viveroEstructura = ref<any>(null);
 const searchTreeQuery = ref("");
+const showAllParcelas = ref(true);
 
 const loadEstructuraData = async (id: number) => {
   loadingEstructura.value = true;

@@ -99,31 +99,12 @@
       v-if="isExpanded"
       class="pl-6 border-l border-dashed border-slate-300 ml-5 space-y-3 transition-all duration-200"
     >
-      <div v-for="p in node.parcelas" :key="'tree_p_' + p.id" class="relative">
+      <div v-show="props.showAllParcelas !== false" v-for="p in node.parcelas" :key="'tree_p_' + p.id" class="relative">
         <!-- Horizontal line connecting to branch -->
         <div class="absolute top-6 -left-6 w-6 border-t border-dashed border-slate-300"></div>
         
-        <template v-if="p.numero_parcela === 'General'">
-          <!-- Render cuts directly without Parcela Card -->
-          <div 
-            v-if="p.cortes_recursivos && p.cortes_recursivos.length > 0" 
-            class="pl-6 border-l border-dashed border-blue-200 ml-4 space-y-3 relative transition-all duration-200"
-          >
-            <div v-for="c in p.cortes_recursivos" :key="'tree_c_' + c.id" class="relative">
-              <div class="absolute top-5 -left-6 w-6 border-t border-dashed border-blue-200"></div>
-              <div class="absolute -top-2.5 left-0 text-[8px] font-bold uppercase text-blue-600 bg-blue-50 px-1 rounded border border-blue-100">
-                Hijo Directo
-              </div>
-              <div class="pt-2">
-                <ViveroTreeComponent 
-                  :node="c" 
-                  :search-query="searchQuery" 
-                  @close-modal="emitClose"
-                  @delete-node="(id, uid) => emit('delete-node', id, uid)"
-                />
-              </div>
-            </div>
-          </div>
+        <template v-if="false">
+          <!-- Removed virtual parcela rendering -->
         </template>
         <template v-else>
           <!-- Parcela Card -->
@@ -192,6 +173,7 @@
                 <ViveroTreeComponent 
                   :node="c" 
                   :search-query="searchQuery" 
+                  :show-all-parcelas="props.showAllParcelas"
                   @close-modal="emitClose"
                   @delete-node="(id, uid) => emit('delete-node', id, uid)"
                 />
@@ -199,6 +181,29 @@
             </div>
           </div>
         </template>
+      </div>
+
+      <!-- Render Hijos Directos (Cortes Generales) -->
+      <div 
+        v-if="node.hijos_directos && node.hijos_directos.length > 0" 
+        class="relative mt-2"
+      >
+        <div v-for="c in node.hijos_directos" :key="'tree_c_gen_' + c.id" class="relative mt-3">
+          <!-- Horizontal line connecting to branch -->
+          <div class="absolute top-6 -left-6 w-6 border-t border-dashed border-slate-300"></div>
+          <div class="absolute -top-2.5 left-0 text-[8px] font-bold uppercase text-blue-600 bg-blue-50 px-1 rounded border border-blue-100">
+            Hijo Directo
+          </div>
+          <div class="pt-2">
+            <ViveroTreeComponent 
+              :node="c" 
+              :search-query="searchQuery" 
+              :show-all-parcelas="props.showAllParcelas"
+              @close-modal="emitClose"
+              @delete-node="(id, uid) => emit('delete-node', id, uid)"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -210,6 +215,7 @@ import { defineProps, defineEmits, ref, computed, watch } from 'vue';
 const props = defineProps<{
   node: any;
   searchQuery?: string;
+  showAllParcelas?: boolean;
 }>();
 
 const emit = defineEmits<{
