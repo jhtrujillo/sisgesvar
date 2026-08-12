@@ -8,6 +8,7 @@ import "tailwindcss/tailwind.css";
 
 import App from "./App.vue";
 import router from "./router";
+import BaseButton from "@/components/BaseButton.vue";
 
 import "./assets/style.css";
 
@@ -21,5 +22,6 @@ const app = createApp(App);
 app.use(pinia);
 app.use(router);
 app.use(Toast, options);
+app.component("BaseButton", BaseButton);
 
 app.mount("#app");
