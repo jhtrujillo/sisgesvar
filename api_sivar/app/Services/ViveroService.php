@@ -114,7 +114,7 @@ class ViveroService
         }
     }
 
-    private function formatIdViveroOrigen($vivero)
+    public function formatIdViveroOrigen($vivero)
     {
         if ($vivero->origenVivero) {
             return $vivero->origenVivero->identificador_unico;

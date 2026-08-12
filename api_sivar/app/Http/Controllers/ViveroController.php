@@ -40,7 +40,7 @@ class ViveroController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
         foreach ($viveros as $vivero) {
-            $vivero->id_vivero_origen_formateado = $this->formatIdViveroOrigen($vivero);
+            $vivero->id_vivero_origen_formateado = $this->viveroService->formatIdViveroOrigen($vivero);
         }
         return response()->json($viveros);
     }
@@ -222,7 +222,7 @@ class ViveroController extends Controller
     public function show($id)
     {
         $vivero = Vivero::with(['proyecto', 'responsable', 'caracter', 'lote', 'historialLotes.lote', 'origenLote', 'origenVivero'])->findOrFail($id);
-        $vivero->id_vivero_origen_formateado = $this->formatIdViveroOrigen($vivero);
+        $vivero->id_vivero_origen_formateado = $this->viveroService->formatIdViveroOrigen($vivero);
         return response()->json($vivero);
     }
 
