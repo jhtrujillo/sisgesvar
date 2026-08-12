@@ -20,7 +20,7 @@ Route::group([
 });
 
 Route::group([
-    'middleware' => 'api',
+    'middleware' => ['api', 'auth:api'],
 
 ], function ($router) {
     Route::get('links', [\App\Http\Controllers\LinksController::class, 'links']);

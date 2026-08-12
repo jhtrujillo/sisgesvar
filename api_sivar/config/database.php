@@ -78,7 +78,7 @@ return [
             'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'sivar'),
             'username' => env('DB_USERNAME', 'postgres'),
-            'password' => env('DB_PASSWORD', 'NC-wq20sy10'),
+            'password' => env('DB_PASSWORD', ''),
             'charset' => 'utf8',
             'prefix' => '',
             'schema' => 'public',
