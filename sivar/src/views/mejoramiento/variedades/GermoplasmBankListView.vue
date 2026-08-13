@@ -1,18 +1,8 @@
 <!-- Vista para mostrar en una lista los procesos que han sido completados -->
 <template>
   <div class="w-full flex-col pt-5 grid place-content-center">
-    <div>
-      <button
-        type="button"
-        class="block mb-4 px-4 py-2 mt-2 text-sm font-semibold bg-transparent rounded-lg dark-mode:bg-transparent dark-mode:hover:bg-gray-600 dark-mode:focus:bg-gray-600 dark-mode:focus:text-white dark-mode:hover:text-white dark-mode:text-gray-200 md:mt-0 focus:outline-none focus:shadow-outline"
-      >
-        <router-link
-          class="text-violet-800 group border border-violet-800 flex items-center px-2 py-2 font-medium rounded-md pt-1 pb-1 pr-2 pl-2 hover:text-white hover:bg-violet-800"
-          :to="{ name: 'variedades.show' }"
-        >
-          Volver
-        </router-link>
-      </button>
+    <div class="mb-4">
+      <BaseButton variant="secondary" size="sm" :to="{ name: 'variedades.show' }"> Volver </BaseButton>
     </div>
     <h1 class="text-center font-bold text-4xl mb-6 text-violet-800">Banco de Germoplasma</h1>
     <div class="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
@@ -28,15 +18,7 @@
             @input="updateFilteredGermoplasmaBank"
           />
         </div>
-        <div class="flex space-x-2">
-          <button
-            type="button"
-            class="inline-flex items-center rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            @click="downloadExcel"
-          >
-            <i class="bi bi-file-earmark-excel-fill"></i> Excel
-          </button>
-        </div>
+        <BaseButton variant="success" size="sm" @click="downloadExcel"> Excel </BaseButton>
       </div>
       <div class="mt-8 overflow-x-auto">
         <table class="table-auto w-full divide-y divide-gray-300">
@@ -65,44 +47,42 @@
       </div>
       <!-- Controles de paginación -->
       <div v-if="GermoplasmBankStore.totalPages > 1" class="flex items-center justify-between m-2 px-4 py-3 sm:px-6">
-        <button
-          class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          @click="firstPage()"
-          :disabled="GermoplasmBankStore.currentPage === 1"
-        >
-          Primera
-        </button>
-        <button
-          class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          @click="previousPage()"
-          :disabled="GermoplasmBankStore.currentPage === 1"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" />
-          </svg>
+        <BaseButton variant="secondary" size="xs" rounded="md" @click="firstPage()" :disabled="GermoplasmBankStore.currentPage === 1"> Primera </BaseButton>
+        <BaseButton variant="secondary" size="xs" rounded="md" @click="previousPage()" :disabled="GermoplasmBankStore.currentPage === 1">
+          <template #icon-left>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" />
+            </svg>
+          </template>
           Anterior
-        </button>
-        <button>
+        </BaseButton>
+        <div class="text-sm">
           <span class="font-medium">{{ GermoplasmBankStore.currentPage }}</span> /
           <span class="font-medium">{{ GermoplasmBankStore.totalPages }}</span>
-        </button>
-        <button
-          class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        </div>
+        <BaseButton
+          variant="secondary"
+          size="xs"
+          rounded="md"
           @click="nextPage()"
           :disabled="GermoplasmBankStore.currentPage === GermoplasmBankStore.totalPages"
         >
           Siguiente
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 4.5l7.5 7.5-7.5 7.5m-6-15l7.5 7.5-7.5 7.5" />
-          </svg>
-        </button>
-        <button
-          class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          <template #icon-right>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 4.5l7.5 7.5-7.5 7.5m-6-15l7.5 7.5-7.5 7.5" />
+            </svg>
+          </template>
+        </BaseButton>
+        <BaseButton
+          variant="secondary"
+          size="xs"
+          rounded="md"
           @click="lastPage()"
           :disabled="GermoplasmBankStore.currentPage === GermoplasmBankStore.totalPages"
         >
           Última
-        </button>
+        </BaseButton>
       </div>
     </div>
   </div>

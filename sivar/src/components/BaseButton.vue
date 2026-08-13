@@ -114,7 +114,7 @@ const variantClasses: Record<ButtonVariant, string> = {
 const sizeClasses: Record<ButtonSize, string> = {
   xs: "text-xs px-2.5 py-1 gap-1 font-medium",
   sm: "text-xs px-3 py-1.5 gap-1.5 font-semibold",
-  md: "text-sm px-4 py-2 gap-2 font-semibold",
+  md: "text-xs px-4 py-2 gap-2 font-semibold",
   lg: "text-base px-5 py-2.5 gap-2.5 font-bold",
   xl: "text-lg px-6 py-3 gap-3 font-bold"
 };

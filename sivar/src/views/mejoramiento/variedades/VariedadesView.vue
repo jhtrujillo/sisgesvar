@@ -2,17 +2,7 @@
   <div class="space-y-4">
     <!-- Botón Volver -->
     <div class="flex justify-start mb-4">
-      <button
-        type="button"
-        class="px-4 py-2 text-sm font-semibold bg-transparent rounded-lg dark-mode:bg-transparent dark-mode:hover:bg-gray-600 dark-mode:focus:bg-gray-600 dark-mode:focus:text-white dark-mode:hover:text-white dark-mode:text-gray-200 focus:outline-none focus:shadow-outline"
-      >
-        <router-link
-          class="text-violet-800 group border border-violet-800 flex items-center px-2 py-2 font-medium rounded-md pt-1 pb-1 pr-2 pl-2 hover:text-white hover:bg-violet-800"
-          :to="{ name: 'mejoramiento.show' }"
-        >
-          Volver
-        </router-link>
-      </button>
+      <BaseButton variant="violet" size="sm" :to="{ name: 'mejoramiento.show' }"> Volver </BaseButton>
     </div>
     <div class="grid grid-cols-1 text-center sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-4">
       <router-link

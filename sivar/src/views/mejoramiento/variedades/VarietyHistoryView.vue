@@ -1,17 +1,7 @@
 <template>
   <div class="w-full flex-col grid place-content-center">
-    <div>
-      <button
-        type="button"
-        class="block mb-4 px-4 py-2 mt-2 text-sm font-semibold bg-transparent rounded-lg dark-mode:bg-transparent dark-mode:hover:bg-gray-600 dark-mode:focus:bg-gray-600 dark-mode:focus:text-white dark-mode:hover:text-white dark-mode:text-gray-200 md:mt-0 focus:outline-none focus:shadow-outline"
-      >
-        <router-link
-          class="text-violet-800 group border border-violet-800 flex items-center px-2 py-2 font-medium rounded-md pt-1 pb-1 pr-2 pl-2 hover:text-white hover:bg-violet-800"
-          :to="{ name: 'variedades.show' }"
-        >
-          Volver</router-link
-        >
-      </button>
+    <div class="mb-4">
+      <BaseButton variant="violet" size="sm" :to="{ name: 'variedades.show' }"> Volver </BaseButton>
     </div>
     <h1 class="text-center font-bold text-4xl mb-6 text-violet-800">Historial Variedad</h1>
     <div class="flex flex-wrap justify-center items-center space-x-4 mb-4 mt-4">
@@ -54,11 +44,8 @@
           </option>
         </select>
       </div>
-      <div class="flex-none w-48">
-        <!-- Botón para limpiar campos -->
-        <button @click="clearFields" class="bg-violet-800 hover:bg-violet-900 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-          Limpiar Campos
-        </button>
+      <div class="flex-none w-48 pt-5">
+        <BaseButton variant="violet" size="sm" @click="clearFields"> Limpiar Campos </BaseButton>
       </div>
       <div class="overflow-hidden mt-4">
         <TableComponent

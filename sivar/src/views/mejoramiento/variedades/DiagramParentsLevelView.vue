@@ -1,18 +1,8 @@
 <template>
   <div class="w-full flex flex-col items-center">
     <!-- Botón para volver atrás -->
-    <div>
-      <button
-        type="button"
-        class="block mb-4 px-4 py-2 mt-2 text-sm font-semibold bg-transparent rounded-lg dark-mode:bg-transparent dark-mode:hover:bg-gray-600 dark-mode:focus:bg-gray-600 dark-mode:focus:text-white dark-mode:text-gray-200 md:mt-0 focus:outline-none focus:shadow-outline"
-      >
-        <router-link
-          class="text-violet-800 group border border-violet-800 flex items-center px-2 py-2 font-medium rounded-md pt-1 pb-1 pr-2 pl-2 hover:text-white hover:bg-violet-800"
-          :to="{ name: 'variedades.show' }"
-        >
-          Volver
-        </router-link>
-      </button>
+    <div class="mb-4">
+      <BaseButton variant="violet" size="sm" :to="{ name: 'variedades.show' }"> Volver </BaseButton>
     </div>
     <!-- Título del diagrama -->
     <h1 class="text-center font-bold text-4xl mb-6 text-violet-800">Diagrama de Parentales</h1>

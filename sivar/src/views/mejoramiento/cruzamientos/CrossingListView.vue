@@ -46,16 +46,14 @@
         </div>
 
         <!-- Download Excel -->
-        <button
-          type="button"
-          class="inline-flex items-center px-4 py-2 rounded-xl bg-emerald-600 border border-transparent text-xs font-bold text-white hover:bg-cenicana-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cenicana transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
-          @click="downloadExcel"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
+        <BaseButton variant="primary" size="sm" @click="downloadExcel">
+          <template #icon-left>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+          </template>
           Exportar Excel
-        </button>
+        </BaseButton>
       </div>
     </div>
 
@@ -160,23 +158,15 @@
         class="bg-slate-50/50 px-6 py-4 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2"
       >
         <div class="flex gap-2">
-          <button
-            class="inline-flex items-center px-3 py-1.5 border border-slate-200 text-xs font-bold rounded-xl text-slate-600 bg-white hover:bg-slate-50 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            @click="firstPage()"
-            :disabled="CrossingsListsStore.currentPage === 1"
-          >
-            Primera
-          </button>
-          <button
-            class="inline-flex items-center px-3 py-1.5 border border-slate-200 text-xs font-bold rounded-xl text-slate-600 bg-white hover:bg-slate-50 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            @click="previousPage()"
-            :disabled="CrossingsListsStore.currentPage === 1"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
+          <BaseButton variant="secondary" size="xs" @click="firstPage()" :disabled="CrossingsListsStore.currentPage === 1"> Primera </BaseButton>
+          <BaseButton variant="secondary" size="xs" @click="previousPage()" :disabled="CrossingsListsStore.currentPage === 1">
+            <template #icon-left>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </template>
             Anterior
-          </button>
+          </BaseButton>
         </div>
 
         <div class="text-xs font-bold text-slate-500 bg-white border border-slate-200/80 px-3 py-1 rounded-xl shadow-sm">
@@ -185,23 +175,17 @@
         </div>
 
         <div class="flex gap-2">
-          <button
-            class="inline-flex items-center px-3 py-1.5 border border-slate-200 text-xs font-bold rounded-xl text-slate-600 bg-white hover:bg-slate-50 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            @click="nextPage()"
-            :disabled="CrossingsListsStore.currentPage === CrossingsListsStore.totalPages"
-          >
+          <BaseButton variant="secondary" size="xs" @click="nextPage()" :disabled="CrossingsListsStore.currentPage === CrossingsListsStore.totalPages">
             Siguiente
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-          <button
-            class="inline-flex items-center px-3 py-1.5 border border-slate-200 text-xs font-bold rounded-xl text-slate-600 bg-white hover:bg-slate-50 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            @click="lastPage()"
-            :disabled="CrossingsListsStore.currentPage === CrossingsListsStore.totalPages"
-          >
+            <template #icon-right>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </template>
+          </BaseButton>
+          <BaseButton variant="secondary" size="xs" @click="lastPage()" :disabled="CrossingsListsStore.currentPage === CrossingsListsStore.totalPages">
             Última
-          </button>
+          </BaseButton>
         </div>
       </div>
     </div>

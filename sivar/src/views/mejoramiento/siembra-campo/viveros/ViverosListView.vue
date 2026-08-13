@@ -2,31 +2,20 @@
   <div class="container mx-auto p-6">
     <div class="mb-6">
       <div class="mb-4">
-        <router-link
-          :to="{ name: 'mejoramiento.show' }"
-          class="inline-flex items-center px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-800 rounded-full shadow-sm transition-all duration-200"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
+        <BaseButton variant="secondary" size="sm" rounded="full" :to="{ name: 'mejoramiento.show' }">
+          <template #icon-left>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </template>
           Volver a Mejoramiento
-        </router-link>
+        </BaseButton>
       </div>
       <div class="flex justify-between items-center">
         <h1 class="text-2xl font-bold text-slate-800">Administración de Viveros</h1>
         <div class="flex gap-2">
-          <router-link
-            :to="{ name: 'siembra_campo_viveros_lotes.show' }"
-            class="flex items-center px-5 py-2.5 text-sm font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition-all duration-200"
-          >
-            Administrar Lotes
-          </router-link>
-          <router-link
-            :to="{ name: 'vivero_nuevo.show' }"
-            class="flex items-center px-5 py-2.5 text-sm font-bold text-white bg-cenicana hover:bg-cenicana-800 rounded-xl shadow-md transition-all duration-200"
-          >
-            Registrar Nuevo Vivero
-          </router-link>
+          <BaseButton variant="secondary" :to="{ name: 'siembra_campo_viveros_lotes.show' }"> Administrar Lotes </BaseButton>
+          <BaseButton variant="primary" :to="{ name: 'vivero_nuevo.show' }"> Registrar Nuevo Vivero </BaseButton>
         </div>
       </div>
     </div>
@@ -271,21 +260,9 @@
       <div class="flex flex-col md:flex-row justify-between items-center mt-4 text-sm text-gray-600">
         <div>Mostrando {{ paginationStart }} a {{ paginationEnd }} de {{ filteredViveros.length }} registros</div>
         <div class="flex gap-2 mt-2 md:mt-0">
-          <button
-            @click="prevPage"
-            :disabled="currentPage === 1"
-            class="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Anterior
-          </button>
+          <BaseButton variant="secondary" size="xs" rounded="md" @click="prevPage" :disabled="currentPage === 1"> Anterior </BaseButton>
           <div class="flex items-center px-2">Página {{ currentPage }} de {{ totalPages }}</div>
-          <button
-            @click="nextPage"
-            :disabled="currentPage >= totalPages"
-            class="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Siguiente
-          </button>
+          <BaseButton variant="secondary" size="xs" rounded="md" @click="nextPage" :disabled="currentPage >= totalPages"> Siguiente </BaseButton>
         </div>
       </div>
     </div>
@@ -338,28 +315,8 @@
 
           <!-- Footer -->
           <div class="border-t border-slate-100 p-5 bg-slate-50 flex justify-end gap-3">
-            <button
-              type="button"
-              @click="closeCosechaModal"
-              class="px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              :disabled="isSubmittingCosecha"
-              class="flex items-center px-5 py-2.5 text-sm font-bold text-white bg-cenicana hover:bg-cenicana-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors"
-            >
-              <svg v-if="isSubmittingCosecha" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path
-                  class="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Guardar Corte
-            </button>
+            <BaseButton variant="secondary" @click="closeCosechaModal"> Cancelar </BaseButton>
+            <BaseButton type="submit" variant="primary" :loading="isSubmittingCosecha"> Guardar Corte </BaseButton>
           </div>
         </form>
       </div>
@@ -451,12 +408,7 @@
 
         <!-- Footer -->
         <div class="border-t border-slate-100 p-5 bg-slate-50 flex justify-end">
-          <button
-            @click="closeHistorialModal"
-            class="px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors"
-          >
-            Cerrar
-          </button>
+          <BaseButton variant="secondary" @click="closeHistorialModal"> Cerrar </BaseButton>
         </div>
       </div>
     </div>
@@ -520,12 +472,7 @@
 
         <!-- Footer -->
         <div class="border-t border-slate-100 p-5 bg-slate-50 flex justify-end">
-          <button
-            @click="closeEstructuraModal"
-            class="px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors"
-          >
-            Cerrar
-          </button>
+          <BaseButton variant="secondary" @click="closeEstructuraModal"> Cerrar </BaseButton>
         </div>
       </div>
     </div>

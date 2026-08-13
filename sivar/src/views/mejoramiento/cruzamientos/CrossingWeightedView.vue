@@ -1,16 +1,15 @@
 <template>
   <div class="space-y-8 w-full max-w-4xl mx-auto px-4 pt-6">
-    <router-link :to="{ name: 'crossing_initial_data.show' }">
-      <button
-        type="button"
-        class="flex items-center px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 transition-all duration-200"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
+    <div>
+      <BaseButton variant="secondary" size="sm" :to="{ name: 'crossing_initial_data.show' }">
+        <template #icon-left>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </template>
         Atrás
-      </button>
-    </router-link>
+      </BaseButton>
+    </div>
     <!-- Encabezado con Indicador de Progreso -->
     <div class="border-b border-slate-100 pb-6">
       <div class="flex items-center justify-between mb-4">
@@ -145,7 +144,14 @@
       <div v-if="selectedVariety && selectedMegaAmbiente" class="mt-8 space-y-3">
         <div class="flex items-center space-x-2">
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Ponderados de Características para la Matriz</h3>
-          <button @click="isHelpModalOpen = true" class="text-emerald-500 hover:text-emerald-700 transition" title="Ver ayuda sobre el cálculo de ponderados">
+          <BaseButton
+            variant="ghost"
+            size="sm"
+            iconOnly
+            @click="isHelpModalOpen = true"
+            class="text-emerald-500 hover:text-emerald-700"
+            title="Ver ayuda sobre el cálculo de ponderados"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path
                 stroke-linecap="round"
@@ -153,7 +159,7 @@
                 d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-          </button>
+          </BaseButton>
         </div>
         <div class="border border-slate-100 rounded-xl shadow-sm">
           <table class="table-auto w-full divide-y divide-slate-100">
@@ -190,12 +196,7 @@
                 <td class="whitespace-nowrap px-6 py-4 text-center text-sm text-slate-600 font-medium">{{ item.ponderado || 0 }}</td>
                 <td class="whitespace-nowrap px-6 py-4 text-center text-sm font-bold text-emerald-600 bg-emerald-50/30">{{ calcularPonderado(item) }}%</td>
                 <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
-                  <button
-                    @click="openModal(item, `${!item.ponderado ? 1 : 0}`)"
-                    class="px-4 py-1.5 text-xs font-bold text-emerald-700 bg-white border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 rounded-xl transition-all duration-200"
-                  >
-                    Modificar
-                  </button>
+                  <BaseButton variant="outline" size="xs" @click="openModal(item, `${!item.ponderado ? 1 : 0}`)"> Modificar </BaseButton>
                 </td>
               </tr>
             </tbody>
@@ -214,18 +215,14 @@
 
     <!-- Botones de Navegación -->
     <div class="flex justify-end pt-4">
-      <router-link :to="{ name: 'crossing_matrix.show' }">
-        <button
-          type="button"
-          class="flex items-center px-6 py-2.5 text-sm font-bold text-white bg-cenicana hover:bg-cenicana-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-md transition-all duration-200"
-          :disabled="!selectedVariety || !selectedMegaAmbiente"
-        >
-          Generar Matriz
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <BaseButton variant="primary" size="md" :to="{ name: 'crossing_matrix.show' }" :disabled="!selectedVariety || !selectedMegaAmbiente">
+        Generar Matriz
+        <template #icon-right>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
           </svg>
-        </button>
-      </router-link>
+        </template>
+      </BaseButton>
     </div>
 
     <!-- Modal para modificar características -->
@@ -234,7 +231,7 @@
         <!-- Header del modal -->
         <div class="flex justify-between items-center border-b border-slate-100 p-5 bg-slate-50">
           <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Modificar Característica</h4>
-          <button @click="closeModal" class="text-slate-400 hover:text-slate-600 transition-colors text-2xl">&times;</button>
+          <BaseButton variant="ghost" size="sm" iconOnly @click="closeModal" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</BaseButton>
         </div>
 
         <!-- Cuerpo del modal -->
@@ -280,19 +277,9 @@
         </div>
 
         <!-- Footer del modal -->
-        <div class="flex justify-end items-center border-t border-slate-100 p-5 bg-slate-50">
-          <button
-            @click="closeModal"
-            class="mr-3 px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all duration-200"
-          >
-            Cancelar
-          </button>
-          <button
-            @click="modificarCaracteristica"
-            class="px-5 py-2 text-xs font-bold text-white bg-cenicana hover:bg-cenicana-800 rounded-xl shadow-md transition-all duration-200"
-          >
-            Guardar Cambios
-          </button>
+        <div class="flex justify-end items-center border-t border-slate-100 p-5 bg-slate-50 gap-3">
+          <BaseButton variant="secondary" size="sm" @click="closeModal"> Cancelar </BaseButton>
+          <BaseButton variant="primary" size="sm" @click="modificarCaracteristica"> Guardar Cambios </BaseButton>
         </div>
       </div>
     </div>
@@ -315,7 +302,9 @@
             </svg>
             Guía de Ponderados
           </h4>
-          <button @click="isHelpModalOpen = false" class="text-slate-400 hover:text-slate-600 transition-colors text-2xl">&times;</button>
+          <BaseButton variant="ghost" size="sm" iconOnly @click="isHelpModalOpen = false" class="text-slate-400 hover:text-slate-600 text-xl font-bold"
+            >&times;</BaseButton
+          >
         </div>
 
         <!-- Cuerpo del modal -->
@@ -342,12 +331,7 @@
 
         <!-- Footer del modal -->
         <div class="flex justify-end items-center border-t border-slate-100 p-5 bg-slate-50">
-          <button
-            @click="isHelpModalOpen = false"
-            class="px-5 py-2 text-xs font-bold text-white bg-cenicana hover:bg-cenicana-800 rounded-xl shadow-md transition-all duration-200"
-          >
-            Entendido
-          </button>
+          <BaseButton variant="primary" size="sm" @click="isHelpModalOpen = false"> Entendido </BaseButton>
         </div>
       </div>
     </div>

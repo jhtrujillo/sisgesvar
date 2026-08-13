@@ -88,18 +88,14 @@
 
     <!-- Botón de Navegación -->
     <div class="flex justify-end pt-4">
-      <router-link :to="{ name: 'crossing_weighted.show' }">
-        <button
-          type="button"
-          class="flex items-center px-6 py-2.5 text-sm font-bold text-white bg-cenicana hover:bg-cenicana-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-md transition-all duration-200"
-          :disabled="!model.cd_cntble"
-        >
-          Siguiente paso
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <BaseButton variant="primary" size="md" :to="{ name: 'crossing_weighted.show' }" :disabled="!model.cd_cntble">
+        Siguiente paso
+        <template #icon-right>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
           </svg>
-        </button>
-      </router-link>
+        </template>
+      </BaseButton>
     </div>
   </div>
 </template>

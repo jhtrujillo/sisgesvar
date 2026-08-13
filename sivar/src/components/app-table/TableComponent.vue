@@ -13,26 +13,17 @@
     </div>
     <div class="flex grow justify-end items-center space-x-2">
       <div v-if="haveButtonExcel" class="sm:col-span-1">
-        <button
-          type="button"
-          class="inline-flex items-center rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          @click="downloadExcel"
-        >
-          <i class="bi bi-file-earmark-excel-fill"></i> Excel
-        </button>
+        <BaseButton variant="primary" size="sm" class="!bg-indigo-600 hover:!bg-indigo-500" @click="downloadExcel"> Excel </BaseButton>
       </div>
       <div v-if="haveButtonAddNew" class="sm:col-span-1">
-        <button
-          type="button"
-          class="inline-flex items-center justify-center rounded-md border border-transparent bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 sm:w-auto"
-          @click="$emit('addNew')"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-            <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-          </svg>
-
+        <BaseButton variant="primary" size="sm" class="!bg-sky-600 hover:!bg-sky-700" @click="$emit('addNew')">
+          <template #icon-left>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+              <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+            </svg>
+          </template>
           Nuevo
-        </button>
+        </BaseButton>
       </div>
       <Combobox v-if="allowHideColumns" as="div" v-model="columnsToShow" multiple>
         <div class="relative">
@@ -141,42 +132,47 @@
                     </td>
                   </template>
                   <td v-if="isDelete || isEditable || otherButtonText" class="whitespace-nowrap py-2 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                    <button
+                    <BaseButton
                       v-if="isEditable"
-                      type="button"
-                      class="ml-3 inline-flex justify-center rounded-md border border-transparent bg-sky-500 py-1 px-1 text-sm font-medium text-white shadow-sm hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+                      variant="info"
+                      size="xs"
+                      iconOnly
+                      class="ml-3 !bg-sky-500 hover:!bg-sky-600 !p-1.5"
                       @click="emit('editElement', hasBeenFormat ? row.org_row : row)"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                         <path
                           stroke-linecap="round"
                           stroke-linejoin="round"
                           d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
                         />
                       </svg>
-                    </button>
-                    <button
+                    </BaseButton>
+                    <BaseButton
                       v-if="isDelete"
-                      type="button"
-                      class="ml-3 inline-flex items-center rounded-md border border-transparent bg-rose-600 px-1 py-1 text-sm font-medium text-white shadow-sm hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-900 focus:ring-offset-2"
+                      variant="danger"
+                      size="xs"
+                      iconOnly
+                      class="ml-3 !bg-rose-600 hover:!bg-rose-700 !p-1.5"
                       @click="emit('deleteElement', hasBeenFormat ? row.org_row : row)"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                         <path
                           stroke-linecap="round"
                           stroke-linejoin="round"
                           d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
                         />
                       </svg>
-                    </button>
-                    <button
+                    </BaseButton>
+                    <BaseButton
                       v-if="otherButtonText"
-                      type="button"
-                      class="inline-flex items-center gap-x-1.5 rounded-md bg-slate-600 px-3 py-2 mx-1 text-sm font-semibold text-white shadow-sm hover:bg-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600"
+                      variant="secondary"
+                      size="sm"
+                      class="mx-1"
                       @click="emit('otherButton', hasBeenFormat ? row.org_row : row)"
                     >
                       {{ otherButtonText }}
-                    </button>
+                    </BaseButton>
                   </td>
                 </tr>
               </template>
@@ -205,30 +201,27 @@
           </p>
         </div>
         <!-- pagination -->
-        <div class="flex flex-1 justify-between sm:justify-end mt-5 mr-6">
-          <button
-            class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            @click="previousPage"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" />
-            </svg>
-
+        <div class="flex flex-1 justify-between sm:justify-end items-center mt-5 mr-6 gap-2">
+          <BaseButton variant="secondary" size="sm" @click="previousPage">
+            <template #icon-left>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" />
+              </svg>
+            </template>
             Anterior
-          </button>
-          <button class="mx-4">
+          </BaseButton>
+          <div class="mx-2 text-sm">
             <span class="font-medium">{{ currentPage + 1 }}</span> /
             <span class="font-medium">{{ pageTotalNumber }}</span>
-          </button>
-          <button
-            class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            @click="nextPage"
-          >
+          </div>
+          <BaseButton variant="secondary" size="sm" @click="nextPage">
             Siguiente
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 4.5l7.5 7.5-7.5 7.5m-6-15l7.5 7.5-7.5 7.5" />
-            </svg>
-          </button>
+            <template #icon-right>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 4.5l7.5 7.5-7.5 7.5m-6-15l7.5 7.5-7.5 7.5" />
+              </svg>
+            </template>
+          </BaseButton>
         </div>
       </nav>
     </template>
