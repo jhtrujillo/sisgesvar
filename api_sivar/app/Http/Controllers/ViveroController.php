@@ -7,16 +7,26 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use App\Services\ViveroService;
+use App\Http\Requests\StoreViveroRequest;
+use App\Http\Requests\UpdateViveroRequest;
+use App\Http\Requests\RegistrarCosechaRequest;
 
 class ViveroController extends Controller
 {
+    protected $viveroService;
+
+    public function __construct(ViveroService $viveroService)
+    {
+        $this->viveroService = $viveroService;
+    }
     public function index(Request $request)
     {
         if ($request->query('slim') === 'true') {
             $viveros = Vivero::with(['parcelas:id,vivero_id,numero_parcela,numero_parcela_origen,id_plot_origen'])
                 ->whereNotNull('proyecto_id')
                 ->orderBy('created_at', 'desc')
-                ->get(['id', 'identificador_unico', 'nombre', 'lote_id', 'ingenio', 'hacienda', 'suerte', 'fecha_siembra', 'proyecto_id']);
+                ->get(['id', 'identificador_unico', 'nombre', 'lote_id', 'ingenio', 'hacienda', 'suerte', 'fecha_siembra', 'proyecto_id', 'numero_corte', 'consecutivo_vivero_ingenio']);
 
             $viveros->each(function($v) {
                 $v->makeHidden(['nombre_proyecto', 'nombre_responsable', 'nombre_ambiente', 'consecutivo_corte']);
@@ -30,33 +40,13 @@ class ViveroController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
         foreach ($viveros as $vivero) {
-            $vivero->id_vivero_origen_formateado = $this->formatIdViveroOrigen($vivero);
+            $vivero->id_vivero_origen_formateado = $this->viveroService->formatIdViveroOrigen($vivero);
         }
         return response()->json($viveros);
     }
 
-    public function store(Request $request)
+    public function store(StoreViveroRequest $request)
     {
-        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'proyecto_id' => 'required|integer|exists:sivar.remote_pg_sipro,id_prycto',
-            'ingenio' => 'required|string',
-            'hacienda' => 'required|string',
-            'nombre' => 'nullable|string|max:255',
-            'fecha_siembra' => 'required|date',
-            'origen_ingenio' => 'nullable|string',
-            'origen_hacienda' => 'nullable|string',
-            'origen_suerte' => 'nullable|string',
-            'origen_anio' => 'nullable|integer',
-            'origen_parcela' => 'nullable|string',
-            'origen_lote_id' => 'nullable|integer|exists:lotes,id',
-            'origen_vivero_id' => 'nullable|integer|exists:viveros,id',
-            'lote_id' => 'nullable|integer|exists:lotes,id',
-            'consecutivo_vivero_ingenio' => 'required|integer',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
 
         // Validate lot capacity (counting only fully active nurseries other than the one being activated)
         if ($request->has('lote_id') && $request->lote_id) {
@@ -87,21 +77,11 @@ class ViveroController extends Controller
         $consecutivoViveroIngenio = $request->consecutivo_vivero_ingenio;
         $esCorte = $request->es_corte || $request->query('es_corte') === 'true' || $request->query('es_corte') === 1;
 
-        if ($esCorte) {
-            if ($request->origen_vivero_id) {
-                $parent = Vivero::find($request->origen_vivero_id);
-                if ($parent) {
-                    $cutNumber = Vivero::where('origen_vivero_id', $parent->id)->count() + 1;
-                    $identificador = $parent->identificador_unico . '-' . $cutNumber;
-                }
-            } else if ($request->origen_parcela) {
-                $cutNumber = Vivero::where('origen_parcela', $request->origen_parcela)->count() + 1;
-                $identificador = $request->origen_parcela . '-' . $cutNumber;
-            }
-        }
+        // Ya no se genera el identificador concatenando el número de corte, 
+        // siempre se generará por el consecutivo normal del slot.
 
         if (!isset($identificador)) {
-            $identificador = $this->generarIdentificadorUnico(
+            $identificador = $this->viveroService->generarIdentificadorUnico(
                 $request->ingenio,
                 $request->hacienda,
                 $request->suerte,
@@ -242,11 +222,11 @@ class ViveroController extends Controller
     public function show($id)
     {
         $vivero = Vivero::with(['proyecto', 'responsable', 'caracter', 'lote', 'historialLotes.lote', 'origenLote', 'origenVivero'])->findOrFail($id);
-        $vivero->id_vivero_origen_formateado = $this->formatIdViveroOrigen($vivero);
+        $vivero->id_vivero_origen_formateado = $this->viveroService->formatIdViveroOrigen($vivero);
         return response()->json($vivero);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateViveroRequest $request, $id)
     {
         $vivero = Vivero::findOrFail($id);
 
@@ -291,33 +271,20 @@ class ViveroController extends Controller
             }
         }
         
-        $esCorte = $request->es_corte 
-            || ($vivero->origen_vivero_id && $vivero->origen_vivero_id != $vivero->id)
-            || (count(explode('-', $vivero->identificador_unico)) >= 5);
-        
-        if ($vivero->origen_parcela && $esCorte) {
-            $cutNumber = Vivero::where('origen_parcela', $vivero->origen_parcela)
-                ->where('id', '<=', $vivero->id)
-                ->count();
-            if ($cutNumber === 0) {
-                $cutNumber = 1;
-            }
-            $vivero->identificador_unico = $vivero->origen_parcela . '-' . $cutNumber;
-        } else {
-            // Always regenerate the identificador_unico using the helper method on update
-            $parts = explode('-', $vivero->identificador_unico);
-            $consecutivo = end($parts);
-            if (!is_numeric($consecutivo) || intval($consecutivo) <= 0) {
-                $consecutivo = $vivero->id;
-            }
-            $vivero->identificador_unico = $this->generarIdentificadorUnico(
-                $vivero->ingenio,
-                $vivero->hacienda,
-                $vivero->suerte,
-                $vivero->fecha_siembra,
-                $consecutivo
-            );
+        // Siempre generar el identificador_unico usando el método helper en el update
+        // (ya no se concatena el número de corte)
+        $parts = explode('-', $vivero->identificador_unico);
+        $consecutivo = end($parts);
+        if (!is_numeric($consecutivo) || intval($consecutivo) <= 0) {
+            $consecutivo = $vivero->id;
         }
+        $vivero->identificador_unico = $this->generarIdentificadorUnico(
+            $vivero->ingenio,
+            $vivero->hacienda,
+            $vivero->suerte,
+            $vivero->fecha_siembra,
+            $consecutivo
+        );
         
         $vivero->save();
 
@@ -349,10 +316,11 @@ class ViveroController extends Controller
             $lote = \App\Models\Lote::findOrFail($newLoteId);
             $ingenio = $lote->ingenio_codigo ?: '00';
             $hacienda = $lote->hacienda_codigo ?: '00';
+            $haciendaCleaned = ltrim($hacienda, '0');
             $suerte = $lote->nombre_lote ?: '00';
             $suerteCleaned = trim(preg_replace('/\b(lote|vivero)\b/i', '', $suerte));
             $anio = date('Y', strtotime($viveroA->fecha_siembra));
-            $identificadorB = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $hacienda, $suerteCleaned, $newConsecutivo);
+            $identificadorB = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $haciendaCleaned, $suerteCleaned, $newConsecutivo);
 
             $viveroB = Vivero::create([
                 'identificador_unico' => $identificadorB,
@@ -500,10 +468,11 @@ class ViveroController extends Controller
             $lote = $vivero->lote;
             $ingenio = $lote->ingenio_codigo ?: '00';
             $hacienda = $lote->hacienda_codigo ?: '00';
+            $haciendaCleaned = ltrim($hacienda, '0');
             $suerte = $lote->nombre_lote ?: '00';
             $suerteCleaned = trim(preg_replace('/\b(lote|vivero)\b/i', '', $suerte));
             $anio = date('Y');
-            $identificadorDefault = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $hacienda, $suerteCleaned, $vivero->consecutivo_vivero_ingenio);
+            $identificadorDefault = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $haciendaCleaned, $suerteCleaned, $vivero->consecutivo_vivero_ingenio);
 
             $vivero->update([
                 'identificador_unico' => $identificadorDefault,
@@ -545,13 +514,8 @@ class ViveroController extends Controller
         }
     }
 
-    public function registrarCosecha(Request $request, $id)
+    public function registrarCosecha(RegistrarCosechaRequest $request, $id)
     {
-        $request->validate([
-            'fecha_cosecha' => 'required|date',
-            'ambiente' => 'nullable|string|max:255',
-        ]);
-
         $vivero = Vivero::findOrFail($id);
 
         $fechaCorte = $request->fecha_cosecha;
@@ -572,10 +536,7 @@ class ViveroController extends Controller
             $vivero->ambiente = $ambiente;
         }
 
-        // HU-003: Actualizar identificador_unico con el sufijo de corte (primeras 4 partes corresponden al código base del vivero)
-        $parts = explode('-', $vivero->identificador_unico);
-        $identificadorBase = implode('-', array_slice($parts, 0, 4));
-        $vivero->identificador_unico = $identificadorBase . '-' . $vivero->numero_corte;
+        // Ya no se actualiza el identificador_unico con el sufijo de corte según solicitud del usuario
 
         $vivero->save();
 
@@ -603,13 +564,21 @@ class ViveroController extends Controller
         $haciendas = DB::connection('sivar')->table('remote_pg_hacienda')
             ->where('cd_ingnio', $ingenio)
             ->get();
+
+        $haciendas->each(function($hda) {
+            $hda->cd_hcnda = ltrim($hda->cd_hcnda, '0');
+            $hda->nm_hcnda = str_replace('_00', '_', $hda->nm_hcnda);
+        });
+
         return response()->json($haciendas);
     }
 
     public function getSuertes($hacienda)
     {
+        $haciendaPadded = str_pad($hacienda, 6, '0', STR_PAD_LEFT);
+
         $suertes = DB::connection('sivar')->table('remote_pg_suerte')
-            ->where('cd_hcnda', $hacienda)
+            ->where('cd_hcnda', $haciendaPadded)
             ->get();
         return response()->json($suertes);
     }
@@ -631,7 +600,7 @@ class ViveroController extends Controller
                                       ->where('estdo', '0') // Asumiendo que 0 es activo, u omitir si todos valen
                                       ->get();
             if ($users->isEmpty()) {
-                 $users = \App\Models\User::where('id_area', 1)->get();
+                 $users = \App\Models\User::whereIn('id_area', [1, 4])->get();
             }
             return $users->toArray();
         });
@@ -699,25 +668,22 @@ class ViveroController extends Controller
 
     public function getEstructura($id)
     {
-        $vivero = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])->findOrFail($id);
-        
         // Tracing upwards to find the absolute root parent nursery of this lineage
+        $vivero = Vivero::findOrFail($id);
         $rootVivero = $vivero;
         $visited = [$rootVivero->id];
         
         while (true) {
             $parent = null;
             if ($rootVivero->origen_vivero_id) {
-                $parent = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])->find($rootVivero->origen_vivero_id);
+                $parent = Vivero::find($rootVivero->origen_vivero_id);
             }
             
             if (!$parent && $rootVivero->origen_parcela) {
                 $parts = explode('-', $rootVivero->origen_parcela);
                 if (count($parts) >= 4) {
                     $baseId = implode('-', array_slice($parts, 0, 4));
-                    $parent = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])
-                        ->where('identificador_unico', $baseId)
-                        ->first();
+                    $parent = Vivero::where('identificador_unico', $baseId)->first();
                 }
             }
             
@@ -729,142 +695,7 @@ class ViveroController extends Controller
             }
         }
 
-        $this->loadEstructuraRecursiva($rootVivero);
-        return response()->json($rootVivero);
-    }
-
-    private function loadEstructuraRecursiva($vivero)
-    {
-        $viveroBaseId = implode('-', array_slice(explode('-', $vivero->identificador_unico), 0, 4));
-
-        $children = Vivero::with(['proyecto', 'responsable', 'caracter', 'parcelas.variedad', 'parcelas.caracter'])
-            ->where('origen_vivero_id', $vivero->id)
-            ->orWhere(function($query) use ($viveroBaseId) {
-                $query->where('origen_parcela', 'like', $viveroBaseId . '%')
-                      ->whereNotNull('origen_parcela');
-            })
-            ->get();
-
-        // Filter out self or circular references
-        $children = $children->filter(function($c) use ($vivero) {
-            return $c->id !== $vivero->id;
-        })->unique('id');
-
-        $generalCortes = collect();
-        $plotCortes = [];
-
-        foreach ($children as $child) {
-            $matchedPlot = null;
-            if ($child->origen_parcela) {
-                $parts = explode('-', $child->origen_parcela);
-                if (count($parts) >= 5 && is_numeric($parts[4])) {
-                    $matchedPlot = (int)$parts[4];
-                }
-            }
-
-            if ($matchedPlot !== null) {
-                if (!isset($plotCortes[$matchedPlot])) {
-                    $plotCortes[$matchedPlot] = collect();
-                }
-                $plotCortes[$matchedPlot]->push($child);
-            } else {
-                $generalCortes->push($child);
-            }
-        }
-
-        // Recursively load descendants
-        foreach ($children as $child) {
-            $this->loadEstructuraRecursiva($child);
-        }
-
-        // Distribute to actual parcelas
-        foreach ($vivero->parcelas as $parcela) {
-            $num = (int)$parcela->numero_parcela;
-            $parcela->cortes_recursivos = isset($plotCortes[$num]) ? $plotCortes[$num]->values() : collect();
-        }
-
-        // Distribute to general/virtual parcel
-        if ($generalCortes->isNotEmpty()) {
-            $virtualParcela = new \stdClass();
-            $virtualParcela->id = 'virtual_' . $vivero->id;
-            $virtualParcela->numero_parcela = 'General';
-            $virtualParcela->numero_parcela_origen = 'General';
-            $virtualParcela->id_plot_origen = $vivero->identificador_unico;
-            $virtualParcela->variedad = null;
-            $virtualParcela->caracter = null;
-            $virtualParcela->cortes_recursivos = $generalCortes->values();
-
-            if (is_array($vivero->parcelas)) {
-                $parcelas = $vivero->parcelas;
-                $parcelas[] = $virtualParcela;
-                $vivero->parcelas = $parcelas;
-            } else {
-                $vivero->parcelas->push($virtualParcela);
-            }
-        }
-    }
-
-    private function generarIdentificadorUnico($ingenioCd, $haciendaCd, $suerteCd, $fechaSiembra, $consecutivo)
-    {
-        $ingenio = $ingenioCd ?: '00';
-        $hacienda = $haciendaCd ?: '00';
-        $suerte = $suerteCd ?: '00';
-        $suerteCleaned = trim(preg_replace('/\b(lote|vivero)\b/i', '', $suerte));
-        $anioSiembra = $fechaSiembra ? date('Y', strtotime($fechaSiembra)) : date('Y');
-
-        return sprintf('%s%s-%s-%s-%d', $ingenio, $anioSiembra, $hacienda, $suerteCleaned, $consecutivo);
-    }
-
-    private function formatIdViveroOrigen($vivero)
-    {
-        if ($vivero->origenVivero) {
-            return $vivero->origenVivero->identificador_unico;
-        }
-
-        // Si tiene origen_parcela con formato de ID de parcela de Vivero (ej: CN2026-00EESA-00023D-2-4)
-        if ($vivero->origen_parcela && count(explode('-', $vivero->origen_parcela)) > 3) {
-            $parts = explode('-', $vivero->origen_parcela);
-            $lastPart = end($parts);
-            if (is_numeric($lastPart)) {
-                array_pop($parts); // Remover número de parcela
-                $cleanedParts = array_map(function($p) {
-                    return trim(preg_replace('/\b(lote|vivero)\b/i', '', $p));
-                }, $parts);
-                return implode('-', $cleanedParts); // Retorna el Vivero ID padre
-            }
-        }
-
-        // Si no (origen manual/externo), construimos el ID usando los códigos de la base de datos
-        $info = [];
-        $ingenioAnio = '';
-        if ($vivero->origen_ingenio) {
-            $ingenioAnio .= $vivero->origen_ingenio;
-        }
-        if ($vivero->origen_anio) {
-            $ingenioAnio .= $vivero->origen_anio;
-        }
-        if ($ingenioAnio !== '') {
-            $info[] = $ingenioAnio;
-        }
-        if ($vivero->origen_hacienda) $info[] = $vivero->origen_hacienda;
-        
-        $loteNombre = '';
-        if ($vivero->origenLote) {
-            $loteNombre = $vivero->origenLote->nombre_lote;
-        } else {
-            $loteNombre = $vivero->origen_suerte;
-        }
-        if ($loteNombre) {
-            $info[] = trim(preg_replace('/\b(lote|vivero)\b/i', '', $loteNombre));
-        }
-        
-        if ($vivero->origen_parcela) {
-            $info[] = trim(preg_replace('/\b(lote|vivero)\b/i', '', $vivero->origen_parcela));
-        }
-
-        // Clean up empty elements
-        $info = array_filter(array_map('trim', $info));
-
-        return count($info) > 0 ? implode('-', $info) : 'N/A';
+        $estructura = $this->viveroService->getEstructura($rootVivero->id);
+        return response()->json($estructura);
     }
 }

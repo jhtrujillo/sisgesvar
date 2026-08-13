@@ -441,20 +441,21 @@
                 Visualización de procedencia y linaje del vivero <strong>{{ viveroEstructura.identificador_unico }}</strong
                 >. Se detallan todas las parcelas (plots) del vivero y los cortes generados consecutivamente de forma recursiva.
               </p>
-
-              <!-- Search inside the tree -->
-              <div class="w-full md:w-80 relative">
-                <input
-                  v-model="searchTreeQuery"
-                  type="text"
-                  placeholder="Buscar en el árbol por variedad, plot..."
-                  class="shadow-sm border border-slate-200 rounded-xl w-full py-2 pl-9 pr-3 text-xs text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-cenicana focus:border-cenicana"
-                  autocomplete="off"
-                />
-                <div class="absolute left-3 top-2.5 text-slate-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+              <div class="flex items-center gap-3 w-full md:w-auto">
+                <!-- Search inside the tree -->
+                <div class="w-full md:w-80 relative">
+                  <input
+                    v-model="searchTreeQuery"
+                    type="text"
+                    placeholder="Buscar en el árbol por variedad, plot..."
+                    class="shadow-sm border border-slate-200 rounded-xl w-full py-2 pl-9 pr-3 text-xs text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-cenicana focus:border-cenicana"
+                    autocomplete="off"
+                  />
+                  <div class="absolute left-3 top-2.5 text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
@@ -677,7 +678,7 @@ const closeCosechaModal = () => {
 
 const getBaseCode = (currentCode: string) => {
   if (!currentCode) return "";
-  return currentCode.replace(/-C?\d+$/, "");
+  return currentCode; // Ya no quitamos la última parte porque el identificador no incluye el número de corte
 };
 
 const getHistoricalCode = (currentCode: string, historicalCorte: number) => {

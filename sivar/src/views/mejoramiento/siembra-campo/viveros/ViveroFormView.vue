@@ -131,7 +131,6 @@
                 >
                 <input
                   v-model="form.fecha_siembra"
-                  required
                   class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                   id="fecha_siembra"
                   type="date"
@@ -370,7 +369,6 @@
                   <select
                     v-model="form.lote_id"
                     :disabled="!form.ingenio || isEditing"
-                    required
                     class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                     :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.ingenio || isEditing }"
                     id="lote_id"
@@ -380,7 +378,6 @@
                       {{ lote.nombre_lote }} (Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
                     </option>
                   </select>
-
                   <button
                     v-if="isEditing"
                     type="button"
@@ -400,7 +397,6 @@
                 <select
                   v-model="form.consecutivo_vivero_ingenio"
                   :disabled="!form.lote_id || isEditing"
-                  required
                   class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                   :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.lote_id || isEditing }"
                   id="consecutivo_vivero_id"
@@ -517,7 +513,6 @@
                 <select
                   v-model="form.origen_ingenio"
                   @change="loadHaciendasOrigen(true)"
-                  required
                   class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                   id="origen_ingenio"
                 >
@@ -534,7 +529,6 @@
                 <input
                   v-model="form.origen_anio"
                   type="number"
-                  required
                   placeholder="Ej. 2024"
                   class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                   id="origen_anio"
@@ -549,7 +543,6 @@
                 <select
                   v-model="form.origen_hacienda"
                   :disabled="!form.origen_ingenio || haciendasOrigen.length === 0"
-                  required
                   class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                   :class="{
                     'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_ingenio || haciendasOrigen.length === 0
@@ -569,7 +562,6 @@
                 <select
                   v-model="form.origen_lote_id"
                   :disabled="!form.origen_ingenio || lotesOrigen.length === 0"
-                  required
                   class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                   :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_ingenio || lotesOrigen.length === 0 }"
                   id="origen_lote"
@@ -601,7 +593,6 @@
                   v-if="!origenViveroManual"
                   v-model="form.origen_vivero_id"
                   :disabled="!form.origen_lote_id || viverosOrigenOptions.length === 0"
-                  required
                   class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                   :class="{
                     'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.origen_lote_id || viverosOrigenOptions.length === 0
@@ -618,7 +609,6 @@
                   v-model="origenViveroInput"
                   type="text"
                   placeholder="Escriba el identificador del vivero..."
-                  required
                   class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
                   id="origen_vivero_id"
                 />
@@ -669,11 +659,72 @@
         </div>
 
         <!-- ACCIONES FORMULARIO -->
-        <div v-show="activeTab !== 'parcelas'" class="flex items-center justify-end gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-          <BaseButton variant="secondary" type="button" size="md" :to="{ name: 'siembra_campo_viveros.show' }"> Cancelar </BaseButton>
-          <BaseButton :loading="isSubmitting" variant="primary" type="submit" size="md" :disabled="isSubmitting">
-            {{ isSubmitting ? "Guardando..." : isEditing ? "Actualizar Vivero" : "Guardar Vivero" }}
-          </BaseButton>
+        <div v-show="activeTab !== 'parcelas'" class="flex items-center justify-between gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+          <div>
+            <!-- Cancel / Back Buttons -->
+            <router-link
+              v-show="activeTab === 'generales'"
+              :to="{ name: 'siembra_campo_viveros.show' }"
+              class="px-5 py-2.5 text-xs font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all"
+            >
+              Cancelar
+            </router-link>
+            <button
+              v-show="activeTab === 'origen'"
+              type="button"
+              @click="activeTab = 'generales'"
+              class="px-5 py-2.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all inline-flex items-center gap-1.5 cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+              Anterior
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- Next / Save Buttons -->
+            <button
+              v-show="activeTab === 'generales'"
+              type="button"
+              @click="activeTab = 'origen'"
+              class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md transition-all duration-200 cursor-pointer"
+            >
+              Siguiente
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <button
+              v-show="activeTab === 'origen' && isEditing"
+              type="button"
+              @click="activeTab = 'parcelas'"
+              class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold text-slate-700 bg-slate-200 hover:bg-slate-300 rounded-xl transition-all duration-200 cursor-pointer mr-1"
+            >
+              Ir a Parcelas
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <button
+              v-show="activeTab === 'origen'"
+              class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-md shadow-emerald-950/10 transition-all duration-200 cursor-pointer"
+              type="submit"
+              :disabled="isSubmitting"
+            >
+              <svg v-if="isSubmitting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              {{ isSubmitting ? "Guardando..." : isEditing ? "Actualizar Vivero" : "Guardar Vivero" }}
+            </button>
+          </div>
         </div>
       </form>
 
@@ -1496,7 +1547,28 @@ const hideOrigenViverosDelay = () => {
 const loadAllViveros = async () => {
   try {
     const res = await viverosServices.getViveros({ slim: "true" });
-    allViverosList.value = res.data;
+    const rawViveros = res.data;
+    const expandedViveros = [];
+
+    for (const v of rawViveros) {
+      // Agregar el vivero base
+      expandedViveros.push(v);
+
+      // Si el vivero tiene cortes registrados, agregarlos como opciones adicionales
+      // Iteramos hasta numero_corte - 1 para mostrar solo los cortes históricos generados
+      if (v.numero_corte && v.numero_corte > 1) {
+        for (let i = 1; i < v.numero_corte; i++) {
+          expandedViveros.push({
+            ...v,
+            identificador_unico: `${v.identificador_unico}-${i}`,
+            isCorteOption: true,
+            corteNumber: i
+          });
+        }
+      }
+    }
+
+    allViverosList.value = expandedViveros;
   } catch (error) {
     console.error("Error loading viveros for selection:", error);
   }
@@ -1867,8 +1939,72 @@ const loadAmbientes = async () => {
 };
 
 const submitForm = async () => {
+  // Validar Datos Generales
+  if (!form.value.ingenio) {
+    activeTab.value = "generales";
+    toast.error("El Ingenio es obligatorio.");
+    return;
+  }
+  if (!form.value.hacienda) {
+    activeTab.value = "generales";
+    toast.error("La Hacienda es obligatoria.");
+    return;
+  }
+  if (!form.value.lote_id) {
+    activeTab.value = "generales";
+    toast.error("El Lote es obligatorio.");
+    return;
+  }
+  if (!form.value.consecutivo_vivero_ingenio) {
+    activeTab.value = "generales";
+    toast.error("El Número de Vivero es obligatorio.");
+    return;
+  }
+  if (!form.value.fecha_siembra) {
+    activeTab.value = "generales";
+    toast.error("La Fecha de Siembra es obligatoria.");
+    return;
+  }
+  if (!form.value.proyecto_id) {
+    activeTab.value = "generales";
+    toast.error("El Proyecto es obligatorio.");
+    return;
+  }
+
+  // Validar Origen de Semilla
+  if (!form.value.origen_ingenio) {
+    activeTab.value = "origen";
+    toast.error("El Ingenio de Origen es obligatorio.");
+    return;
+  }
+  if (!form.value.origen_anio) {
+    activeTab.value = "origen";
+    toast.error("El Año de Origen es obligatorio.");
+    return;
+  }
+  if (!form.value.origen_hacienda) {
+    activeTab.value = "origen";
+    toast.error("La Hacienda de Origen es obligatoria.");
+    return;
+  }
+  if (!form.value.origen_lote_id) {
+    activeTab.value = "origen";
+    toast.error("El Lote de Origen es obligatorio.");
+    return;
+  }
+  if (!form.value.origen_vivero_id && !origenViveroInput.value) {
+    activeTab.value = "origen";
+    toast.error("El Vivero de Origen es obligatorio.");
+    return;
+  }
+
   isSubmitting.value = true;
   try {
+    // Sincronizar el input manual si está activo
+    if (origenViveroManual.value) {
+      form.value.origen_parcela = origenViveroInput.value;
+    }
+
     if (isEditing.value) {
       await viverosServices.updateVivero(route.params.id as string, form.value);
       toast.success("Vivero actualizado correctamente");
@@ -1877,9 +2013,10 @@ const submitForm = async () => {
       toast.success("Vivero registrado correctamente");
     }
     router.push({ name: "siembra_campo_viveros.show" });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error saving vivero:", error);
-    toast.error("Error al guardar el vivero");
+    const msg = error.response?.data?.message || "Error al guardar el vivero";
+    toast.error(msg);
   } finally {
     isSubmitting.value = false;
   }
@@ -2359,9 +2496,7 @@ const resetAndLoad = async () => {
         try {
           const res = await viverosServices.getNextCorteConsecutivo({ origen_vivero_id: form.value.origen_vivero_id });
           form.value.consecutivo_corte = res.data.consecutivo;
-          if (form.value.es_corte && parentVivero) {
-            form.value.identificador_unico = `${parentVivero.identificador_unico}-${form.value.consecutivo_corte}`;
-          }
+          // Ya no concatenamos el número de corte al identificador según la solicitud del usuario
         } catch (err) {
           console.error("Error fetching next consecutivo_corte:", err);
         }
@@ -2389,9 +2524,7 @@ const resetAndLoad = async () => {
         try {
           const res = await viverosServices.getNextCorteConsecutivo({ origen_parcela: form.value.origen_parcela });
           form.value.consecutivo_corte = res.data.consecutivo;
-          if (form.value.es_corte) {
-            form.value.identificador_unico = `${form.value.origen_parcela}-${form.value.consecutivo_corte}`;
-          }
+          // Ya no concatenamos el número de corte al identificador según la solicitud del usuario
         } catch (err) {
           console.error("Error fetching next consecutivo_corte:", err);
         }

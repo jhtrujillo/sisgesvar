@@ -58,9 +58,47 @@
           </div>
           <!-- Quick Stats Row -->
           <div class="mt-1.5 flex items-center gap-1.5 text-[9px] text-slate-500 font-medium flex-wrap">
-            <span class="bg-white/80 px-1.5 py-0.5 rounded-md border border-slate-200/60 shadow-sm flex items-center gap-0.5">
-              📊 {{ node.parcelas?.filter((p: any) => p.numero_parcela !== "General").length || 0 }} parcelas
-            </span>
+            <button
+              @click="showParcelas = !showParcelas"
+              class="bg-white/80 px-1.5 py-0.5 rounded-md border shadow-sm flex items-center gap-1 hover:bg-slate-100 transition-colors cursor-pointer"
+              :class="showParcelas ? 'border-slate-300' : 'border-slate-200/60 opacity-60 text-slate-400'"
+              title="Ocultar o Mostrar las parcelas de este vivero"
+            >
+              <span>📊 {{ node.parcelas?.filter((p: any) => p.numero_parcela !== "General").length || 0 }} parcelas</span>
+              <span class="text-[8px] uppercase font-bold px-1 rounded" :class="showParcelas ? 'bg-slate-200 text-slate-600' : 'bg-slate-100 text-slate-400'">
+                {{ showParcelas ? "Ocultar" : "Mostrar" }}
+              </span>
+            </button>
+
+            <button
+              @click="showCortesGenerales = !showCortesGenerales"
+              class="bg-white/80 px-1.5 py-0.5 rounded-md border shadow-sm flex items-center gap-1 hover:bg-slate-100 transition-colors cursor-pointer"
+              :class="showCortesGenerales ? 'border-slate-300' : 'border-slate-200/60 opacity-60 text-slate-400'"
+              title="Ocultar o Mostrar los Cortes de este vivero"
+            >
+              <span>✂️ {{ cortesGenerales.length }} Cortes</span>
+              <span
+                class="text-[8px] uppercase font-bold px-1 rounded"
+                :class="showCortesGenerales ? 'bg-slate-200 text-slate-600' : 'bg-slate-100 text-slate-400'"
+              >
+                {{ showCortesGenerales ? "Ocultar" : "Mostrar" }}
+              </span>
+            </button>
+            <button
+              v-if="viverosHijos.length > 0"
+              @click="showViverosHijos = !showViverosHijos"
+              class="bg-white/80 px-1.5 py-0.5 rounded-md border shadow-sm flex items-center gap-1 hover:bg-slate-100 transition-colors cursor-pointer"
+              :class="showViverosHijos ? 'border-slate-300' : 'border-slate-200/60 opacity-60 text-slate-400'"
+              title="Ocultar o Mostrar los Viveros Hijos"
+            >
+              <span>🌿 {{ viverosHijos.length }} Viveros Hijos</span>
+              <span
+                class="text-[8px] uppercase font-bold px-1 rounded"
+                :class="showViverosHijos ? 'bg-slate-200 text-slate-600' : 'bg-slate-100 text-slate-400'"
+              >
+                {{ showViverosHijos ? "Ocultar" : "Mostrar" }}
+              </span>
+            </button>
             <span class="bg-white/80 px-1.5 py-0.5 rounded-md border border-slate-200/60 shadow-sm flex items-center gap-0.5">
               🌱 {{ getUniqueVarietiesCount(node) }} variedades
             </span>
@@ -116,26 +154,12 @@
 
     <!-- Tree Branches (Parcelas and Cuts) -->
     <div v-if="isExpanded" class="pl-6 border-l border-dashed border-slate-300 ml-5 space-y-3 transition-all duration-200">
-      <div v-for="p in node.parcelas" :key="'tree_p_' + p.id" class="relative">
+      <div v-show="showParcelas" v-for="p in node.parcelas" :key="'tree_p_' + p.id" class="relative">
         <!-- Horizontal line connecting to branch -->
         <div class="absolute top-6 -left-6 w-6 border-t border-dashed border-slate-300"></div>
 
-        <template v-if="p.numero_parcela === 'General'">
-          <!-- Render cuts directly without Parcela Card -->
-          <div
-            v-if="p.cortes_recursivos && p.cortes_recursivos.length > 0"
-            class="pl-6 border-l border-dashed border-blue-200 ml-4 space-y-3 relative transition-all duration-200"
-          >
-            <div v-for="c in p.cortes_recursivos" :key="'tree_c_' + c.id" class="relative">
-              <div class="absolute top-5 -left-6 w-6 border-t border-dashed border-blue-200"></div>
-              <div class="absolute -top-2.5 left-0 text-[8px] font-bold uppercase text-blue-600 bg-blue-50 px-1 rounded border border-blue-100">
-                Hijo Directo
-              </div>
-              <div class="pt-2">
-                <ViveroTreeComponent :node="c" :search-query="searchQuery" @close-modal="emitClose" @delete-node="(id, uid) => emit('delete-node', id, uid)" />
-              </div>
-            </div>
-          </div>
+        <template v-if="false">
+          <!-- Removed virtual parcela rendering -->
         </template>
         <template v-else>
           <!-- Parcela Card -->
@@ -163,7 +187,7 @@
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     class="h-2.5 w-2.5 transform transition-transform"
-                    :class="{ 'rotate-180': expandedParcelas[p.id] !== false }"
+                    :class="{ 'rotate-180': expandedParcelas[p.id] !== true }"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -199,9 +223,8 @@
             </div>
           </div>
 
-          <!-- Recursive Cuts (Cortes) -->
           <div
-            v-if="p.cortes_recursivos && p.cortes_recursivos.length > 0 && expandedParcelas[p.id] !== false"
+            v-if="p.cortes_recursivos && p.cortes_recursivos.length > 0 && expandedParcelas[p.id] === true"
             class="mt-3 pl-6 border-l border-dashed border-blue-200 ml-4 space-y-3 relative transition-all duration-200"
           >
             <div v-for="c in p.cortes_recursivos" :key="'tree_c_' + c.id" class="relative">
@@ -216,6 +239,62 @@
             </div>
           </div>
         </template>
+      </div>
+
+      <!-- Render Cortes -->
+      <div v-if="cortesGenerales.length > 0" v-show="showCortesGenerales" class="relative mt-2 pl-6 border-l border-dashed border-orange-200 ml-5">
+        <div v-for="c in cortesGenerales" :key="'tree_c_corte_' + c.id" class="relative mt-3">
+          <!-- Horizontal line connecting to branch -->
+          <div class="absolute top-6 -left-6 w-6 border-t border-dashed border-slate-300"></div>
+          <div
+            class="absolute -top-2.5 left-0 text-[8px] font-bold uppercase text-orange-600 bg-orange-50 px-1 rounded border border-orange-100 flex items-center gap-1"
+          >
+            <span>Corte</span>
+          </div>
+          <div class="pt-2">
+            <ViveroTreeComponent :node="c" :search-query="searchQuery" @close-modal="emitClose" @delete-node="(id, uid) => emit('delete-node', id, uid)" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Render Viveros Hijos -->
+      <div v-if="viverosHijos.length > 0" v-show="showViverosHijos" class="relative mt-2 pl-6 border-l border-dashed border-blue-200 ml-5">
+        <div v-for="c in viverosHijos" :key="'tree_c_hijo_' + c.id" class="relative mt-3">
+          <!-- Horizontal line connecting to branch -->
+          <div class="absolute top-6 -left-6 w-6 border-t border-dashed border-slate-300"></div>
+          <div class="absolute -top-2.5 left-0 text-[8px] font-bold uppercase text-blue-600 bg-blue-50 px-1 rounded border border-blue-100">Vivero Hijo</div>
+          <div class="pt-2">
+            <ViveroTreeComponent :node="c" :search-query="searchQuery" @close-modal="emitClose" @delete-node="(id, uid) => emit('delete-node', id, uid)" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Render Cortes -->
+      <div v-if="cortesGenerales.length > 0" v-show="showCortesGenerales" class="relative mt-2 pl-6 border-l border-dashed border-orange-200 ml-5">
+        <div v-for="c in cortesGenerales" :key="'tree_c_corte_' + c.id" class="relative mt-3">
+          <!-- Horizontal line connecting to branch -->
+          <div class="absolute top-6 -left-6 w-6 border-t border-dashed border-slate-300"></div>
+          <div
+            class="absolute -top-2.5 left-0 text-[8px] font-bold uppercase text-orange-600 bg-orange-50 px-1 rounded border border-orange-100 flex items-center gap-1"
+          >
+            <span>Corte</span>
+          </div>
+          <div class="pt-2">
+            <ViveroTreeComponent :node="c" :search-query="searchQuery" @close-modal="emitClose" @delete-node="(id, uid) => emit('delete-node', id, uid)" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Render Viveros Hijos -->
+      <div v-if="viverosHijos.length > 0" v-show="showViverosHijos" class="relative mt-2 pl-6 border-l border-dashed border-blue-200 ml-5">
+        <div v-for="c in viverosHijos" :key="'tree_c_hijo_' + c.id" class="relative mt-3">
+          <!-- Horizontal line connecting to branch -->
+          <div class="absolute top-6 -left-6 w-6 border-t border-dashed border-slate-300"></div>
+          <div class="absolute -top-2.5 left-0 text-[8px] font-bold uppercase text-blue-600 bg-blue-50 px-1 rounded border border-blue-100">Vivero Hijo</div>
+          <div class="pt-2">
+            <ViveroTreeComponent :node="c" :search-query="searchQuery" @close-modal="emitClose" @delete-node="(id, uid) => emit('delete-node', id, uid)" />
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -243,14 +322,29 @@ const emitDelete = (id: number, uniqueId: string) => {
 };
 
 const isExpanded = ref(true);
+const showParcelas = ref(false);
+const showViverosHijos = ref(false);
+const showCortesGenerales = ref(false);
 const expandedParcelas = ref<Record<string | number, boolean>>({});
 
+const viverosHijos = computed(() => {
+  if (!props.node.hijos_directos) return [];
+  const parentId = props.node.identificador_unico;
+  return props.node.hijos_directos.filter((c: any) => {
+    return !c.identificador_unico?.startsWith(parentId + "-");
+  });
+});
+
+const cortesGenerales = computed(() => {
+  if (!props.node.hijos_directos) return [];
+  const parentId = props.node.identificador_unico;
+  return props.node.hijos_directos.filter((c: any) => {
+    return c.identificador_unico?.startsWith(parentId + "-");
+  });
+});
+
 const toggleParcela = (id: string | number) => {
-  if (expandedParcelas.value[id] === false) {
-    expandedParcelas.value[id] = true;
-  } else {
-    expandedParcelas.value[id] = false;
-  }
+  expandedParcelas.value[id] = !expandedParcelas.value[id];
 };
 
 // Check if this Vivero node matches the search query
