@@ -52,215 +52,42 @@ class CrossingController extends Controller
             $search = $request->input('search');
             $filtersJson = $request->input('filters');
 
-            $query = DB::connection('sivar')->table('cruzamientos');
-
-            // Búsqueda Global
-            if (!empty($search)) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('vrdad_mdre', 'ilike', '%' . $search . '%')
-                      ->orWhere('vrdad_pdre1', 'ilike', '%' . $search . '%')
-                      ->orWhere('vrdad_pdre2', 'ilike', '%' . $search . '%')
-                      ->orWhere('vrdad_pdre3', 'ilike', '%' . $search . '%')
-                      ->orWhere('vrdad_pdre4', 'ilike', '%' . $search . '%')
-                      ->orWhere('vrdad_pdre5', 'ilike', '%' . $search . '%')
-                      ->orWhere('pdgree', 'ilike', '%' . $search . '%')
-                      ->orWhere('id_crzmnto', 'like', '%' . $search . '%');
-                });
-            }
-
-            // Filtros por Columna (Tabla Dinámica)
-            if (!empty($filtersJson)) {
-                $filters = json_decode($filtersJson, true);
-                if (is_array($filters)) {
-                    foreach ($filters as $col => $val) {
-                        if (!empty($val)) {
-                            if ($col === 'padres') {
-                                // Buscar en cualquiera de las 5 columnas de padre
-                                $query->where(function ($q) use ($val) {
-                                    $q->where('vrdad_pdre1', 'ilike', '%' . $val . '%')
-                                      ->orWhere('vrdad_pdre2', 'ilike', '%' . $val . '%')
-                                      ->orWhere('vrdad_pdre3', 'ilike', '%' . $val . '%')
-                                      ->orWhere('vrdad_pdre4', 'ilike', '%' . $val . '%')
-                                      ->orWhere('vrdad_pdre5', 'ilike', '%' . $val . '%');
-                                });
-                            } else if ($col === 'id_crzmnto') {
-                                // Búsqueda exacta o parcial numérica
-                                $query->where('id_crzmnto', 'like', '%' . $val . '%');
-                            } else {
-                                // Búsqueda ilike genérica para madre o pedigree
-                                $query->where($col, 'ilike', '%' . $val . '%');
-                            }
-                        }
-                    }
-                }
-            }
-
-            $query->orderBy('id_crzmnto', 'desc');
-            
-            $model = $query->paginate($perPage);
+            $model = $this->crossingService->crossingList($perPage, $search, $filtersJson);
 
             if ($model->isNotEmpty()) {
                 return response()->json($model);
             }
 
             return response("No hay registros", 400);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return response($ex->getMessage(), 500);
         }
     }
 
     public function crossingInitialData(Request $request)
     {
-        $proyectosConFlores = Projects::selectRaw('remote_pg_sipro.nm_prycto, remote_pg_sipro.cd_cntble, remote_pg_sipro.id_prycto, count(*) as numero')
-            ->join('floracion', 'floracion.id_pr', '=', 'remote_pg_sipro.id_prycto')
-            ->groupBy('remote_pg_sipro.id_prycto', 'remote_pg_sipro.nm_prycto', 'remote_pg_sipro.cd_cntble')
-            ->havingRaw('count(*) > 0')
-            ->whereBetween('floracion.fcha', [Carbon::yesterday(), Carbon::today()])
-            ->where('floracion.estado', 0)
-            ->get();
-
-        // Devuelve los datos iniciales en formato JSON como una respuesta de API.
+        $proyectosConFlores = $this->crossingService->crossingInitialData();
         return response()->json($proyectosConFlores);
     }
     public function listarFlores(Request $request, $proyectos, $fechai, $fechaf)
     {
-        $proyectos = explode(",", $proyectos);
-
-        $floresMadre = DB::connection('sivar')->table('floracion')
-            ->join('remote_pg_sipro', function ($join) {
-                $join->on('remote_pg_sipro.id_prycto', '=', 'floracion.id_pr');
-            })
-            ->whereIn('remote_pg_sipro.cd_cntble', $proyectos)
-            ->whereIn('floracion.sxo', ['Hembra', 'HF', 'HD'])
-            ->whereBetween('floracion.fcha', [$fechai, $fechaf])
-            ->select('floracion.*')
-            ->get();
-
-        $floresPadre = DB::connection('sivar')->table('floracion')
-            ->join('remote_pg_sipro', function ($join) {
-                $join->on('remote_pg_sipro.id_prycto', '=', 'floracion.id_pr');
-            })
-            ->whereIn('remote_pg_sipro.cd_cntble', $proyectos)
-            ->whereIn('floracion.sxo', ['Macho', 'MF', 'MD'])
-            ->whereBetween('floracion.fcha', [$fechai, $fechaf])
-            ->select('floracion.*')
-            ->get();
-
-        return response()->json([
-            "flores_madre" => $floresMadre,
-            "flores_padre" => $floresPadre
-        ]);
+        $flores = $this->crossingService->listarFlores($proyectos, $fechai, $fechaf);
+        return response()->json($flores);
     }
 
     public function parametizeWeightedCrossing(Request $request, $proyecto, $ambiente)
     {
-        $ponderados = [];
-        $sumaPonderados = 0;
-
-        if ($proyecto != 'x') {
-            $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-                ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto, $ambiente) {
-                    $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
-                        ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto)
-                        ->where('ponderados_valor_merito.ambiente', '=', $ambiente);
-                })
-                ->select('ponderados_valor_merito.*', 'caracteristicas_valor_merito.nombre', 'caracteristicas_valor_merito.id_caracteristica', 'caracteristicas_valor_merito.equivalente')
-                ->get();
-
-            $sumaPonderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-                ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto, $ambiente) {
-                    $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
-                        ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto)
-                        ->where('ponderados_valor_merito.ambiente', '=', $ambiente);
-                })
-                ->sum('ponderados_valor_merito.ponderado');
-        }
-
-        if ($sumaPonderados == 0) {
-            $sumaPonderados = 1;
-        }
-
-        return response()->json([
-            "proyectos" => $proyecto,
-            "ponderados" => $ponderados,
-            "suma_ponderados" => $sumaPonderados,
-            "ambiente" => $ambiente
-        ]);
+        $response = $this->crossingService->parametizeWeightedCrossing($proyecto, $ambiente);
+        return response()->json($response);
     }
 
     public function modifyFeatures(Request $request, $car, $proyecto, $nivel, $ponderado, $ambiente, $nuevo)
     {
-        $caracteristica = PonderadoVM::where('id_caracteristica', $car)
-            ->where('id_proyecto', $proyecto)
-            ->where('ambiente', $ambiente)
-            ->first();
-            
-        if (!$caracteristica) {
-            $caracteristica = new PonderadoVM;
-            $caracteristica->id_proyecto = $proyecto;
-            $caracteristica->id_caracteristica = $car;
-            $caracteristica->ambiente = $ambiente;
-        }
-        
-        $caracteristica->nivel = $nivel;
-        $caracteristica->ponderado = $ponderado;
-        $caracteristica->save();
-
+        $this->crossingService->modifyFeatures($car, $proyecto, $nivel, $ponderado, $ambiente, $nuevo);
         return response()->json(['message' => 'Se modificó correctamente la caracteristica.']);
     }
 
-    private static $evaluacionesCache = null;
 
-    private function obtenerEvaluacion(string $tipoEvaluacion, string $caracteristica)
-    {
-        if (is_null(self::$evaluacionesCache)) {
-            self::$evaluacionesCache = \App\Models\Evaluacion::with(['tipoEvaluacion', 'rangos'])->get();
-        }
-
-        return self::$evaluacionesCache->first(function ($eval) use ($tipoEvaluacion, $caracteristica) {
-            return $eval->tipoEvaluacion->keyname === $tipoEvaluacion &&
-                in_array($caracteristica, $eval->arrayCharacters ?? []);
-        });
-    }
-
-    private function obtenerNivelEvaluacion($flor, string $caracteristica, $testigo, string $tipoEvaluacion = 'viabilidad')
-    {
-        $valor = $flor->$caracteristica ?? null;
-
-        if (is_null($valor) || $valor === '') {
-            return $tipoEvaluacion === 'viabilidad' ? 999 : 0;
-        }
-
-        $evaluacion = $this->obtenerEvaluacion($tipoEvaluacion, $caracteristica);
-
-        if (!$evaluacion) {
-            return $tipoEvaluacion === 'viabilidad' ? 999 : 0;
-        }
-
-        if (in_array($caracteristica, ['rya_cfe_r', 'roya_naranja'])) {
-            return (float) $valor;
-        }
-
-        $requiereTestigo = in_array($caracteristica, [
-            'tchm',
-            'dmtro_tllo',
-            'altura_planta',
-            'poblacion',
-            'scrsa',
-            'volcamiento'
-        ]);
-
-        if ($requiereTestigo) {
-            if (is_null($testigo) || $testigo == 0) {
-                return 0;
-            }
-            $valorAEvaluar = ($valor * 100) / $testigo;
-        } else {
-            $valorAEvaluar = (float) $valor;
-        }
-
-        return $evaluacion->obtenerCalificacion($valorAEvaluar);
-    }
 
     public function enviarABolsaComun(Request $request, $variedad)
     {
