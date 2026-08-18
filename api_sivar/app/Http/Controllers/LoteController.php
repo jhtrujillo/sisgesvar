@@ -12,9 +12,11 @@ class LoteController extends Controller
     {
         $query = Lote::query()
             ->with('viveros')
-            ->withCount(['viveros as viveros_activos_count' => function($q) {
-                $q->whereNotNull('proyecto_id');
-            }])
+            ->withCount([
+                'viveros as viveros_activos_count' => function ($q) {
+                    $q->whereNotNull('proyecto_id');
+                }
+            ])
             ->orderBy('nombre_lote', 'asc');
 
         if ($request->has('ingenio_codigo') && $request->ingenio_codigo) {
@@ -23,7 +25,7 @@ class LoteController extends Controller
         if ($request->has('hacienda_codigo') && $request->hacienda_codigo) {
             $query->where('hacienda_codigo', $request->hacienda_codigo);
         }
-        
+
         $lotes = $query->get();
 
         return response()->json($lotes);
@@ -31,7 +33,7 @@ class LoteController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'ingenio_codigo' => 'required|string',
             'hacienda_codigo' => 'nullable|string',
             'nombre_lote' => 'required|string',
@@ -39,7 +41,7 @@ class LoteController extends Controller
             'total_parcelas_vivero' => 'nullable|integer|min:1'
         ]);
 
-        $lote = Lote::create($request->all());
+        $lote = Lote::create($validated);
         $this->syncViverosAndParcelas($lote);
 
         return response()->json($lote, 201);
@@ -48,15 +50,15 @@ class LoteController extends Controller
     public function update(Request $request, $id)
     {
         $lote = Lote::findOrFail($id);
-        
-        $request->validate([
+
+        $validated = $request->validate([
             'hacienda_codigo' => 'sometimes|nullable|string',
             'nombre_lote' => 'sometimes|required|string',
             'capacidad_maxima' => 'sometimes|required|integer|min:1',
             'total_parcelas_vivero' => 'sometimes|nullable|integer|min:1'
         ]);
 
-        $lote->update($request->all());
+        $lote->update($validated);
         $this->syncViverosAndParcelas($lote);
 
         return response()->json($lote);
@@ -65,10 +67,10 @@ class LoteController extends Controller
     public function destroy($id)
     {
         $lote = Lote::findOrFail($id);
-        
+
         // Find if any vivero in this lote has actual data
         $viveros = Vivero::where('lote_id', $lote->id)->get();
-        
+
         $hasRealData = false;
         foreach ($viveros as $vivero) {
             if ($vivero->proyecto_id || $vivero->responsable_id || $vivero->caracter_id || $vivero->ambiente) {
