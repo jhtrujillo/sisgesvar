@@ -278,7 +278,7 @@ class ViveroController extends Controller
         if (!is_numeric($consecutivo) || intval($consecutivo) <= 0) {
             $consecutivo = $vivero->id;
         }
-        $vivero->identificador_unico = $this->generarIdentificadorUnico(
+        $vivero->identificador_unico = $this->viveroService->generarIdentificadorUnico(
             $vivero->ingenio,
             $vivero->hacienda,
             $vivero->suerte,
