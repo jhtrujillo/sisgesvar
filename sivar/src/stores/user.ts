@@ -30,7 +30,6 @@ export const useUserStore = defineStore(
           refresh.value = result.data.refresh;
 
           const resultInfo = await userService.getUserInfo();
-          console.log(resultInfo);
           if (resultInfo.status === 200) {
             userInfo.value = resultInfo.data;
           }
