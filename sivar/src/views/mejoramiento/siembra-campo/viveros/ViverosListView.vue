@@ -98,7 +98,7 @@
                   <td class="py-3 px-6 text-left whitespace-nowrap">
                     <span class="font-medium text-slate-800">{{ vivero.identificador_unico }}</span>
                   </td>
-                  <td class="py-3 px-6 text-left whitespace-nowrap" v-html="getIngenioName(vivero.ingenio)"></td>
+                  <td class="py-3 px-6 text-left whitespace-nowrap">{{ vivero.ingenio }}</td>
                   <td class="py-3 px-6 text-left whitespace-nowrap font-medium text-slate-700">
                     {{ vivero.hacienda || "N/A" }}
                   </td>
@@ -118,7 +118,7 @@
 
                   <td class="px-6 py-4">
                     <div class="text-sm text-gray-900" v-if="vivero.proyecto_id">
-                      <span :title="vivero.proyecto?.nm_prycto || 'N/A'" v-html="vivero.proyecto?.nm_prycto || 'N/A'"></span>
+                      <span :title="vivero.proyecto?.nm_prycto || 'N/A'">{{ vivero.proyecto?.nm_prycto || "N/A" }}</span>
                     </div>
                     <div class="text-sm text-gray-900" v-else>
                       <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 uppercase"
@@ -335,22 +335,34 @@
         <div class="p-6">
           <div class="mb-4 flex flex-col gap-2">
             <div class="text-sm text-slate-600">
-              Historial de cortes para el vivero <span class="font-bold text-slate-800" v-html="viveroSeleccionado?.nombre"></span> (<span
+              Historial de cortes para el vivero <span class="font-bold text-slate-800">{{ viveroSeleccionado?.nombre }}</span> (<span
                 class="font-mono text-xs"
                 >{{ viveroSeleccionado?.identificador_unico }}</span
               >)
             </div>
             <div class="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-2">
-              <div><span class="font-bold block uppercase">Ingenio</span> <span v-html="getIngenioName(viveroSeleccionado?.ingenio)"></span></div>
-              <div><span class="font-bold block uppercase">Hacienda</span> <span v-html="viveroSeleccionado?.hacienda || 'N/A'"></span></div>
-              <div><span class="font-bold block uppercase">Suerte</span> {{ viveroSeleccionado?.suerte || "N/A" }}</div>
-              <div><span class="font-bold block uppercase">Corte Actual</span> {{ viveroSeleccionado?.numero_corte || "N/A" }}</div>
+              <div>
+                <span class="font-bold block uppercase">Ingenio</span> <span>{{ viveroSeleccionado?.ingenio }}</span>
+              </div>
+              <div>
+                <span class="font-bold block uppercase">Hacienda</span> <span>{{ viveroSeleccionado?.hacienda || "N/A" }}</span>
+              </div>
+              <div>
+                <span class="font-bold block uppercase">Suerte</span> <span>{{ viveroSeleccionado?.suerte || "N/A" }}</span>
+              </div>
+              <div>
+                <span class="font-bold block uppercase">Corte Actual</span> <span>{{ viveroSeleccionado?.numero_corte || "N/A" }}</span>
+              </div>
 
               <div class="md:col-span-2">
-                <span class="font-bold block uppercase">Proyecto</span> <span v-html="viveroSeleccionado?.nombre_proyecto || 'N/A'"></span>
+                <span class="font-bold block uppercase">Proyecto</span> <span>{{ viveroSeleccionado?.nombre_proyecto || "N/A" }}</span>
               </div>
-              <div><span class="font-bold block uppercase">Ambiente</span> <span v-html="viveroSeleccionado?.nombre_ambiente || 'N/A'"></span></div>
-              <div><span class="font-bold block uppercase">Responsable</span> <span v-html="viveroSeleccionado?.nombre_responsable || 'N/A'"></span></div>
+              <div>
+                <span class="font-bold block uppercase">Ambiente</span> <span>{{ viveroSeleccionado?.nombre_ambiente || "N/A" }}</span>
+              </div>
+              <div>
+                <span class="font-bold block uppercase">Responsable</span> <span>{{ viveroSeleccionado?.nombre_responsable || "N/A" }}</span>
+              </div>
             </div>
           </div>
 

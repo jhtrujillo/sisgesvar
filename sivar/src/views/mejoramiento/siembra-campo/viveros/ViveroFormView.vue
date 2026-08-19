@@ -160,7 +160,7 @@
                   id="ambiente"
                 >
                   <option value="">Vacío (Sin Mega Ambiente)</option>
-                  <option v-for="amb in ambientes" :key="amb.id_ambnte" :value="amb.id_ambnte" v-html="amb.nm_ambnte"></option>
+                  <option v-for="amb in ambientes" :key="amb.id_ambnte" :value="amb.id_ambnte">{{ amb.nm_ambnte }}</option>
                 </select>
               </div>
 
@@ -203,8 +203,9 @@
                       @mousedown="selectResponsable(usr)"
                       class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
                       :class="form.responsable_id === usr.id_usrio ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
-                      v-html="usr.nmbre"
-                    ></div>
+                    >
+                      {{ usr.nmbre }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -248,8 +249,9 @@
                       @mousedown="selectProyecto(pry)"
                       class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
                       :class="form.proyecto_id === pry.id_prycto ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
-                      v-html="formatProjectName(pry)"
-                    ></div>
+                    >
+                      {{ formatProjectName(pry) }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -341,7 +343,9 @@
                   id="ingenio"
                 >
                   <option value="">Seleccione un Ingenio</option>
-                  <option v-for="ing in ingenios" :key="ing.cd_ingnio" :value="ing.cd_ingnio" v-html="ing.nm_ingnio"></option>
+                  <option v-for="ing in ingenios" :key="ing.cd_ingnio" :value="ing.cd_ingnio">
+                    {{ ing.nm_ingnio }}
+                  </option>
                 </select>
               </div>
 
@@ -356,7 +360,9 @@
                   id="hacienda"
                 >
                   <option value="">Seleccione una Hacienda</option>
-                  <option v-for="hda in haciendas" :key="hda.cd_hcnda" :value="hda.cd_hcnda" v-html="hda.nm_hcnda"></option>
+                  <option v-for="hda in haciendas" :key="hda.cd_hcnda" :value="hda.cd_hcnda">
+                    {{ hda.nm_hcnda }}
+                  </option>
                 </select>
               </div>
 
@@ -517,7 +523,9 @@
                   id="origen_ingenio"
                 >
                   <option value="">Seleccione un Ingenio</option>
-                  <option v-for="ing in ingenios" :key="'origen_ing_' + ing.cd_ingnio" :value="ing.cd_ingnio" v-html="ing.nm_ingnio"></option>
+                  <option v-for="ing in ingenios" :key="'origen_ing_' + ing.cd_ingnio" :value="ing.cd_ingnio">
+                    {{ ing.nm_ingnio }}
+                  </option>
                 </select>
               </div>
 
@@ -550,7 +558,9 @@
                   id="origen_hacienda"
                 >
                   <option value="">Seleccione una Hacienda</option>
-                  <option v-for="hda in haciendasOrigen" :key="'origen_hda_' + hda.cd_hcnda" :value="hda.cd_hcnda" v-html="hda.nm_hcnda"></option>
+                  <option v-for="hda in haciendasOrigen" :key="'origen_hda_' + hda.cd_hcnda" :value="hda.cd_hcnda">
+                    {{ hda.nm_hcnda }}
+                  </option>
                 </select>
               </div>
 
@@ -1167,7 +1177,9 @@
                   class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none mb-3"
                 >
                   <option value="" disabled>Seleccione el ingenio...</option>
-                  <option v-for="ing in ingenios" :key="'traslado_ing_' + ing.cd_ingnio" :value="ing.cd_ingnio" v-html="ing.nm_ingnio"></option>
+                  <option v-for="ing in ingenios" :key="'traslado_ing_' + ing.cd_ingnio" :value="ing.cd_ingnio">
+                    {{ ing.nm_ingnio }}
+                  </option>
                 </select>
               </div>
 
