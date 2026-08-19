@@ -1,4 +1,4 @@
-const SERVER_URL = import.meta.env.VITE_API_URL || " http://127.0.0.1:8000";
+const SERVER_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 const API_URL = SERVER_URL + "/api/";
 const API_AUTH = API_URL + "auth/";
 const API_AUTH_LOGIN = API_AUTH + "login";
