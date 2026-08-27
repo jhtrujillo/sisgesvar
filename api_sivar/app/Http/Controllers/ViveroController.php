@@ -222,73 +222,79 @@ class ViveroController extends Controller
 
     public function update(UpdateViveroRequest $request, $id)
     {
-        $vivero = Vivero::findOrFail($id);
+        return DB::transaction(function () use ($request, $id) {
+            $vivero = Vivero::findOrFail($id);
 
-        if ($request->has('lote_id') && $request->lote_id !== $vivero->lote_id) {
-            $oldLote = \App\Models\Lote::find($vivero->lote_id);
-            $oldLoteName = $oldLote ? $oldLote->nombre_lote : 'N/A';
+            if ($request->has('lote_id') && $request->lote_id !== $vivero->lote_id) {
+                $oldLote = \App\Models\Lote::find($vivero->lote_id);
+                $oldLoteName = $oldLote ? $oldLote->nombre_lote : 'N/A';
 
-            if ($request->lote_id) {
-                $lote = \App\Models\Lote::findOrFail($request->lote_id);
-                $activeCount = Vivero::where('lote_id', $lote->id)->where('id', '!=', $vivero->id)->count();
-                if ($activeCount >= $lote->capacidad_maxima) {
-                    return response()->json([
-                        'message' => "El lote {$lote->nombre_lote} ha superado su capacidad máxima de {$lote->capacidad_maxima} viveros."
-                    ], 400);
+                if ($request->lote_id) {
+                    $lote = \App\Models\Lote::where('id', $request->lote_id)->lockForUpdate()->findOrFail($request->lote_id);
+                    $activeCount = Vivero::where('lote_id', $lote->id)
+                        ->where('id', '!=', $vivero->id)
+                        ->whereNotNull('proyecto_id')
+                        ->count();
+                    if ($activeCount >= $lote->capacidad_maxima) {
+                        return response()->json([
+                            'message' => "El lote {$lote->nombre_lote} ha superado su capacidad máxima de {$lote->capacidad_maxima} viveros."
+                        ], 400);
+                    }
+                }
+
+                \App\Models\ViveroLoteHistorial::where('vivero_id', $vivero->id)
+                    ->where('activo', true)
+                    ->update([
+                        'activo' => false,
+                        'fecha_fin' => now()
+                    ]);
+
+                if ($request->lote_id) {
+                    \App\Models\ViveroLoteHistorial::create([
+                        'vivero_id' => $vivero->id,
+                        'lote_id' => $request->lote_id,
+                        'fecha_inicio' => now(),
+                        'activo' => true,
+                        'accion' => "Cambio de Lote del {$oldLoteName} al {$lote->nombre_lote}"
+                    ]);
                 }
             }
 
-            \App\Models\ViveroLoteHistorial::where('vivero_id', $vivero->id)
-                ->where('activo', true)
-                ->update([
-                    'activo' => false,
-                    'fecha_fin' => now()
-                ]);
+            $vivero->fill($request->except('identificador_unico'));
 
-            if ($request->lote_id) {
-                \App\Models\ViveroLoteHistorial::create([
-                    'vivero_id' => $vivero->id,
-                    'lote_id' => $request->lote_id,
-                    'fecha_inicio' => now(),
-                    'activo' => true,
-                    'accion' => "Cambio de Lote del {$oldLoteName} al {$lote->nombre_lote}"
-                ]);
+            if (!$vivero->suerte && $vivero->lote_id) {
+                $lote = \App\Models\Lote::find($vivero->lote_id);
+                if ($lote) {
+                    $vivero->suerte = $lote->nombre_lote;
+                }
             }
-        }
 
-        $vivero->fill($request->except('identificador_unico'));
-
-        if (!$vivero->suerte && $vivero->lote_id) {
-            $lote = \App\Models\Lote::find($vivero->lote_id);
-            if ($lote) {
-                $vivero->suerte = $lote->nombre_lote;
+            // Siempre generar el identificador_unico usando el método helper en el update
+            // (ya no se concatena el número de corte)
+            $parts = explode('-', $vivero->identificador_unico);
+            $consecutivo = end($parts);
+            if (!is_numeric($consecutivo) || intval($consecutivo) <= 0) {
+                $consecutivo = $vivero->id;
             }
-        }
+            $vivero->identificador_unico = $this->viveroService->generarIdentificadorUnico(
+                $vivero->ingenio,
+                $vivero->hacienda,
+                $vivero->suerte,
+                $vivero->fecha_siembra,
+                $consecutivo
+            );
 
-        // Siempre generar el identificador_unico usando el método helper en el update
-        // (ya no se concatena el número de corte)
-        $parts = explode('-', $vivero->identificador_unico);
-        $consecutivo = end($parts);
-        if (!is_numeric($consecutivo) || intval($consecutivo) <= 0) {
-            $consecutivo = $vivero->id;
-        }
-        $vivero->identificador_unico = $this->viveroService->generarIdentificadorUnico(
-            $vivero->ingenio,
-            $vivero->hacienda,
-            $vivero->suerte,
-            $vivero->fecha_siembra,
-            $consecutivo
-        );
-
-        $vivero->save();
-
-        if (!$vivero->nombre) {
-            $vivero->nombre = $vivero->identificador_unico;
             $vivero->save();
-        }
 
-        return response()->json($vivero);
+            if (!$vivero->nombre) {
+                $vivero->nombre = $vivero->identificador_unico;
+                $vivero->save();
+            }
+
+            return response()->json($vivero);
+        });
     }
+
     public function trasladarLote(Request $request, $id)
     {
         $viveroA = Vivero::findOrFail($id);
@@ -301,10 +307,15 @@ class ViveroController extends Controller
         $newLoteId = $request->lote_id;
         $newConsecutivo = $request->consecutivo;
 
-        // Find the destination Vivero B (the slot placeholder)
-        $viveroB = Vivero::where('lote_id', $newLoteId)
+        // Find the destination Vivero B (the slot placeholder, including soft-deleted ones)
+        $viveroB = Vivero::withTrashed()
+            ->where('lote_id', $newLoteId)
             ->where('consecutivo_vivero_ingenio', $newConsecutivo)
             ->first();
+
+        if ($viveroB && $viveroB->trashed()) {
+            $viveroB->restore();
+        }
 
         if (!$viveroB) {
             // If it doesn't exist, create it as an empty placeholder first
@@ -455,98 +466,100 @@ class ViveroController extends Controller
 
     public function destroy($id)
     {
-        $vivero = Vivero::findOrFail($id);
+        return DB::transaction(function () use ($id) {
+            $vivero = Vivero::findOrFail($id);
 
-        // Check if there are active nurseries/cuts that depend on this nursery's plots/cuts
-        $hasChildren = Vivero::where('origen_parcela', 'like', $vivero->identificador_unico . '%')->exists();
-        if ($hasChildren) {
-            return response()->json([
-                'error' => 'dependency_exists',
-                'message' => 'No se puede eliminar este vivero porque existen otros viveros/cortes que dependen de su semilla.'
-            ], 400);
-        }
+            // Check if there are active nurseries/cuts that depend on this nursery's plots/cuts
+            $hasChildren = Vivero::where('origen_parcela', 'like', $vivero->identificador_unico . '%')->exists();
+            if ($hasChildren) {
+                return response()->json([
+                    'error' => 'dependency_exists',
+                    'message' => 'No se puede eliminar este vivero porque existen otros viveros/cortes que dependen de su semilla.'
+                ], 400);
+            }
 
-        if ($vivero->lote_id) {
-            // It is a slot within a lote, so we just clear its sowing fields to reset it to an empty slot!
-            $lote = $vivero->lote;
-            $ingenio = $lote->ingenio_codigo ?: '00';
-            $hacienda = $lote->hacienda_codigo ?: '00';
-            $haciendaCleaned = ltrim($hacienda, '0');
-            $suerte = $lote->nombre_lote ?: '00';
-            $suerteCleaned = trim(preg_replace('/\b(lote|vivero)\b/i', '', $suerte));
-            $anio = date('Y');
-            $identificadorDefault = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $haciendaCleaned, $suerteCleaned, $vivero->consecutivo_vivero_ingenio);
+            if ($vivero->lote_id) {
+                // It is a slot within a lote, so we just clear its sowing fields to reset it to an empty slot!
+                $lote = $vivero->lote;
+                $ingenio = $lote->ingenio_codigo ?: '00';
+                $hacienda = $lote->hacienda_codigo ?: '00';
+                $haciendaCleaned = ltrim($hacienda, '0');
+                $suerte = $lote->nombre_lote ?: '00';
+                $suerteCleaned = trim(preg_replace('/\b(lote|vivero)\b/i', '', $suerte));
+                $anio = date('Y');
+                $identificadorDefault = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $haciendaCleaned, $suerteCleaned, $vivero->consecutivo_vivero_ingenio);
 
-            $vivero->update([
-                'identificador_unico' => $identificadorDefault,
-                'nombre' => "Vivero {$vivero->consecutivo_vivero_ingenio}",
-                'proyecto_id' => null,
-                'ambiente' => null,
-                'responsable_id' => null,
-                'fecha_siembra' => now()->format('Y-m-d'),
-                'numero_corte' => 1,
-                'temporada_floracion' => null,
-                'condicion' => null,
-                'caracter_id' => null,
-                'origen_ingenio' => null,
-                'origen_hacienda' => null,
-                'origen_suerte' => null,
-                'origen_anio' => null,
-                'origen_parcela' => null,
-                'origen_lote_id' => null,
-                'origen_vivero_id' => null,
-            ]);
-
-            // Also clear the varieties in all plots of this nursery!
-            \Illuminate\Support\Facades\DB::connection('sivar')
-                ->table('vivero_parcelas')
-                ->where('vivero_id', $vivero->id)
-                ->update([
-                    'variedad_id' => null,
-                    'updated_at' => now()
+                $vivero->update([
+                    'identificador_unico' => $identificadorDefault,
+                    'nombre' => "Vivero {$vivero->consecutivo_vivero_ingenio}",
+                    'proyecto_id' => null,
+                    'ambiente' => null,
+                    'responsable_id' => null,
+                    'fecha_siembra' => now()->format('Y-m-d'),
+                    'numero_corte' => 1,
+                    'temporada_floracion' => null,
+                    'condicion' => null,
+                    'caracter_id' => null,
+                    'origen_ingenio' => null,
+                    'origen_hacienda' => null,
+                    'origen_suerte' => null,
+                    'origen_anio' => null,
+                    'origen_parcela' => null,
+                    'origen_lote_id' => null,
+                    'origen_vivero_id' => null,
                 ]);
 
-            return response()->json([
-                'message' => 'El vivero ha sido vaciado/desactivado y el slot físico queda disponible.',
-                'vivero' => $vivero
-            ], 200);
-        } else {
-            // If it is a nursery that does NOT belong to any lote, delete it
-            $vivero->delete();
-            return response()->json(null, 204);
-        }
+                // Also clear the varieties in all plots of this nursery!
+                \Illuminate\Support\Facades\DB::connection('sivar')
+                    ->table('vivero_parcelas')
+                    ->where('vivero_id', $vivero->id)
+                    ->update([
+                        'variedad_id' => null,
+                        'updated_at' => now()
+                    ]);
+
+                return response()->json([
+                    'message' => 'El vivero ha sido vaciado/desactivado y el slot físico queda disponible.',
+                    'vivero' => $vivero
+                ], 200);
+            } else {
+                // If it is a nursery that does NOT belong to any lote, delete it
+                $vivero->delete();
+                return response()->json(null, 204);
+            }
+        });
     }
 
     public function registrarCosecha(RegistrarCosechaRequest $request, $id)
     {
-        $vivero = Vivero::findOrFail($id);
+        return DB::transaction(function () use ($request, $id) {
+            $vivero = Vivero::findOrFail($id);
 
-        $fechaCorte = $request->fecha_cosecha;
-        $ambiente = $request->ambiente;
+            $fechaCorte = $request->fecha_cosecha;
+            $ambiente = $request->ambiente;
 
-        // Guardar el registro histórico de la cosecha
-        $vivero->cosechas()->create([
-            'fecha_cosecha' => $fechaCorte,
-            'nueva_fecha_siembra' => $fechaCorte,
-            'numero_corte_anterior' => $vivero->numero_corte,
-            'ambiente' => $ambiente,
-        ]);
+            // Guardar el registro histórico de la cosecha
+            $vivero->cosechas()->create([
+                'fecha_cosecha' => $fechaCorte,
+                'nueva_fecha_siembra' => $fechaCorte,
+                'numero_corte_anterior' => $vivero->numero_corte,
+                'ambiente' => $ambiente,
+            ]);
 
-        // Actualizar el vivero para el nuevo ciclo
-        $vivero->numero_corte += 1;
-        $vivero->fecha_siembra = $fechaCorte;
-        if ($ambiente) {
-            $vivero->ambiente = $ambiente;
-        }
+            // Actualizar el vivero para el nuevo ciclo
+            $vivero->numero_corte += 1;
+            $vivero->fecha_siembra = $fechaCorte;
+            if ($ambiente) {
+                $vivero->ambiente = $ambiente;
+            }
 
-        // Ya no se actualiza el identificador_unico con el sufijo de corte según solicitud del usuario
+            $vivero->save();
 
-        $vivero->save();
-
-        return response()->json([
-            'message' => 'Corte registrado y vivero actualizado correctamente',
-            'vivero' => $vivero
-        ]);
+            return response()->json([
+                'message' => 'Corte registrado y vivero actualizado correctamente',
+                'vivero' => $vivero
+            ]);
+        });
     }
 
     public function getHistorialCosechas($id)

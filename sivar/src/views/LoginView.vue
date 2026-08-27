@@ -72,7 +72,7 @@
           </div>
 
           <div>
-            <BaseButton type="submit" variant="primary" size="md" block :loading="isBusy"> Iniciar Sesión </BaseButton>
+            <BaseButton type="submit" variant="primary" size="md" rounded="lg" block :loading="isBusy"> Iniciar Sesión </BaseButton>
           </div>
         </form>
       </div>

@@ -41,76 +41,82 @@ class LoteController extends Controller
             'total_parcelas_vivero' => 'nullable|integer|min:1'
         ]);
 
-        $lote = Lote::create($validated);
-        $this->syncViverosAndParcelas($lote);
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $request) {
+            $lote = Lote::create($validated);
+            $this->syncViverosAndParcelas($lote);
 
-        return response()->json($lote, 201);
+            return response()->json($lote, 201);
+        });
     }
 
     public function update(Request $request, $id)
     {
-        $lote = Lote::findOrFail($id);
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($request, $id) {
+            $lote = Lote::where('id', $id)->lockForUpdate()->findOrFail($id);
 
-        $validated = $request->validate([
-            'hacienda_codigo' => 'sometimes|nullable|string',
-            'nombre_lote' => 'sometimes|required|string',
-            'capacidad_maxima' => 'sometimes|required|integer|min:1',
-            'total_parcelas_vivero' => 'sometimes|nullable|integer|min:1'
-        ]);
+            $validated = $request->validate([
+                'hacienda_codigo' => 'sometimes|nullable|string',
+                'nombre_lote' => 'sometimes|required|string',
+                'capacidad_maxima' => 'sometimes|required|integer|min:1',
+                'total_parcelas_vivero' => 'sometimes|nullable|integer|min:1'
+            ]);
 
-        $lote->update($validated);
-        $this->syncViverosAndParcelas($lote);
+            $lote->update($validated);
+            $this->syncViverosAndParcelas($lote);
 
-        return response()->json($lote);
+            return response()->json($lote);
+        });
     }
 
     public function destroy($id)
     {
-        $lote = Lote::findOrFail($id);
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($id) {
+            $lote = Lote::where('id', $id)->lockForUpdate()->findOrFail($id);
 
-        // Find if any vivero in this lote has actual data
-        $viveros = Vivero::where('lote_id', $lote->id)->get();
+            // Find if any vivero in this lote has actual data
+            $viveros = Vivero::where('lote_id', $lote->id)->get();
 
-        $hasRealData = false;
-        foreach ($viveros as $vivero) {
-            if ($vivero->proyecto_id || $vivero->responsable_id || $vivero->caracter_id || $vivero->ambiente) {
-                $hasRealData = true;
-                break;
+            $hasRealData = false;
+            foreach ($viveros as $vivero) {
+                if ($vivero->proyecto_id || $vivero->responsable_id || $vivero->caracter_id || $vivero->ambiente) {
+                    $hasRealData = true;
+                    break;
+                }
+                // Check if any parcela has a variety
+                $hasVarieties = \Illuminate\Support\Facades\DB::connection('sivar')
+                    ->table('vivero_parcelas')
+                    ->where('vivero_id', $vivero->id)
+                    ->whereNotNull('variedad_id')
+                    ->exists();
+                if ($hasVarieties) {
+                    $hasRealData = true;
+                    break;
+                }
+                // Check if any harvest exists
+                $hasCosechas = \Illuminate\Support\Facades\DB::connection('sivar')
+                    ->table('vivero_cosechas')
+                    ->where('vivero_id', $vivero->id)
+                    ->exists();
+                if ($hasCosechas) {
+                    $hasRealData = true;
+                    break;
+                }
             }
-            // Check if any parcela has a variety
-            $hasVarieties = \Illuminate\Support\Facades\DB::connection('sivar')
-                ->table('vivero_parcelas')
-                ->where('vivero_id', $vivero->id)
-                ->whereNotNull('variedad_id')
-                ->exists();
-            if ($hasVarieties) {
-                $hasRealData = true;
-                break;
+
+            if ($hasRealData) {
+                return response()->json([
+                    'message' => 'No se puede eliminar este lote porque tiene viveros con datos registrados.'
+                ], 400);
             }
-            // Check if any harvest exists
-            $hasCosechas = \Illuminate\Support\Facades\DB::connection('sivar')
-                ->table('vivero_cosechas')
-                ->where('vivero_id', $vivero->id)
-                ->exists();
-            if ($hasCosechas) {
-                $hasRealData = true;
-                break;
+
+            // Delete all empty pre-created viveros (and cascade delete parcelas)
+            foreach ($viveros as $vivero) {
+                $vivero->forceDelete();
             }
-        }
 
-        if ($hasRealData) {
-            return response()->json([
-                'message' => 'No se puede eliminar este lote porque tiene viveros con datos registrados.'
-            ], 400);
-        }
-
-        // Delete all empty pre-created viveros (and cascade delete parcelas)
-        foreach ($viveros as $vivero) {
-            $vivero->forceDelete();
-        }
-
-        $lote->delete();
-        return response()->json(null, 204);
+            $lote->delete();
+            return response()->json(null, 204);
+        });
     }
 
     private function syncViverosAndParcelas($lote)
@@ -184,9 +190,6 @@ class LoteController extends Controller
                         $vivero->restore();
                     }
 
-                    // Update total_parcelas attribute
-                    $vivero->update(['total_parcelas' => $totalParcelas]);
-
                     $existingParcelCount = \Illuminate\Support\Facades\DB::connection('sivar')
                         ->table('vivero_parcelas')
                         ->where('vivero_id', $vivero->id)
@@ -204,12 +207,29 @@ class LoteController extends Controller
                                 ]);
                         }
                     } elseif ($existingParcelCount > $totalParcelas) {
+                        // Validar que ninguna parcela a eliminar tenga variedades registradas
+                        $parcelasConDatos = \Illuminate\Support\Facades\DB::connection('sivar')
+                            ->table('vivero_parcelas')
+                            ->where('vivero_id', $vivero->id)
+                            ->where('numero_parcela', '>', $totalParcelas)
+                            ->whereNotNull('variedad_id')
+                            ->pluck('numero_parcela')
+                            ->toArray();
+
+                        if (!empty($parcelasConDatos)) {
+                            $nums = implode(', ', $parcelasConDatos);
+                            throw new \Exception("No se puede reducir la capacidad de parcelas del Vivero {$vivero->consecutivo_vivero_ingenio} a {$totalParcelas} porque las parcelas ({$nums}) contienen variedades registradas.");
+                        }
+
                         \Illuminate\Support\Facades\DB::connection('sivar')
                             ->table('vivero_parcelas')
                             ->where('vivero_id', $vivero->id)
                             ->where('numero_parcela', '>', $totalParcelas)
                             ->delete();
                     }
+
+                    // Update total_parcelas attribute after validation
+                    $vivero->update(['total_parcelas' => $totalParcelas]);
                 }
             }
         }
