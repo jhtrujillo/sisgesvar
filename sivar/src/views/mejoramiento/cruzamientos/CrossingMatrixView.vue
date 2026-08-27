@@ -311,6 +311,7 @@ const selectedCdCntble = ref("");
 const ocultarInviables = ref(true); // Vista compacta limpia por defecto
 const isLoading = ref(false);
 const showICHelp = ref(false);
+const tipoMapaCalor = ref("");
 
 // Refs for VarietyProfileDrawer
 const isDrawerOpen = ref(false);

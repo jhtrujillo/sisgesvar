@@ -33,14 +33,20 @@ class ViveroService
             'cosechas'
         ])->findOrFail($id);
 
-        $this->loadEstructuraRecursiva($vivero);
+        $visited = [];
+        $this->loadEstructuraRecursiva($vivero, $visited);
         $vivero->identificador_origen = $this->formatIdViveroOrigen($vivero);
 
         return $vivero;
     }
 
-    private function loadEstructuraRecursiva($vivero)
+    private function loadEstructuraRecursiva($vivero, &$visited = [])
     {
+        if (in_array($vivero->id, $visited)) {
+            return;
+        }
+        $visited[] = $vivero->id;
+
         // 1. Fetch children where this vivero is the explicitly linked parent
         $childrenById = Vivero::with(['parcelas.variedad', 'origenLote', 'lote', 'cosechas'])
             ->where('origen_vivero_id', $vivero->id)
@@ -82,7 +88,7 @@ class ViveroService
 
         // Recursively load descendants
         foreach ($children as $child) {
-            $this->loadEstructuraRecursiva($child);
+            $this->loadEstructuraRecursiva($child, $visited);
         }
 
         // Distribute to actual parcelas

@@ -4,7 +4,7 @@ const API_AUTH = API_URL + "auth/";
 const API_AUTH_LOGIN = API_AUTH + "login";
 
 const API_AUTH_USER_INFO = API_AUTH + "me/";
-const API_AUTH_REFRESH_TOKEN = API_AUTH + "token/refresh";
+const API_AUTH_REFRESH_TOKEN = API_AUTH + "refresh";
 
 //URLS Siembra-Campo
 const API_VIVEROS = API_URL + "siembra-campo/viveros";
