@@ -91,50 +91,23 @@ class CrossingController extends Controller
 
     public function enviarABolsaComun(Request $request, $variedad)
     {
-        $fechaf = Carbon::today()->format('Y-m-d');
-        $fechai = Carbon::yesterday()->format('Y-m-d');
-        $info = explode("_", $variedad);
-
-        $flor = Flowering::where('floracion.id_pr', '=', $info[1])
-            ->whereBetween('floracion.fcha', array($fechai, $fechaf))
-            ->where('floracion.estado', '=', 0)
-            ->where('floracion.id_crcter', '=', $info[2])
-            ->where('floracion.bolsa_comun', '=', 0)
-            ->where('floracion.vrdad', '=', $info[0])
-            ->first();
-
-        if ($flor) {
-            $flor->bolsa_comun = 1;
-            $flor->save();
-
-            return response()->json(['message' => 'Flower sent to common bag successfully']);
+        $result = $this->crossingService->enviarABolsaComun($variedad);
+        
+        if ($result['status']) {
+            return response()->json(['message' => $result['message']]);
         } else {
-            return response()->json(['message' => 'Flower not found or already sent to common bag'], 404);
+            return response()->json(['message' => $result['message']], 404);
         }
     }
+
     public function enviarFlorAProyecto(Request $request, $variedad, $proyecto, $bolsa)
     {
-        $var = explode("_", $variedad);
-        $fechaf = Carbon::today()->format('Y-m-d');
-        $fechai = Carbon::yesterday()->format('Y-m-d');
-        $flor = DB::connection('sivar')->table('floracion')
-            ->whereBetween('floracion.fcha', array($fechai, $fechaf))
-            ->where('floracion.id_pr', '=', str_replace("9999", "", $var[1]))
-            ->where('floracion.id_crcter', '=', $var[2])
-            ->where('floracion.estado', '=', '0')
-            ->where('floracion.vrdad', '=', $var[0])
-            ->where('floracion.bolsa_comun', $bolsa)
-            ->first();
+        $result = $this->crossingService->enviarFlorAProyecto($variedad, $proyecto, $bolsa);
 
-        if ($flor) {
-            $id_flor = $flor->id_flrcion;
-            DB::connection('sivar')->table('floracion')
-                ->where('id_flrcion', '=', $id_flor)
-                ->update(['id_pr' => $proyecto, 'bolsa_comun' => '0']);
-
-            return response()->json(['message' => 'Flower sent to project successfully']);
+        if ($result['status']) {
+            return response()->json(['message' => $result['message']]);
         } else {
-            return response()->json(['message' => 'Flower not found or already sent to the project'], 404);
+            return response()->json(['message' => $result['message']], 404);
         }
     }
     public function criteriosBancoGermoplasma(Request $request)
@@ -145,147 +118,26 @@ class CrossingController extends Controller
     }
     public function criteriosBancoGermoplasmaPorVariedad(Request $request, $variedad)
     {
-               $sql = "SELECT avg(mosaico_p::float) mosaico, 
-        avg(roya_cafe_r::float) roya_cafe, 
-        avg(roya_naranja_r::float) roya_naranja, 
-        avg(carbon_p::float) carbon,
-        avg(tchm::float) tchm, 
-        avg(diametro_tallo::float) diametro_tallo, 
-        avg(volcamiento::float) volcamiento, 
-        avg(altura_planta::float) altura_planta, 
-        avg(poblacion_1m::float) poblacion, 
-        avg(sacarosa::float) sacarosa,
-        avg(dds::float) dds,
-        avg(tubos::float) tubos,
-        avg(raiz_nf::float) raiz_nf,
-        avg(numero_entrenudos::float) numero_entrenudos,
-        avg(longitud_entrenudo::float) longitud_entrenudo,
-        avg(longitud_cogollo::float) longitud_cogollo,
-        avg(longitud_hoja::float) longitud_hoja,
-        avg(floracion_tllos::float) floracion_tallos,
-        avg(floracion_p::float) floracion_p,
-        avg(aspecto_planta::float) aspecto_planta,
-        avg(aspecto_seleccion::float) aspecto_seleccion,
-        avg(pelusa::float) pelusa,
-        avg(deshoje::float) deshoje,
-        avg(materia_seca::float) materia_seca,
-        avg(humedad::float) humedad,
-        avg(brix::float) brix,
-        avg(fibra::float) fibra,
-        avg(pureza::float) pureza,
-        avg(are::float) are,
-        avg(reductores::float) reductores,
-        avg(atr::float) atr,
-        avg(peso::float) peso,
-        avg(tch::float) tch,
-        avg(tah::float) tah,
-        avg(tsh::float) tsh,
-        avg(tahm::float) tahm,
-        avg(tshm::float) tshm,
-        avg(lsdte::float) lsdte,
-        avg(lsdtt::float) lsdtt,
-        avg(lsdtv::float) lsdtv,
-        avg(lsdt::float) lsdt,
-        avg(rsd::float) rsd,
-        avg(sclyv::float) sclyv,
-        avg(rajadura_inc::float) rajadura_inc,
-        avg(entrenudos_tallo::float) entrenudos_tallo,
-        avg(entrenudos_rajados::float) entrenudos_rajados,
-        avg(hojas_erectas::float) hojas_erectas,
-        avg(raices_tallos::float) raices_tallos,
-        avg(yemas_protuberantes::float) yemas_protuberantes,
-        avg(medula::float) medula,
-        avg(habito_de_crecimiento::float) habito_de_crecimiento,
-        avg(germinacion::float) germinacion,
-        avg(tolerancia_herbicida::float) tolerancia_herbicida,
-        avg(raices_adventicias::float) raices_adventicias
-    FROM public.\"caracterizacion_banco_germoplasma\"";
-
-        $bg = DB::select($sql . " WHERE true");
-
-        // Ejecutar consulta filtrada usando parámetros seguros (bindings) para evitar Inyección SQL
-        $bg_var = DB::select($sql . " WHERE variedad = ?", [$variedad]);
-
-        $criterios = "";
-
-        if (!empty($bg) && !empty($bg_var)) {
-            foreach ($bg[0] as $key => $c) {
-                if ($bg[0]->$key !== null && $bg[0]->$key !== "" && $bg_var[0]->$key !== null && $bg_var[0]->$key !== "") {
-                    if ($bg[0]->$key > $bg_var[0]->$key) {
-                        $criterios .= "<text style='color:red;'>" . str_replace("_", " ", strtoupper($key)) . " <i class='fa fa-arrow-down'></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</text>";
-                    } else {
-                        $criterios .= "<text style='color:green;'>" . str_replace("_", " ", strtoupper($key)) . "  <i class='fa fa-arrow-up'></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</text>";
-                    }
-                }
-            }
-        }
-
+        $criterios = $this->crossingService->criteriosBancoGermoplasmaPorVariedad($variedad);
         return response()->json(['criterios' => $criterios]);
     }
 
-
-    // public function proyectosConFlores(Request $request)
-    // {
-    //     $term = trim($request->q);
-    //     $model = '\App\Models\\' . trim($request->model);
-    //     $parameter = trim($request->parameter);
-
-    //     $id = $request->id;
-    //     $text = $request->text;
-
-    //     $formattedTags = [];
-
-    //     $tags = $model::selectRaw('remote_pg_sipro.nm_prycto,remote_pg_sipro.cd_cntble,remote_pg_sipro.id_prycto, count(*)')
-    //         ->join('floracion', 'floracion.id_pr', '=', 'remote_pg_sipro.id_prycto')
-    //         ->groupBy('remote_pg_sipro.id_prycto', 'remote_pg_sipro.nm_prycto', 'remote_pg_sipro.cd_cntble')
-    //         ->havingRaw('count(*) > 0')
-    //         ->whereBetween('floracion.fcha', [Carbon::today()->subDays(1), Carbon::today()])
-    //         ->where(function ($query) use ($id, $text, $term) {
-    //             $query->where($id, 'ILIKE', '%' . $term . '%')
-    //                 ->orWhere($text, 'ILIKE', '%' . $term . '%');
-    //         })
-    //         ->get();
-
-    //     foreach ($tags as $tag) {
-    //         $formattedTags[] = ['id' => $tag->$id, 'text' => ($tag->$id . " - " . $tag->$text)];
-    //     }
-
-    //     return response()->json($formattedTags);
-    // }
     public function proyectosConFlores(Request $request)
     {
         $term = trim($request->q);
         $modelName = trim($request->model);
-        $parameter = trim($request->parameter);
-
-        // Construir el nombre de la clase completa de forma segura
-        $modelClass = "\\App\\Models\\" . $modelName;
-
-        if (!class_exists($modelClass)) {
-            return response()->json(['error' => 'Model not found.'], 404);
-        }
-
         $id = $request->id;
         $text = $request->text;
-        $formattedTags = [];
 
-        $tags = $modelClass::selectRaw('remote_pg_sipro.nm_prycto, remote_pg_sipro.cd_cntble, remote_pg_sipro.id_prycto, count(*)')
-            ->join('floracion', 'floracion.id_pr', '=', 'remote_pg_sipro.id_prycto')
-            ->groupBy('remote_pg_sipro.id_prycto', 'remote_pg_sipro.nm_prycto', 'remote_pg_sipro.cd_cntble')
-            ->havingRaw('count(*) > 0')
-            ->whereBetween('floracion.fcha', [Carbon::today()->subDays(1), Carbon::today()])
-            ->where(function ($query) use ($id, $text, $term) {
-                $query->where($id, 'ILIKE', '%' . $term . '%')
-                    ->orWhere($text, 'ILIKE', '%' . $term . '%');
-            })
-            ->get();
+        $formattedTags = $this->crossingService->proyectosConFlores($modelName, $term, $id, $text);
 
-        foreach ($tags as $tag) {
-            $formattedTags[] = ['id' => $tag->$id, 'text' => ($tag->$id . " - " . $tag->$text)];
+        if ($formattedTags === null) {
+            return response()->json(['error' => 'Model not found.'], 404);
         }
 
         return response()->json($formattedTags);
     }
+
 
     public function guardarCruzamiento(Request $request, $madre = null, $padres = null, $observaciones = null, $idPonderado = null, $proyectos = null, $autofecundado = null)
     {
