@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Lote;
 use App\Models\Vivero;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class LoteController extends Controller
 {
@@ -36,36 +37,61 @@ class LoteController extends Controller
         $validated = $request->validate([
             'ingenio_codigo' => 'required|string',
             'hacienda_codigo' => 'nullable|string',
-            'nombre_lote' => 'required|string',
+            'nombre_lote' => [
+                'required',
+                'string',
+                Rule::unique('lotes')->where(function ($query) use ($request) {
+                    return $query->where('ingenio_codigo', $request->ingenio_codigo)
+                        ->where('hacienda_codigo', $request->hacienda_codigo);
+                }),
+            ],
             'capacidad_maxima' => 'required|integer|min:1',
             'total_parcelas_vivero' => 'nullable|integer|min:1'
+        ], [
+            'nombre_lote.unique' => 'Ya existe un lote con este nombre en la hacienda seleccionada.'
         ]);
 
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $request) {
+        $lote = DB::transaction(function () use ($validated) {
             $lote = Lote::create($validated);
             $this->syncViverosAndParcelas($lote);
-
-            return response()->json($lote, 201);
+            return $lote;
         });
+
+        return response()->json($lote, 201);
     }
 
     public function update(Request $request, $id)
     {
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($request, $id) {
-            $lote = Lote::where('id', $id)->lockForUpdate()->findOrFail($id);
+        $lote = Lote::findOrFail($id);
 
-            $validated = $request->validate([
-                'hacienda_codigo' => 'sometimes|nullable|string',
-                'nombre_lote' => 'sometimes|required|string',
-                'capacidad_maxima' => 'sometimes|required|integer|min:1',
-                'total_parcelas_vivero' => 'sometimes|nullable|integer|min:1'
-            ]);
+        $ingenio = $lote->ingenio_codigo;
+        $hacienda = $request->input('hacienda_codigo', $lote->hacienda_codigo);
 
+        $validated = $request->validate([
+            'hacienda_codigo' => 'sometimes|nullable|string',
+            'nombre_lote' => [
+                'sometimes',
+                'required',
+                'string',
+                Rule::unique('lotes')->where(function ($query) use ($ingenio, $hacienda) {
+                    return $query->where('ingenio_codigo', $ingenio)
+                        ->where('hacienda_codigo', $hacienda);
+                })->ignore($id),
+            ],
+            'capacidad_maxima' => 'sometimes|required|integer|min:1',
+            'total_parcelas_vivero' => 'sometimes|nullable|integer|min:1'
+        ], [
+            'nombre_lote.unique' => 'Ya existe un lote con este nombre en la hacienda seleccionada.'
+        ]);
+
+        $updatedLote = DB::transaction(function () use ($lote, $validated) {
+            $lote->lockForUpdate();
             $lote->update($validated);
             $this->syncViverosAndParcelas($lote);
-
-            return response()->json($lote);
+            return $lote;
         });
+
+        return response()->json($updatedLote);
     }
 
     public function destroy($id)
