@@ -278,24 +278,29 @@ const form = ref({
   parcelas_por_vivero: {} as Record<number, number>
 });
 
+const syncParcelasPorVivero = () => {
+  const val = parseInt(form.value.capacidad_maxima as any);
+  if (isNaN(val) || val < 1) return;
+  if (!form.value.parcelas_por_vivero) {
+    form.value.parcelas_por_vivero = {};
+  }
+  for (let i = 1; i <= val; i++) {
+    if (form.value.parcelas_por_vivero[i] === undefined || form.value.parcelas_por_vivero[i] === null) {
+      form.value.parcelas_por_vivero[i] = form.value.total_parcelas_vivero || 10;
+    }
+  }
+  Object.keys(form.value.parcelas_por_vivero).forEach((key) => {
+    const k = parseInt(key);
+    if (k > val) {
+      delete form.value.parcelas_por_vivero[k];
+    }
+  });
+};
+
 watch(
   () => form.value.capacidad_maxima,
-  (newVal) => {
-    const val = parseInt(newVal as any) || 1;
-    if (!form.value.parcelas_por_vivero) {
-      form.value.parcelas_por_vivero = {};
-    }
-    for (let i = 1; i <= val; i++) {
-      if (form.value.parcelas_por_vivero[i] === undefined) {
-        form.value.parcelas_por_vivero[i] = form.value.total_parcelas_vivero || 10;
-      }
-    }
-    Object.keys(form.value.parcelas_por_vivero).forEach((key) => {
-      const k = parseInt(key);
-      if (k > val) {
-        delete form.value.parcelas_por_vivero[k];
-      }
-    });
+  () => {
+    syncParcelasPorVivero();
   }
 );
 
@@ -375,6 +380,7 @@ const openAddModal = () => {
     hacienda_codigo: selectedHacienda.value,
     parcelas_por_vivero: {}
   };
+  syncParcelasPorVivero();
   isModalOpen.value = true;
 };
 
@@ -393,6 +399,7 @@ const openEditModal = (lote: any) => {
     hacienda_codigo: lote.hacienda_codigo || selectedHacienda.value,
     parcelas_por_vivero: pMap
   };
+  syncParcelasPorVivero();
   isModalOpen.value = true;
 };
 
@@ -417,7 +424,10 @@ const submitForm = async () => {
     loadLotes();
   } catch (error: any) {
     console.error("Error saving lote:", error);
-    const msg = error.response?.data?.message || "Error al guardar el lote";
+    let msg = error.response?.data?.message || "Error al guardar el lote";
+    if (typeof msg === "string" && (msg.includes("SQLSTATE") || msg.includes("Unique violation") || msg.includes("duplicate key"))) {
+      msg = "Ya existe un lote o vivero registrado con ese nombre o identificador en la hacienda seleccionada.";
+    }
     toast.error(msg);
   } finally {
     saving.value = false;
