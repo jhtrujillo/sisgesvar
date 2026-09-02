@@ -38,7 +38,7 @@ class UpdateViveroRequest extends FormRequest
             'consecutivo_vivero_ingenio' => 'nullable|integer',
             'estado' => 'nullable|string',
             'observaciones' => 'nullable|string',
-            'ambiente' => 'nullable|string',
+            'ambiente' => 'nullable|integer',
             'responsable_id' => 'nullable|integer',
             'numero_corte' => 'nullable|integer',
             'temporada_floracion' => 'nullable|string',

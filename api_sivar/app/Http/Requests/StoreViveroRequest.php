@@ -36,6 +36,7 @@ class StoreViveroRequest extends FormRequest
             'origen_vivero_id' => 'nullable|integer|exists:viveros,id',
             'lote_id' => 'nullable|integer|exists:lotes,id',
             'consecutivo_vivero_ingenio' => 'required|integer',
+            'ambiente' => 'nullable|integer',
         ];
     }
 }

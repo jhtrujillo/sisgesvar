@@ -386,7 +386,9 @@ class ViveroController extends Controller
             $viveroA->lote_id = $targetLoteId;
             $viveroA->consecutivo_vivero_ingenio = $targetConsecutivo;
             $viveroA->identificador_unico = $targetIdentificador;
-            $viveroA->nombre = $targetNombre;
+            if (!$viveroA->nombre || $viveroA->nombre === $oldIdentificador || preg_match('/^Vivero \d+$/i', $viveroA->nombre)) {
+                $viveroA->nombre = $targetNombre;
+            }
             $viveroA->ingenio = $targetIngenio;
             $viveroA->hacienda = $targetHacienda;
             $viveroA->suerte = $targetSuerte;

@@ -149,6 +149,7 @@ class LoteController extends Controller
     {
         $capacidad = $lote->capacidad_maxima;
         $parcelasPorViveroRequest = request('parcelas_por_vivero'); // Array of [consecutivo => total_parcelas]
+        $nombresPorViveroRequest = request('nombres_por_vivero');  // Array of [consecutivo => nombre]
 
         // Update suerte field for all existing viveros of this lote
         Vivero::where('lote_id', $lote->id)->update([
@@ -173,6 +174,15 @@ class LoteController extends Controller
                 }
             }
 
+            $customNombre = null;
+            if ($nombresPorViveroRequest && isset($nombresPorViveroRequest[$i])) {
+                $trimmed = trim($nombresPorViveroRequest[$i]);
+                if ($trimmed !== '') {
+                    $customNombre = $trimmed;
+                }
+            }
+            $defaultNombre = "Vivero {$i}";
+
             if (!in_array($i, $existingNumbers)) {
                 // Generate unique identifier (excluding Lote/Vivero words)
                 $ingenio = $lote->ingenio_codigo ?: '00';
@@ -185,7 +195,7 @@ class LoteController extends Controller
 
                 $vivero = Vivero::create([
                     'identificador_unico' => $identificador,
-                    'nombre' => "Vivero {$i}",
+                    'nombre' => $customNombre ?? $defaultNombre,
                     'ingenio' => $lote->ingenio_codigo,
                     'hacienda' => $lote->hacienda_codigo,
                     'suerte' => $lote->nombre_lote,
@@ -214,6 +224,12 @@ class LoteController extends Controller
                     // Restore if it was soft-deleted
                     if ($vivero->trashed()) {
                         $vivero->restore();
+                    }
+
+                    $updates = ['total_parcelas' => $totalParcelas];
+
+                    if ($customNombre !== null && !$vivero->proyecto_id) {
+                        $updates['nombre'] = $customNombre;
                     }
 
                     $existingParcelCount = \Illuminate\Support\Facades\DB::connection('sivar')
@@ -255,7 +271,7 @@ class LoteController extends Controller
                     }
 
                     // Update total_parcelas attribute after validation
-                    $vivero->update(['total_parcelas' => $totalParcelas]);
+                    $vivero->update($updates);
                 }
             }
         }
