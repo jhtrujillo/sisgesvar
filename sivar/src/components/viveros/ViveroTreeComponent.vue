@@ -48,8 +48,11 @@
 
         <div>
           <div class="text-xs font-bold text-slate-800 flex items-center gap-2 flex-wrap">
-            <span :class="{ 'bg-yellow-200 px-0.5 rounded': searchQuery && node.identificador_unico.toLowerCase().includes(searchQuery.toLowerCase()) }">
-              Vivero: {{ node.identificador_unico }}
+            <span :class="{ 'bg-yellow-200 px-0.5 rounded': searchQuery && matchesNursery }">
+              Vivero: {{ node.nombre || node.identificador_unico }}
+            </span>
+            <span v-if="node.nombre && node.nombre !== node.identificador_unico" class="text-[10px] font-mono text-slate-500">
+              ({{ node.identificador_unico }})
             </span>
             <span class="text-[9px] px-1.5 py-0.5 bg-slate-200/80 text-slate-700 rounded-full font-mono font-bold">{{ node.condicion || "N/A" }}</span>
           </div>

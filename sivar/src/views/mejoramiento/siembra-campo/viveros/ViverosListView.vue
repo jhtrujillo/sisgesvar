@@ -57,6 +57,7 @@
             <tr>
               <th class="py-3 px-4 text-center w-12"></th>
               <th class="py-3 px-6 text-left">ID Vivero</th>
+              <th class="py-3 px-6 text-left">Nombre de Vivero</th>
               <th class="py-3 px-6 text-left">Ingenio</th>
               <th class="py-3 px-6 text-left">Hacienda</th>
               <th class="py-3 px-6 text-left">Lote</th>
@@ -96,7 +97,10 @@
                     </button>
                   </td>
                   <td class="py-3 px-6 text-left whitespace-nowrap">
-                    <span class="font-medium text-slate-800">{{ vivero.identificador_unico }}</span>
+                    <div class="font-bold text-slate-800">{{ vivero.identificador_unico }}</div>
+                  </td>
+                  <td class="py-3 px-6 text-left whitespace-nowrap">
+                    {{ vivero.nombre }}
                   </td>
                   <td class="py-3 px-6 text-left whitespace-nowrap">{{ vivero.ingenio }}</td>
                   <td class="py-3 px-6 text-left whitespace-nowrap font-medium text-slate-700">

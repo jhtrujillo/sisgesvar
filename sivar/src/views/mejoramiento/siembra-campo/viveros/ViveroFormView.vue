@@ -124,6 +124,20 @@
                 />
               </div>
 
+              <!-- Nombre / Identificador Personalizado -->
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="nombre_vivero">
+                  Nombre / Identificador del Vivero
+                </label>
+                <input
+                  v-model="form.nombre"
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
+                  id="nombre_vivero"
+                  type="text"
+                  placeholder="Ej: Vivero Norte, Corte 1, etc. (Opcional)"
+                />
+              </div>
+
               <!-- Fecha Siembra -->
               <div>
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="fecha_siembra"
@@ -1335,7 +1349,7 @@ const trasladoSlots = computed(() => {
         id: v.id,
         consecutivo: v.consecutivo_vivero_ingenio,
         identificador: v.identificador_unico,
-        nombre: `Vivero ${v.consecutivo_vivero_ingenio}`,
+        nombre: v.nombre || `Vivero ${v.consecutivo_vivero_ingenio}`,
         disabled: isOccupied,
         isCurrent: v.id === form.value.id
       };
@@ -1520,6 +1534,7 @@ const filteredOrigenViveros = computed(() => {
   return allViverosList.value.filter(
     (v) =>
       (v.identificador_unico && v.identificador_unico.toLowerCase().includes(q)) ||
+      (v.nombre && v.nombre.toLowerCase().includes(q)) ||
       (v.hacienda && v.hacienda.toLowerCase().includes(q)) ||
       (v.lote?.nombre_lote && v.lote.nombre_lote.toLowerCase().includes(q))
   );
