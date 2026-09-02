@@ -6,6 +6,7 @@ use App\Models\Lote;
 use App\Models\Vivero;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class LoteController extends Controller
 {
