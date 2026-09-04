@@ -119,7 +119,25 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 bg-white">
-              <template v-for="(row, index) in showedRecords" :key="index">
+              <tr v-if="!showedRecords || showedRecords.length === 0">
+                <td :colspan="columnsToShow.length + (isDelete || isEditable || otherButtonText ? 1 : 0)" class="py-10 px-4 text-center">
+                  <div class="flex flex-col items-center justify-center space-y-2">
+                    <div class="p-2.5 bg-slate-100 text-slate-400 rounded-full mb-1">
+                      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.5"
+                          d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                        />
+                      </svg>
+                    </div>
+                    <p class="text-sm font-bold text-slate-700">{{ emptyMessage }}</p>
+                    <p v-if="emptySubtext" class="text-xs text-slate-500 max-w-md">{{ emptySubtext }}</p>
+                  </div>
+                </td>
+              </tr>
+              <template v-else v-for="(row, index) in showedRecords" :key="index">
                 <tr>
                   <template v-for="column in columns" :key="column">
                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6" v-if="columnsToShow.includes(column.text)">
@@ -255,6 +273,8 @@ const props = withDefaults(
     nameExcel?: string;
     allowHideColumns?: boolean;
     haveSearch?: boolean;
+    emptyMessage?: string;
+    emptySubtext?: string;
   }>(),
   {
     isOrdened: false,
@@ -264,12 +284,29 @@ const props = withDefaults(
     haveButtonExcel: false,
     nameExcel: "data",
     allowHideColumns: false,
-    haveSearch: false
+    haveSearch: false,
+    emptyMessage: "No hay registros disponibles para mostrar.",
+    emptySubtext: "Verifique los filtros de búsqueda o intente nuevamente."
   }
 );
-const { rows, columns, isOrdened, isDelete, isEditable, otherButtonText, haveButtonAddNew, haveButtonExcel, nameExcel, haveSearch } = toRefs(props);
+const {
+  rows,
+  columns,
+  isOrdened,
+  isDelete,
+  isEditable,
+  otherButtonText,
+  haveButtonAddNew,
+  haveButtonExcel,
+  nameExcel,
+  haveSearch,
+  emptyMessage,
+  emptySubtext
+} = toRefs(props);
 
-const filteredRecords = ref([...rows.value]);
+const safeRows = () => (Array.isArray(rows.value) ? rows.value : []);
+
+const filteredRecords = ref([...safeRows()]);
 const perPageRecordOptions = ref([
   { field: "5", number: 5 },
   { field: "10", number: 10 },
@@ -318,12 +355,13 @@ const formatRow = (row: { [key: string]: any }, columns: Column[]) => {
 };
 
 function refreshFilteredRecords() {
+  const currentRows = safeRows();
   needFormat.value = columns.value.some((column) => (column.keyNames || column.path || column.formatValue || column.formatFromRow ? 1 : 0));
   if (needFormat.value) {
-    filteredRecords.value = rows.value.map((row) => formatRow(row, columns.value));
+    filteredRecords.value = currentRows.map((row) => formatRow(row, columns.value));
     hasBeenFormat.value = true;
   } else {
-    filteredRecords.value = [...rows.value];
+    filteredRecords.value = [...currentRows];
     hasBeenFormat.value = false;
   }
   perPageRecordOptions.value[perPageRecordOptions.value.length - 1] = {

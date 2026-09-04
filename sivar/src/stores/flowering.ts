@@ -14,11 +14,14 @@ export const useFloweringStore = defineStore(
       try {
         const result = await floweringService.getFloweringList(historico);
 
-        if (result.status === 200) {
+        if (result && result.status === 200 && Array.isArray(result.data)) {
           FloweringList.value = result.data;
+        } else {
+          FloweringList.value = [];
         }
       } catch (error) {
-        console.log("error");
+        console.error("Error al obtener lista de floraciones:", error);
+        FloweringList.value = [];
       }
     };
 

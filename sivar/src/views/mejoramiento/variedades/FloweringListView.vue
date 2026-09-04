@@ -63,7 +63,7 @@
 
     <!-- Table Container -->
     <div
-      class="w-full bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 flex-1 relative z-10 p-2 sm:p-6 overflow-hidden min-h-[400px]"
+      class="w-full bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 flex-1 relative z-10 p-2 sm:p-6 overflow-hidden min-h-[220px]"
     >
       <!-- Overlay Loading State -->
       <div v-if="isLoading" class="absolute inset-0 z-50 bg-white/70 backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-300">
@@ -87,6 +87,12 @@
         :allow-hide-columns="true"
         name-excel="flowering"
         :columns="conlumnsInfo"
+        :empty-message="verHistorico ? 'No se encontraron registros de floración en el historial' : 'No hay registros de floración para las últimas 24 horas'"
+        :empty-subtext="
+          verHistorico
+            ? 'Intente ajustar los términos de búsqueda.'
+            : 'No se encontraron flores registradas entre ayer y hoy. Active el Modo Histórico en la parte superior derecha para consultar registros anteriores.'
+        "
       ></TableComponent>
     </div>
   </div>
