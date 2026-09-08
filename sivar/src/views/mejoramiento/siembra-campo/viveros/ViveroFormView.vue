@@ -2032,10 +2032,6 @@ const submitForm = async () => {
 
   isSubmitting.value = true;
   try {
-    // Sincronizar el input manual si está activo
-    if (origenViveroManual.value) {
-      form.value.origen_parcela = origenViveroInput.value;
-    }
 
     if (isEditing.value) {
       await viverosServices.updateVivero(route.params.id as string, form.value);
