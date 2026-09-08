@@ -178,14 +178,24 @@
                           <td class="px-4 py-3 font-medium text-rose-600">{{ conflict.excelVariedad }}</td>
                           <td class="px-4 py-3 relative">
                             <div v-if="!conflict.resolvedId">
-                              <input
-                                type="text"
-                                v-model="conflict.searchTerm"
-                                @focus="conflict.showDropdown = true"
-                                @blur="hideConflictDropdown(conflict)"
-                                placeholder="Buscar en SIVAR..."
-                                class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-cenicana outline-none shadow-sm"
-                              />
+                              <div class="flex gap-2">
+                                <input
+                                  type="text"
+                                  v-model="conflict.searchTerm"
+                                  @focus="conflict.showDropdown = true"
+                                  @blur="hideConflictDropdown(conflict)"
+                                  placeholder="Buscar en SIVAR..."
+                                  class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-cenicana outline-none shadow-sm"
+                                />
+                                <button
+                                  @mousedown="registerNewVariety(conflict)"
+                                  type="button"
+                                  title="Registrar como nueva"
+                                  class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap"
+                                >
+                                  Crear
+                                </button>
+                              </div>
                               <div
                                 v-if="conflict.showDropdown"
                                 class="absolute z-20 w-[90%] mt-1 bg-white shadow-xl max-h-48 rounded-lg py-1 text-xs overflow-auto border border-slate-200 left-4"
@@ -261,6 +271,7 @@ import { ref, computed, nextTick } from "vue";
 import * as XLSX from "xlsx";
 import { useToast } from "vue-toastification";
 import viverosServices from "@/services/viveros.services";
+import varietysServices from "@/services/varietys.services";
 
 const props = defineProps<{
   show: boolean;
@@ -513,6 +524,21 @@ const resolveConflict = (conflict: any, variety: any) => {
   conflict.resolvedName = variety.nm_vrdad;
   conflict.searchTerm = variety.nm_vrdad;
   conflict.showDropdown = false;
+};
+
+const registerNewVariety = async (conflict: any) => {
+  const name = conflict.excelVariedad.trim().toUpperCase();
+  if (confirm(`¿Deseas registrar la variedad "${name}" en la base maestra?`)) {
+    try {
+      const res = await varietysServices.createVariety(name);
+      const newId = res.data.id_nm_vrdad || res.data.id;
+      conflict.resolvedId = String(newId);
+      conflict.resolvedName = name;
+      toast.success("Variedad registrada exitosamente");
+    } catch (e: any) {
+      toast.error("Error al registrar: " + (e.response?.data?.message || e.message));
+    }
+  }
 };
 
 const resolvedCount = computed(() => {
