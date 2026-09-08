@@ -1721,9 +1721,8 @@ const hideVariedadesDelay = () => {
 
 const updateIdPlotOrigen = () => {
   if (parcelaForm.value.numero_parcela_origen) {
-    const parts = (form.value.identificador_unico || "").split("-");
-    const baseId = parts.slice(0, 4).join("-");
-    parcelaForm.value.id_plot_origen = `${baseId}-${parcelaForm.value.numero_parcela_origen}`;
+    const baseId = form.value.identificador_unico || "";
+    parcelaForm.value.id_plot_origen = baseId ? `${baseId}-${parcelaForm.value.numero_parcela_origen}` : "";
   } else {
     parcelaForm.value.id_plot_origen = "";
   }
@@ -2103,9 +2102,8 @@ const cancelEditingPlot = () => {
 
 const updateEditingPlotIdOrigen = () => {
   if (editingPlotForm.value.numero_parcela_origen) {
-    const parts = (form.value.identificador_unico || "").split("-");
-    const baseId = parts.slice(0, 4).join("-");
-    editingPlotForm.value.id_plot_origen = `${baseId}-${editingPlotForm.value.numero_parcela_origen}`;
+    const baseId = form.value.identificador_unico || "";
+    editingPlotForm.value.id_plot_origen = baseId ? `${baseId}-${editingPlotForm.value.numero_parcela_origen}` : "";
   } else {
     editingPlotForm.value.id_plot_origen = "";
   }
