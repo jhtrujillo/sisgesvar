@@ -358,7 +358,7 @@
                 >
                   <option value="">Seleccione un Ingenio</option>
                   <option v-for="ing in ingenios" :key="ing.cd_ingnio" :value="ing.cd_ingnio">
-                    {{ ing.nm_ingnio }}
+                    {{ decodeHTMLEntities(ing.nm_ingnio) }}
                   </option>
                 </select>
               </div>
@@ -375,7 +375,7 @@
                 >
                   <option value="">Seleccione una Hacienda</option>
                   <option v-for="hda in haciendas" :key="hda.cd_hcnda" :value="hda.cd_hcnda">
-                    {{ hda.nm_hcnda }}
+                    {{ decodeHTMLEntities(hda.nm_hcnda) }}
                   </option>
                 </select>
               </div>
@@ -519,7 +519,7 @@
                   class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 border-b border-slate-100 last:border-0 transition-colors"
                 >
                   <div class="font-bold font-mono text-xs text-slate-800">{{ v.identificador_unico }}</div>
-                  <div class="text-[10px] text-slate-400 mt-0.5">{{ getIngenioName(v.ingenio) }} - {{ v.hacienda || "N/A" }} - {{ v.suerte || "N/A" }}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">{{ getIngenioName(v.ingenio) }} - {{ decodeHTMLEntities(v.hacienda) || "N/A" }} - {{ decodeHTMLEntities(v.suerte) || "N/A" }}</div>
                 </div>
               </div>
             </div>
@@ -538,7 +538,7 @@
                 >
                   <option value="">Seleccione un Ingenio</option>
                   <option v-for="ing in ingenios" :key="'origen_ing_' + ing.cd_ingnio" :value="ing.cd_ingnio">
-                    {{ ing.nm_ingnio }}
+                    {{ decodeHTMLEntities(ing.nm_ingnio) }}
                   </option>
                 </select>
               </div>
@@ -573,7 +573,7 @@
                 >
                   <option value="">Seleccione una Hacienda</option>
                   <option v-for="hda in haciendasOrigen" :key="'origen_hda_' + hda.cd_hcnda" :value="hda.cd_hcnda">
-                    {{ hda.nm_hcnda }}
+                    {{ decodeHTMLEntities(hda.nm_hcnda) }}
                   </option>
                 </select>
               </div>
@@ -1192,7 +1192,7 @@
                 >
                   <option value="" disabled>Seleccione el ingenio...</option>
                   <option v-for="ing in ingenios" :key="'traslado_ing_' + ing.cd_ingnio" :value="ing.cd_ingnio">
-                    {{ ing.nm_ingnio }}
+                    {{ decodeHTMLEntities(ing.nm_ingnio) }}
                   </option>
                 </select>
               </div>
@@ -1208,7 +1208,7 @@
                 >
                   <option value="" disabled>Seleccione la hacienda...</option>
                   <option v-for="hac in trasladoHaciendas" :key="'traslado_hac_' + hac.cd_hcnda" :value="hac.cd_hcnda">
-                    {{ hac.nm_hcnda }}
+                    {{ decodeHTMLEntities(hac.nm_hcnda) }}
                   </option>
                 </select>
               </div>
@@ -1281,6 +1281,13 @@ import BaseButton from "@/components/BaseButton.vue";
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
+
+const decodeHTMLEntities = (text: string) => {
+  if (!text) return "";
+  const textArea = document.createElement("textarea");
+  textArea.innerHTML = text;
+  return textArea.value;
+};
 
 const isEditing = ref(false);
 const activeTab = ref("generales");
@@ -1398,20 +1405,18 @@ const parseViveroIdToFields = (viveroId: string) => {
 const availableViveroNumbers = computed(() => {
   if (!form.value.lote_id) return [];
   const selectedLote = lotes.value.find((l) => l.id === form.value.lote_id);
-  if (!selectedLote) return [];
-
-  const capacity = selectedLote.capacidad_maxima || 5;
-  const activeNumbers = allViverosList.value
-    .filter((v) => v.lote_id === form.value.lote_id && v.proyecto_id && (!isEditing.value || v.id !== form.value.id))
-    .map((v) => v.consecutivo_vivero_ingenio);
+  if (!selectedLote || !selectedLote.viveros) return [];
 
   const options = [];
   if (isEditing.value && form.value.consecutivo_vivero_ingenio) {
     options.push(form.value.consecutivo_vivero_ingenio);
   }
-  for (let i = 1; i <= capacity; i++) {
-    if (!activeNumbers.includes(i) && !options.includes(i)) {
-      options.push(i);
+  
+  for (const v of selectedLote.viveros) {
+    if (!v.proyecto_id && v.estado !== 'Cosechado') {
+      if (!options.includes(v.consecutivo_vivero_ingenio)) {
+        options.push(v.consecutivo_vivero_ingenio);
+      }
     }
   }
   return options.sort((a, b) => a - b);
@@ -1603,7 +1608,7 @@ const loadAllViveros = async () => {
 
 const getIngenioName = (cd: string) => {
   const ing = ingenios.value.find((i) => i.cd_ingnio === cd);
-  return ing ? ing.nm_ingnio : cd;
+  return ing ? decodeHTMLEntities(ing.nm_ingnio) : cd;
 };
 
 // Drawer de variedades
