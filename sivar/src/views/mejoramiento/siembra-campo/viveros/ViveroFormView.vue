@@ -763,6 +763,7 @@
               <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Plot (No.)</label>
               <input
                 v-model="parcelaForm.numero_parcela"
+                @input="updateIdPlotOrigen"
                 type="number"
                 class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
               />
@@ -824,7 +825,6 @@
               <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Parcela</label>
               <input
                 v-model="parcelaForm.numero_parcela_origen"
-                @input="updateIdPlotOrigen"
                 type="number"
                 placeholder="No."
                 class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
@@ -1008,7 +1008,6 @@
                     <td class="px-4 py-3 min-w-[100px]">
                       <input
                         v-model="editingPlotForm.numero_parcela_origen"
-                        @input="updateEditingPlotIdOrigen"
                         type="number"
                         placeholder="No."
                         class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
@@ -1720,9 +1719,9 @@ const hideVariedadesDelay = () => {
 };
 
 const updateIdPlotOrigen = () => {
-  if (parcelaForm.value.numero_parcela_origen) {
+  if (parcelaForm.value.numero_parcela) {
     const baseId = form.value.identificador_unico || "";
-    parcelaForm.value.id_plot_origen = baseId ? `${baseId}-${parcelaForm.value.numero_parcela_origen}` : "";
+    parcelaForm.value.id_plot_origen = baseId ? `${baseId}-${parcelaForm.value.numero_parcela}` : "";
   } else {
     parcelaForm.value.id_plot_origen = "";
   }
@@ -2101,9 +2100,9 @@ const cancelEditingPlot = () => {
 };
 
 const updateEditingPlotIdOrigen = () => {
-  if (editingPlotForm.value.numero_parcela_origen) {
+  if (editingPlotForm.value.numero_parcela) {
     const baseId = form.value.identificador_unico || "";
-    editingPlotForm.value.id_plot_origen = baseId ? `${baseId}-${editingPlotForm.value.numero_parcela_origen}` : "";
+    editingPlotForm.value.id_plot_origen = baseId ? `${baseId}-${editingPlotForm.value.numero_parcela}` : "";
   } else {
     editingPlotForm.value.id_plot_origen = "";
   }
