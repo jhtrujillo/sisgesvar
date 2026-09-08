@@ -472,6 +472,8 @@ class ViveroController extends Controller
             $vivero = Vivero::findOrFail($id);
 
             // Check if there are active nurseries/cuts that depend on this nursery's plots/cuts
+            // COMENTADO A PETICIÓN DEL USUARIO PARA PERMITIR EL BORRADO LIBRE
+            /*
             $hasChildren = Vivero::where('origen_parcela', 'like', $vivero->identificador_unico . '%')->exists();
             if ($hasChildren) {
                 return response()->json([
@@ -479,6 +481,7 @@ class ViveroController extends Controller
                     'message' => 'No se puede eliminar este vivero porque existen otros viveros/cortes que dependen de su semilla.'
                 ], 400);
             }
+            */
 
             if ($vivero->lote_id) {
                 // It is a slot within a lote, so we just clear its sowing fields to reset it to an empty slot!

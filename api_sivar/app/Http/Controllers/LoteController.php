@@ -6,6 +6,7 @@ use App\Models\Lote;
 use App\Models\Vivero;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class LoteController extends Controller
 {
@@ -45,8 +46,8 @@ class LoteController extends Controller
                         ->where('hacienda_codigo', $request->hacienda_codigo);
                 }),
             ],
-            'capacidad_maxima' => 'required|integer|min:1',
-            'total_parcelas_vivero' => 'nullable|integer|min:1'
+            'capacidad_maxima' => 'required|integer|min:0',
+            'total_parcelas_vivero' => 'nullable|integer|min:0'
         ], [
             'nombre_lote.unique' => 'Ya existe un lote con este nombre en la hacienda seleccionada.'
         ]);
@@ -78,8 +79,8 @@ class LoteController extends Controller
                         ->where('hacienda_codigo', $hacienda);
                 })->ignore($id),
             ],
-            'capacidad_maxima' => 'sometimes|required|integer|min:1',
-            'total_parcelas_vivero' => 'sometimes|nullable|integer|min:1'
+            'capacidad_maxima' => 'sometimes|required|integer|min:0',
+            'total_parcelas_vivero' => 'sometimes|nullable|integer|min:0'
         ], [
             'nombre_lote.unique' => 'Ya existe un lote con este nombre en la hacienda seleccionada.'
         ]);

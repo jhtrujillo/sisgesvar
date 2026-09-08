@@ -138,7 +138,7 @@
             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">
               Ingenio: {{ decodeHTMLEntities(selectedIngenioName) }} <br />
               Hacienda: {{ decodeHTMLEntities(getHaciendaName(lote.hacienda_codigo)) }} <br />
-              Parcelas/Vivero: {{ lote.total_parcelas_vivero ?? 10 }}
+              Parcelas/Vivero: {{ lote.total_parcelas_vivero ?? 0 }}
             </p>
 
             <!-- ProgressBar -->
@@ -283,7 +283,7 @@ const editingLoteId = ref<number | null>(null);
 const form = ref({
   nombre_lote: "",
   capacidad_maxima: 5,
-  total_parcelas_vivero: 10,
+  total_parcelas_vivero: 0,
   hacienda_codigo: "",
   parcelas_por_vivero: {} as Record<number, number>,
   nombres_por_vivero: {} as Record<number, string>
@@ -300,7 +300,7 @@ const syncParcelasPorVivero = () => {
   }
   for (let i = 1; i <= val; i++) {
     if (form.value.parcelas_por_vivero[i] === undefined || form.value.parcelas_por_vivero[i] === null) {
-      form.value.parcelas_por_vivero[i] = form.value.total_parcelas_vivero || 10;
+      form.value.parcelas_por_vivero[i] = form.value.total_parcelas_vivero ?? 0;
     }
     // Keep existing name if already set, otherwise leave empty (user fills it)
     if (form.value.nombres_por_vivero[i] === undefined) {
@@ -395,7 +395,7 @@ const openAddModal = () => {
   form.value = {
     nombre_lote: "",
     capacidad_maxima: 5,
-    total_parcelas_vivero: 10,
+    total_parcelas_vivero: 0,
     hacienda_codigo: selectedHacienda.value,
     parcelas_por_vivero: {},
     nombres_por_vivero: {}
@@ -411,7 +411,7 @@ const openEditModal = (lote: any) => {
   if (lote.viveros && lote.viveros.length > 0) {
     lote.viveros.forEach((v: any) => {
       const pos = v.consecutivo_vivero_ingenio;
-      pMap[pos] = v.total_parcelas || 10;
+      pMap[pos] = v.total_parcelas ?? 0;
       // Load existing custom name, but skip default auto-generated names
       const defaultName = `Vivero ${pos}`;
       nMap[pos] = v.nombre && v.nombre !== defaultName && v.nombre !== v.identificador_unico ? v.nombre : "";
@@ -420,7 +420,7 @@ const openEditModal = (lote: any) => {
   form.value = {
     nombre_lote: lote.nombre_lote,
     capacidad_maxima: lote.capacidad_maxima,
-    total_parcelas_vivero: lote.total_parcelas_vivero || 10,
+    total_parcelas_vivero: lote.total_parcelas_vivero ?? 0,
     hacienda_codigo: lote.hacienda_codigo || selectedHacienda.value,
     parcelas_por_vivero: pMap,
     nombres_por_vivero: nMap
