@@ -577,6 +577,16 @@ class ViveroController extends Controller
     public function getIngenios()
     {
         $ingenios = DB::connection('sivar')->table('remote_pg_ingenios')->get();
+        
+        $lotesCount = DB::table('lotes')
+            ->select('ingenio_codigo', DB::raw('count(*) as total_lotes'))
+            ->groupBy('ingenio_codigo')
+            ->pluck('total_lotes', 'ingenio_codigo');
+
+        foreach ($ingenios as $ing) {
+            $ing->lotes_count = $lotesCount[$ing->cd_ingnio] ?? 0;
+        }
+
         return response()->json($ingenios);
     }
 
@@ -667,6 +677,39 @@ class ViveroController extends Controller
 
         $caracter = DB::table('proyecto_caracteres')->where('id', $newId)->first();
         return response()->json($caracter, 201);
+    }
+
+    public function getNextConsecutivosGlobal(Request $request)
+    {
+        $count = (int) $request->query('count', 1);
+        if ($count < 1) $count = 1;
+
+        // Fetch all used consecutivos across all viveros (including soft-deleted ones)
+        // Ensure we only look at positive integers. Some older values might be strings if schema allows, so we cast to int in PHP
+        $usedIds = Vivero::withTrashed()->pluck('consecutivo_vivero_ingenio')->map(function ($item) {
+            return (int) $item;
+        })->filter(function ($item) {
+            return $item > 0;
+        })->unique()->sort()->values()->toArray();
+
+        $excludeRaw = $request->query('exclude', '');
+        $excludeArray = array_filter(array_map('intval', explode(',', $excludeRaw)));
+        $usedIds = array_merge($usedIds, $excludeArray);
+
+        $suggested = [];
+        $current = 1;
+
+        // Find the first $count gaps
+        while (count($suggested) < $count) {
+            if (!in_array($current, $usedIds)) {
+                $suggested[] = $current;
+            }
+            $current++;
+        }
+
+        return response()->json([
+            'consecutivos' => $suggested
+        ]);
     }
 
     public function getNextCorteConsecutivo(Request $request)

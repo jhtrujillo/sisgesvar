@@ -148,35 +148,76 @@ class LoteController extends Controller
 
     private function syncViverosAndParcelas($lote)
     {
-        $capacidad = $lote->capacidad_maxima;
-        $parcelasPorViveroRequest = request('parcelas_por_vivero'); // Array of [consecutivo => total_parcelas]
-        $nombresPorViveroRequest = request('nombres_por_vivero');  // Array of [consecutivo => nombre]
+        $parcelasPorViveroRequest = request('parcelas_por_vivero', []); // Array of [consecutivo => total_parcelas]
+        $nombresPorViveroRequest = request('nombres_por_vivero', []);  // Array of [consecutivo => nombre]
+        
+        $consecutivos = array_keys($parcelasPorViveroRequest);
+        if (empty($consecutivos)) {
+            // Fallback just in case, though the frontend should always send it
+            $capacidad = $lote->capacidad_maxima;
+            for ($c = 1; $c <= $capacidad; $c++) {
+                $consecutivos[] = $c;
+            }
+        }
+
+        // Validate duplicates in request
+        if (count($consecutivos) !== count(array_unique($consecutivos))) {
+            throw new \Exception("Hay identificadores (IDs) de vivero duplicados en la solicitud.");
+        }
+
+        // Validate global availability
+        $existingOtherLotes = Vivero::withTrashed()
+            ->whereIn('consecutivo_vivero_ingenio', $consecutivos)
+            ->where('lote_id', '!=', $lote->id)
+            ->get();
+
+        if ($existingOtherLotes->isNotEmpty()) {
+            $conflict = $existingOtherLotes->first();
+            throw new \Exception("El ID {$conflict->consecutivo_vivero_ingenio} no está disponible. Ya está asignado en el Ingenio {$conflict->ingenio}, Hacienda {$conflict->hacienda}, Lote {$conflict->suerte}.");
+        }
 
         // Update suerte field for all existing viveros of this lote
-        Vivero::where('lote_id', $lote->id)->update([
+        Vivero::withTrashed()->where('lote_id', $lote->id)->update([
             'suerte' => $lote->nombre_lote
         ]);
 
-        // Get existing viveros in this lote (including soft-deleted ones to avoid unique constraint issues)
         $existingViveros = Vivero::withTrashed()->where('lote_id', $lote->id)->get();
         $existingNumbers = $existingViveros->pluck('consecutivo_vivero_ingenio')->toArray();
 
-        for ($i = 1; $i <= $capacidad; $i++) {
+        // Delete viveros that were removed in the UI
+        $toDelete = array_diff($existingNumbers, $consecutivos);
+        foreach ($toDelete as $delId) {
+            $vDel = $existingViveros->where('consecutivo_vivero_ingenio', $delId)->first();
+            if ($vDel) {
+                // Check if it has real data
+                if ($vDel->proyecto_id || $vDel->responsable_id || $vDel->caracter_id || $vDel->ambiente) {
+                    throw new \Exception("No se puede eliminar o cambiar el ID del Vivero {$delId} porque ya tiene datos registrados.");
+                }
+                $hasVarieties = \Illuminate\Support\Facades\DB::connection('sivar')
+                    ->table('vivero_parcelas')->where('vivero_id', $vDel->id)->whereNotNull('variedad_id')->exists();
+                if ($hasVarieties) {
+                    throw new \Exception("No se puede eliminar o cambiar el ID del Vivero {$delId} porque tiene variedades registradas en sus parcelas.");
+                }
+                $vDel->forceDelete();
+            }
+        }
+
+        foreach ($consecutivos as $i) {
             // Determine how many parcelas this specific Vivero should have
             $totalParcelas = 10;
-            if ($parcelasPorViveroRequest && isset($parcelasPorViveroRequest[$i])) {
+            if (isset($parcelasPorViveroRequest[$i])) {
                 $totalParcelas = intval($parcelasPorViveroRequest[$i]);
             } else {
                 $existingVivero = $existingViveros->where('consecutivo_vivero_ingenio', $i)->first();
                 if ($existingVivero && $existingVivero->total_parcelas) {
                     $totalParcelas = $existingVivero->total_parcelas;
                 } else {
-                    $totalParcelas = $lote->total_parcelas_vivero ?: 10;
+                    $totalParcelas = $lote->total_parcelas_vivero ?? 0;
                 }
             }
 
             $customNombre = null;
-            if ($nombresPorViveroRequest && isset($nombresPorViveroRequest[$i])) {
+            if (isset($nombresPorViveroRequest[$i])) {
                 $trimmed = trim($nombresPorViveroRequest[$i]);
                 if ($trimmed !== '') {
                     $customNombre = $trimmed;
@@ -185,7 +226,7 @@ class LoteController extends Controller
             $defaultNombre = "Vivero {$i}";
 
             if (!in_array($i, $existingNumbers)) {
-                // Generate unique identifier (excluding Lote/Vivero words)
+                // Generate unique identifier
                 $ingenio = $lote->ingenio_codigo ?: '00';
                 $hacienda = $lote->hacienda_codigo ?: '00';
                 $haciendaCleaned = ltrim($hacienda, '0');
@@ -201,7 +242,7 @@ class LoteController extends Controller
                     'hacienda' => $lote->hacienda_codigo,
                     'suerte' => $lote->nombre_lote,
                     'lote_id' => $lote->id,
-                    'fecha_siembra' => now()->format('Y-m-d'),
+                    'fecha_siembra' => request('fecha_siembra', now()->format('Y-m-d')),
                     'consecutivo_vivero_ingenio' => $i,
                     'total_parcelas' => $totalParcelas
                 ]);
@@ -222,7 +263,6 @@ class LoteController extends Controller
                 $vivero = $existingViveros->where('consecutivo_vivero_ingenio', $i)->first();
 
                 if ($vivero) {
-                    // Restore if it was soft-deleted
                     if ($vivero->trashed()) {
                         $vivero->restore();
                     }
@@ -250,7 +290,6 @@ class LoteController extends Controller
                                 ]);
                         }
                     } elseif ($existingParcelCount > $totalParcelas) {
-                        // Validar que ninguna parcela a eliminar tenga variedades registradas
                         $parcelasConDatos = \Illuminate\Support\Facades\DB::connection('sivar')
                             ->table('vivero_parcelas')
                             ->where('vivero_id', $vivero->id)
@@ -271,7 +310,10 @@ class LoteController extends Controller
                             ->delete();
                     }
 
-                    // Update total_parcelas attribute after validation
+                    if (request()->has('fecha_siembra')) {
+                        $updates['fecha_siembra'] = request('fecha_siembra');
+                    }
+
                     $vivero->update($updates);
                 }
             }

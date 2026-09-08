@@ -35,7 +35,9 @@
               class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
             >
               <option value="">Seleccione un ingenio...</option>
-              <option v-for="ing in ingenios" :key="ing.cd_ingnio" :value="ing.cd_ingnio">{{ decodeHTMLEntities(ing.nm_ingnio) }} ({{ ing.cd_ingnio }})</option>
+              <option v-for="ing in ingenios" :key="ing.cd_ingnio" :value="ing.cd_ingnio">
+                {{ decodeHTMLEntities(ing.nm_ingnio) }} ({{ ing.cd_ingnio }}) — {{ ing.lotes_count || 0 }} {{ (ing.lotes_count || 0) === 1 ? 'lote' : 'lotes' }}
+              </option>
             </select>
           </div>
 
@@ -208,15 +210,29 @@
               />
             </div>
 
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Capacidad Máxima (Viveros)</label>
-              <input
-                v-model.number="form.capacidad_maxima"
-                type="number"
-                min="1"
-                required
-                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
-              />
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Capacidad Máxima (Viveros)</label>
+                <input
+                  v-model.number="form.capacidad_maxima"
+                  type="number"
+                  min="1"
+                  required
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+                />
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                  Fecha de Creación/Siembra <span class="normal-case text-[9px] text-slate-400 font-normal tracking-normal">(Día / Mes / Año)</span>
+                </label>
+                <input
+                  v-model="form.fecha_siembra"
+                  type="date"
+                  required
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+                />
+              </div>
             </div>
 
             <!-- Individual Vivero Parcel capacity list -->
@@ -224,29 +240,32 @@
               <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Configuración de Viveros</label>
               <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
                 <div
-                  v-for="i in form.capacidad_maxima"
-                  :key="'vivero_p_' + i"
+                  v-for="(vConfig, index) in viverosConfig"
+                  :key="index"
                   class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 flex items-center gap-3"
                 >
-                  <span class="text-[10px] font-black text-slate-400 uppercase w-12 shrink-0">Vivero {{ i }}</span>
+                  <span class="text-[10px] font-black text-slate-400 uppercase w-20 shrink-0">Vivero ID:</span>
                   <input
-                    v-model="form.nombres_por_vivero[i]"
-                    type="text"
-                    :placeholder="`Nombre (ej. V-${i})`"
-                    class="flex-1 bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+                    v-model.number="vConfig.id"
+                    type="number"
+                    min="1"
+                    required
+                    title="Consecutivo Global del Vivero"
+                    placeholder="Ej. 5"
+                    class="flex-1 bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
                   />
                   <input
-                    v-model.number="form.parcelas_por_vivero[i]"
+                    v-model.number="vConfig.parcelas"
                     type="number"
                     min="1"
                     required
                     title="Parcelas"
-                    class="w-16 shrink-0 bg-white border border-slate-200 text-slate-800 text-xs font-black text-center rounded-lg py-1.5 focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+                    class="w-20 shrink-0 bg-white border border-slate-200 text-slate-800 text-xs font-black text-center rounded-lg py-1.5 focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
                   />
                 </div>
               </div>
               <p class="text-[10px] text-slate-400">
-                <strong>Nombre:</strong> identificador o consecutivo del vivero (opcional). <strong>Número:</strong> total de parcelas.
+                <strong>Vivero ID:</strong> Consecutivo global (sugerido automáticamente). <strong>Número:</strong> total de parcelas.
               </p>
             </div>
           </div>
@@ -265,6 +284,8 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
 import viverosServices from "@/services/viveros.services";
+import api from "@/services/api";
+import urls from "@/services/urls";
 import { useToast } from "vue-toastification";
 
 const toast = useToast();
@@ -285,35 +306,42 @@ const form = ref({
   capacidad_maxima: 5,
   total_parcelas_vivero: 0,
   hacienda_codigo: "",
+  fecha_siembra: new Date().toISOString().split('T')[0],
   parcelas_por_vivero: {} as Record<number, number>,
   nombres_por_vivero: {} as Record<number, string>
 });
 
-const syncParcelasPorVivero = () => {
+interface ViveroConfig {
+  id: number;
+  parcelas: number;
+  nombre: string;
+}
+const viverosConfig = ref<ViveroConfig[]>([]);
+
+const syncParcelasPorVivero = async () => {
   const val = parseInt(form.value.capacidad_maxima as any);
   if (isNaN(val) || val < 1) return;
-  if (!form.value.parcelas_por_vivero) {
-    form.value.parcelas_por_vivero = {};
-  }
-  if (!form.value.nombres_por_vivero) {
-    form.value.nombres_por_vivero = {};
-  }
-  for (let i = 1; i <= val; i++) {
-    if (form.value.parcelas_por_vivero[i] === undefined || form.value.parcelas_por_vivero[i] === null) {
-      form.value.parcelas_por_vivero[i] = form.value.total_parcelas_vivero ?? 0;
+  
+  const currentCount = viverosConfig.value.length;
+  if (val > currentCount) {
+    const diff = val - currentCount;
+    try {
+      const excludeIds = viverosConfig.value.map(v => v.id).join(',');
+      const res = await api.get(`${urls.API_VIVEROS}/next-consecutivos`, { count: diff, exclude: excludeIds });
+      const gaps = res.data?.consecutivos || [];
+      gaps.forEach((id: number) => {
+        viverosConfig.value.push({
+          id: id,
+          parcelas: form.value.total_parcelas_vivero ?? 0,
+          nombre: ""
+        });
+      });
+    } catch(e) {
+      console.error("Error fetching next ids:", e);
     }
-    // Keep existing name if already set, otherwise leave empty (user fills it)
-    if (form.value.nombres_por_vivero[i] === undefined) {
-      form.value.nombres_por_vivero[i] = "";
-    }
+  } else if (val < currentCount) {
+    viverosConfig.value.splice(val);
   }
-  Object.keys(form.value.parcelas_por_vivero).forEach((key) => {
-    const k = parseInt(key);
-    if (k > val) {
-      delete form.value.parcelas_por_vivero[k];
-      delete form.value.nombres_por_vivero[k];
-    }
-  });
 };
 
 watch(
@@ -390,31 +418,41 @@ const loadLotes = async () => {
   }
 };
 
-const openAddModal = () => {
+const openAddModal = async () => {
   editingLoteId.value = null;
   form.value = {
     nombre_lote: "",
     capacidad_maxima: 5,
     total_parcelas_vivero: 0,
     hacienda_codigo: selectedHacienda.value,
+    fecha_siembra: new Date().toISOString().split('T')[0],
     parcelas_por_vivero: {},
     nombres_por_vivero: {}
   };
-  syncParcelasPorVivero();
+  viverosConfig.value = [];
+  await syncParcelasPorVivero();
   isModalOpen.value = true;
 };
 
-const openEditModal = (lote: any) => {
+const openEditModal = async (lote: any) => {
   editingLoteId.value = lote.id;
-  const pMap: Record<number, number> = {};
-  const nMap: Record<number, string> = {};
+  viverosConfig.value = [];
+  
+  let f_siembra = new Date().toISOString().split('T')[0];
+
   if (lote.viveros && lote.viveros.length > 0) {
+    if (lote.viveros[0].fecha_siembra) {
+      f_siembra = lote.viveros[0].fecha_siembra.split(' ')[0].split('T')[0];
+    }
     lote.viveros.forEach((v: any) => {
       const pos = v.consecutivo_vivero_ingenio;
-      pMap[pos] = v.total_parcelas ?? 0;
-      // Load existing custom name, but skip default auto-generated names
       const defaultName = `Vivero ${pos}`;
-      nMap[pos] = v.nombre && v.nombre !== defaultName && v.nombre !== v.identificador_unico ? v.nombre : "";
+      const name = v.nombre && v.nombre !== defaultName && v.nombre !== v.identificador_unico ? v.nombre : "";
+      viverosConfig.value.push({
+        id: pos,
+        parcelas: v.total_parcelas ?? 0,
+        nombre: name
+      });
     });
   }
   form.value = {
@@ -422,10 +460,11 @@ const openEditModal = (lote: any) => {
     capacidad_maxima: lote.capacidad_maxima,
     total_parcelas_vivero: lote.total_parcelas_vivero ?? 0,
     hacienda_codigo: lote.hacienda_codigo || selectedHacienda.value,
-    parcelas_por_vivero: pMap,
-    nombres_por_vivero: nMap
+    fecha_siembra: f_siembra,
+    parcelas_por_vivero: {},
+    nombres_por_vivero: {}
   };
-  syncParcelasPorVivero();
+  await syncParcelasPorVivero();
   isModalOpen.value = true;
 };
 
@@ -435,15 +474,21 @@ const closeModal = () => {
 
 const submitForm = async () => {
   saving.value = true;
+  const parcelas_por_vivero: Record<number, number> = {};
+  const nombres_por_vivero: Record<number, string> = {};
+  
+  for(const vc of viverosConfig.value) {
+    parcelas_por_vivero[vc.id] = vc.parcelas;
+    nombres_por_vivero[vc.id] = vc.nombre;
+  }
+  const payload = { ...form.value, parcelas_por_vivero, nombres_por_vivero, ingenio_codigo: selectedIngenio.value };
+
   try {
     if (editingLoteId.value) {
-      await viverosServices.updateLote(editingLoteId.value, form.value);
+      await viverosServices.updateLote(editingLoteId.value, payload);
       toast.success("Lote actualizado correctamente");
     } else {
-      await viverosServices.createLote({
-        ...form.value,
-        ingenio_codigo: selectedIngenio.value
-      });
+      await viverosServices.createLote(payload);
       toast.success("Lote creado correctamente");
     }
     isModalOpen.value = false;

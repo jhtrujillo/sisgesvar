@@ -126,6 +126,7 @@ Route::group([
     Route::get('siembra-campo/viveros', [\App\Http\Controllers\ViveroController::class, 'index']);
     Route::post('siembra-campo/viveros', [\App\Http\Controllers\ViveroController::class, 'store']);
     Route::get('siembra-campo/viveros/next-corte-consecutivo', [\App\Http\Controllers\ViveroController::class, 'getNextCorteConsecutivo']);
+    Route::get('siembra-campo/viveros/next-consecutivos', [\App\Http\Controllers\ViveroController::class, 'getNextConsecutivosGlobal']);
     Route::get('siembra-campo/viveros/{id}/estructura', [\App\Http\Controllers\ViveroController::class, 'getEstructura']);
     Route::get('siembra-campo/viveros/{id}', [\App\Http\Controllers\ViveroController::class, 'show']);
     Route::put('siembra-campo/viveros/{id}', [\App\Http\Controllers\ViveroController::class, 'update']);
