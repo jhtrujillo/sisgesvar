@@ -31,7 +31,7 @@ class ViveroParcelaController extends Controller
 
         $validator = Validator::make($data, [
             'numero_parcela' => 'required|numeric',
-            'variedad_id' => 'required',
+            'variedad_id' => 'nullable',
             'numero_parcela_origen' => 'nullable|numeric',
             'id_plot_origen' => 'nullable',
             'caracter_id' => 'nullable|numeric',
@@ -172,7 +172,7 @@ class ViveroParcelaController extends Controller
 
         $validator = Validator::make($data, [
             'numero_parcela' => 'required|numeric',
-            'variedad_id' => 'required',
+            'variedad_id' => 'nullable',
             'numero_parcela_origen' => 'nullable|numeric',
             'id_plot_origen' => 'nullable',
             'caracter_id' => 'nullable|numeric',
