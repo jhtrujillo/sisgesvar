@@ -773,6 +773,7 @@
                 <input
                   type="text"
                   v-model="searchVariedad"
+                  @input="parcelaForm.variedad_id = ''"
                   @focus="
                     showVariedades = true;
                     loadVariedadesIfNeeded();
@@ -967,6 +968,7 @@
                         <input
                           type="text"
                           v-model="editingPlotForm.variedad_name"
+                          @input="editingPlotForm.variedad_id = ''"
                           @focus="
                             showEditingVariedades = true;
                             loadVariedadesIfNeeded();
@@ -2128,8 +2130,7 @@ const saveEditingPlot = async () => {
         editingPlotForm.value.variedad_id = varietyName;
       }
     } else {
-      toast.error("Debe seleccionar o escribir una variedad");
-      return;
+      editingPlotForm.value.variedad_id = "";
     }
   }
   isSubmittingEditingPlot.value = true;
@@ -2204,8 +2205,7 @@ const submitParcela = async () => {
         parcelaForm.value.variedad_id = varietyName;
       }
     } else {
-      toast.warning("Debe seleccionar o escribir una variedad");
-      return;
+      parcelaForm.value.variedad_id = "";
     }
   }
   isSubmittingParcela.value = true;

@@ -458,14 +458,24 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
     {
         try {
             $request->validate([
-                'nm_vrdad' => 'required|string|unique:maestro_V_VIC_BG,nm_vrdad'
+                'nm_vrdad' => 'required|string'
             ]);
 
+            $name = strtoupper(trim($request->nm_vrdad));
+            
+            $existing = Variety::where('nm_vrdad', $name)->first();
+            if ($existing) {
+                return response()->json($existing, 200);
+            }
+
             $maxId = Variety::max('id_nm_vrdad') ?? 0;
-            $variety = Variety::create([
+            // Since id_nm_vrdad is not in $fillable, we insert directly using query builder or insert()
+            DB::connection('sivar')->table('maestro_V_VIC_BG')->insert([
                 'id_nm_vrdad' => $maxId + 1,
-                'nm_vrdad' => strtoupper(trim($request->nm_vrdad))
+                'nm_vrdad' => $name
             ]);
+
+            $variety = Variety::where('id_nm_vrdad', $maxId + 1)->first();
 
             return response()->json($variety, 201);
         } catch (Exception $ex) {
