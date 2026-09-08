@@ -7,7 +7,7 @@ export async function getVarietysList() {
 }
 
 export async function createVariety(nm_vrdad: string) {
-  return await api.post('/api/varietys', { nm_vrdad }, {}, true);
+  return await api.post(urls.API_URL + 'varietys', { nm_vrdad }, {}, true);
 }
 
 const varietysService = {
