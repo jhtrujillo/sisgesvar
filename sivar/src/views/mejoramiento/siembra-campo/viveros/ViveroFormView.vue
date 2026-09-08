@@ -395,7 +395,7 @@
                   >
                     <option value="">Seleccione un Lote</option>
                     <option v-for="lote in lotes" :key="lote.id" :value="lote.id">
-                      {{ lote.nombre_lote }} (Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
+                      {{ lote.nombre_lote }} (Año: {{ lote.viveros && lote.viveros.length ? new Date(lote.viveros[0].fecha_siembra).getFullYear() : 'N/A' }} | Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
                     </option>
                   </select>
                   <button

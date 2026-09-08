@@ -12,21 +12,30 @@ class LoteController extends Controller
 {
     public function index(Request $request)
     {
-        $year = $request->query('year', date('Y'));
+        $year = $request->query('year');
 
         $query = Lote::query()
-            ->whereHas('viveros', function ($q) use ($year) {
-                $q->whereYear('fecha_siembra', $year);
+            ->when($year, function ($q) use ($year) {
+                $q->whereHas('viveros', function ($q) use ($year) {
+                    $q->whereYear('fecha_siembra', $year);
+                })
+                ->with(['viveros' => function ($q) use ($year) {
+                    $q->whereYear('fecha_siembra', $year);
+                }])
+                ->withCount([
+                    'viveros as viveros_activos_count' => function ($q) use ($year) {
+                        $q->whereNotNull('proyecto_id')
+                          ->whereYear('fecha_siembra', $year);
+                    }
+                ]);
+            }, function ($q) {
+                $q->with('viveros')
+                  ->withCount([
+                      'viveros as viveros_activos_count' => function ($q) {
+                          $q->whereNotNull('proyecto_id');
+                      }
+                  ]);
             })
-            ->with(['viveros' => function ($q) use ($year) {
-                $q->whereYear('fecha_siembra', $year);
-            }])
-            ->withCount([
-                'viveros as viveros_activos_count' => function ($q) use ($year) {
-                    $q->whereNotNull('proyecto_id')
-                      ->whereYear('fecha_siembra', $year);
-                }
-            ])
             ->orderBy('nombre_lote', 'asc');
 
         if ($request->has('ingenio_codigo') && $request->ingenio_codigo) {
