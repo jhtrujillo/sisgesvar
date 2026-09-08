@@ -56,25 +56,20 @@
           <thead class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
             <tr>
               <th class="py-3 px-4 text-center w-12"></th>
-              <th class="py-3 px-6 text-left">ID Vivero</th>
-              <th class="py-3 px-6 text-left">Nombre de Vivero</th>
-              <th class="py-3 px-6 text-left">Ingenio</th>
-              <th class="py-3 px-6 text-left">Hacienda</th>
-              <th class="py-3 px-6 text-left">Lote</th>
-              <th class="py-3 px-6 text-left">N° Vivero</th>
-              <th class="py-3 px-6 text-left">Id Vivero Origen</th>
-              <th class="py-3 px-6 text-left">Proyecto</th>
-              <th class="py-3 px-6 text-left">Fecha Siembra</th>
-              <th class="py-3 px-6 text-center">Estado</th>
-              <th class="py-3 px-6 text-center">Acciones</th>
+              <th class="py-3 px-4 text-left">Vivero</th>
+              <th class="py-3 px-4 text-left">Ubicación</th>
+              <th class="py-3 px-4 text-left">Origen</th>
+              <th class="py-3 px-4 text-left">Proyecto y Fecha</th>
+              <th class="py-3 px-4 text-center">Estado</th>
+              <th class="py-3 px-4 text-center">Acciones</th>
             </tr>
           </thead>
           <tbody class="text-gray-600 text-sm font-light">
             <tr v-if="loading" class="border-b border-gray-200">
-              <td colspan="10" class="py-3 px-6 text-center">Cargando viveros...</td>
+              <td colspan="7" class="py-3 px-6 text-center">Cargando viveros...</td>
             </tr>
             <tr v-else-if="filteredViveros.length === 0" class="border-b border-gray-200">
-              <td colspan="10" class="py-3 px-6 text-center">No se encontraron resultados.</td>
+              <td colspan="7" class="py-3 px-6 text-center">No se encontraron viveros que coincidan con la búsqueda.</td>
             </tr>
             <template v-else>
               <template v-for="vivero in paginatedViveros" :key="vivero.id">
@@ -97,45 +92,42 @@
                       </svg>
                     </button>
                   </td>
-                  <td class="py-3 px-6 text-left whitespace-nowrap">
-                    <div class="font-bold text-slate-800">{{ vivero.identificador_unico }}</div>
+                  <td class="py-3 px-4 text-left">
+                    <div class="font-bold text-slate-800 whitespace-nowrap">{{ vivero.identificador_unico }}</div>
+                    <div class="text-[10px] text-slate-400 mt-0.5 truncate max-w-[150px]" :title="vivero.nombre">{{ vivero.nombre }}</div>
                   </td>
-                  <td class="py-3 px-6 text-left whitespace-nowrap">
-                    {{ vivero.nombre }}
+                  <td class="py-3 px-4 text-left">
+                    <div class="text-xs font-semibold text-slate-700 whitespace-nowrap">{{ vivero.ingenio }} - {{ vivero.hacienda || "N/A" }}</div>
+                    <div class="mt-1 flex items-center gap-1.5 whitespace-nowrap">
+                      <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                        Lote: {{ vivero.lote?.nombre_lote || "N/A" }}
+                      </span>
+                      <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                        N°: {{ vivero.consecutivo_vivero_ingenio || "N/A" }}
+                      </span>
+                    </div>
                   </td>
-                  <td class="py-3 px-6 text-left whitespace-nowrap">{{ vivero.ingenio }}</td>
-                  <td class="py-3 px-6 text-left whitespace-nowrap font-medium text-slate-700">
-                    {{ vivero.hacienda || "N/A" }}
-                  </td>
-                  <td class="py-3 px-6 text-left whitespace-nowrap">
-                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                      {{ vivero.lote?.nombre_lote || "N/A" }}
-                    </span>
-                  </td>
-                  <td class="py-3 px-6 text-left whitespace-nowrap font-bold font-mono text-slate-700">
-                    {{ vivero.consecutivo_vivero_ingenio || "N/A" }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900 font-mono" :title="vivero.origen_parcela || 'N/A'">
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="text-xs text-gray-900 font-mono" :title="vivero.origen_parcela || 'N/A'">
                       {{ vivero.id_vivero_origen_formateado || "N/A" }}
                     </div>
                   </td>
-
-                  <td class="px-6 py-4">
-                    <div class="text-sm text-gray-900" v-if="vivero.proyecto_id">
-                      <span :title="vivero.proyecto?.nm_prycto || 'N/A'">{{ vivero.proyecto?.nm_prycto || "N/A" }}</span>
+                  <td class="py-3 px-4">
+                    <div class="text-xs font-semibold text-gray-900 truncate max-w-[150px]" v-if="vivero.proyecto_id" :title="vivero.proyecto?.nm_prycto">
+                      {{ vivero.proyecto?.nm_prycto || "N/A" }}
                     </div>
-                    <div class="text-sm text-gray-900" v-else>
+                    <div class="text-xs" v-else>
                       <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 uppercase"
                         >Sin Sembrar / Vacío</span
                       >
                     </div>
+                    <div class="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
+                      <svg v-if="vivero.proyecto_id" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      <span v-if="vivero.proyecto_id">{{ formatDate(vivero.fecha_siembra) }}</span>
+                      <span v-else class="text-slate-400 font-mono italic">N/A</span>
+                    </div>
                   </td>
-                  <td class="py-3 px-6 text-left">
-                    <span v-if="vivero.proyecto_id">{{ formatDate(vivero.fecha_siembra) }}</span>
-                    <span v-else class="text-slate-400 font-mono italic">N/A</span>
-                  </td>
-                  <td class="py-3 px-6 text-center whitespace-nowrap">
+                  <td class="py-3 px-4 text-center whitespace-nowrap">
                     <span
                       v-if="vivero.estado === 'Cosechado'"
                       class="px-2 py-1 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 uppercase tracking-wider"
@@ -155,7 +147,7 @@
                       Pendiente
                     </span>
                   </td>
-                  <td class="py-3 px-6 text-center">
+                  <td class="py-3 px-4 text-center">
                     <div class="flex item-center justify-center">
                       <button
                         v-if="vivero.proyecto_id"
@@ -234,7 +226,7 @@
                 </tr>
                 <!-- Detalle de Parcelas Colapsable -->
                 <tr v-if="expandedViveros[vivero.id]">
-                  <td colspan="10" class="bg-slate-50 border-b border-gray-200 p-4">
+                  <td colspan="7" class="bg-slate-50 border-b border-gray-200 p-4">
                     <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
                       <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cenicana" fill="none" viewBox="0 0 24 24" stroke="currentColor">
