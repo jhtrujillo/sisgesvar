@@ -2089,7 +2089,7 @@ const startEditingPlot = (p: any) => {
     id: p.id,
     numero_parcela: p.numero_parcela,
     variedad_id: p.variedad_id || "",
-    variedad_name: p.variedad?.nm_vrdad || "",
+    variedad_name: p.variedad?.nm_vrdad || p.variedad_id || "",
     numero_parcela_origen: p.numero_parcela_origen || "",
     id_plot_origen: p.id_plot_origen || "",
     caracter_id: p.caracter_id || ""
