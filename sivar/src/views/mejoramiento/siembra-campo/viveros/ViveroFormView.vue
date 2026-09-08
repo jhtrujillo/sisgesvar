@@ -927,18 +927,17 @@
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-slate-100 text-slate-600 uppercase text-xs">
-                <th class="px-4 py-3 border-b border-slate-200">Plot</th>
+                <th class="px-4 py-3 border-b border-slate-200">Parcela</th>
                 <th class="px-4 py-3 border-b border-slate-200">Variedad</th>
                 <th class="px-4 py-3 border-b border-slate-200">Pedigree</th>
                 <th class="px-4 py-3 border-b border-slate-200">Carácter</th>
-                <th class="px-4 py-3 border-b border-slate-200">Parcela</th>
                 <th class="px-4 py-3 border-b border-slate-200">ID Plot</th>
                 <th class="px-4 py-3 border-b border-slate-200 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="loadingParcelas">
-                <td colspan="7" class="text-center py-8 text-slate-500">
+                <td colspan="6" class="text-center py-8 text-slate-500">
                   <div class="flex items-center justify-center space-x-2">
                     <div class="w-4 h-4 border-2 border-cenicana border-t-transparent rounded-full animate-spin"></div>
                     <span>Cargando parcelas...</span>
@@ -946,10 +945,10 @@
                 </td>
               </tr>
               <tr v-else-if="parcelas.length === 0">
-                <td colspan="7" class="text-center py-8 text-slate-500 bg-slate-50">No hay parcelas registradas en este vivero.</td>
+                <td colspan="6" class="text-center py-8 text-slate-500 bg-slate-50">No hay parcelas registradas en este vivero.</td>
               </tr>
               <tr v-else-if="filteredParcelas.length === 0">
-                <td colspan="7" class="text-center py-8 text-slate-500 bg-slate-50">No se encontraron parcelas que coincidan con la búsqueda.</td>
+                <td colspan="6" class="text-center py-8 text-slate-500 bg-slate-50">No se encontraron parcelas que coincidan con la búsqueda.</td>
               </tr>
               <template v-else>
                 <tr
@@ -1059,7 +1058,6 @@
                       }}</span>
                       <span v-else>N/A</span>
                     </td>
-                    <td class="px-4 py-3 text-slate-600 font-bold">{{ p.numero_parcela_origen || "N/A" }}</td>
                     <td class="px-4 py-3 text-slate-600 font-mono text-xs">{{ p.id_plot_origen || "N/A" }}</td>
                     <td class="px-4 py-3 text-center">
                       <div class="flex items-center justify-center gap-2">

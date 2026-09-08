@@ -250,11 +250,10 @@
                         <table class="w-full text-left border-collapse text-xs">
                           <thead>
                             <tr class="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold">
-                              <th class="px-4 py-2.5 border-b border-slate-200">Plot</th>
+                              <th class="px-4 py-2.5 border-b border-slate-200">Parcela</th>
                               <th class="px-4 py-2.5 border-b border-slate-200">Variedad</th>
                               <th class="px-4 py-2.5 border-b border-slate-200">Pedigree</th>
                               <th class="px-4 py-2.5 border-b border-slate-200">Carácter</th>
-                              <th class="px-4 py-2.5 border-b border-slate-200">Parcela Orig.</th>
                               <th class="px-4 py-2.5 border-b border-slate-200">ID Plot Orig.</th>
                             </tr>
                           </thead>
@@ -274,7 +273,6 @@
                                 }}</span>
                                 <span v-else>N/A</span>
                               </td>
-                              <td class="px-4 py-2.5 text-slate-600 font-bold">{{ p.numero_parcela_origen || "N/A" }}</td>
                               <td class="px-4 py-2.5 text-slate-600 font-mono">{{ p.id_plot_origen || "N/A" }}</td>
                             </tr>
                           </tbody>
