@@ -12,11 +12,19 @@ class LoteController extends Controller
 {
     public function index(Request $request)
     {
+        $year = $request->query('year', date('Y'));
+
         $query = Lote::query()
-            ->with('viveros')
+            ->whereHas('viveros', function ($q) use ($year) {
+                $q->whereYear('fecha_siembra', $year);
+            })
+            ->with(['viveros' => function ($q) use ($year) {
+                $q->whereYear('fecha_siembra', $year);
+            }])
             ->withCount([
-                'viveros as viveros_activos_count' => function ($q) {
-                    $q->whereNotNull('proyecto_id');
+                'viveros as viveros_activos_count' => function ($q) use ($year) {
+                    $q->whereNotNull('proyecto_id')
+                      ->whereYear('fecha_siembra', $year);
                 }
             ])
             ->orderBy('nombre_lote', 'asc');
@@ -181,7 +189,13 @@ class LoteController extends Controller
             'suerte' => $lote->nombre_lote
         ]);
 
-        $existingViveros = Vivero::withTrashed()->where('lote_id', $lote->id)->get();
+        $fechaSiembraRequest = request('fecha_siembra', now()->format('Y-m-d'));
+        $year = date('Y', strtotime($fechaSiembraRequest));
+
+        $existingViveros = Vivero::withTrashed()
+            ->where('lote_id', $lote->id)
+            ->whereYear('fecha_siembra', $year)
+            ->get();
         $existingNumbers = $existingViveros->pluck('consecutivo_vivero_ingenio')->toArray();
 
         // Delete viveros that were removed in the UI
@@ -232,7 +246,7 @@ class LoteController extends Controller
                 $haciendaCleaned = ltrim($hacienda, '0');
                 $suerte = $lote->nombre_lote ?: '00';
                 $suerteCleaned = trim(preg_replace('/\b(lote|vivero)\b/i', '', $suerte));
-                $anio = date('Y');
+                $anio = $year;
                 $identificador = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $haciendaCleaned, $suerteCleaned, $i);
 
                 $vivero = Vivero::create([

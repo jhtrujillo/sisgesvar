@@ -33,6 +33,7 @@ class Vivero extends Model
         'origen_parcela',
         'origen_lote_id',
         'origen_vivero_id',
+        'estado',
         'lote_id',
         'consecutivo_vivero_ingenio',
         'total_parcelas'

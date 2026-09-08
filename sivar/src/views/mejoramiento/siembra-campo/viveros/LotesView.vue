@@ -54,6 +54,19 @@
               </option>
             </select>
           </div>
+
+          <div class="w-full sm:max-w-xs" v-if="selectedHacienda">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Seleccionar Año</label>
+            <select
+              v-model="selectedYear"
+              @change="loadLotes"
+              class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+            >
+              <option v-for="yr in availableYears" :key="yr" :value="yr">
+                {{ yr }}
+              </option>
+            </select>
+          </div>
         </div>
 
         <BaseButton v-if="selectedIngenio && selectedHacienda" variant="primary" size="sm" @click="openAddModal" class="self-end md:self-auto">
@@ -295,6 +308,9 @@ const haciendas = ref<any[]>([]);
 const lotes = ref<any[]>([]);
 const selectedIngenio = ref("");
 const selectedHacienda = ref("");
+const currentYear = new Date().getFullYear();
+const selectedYear = ref(currentYear.toString());
+const availableYears = ref(Array.from({length: 11}, (_, i) => currentYear - 2 + i).map(String)); // -2 to +8 years
 const loading = ref(false);
 const saving = ref(false);
 
@@ -398,6 +414,16 @@ const loadHaciendas = async () => {
   }
 };
 
+const isLoteLockedByPast = (lote: any) => {
+  if (!lote.viveros) return false;
+  return lote.viveros.some((v: any) => {
+    if (v.estado === 'Cosechado') return false;
+    if (!v.fecha_siembra) return false;
+    const vYear = v.fecha_siembra.split('-')[0];
+    return vYear !== selectedYear.value;
+  });
+};
+
 const loadLotes = async () => {
   if (!selectedIngenio.value || !selectedHacienda.value) {
     lotes.value = [];
@@ -407,7 +433,8 @@ const loadLotes = async () => {
   try {
     const res = await viverosServices.getLotes({
       ingenio_codigo: selectedIngenio.value,
-      hacienda_codigo: selectedHacienda.value
+      hacienda_codigo: selectedHacienda.value,
+      year: selectedYear.value
     });
     lotes.value = res.data;
   } catch (error) {
@@ -425,7 +452,9 @@ const openAddModal = async () => {
     capacidad_maxima: 5,
     total_parcelas_vivero: 0,
     hacienda_codigo: selectedHacienda.value,
-    fecha_siembra: new Date().toISOString().split('T')[0],
+    fecha_siembra: selectedYear.value === new Date().getFullYear().toString() 
+      ? new Date().toISOString().split('T')[0] 
+      : `${selectedYear.value}-01-01`,
     parcelas_por_vivero: {},
     nombres_por_vivero: {}
   };
@@ -438,7 +467,9 @@ const openEditModal = async (lote: any) => {
   editingLoteId.value = lote.id;
   viverosConfig.value = [];
   
-  let f_siembra = new Date().toISOString().split('T')[0];
+  let f_siembra = selectedYear.value === new Date().getFullYear().toString() 
+    ? new Date().toISOString().split('T')[0] 
+    : `${selectedYear.value}-01-01`;
 
   if (lote.viveros && lote.viveros.length > 0) {
     if (lote.viveros[0].fecha_siembra) {

@@ -65,6 +65,7 @@
               <th class="py-3 px-6 text-left">Id Vivero Origen</th>
               <th class="py-3 px-6 text-left">Proyecto</th>
               <th class="py-3 px-6 text-left">Fecha Siembra</th>
+              <th class="py-3 px-6 text-center">Estado</th>
               <th class="py-3 px-6 text-center">Acciones</th>
             </tr>
           </thead>
@@ -134,6 +135,26 @@
                     <span v-if="vivero.proyecto_id">{{ formatDate(vivero.fecha_siembra) }}</span>
                     <span v-else class="text-slate-400 font-mono italic">N/A</span>
                   </td>
+                  <td class="py-3 px-6 text-center whitespace-nowrap">
+                    <span
+                      v-if="vivero.estado === 'Cosechado'"
+                      class="px-2 py-1 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 uppercase tracking-wider"
+                    >
+                      Cosechado
+                    </span>
+                    <span
+                      v-else-if="vivero.proyecto_id"
+                      class="px-2 py-1 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200 uppercase tracking-wider"
+                    >
+                      Activo
+                    </span>
+                    <span
+                      v-else
+                      class="px-2 py-1 rounded text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200 uppercase tracking-wider"
+                    >
+                      Pendiente
+                    </span>
+                  </td>
                   <td class="py-3 px-6 text-center">
                     <div class="flex item-center justify-center">
                       <button
@@ -159,6 +180,16 @@
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </button>
+                      <button
+                        v-if="vivero.proyecto_id && vivero.estado !== 'Cosechado'"
+                        @click="confirmarCosecha(vivero)"
+                        class="w-4 mr-2 transform hover:text-amber-600 hover:scale-110 cursor-pointer text-slate-400"
+                        title="Marcar como Cosechado (Finalizar Ciclo)"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
                       </button>
                       <button
@@ -739,6 +770,19 @@ const closeHistorialModal = () => {
   isHistorialModalOpen.value = false;
   viveroSeleccionado.value = null;
   historial.value = [];
+};
+
+const confirmarCosecha = async (vivero: any) => {
+  if (confirm(`¿Está seguro de que desea marcar el vivero ${vivero.identificador_unico} como COSECHADO?\n\nEsto finalizará su ciclo y liberará su ID (${vivero.consecutivo_vivero_ingenio}) para que pueda ser reutilizado.`)) {
+    try {
+      await api.post(`/siembra-campo/viveros/${vivero.id}/marcar-cosechado`, {});
+      toast.success("Vivero marcado como cosechado correctamente.");
+      await loadViveros();
+    } catch (error) {
+      console.error("Error marcando como cosechado:", error);
+      toast.error("Error al marcar el vivero como cosechado.");
+    }
+  }
 };
 
 onMounted(() => {

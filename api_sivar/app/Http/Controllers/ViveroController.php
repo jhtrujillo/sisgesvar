@@ -684,13 +684,18 @@ class ViveroController extends Controller
         $count = (int) $request->query('count', 1);
         if ($count < 1) $count = 1;
 
-        // Fetch all used consecutivos across all viveros (including soft-deleted ones)
-        // Ensure we only look at positive integers. Some older values might be strings if schema allows, so we cast to int in PHP
-        $usedIds = Vivero::withTrashed()->pluck('consecutivo_vivero_ingenio')->map(function ($item) {
-            return (int) $item;
-        })->filter(function ($item) {
-            return $item > 0;
-        })->unique()->sort()->values()->toArray();
+        // Fetch all used consecutivos across active viveros
+        $usedIds = Vivero::withTrashed()
+            ->where(function($query) {
+                $query->where('estado', '!=', 'Cosechado')
+                      ->orWhereNull('estado');
+            })
+            ->pluck('consecutivo_vivero_ingenio')
+            ->map(function ($item) {
+                return (int) $item;
+            })->filter(function ($item) {
+                return $item > 0;
+            })->unique()->sort()->values()->toArray();
 
         $excludeRaw = $request->query('exclude', '');
         $excludeArray = array_filter(array_map('intval', explode(',', $excludeRaw)));
@@ -766,5 +771,14 @@ class ViveroController extends Controller
 
         $estructura = $this->viveroService->getEstructura($rootVivero->id);
         return response()->json($estructura);
+    }
+
+    public function marcarComoCosechado(Request $request, $id)
+    {
+        $vivero = Vivero::findOrFail($id);
+        $vivero->update([
+            'estado' => 'Cosechado'
+        ]);
+        return response()->json(['message' => 'Vivero marcado como cosechado exitosamente.', 'vivero' => $vivero]);
     }
 }

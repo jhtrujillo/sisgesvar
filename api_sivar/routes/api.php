@@ -133,6 +133,7 @@ Route::group([
     Route::delete('siembra-campo/viveros/{id}', [\App\Http\Controllers\ViveroController::class, 'destroy']);
 
     Route::post('siembra-campo/viveros/{id}/cosechar', [\App\Http\Controllers\ViveroController::class, 'registrarCosecha']);
+    Route::post('siembra-campo/viveros/{id}/marcar-cosechado', [\App\Http\Controllers\ViveroController::class, 'marcarComoCosechado']);
     Route::get('siembra-campo/viveros/{id}/cosechas', [\App\Http\Controllers\ViveroController::class, 'getHistorialCosechas']);
     Route::post('siembra-campo/viveros/{id}/trasladar-lote', [\App\Http\Controllers\ViveroController::class, 'trasladarLote']);
 
