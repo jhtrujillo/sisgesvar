@@ -108,8 +108,14 @@
                     </div>
                   </td>
                   <td class="py-3 px-4 whitespace-nowrap">
-                    <div class="text-xs text-gray-900 font-mono" :title="vivero.origen_parcela || 'N/A'">
+                    <div class="text-xs text-gray-900 font-mono font-bold" :title="vivero.origen_parcela || 'N/A'">
                       {{ vivero.id_vivero_origen_formateado || "N/A" }}
+                    </div>
+                    <div class="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1" v-if="vivero.origen_parcela">
+                      <span class="px-1 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                        Prc: {{ vivero.origen_parcela.split('-').pop() }}
+                      </span>
+                      <span class="text-[9px] text-slate-400" :title="vivero.origen_parcela">({{ vivero.origen_parcela }})</span>
                     </div>
                   </td>
                   <td class="py-3 px-4">
