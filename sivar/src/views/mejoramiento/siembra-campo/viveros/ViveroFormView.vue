@@ -2113,7 +2113,20 @@ const isSubmittingEditingPlot = ref(false);
 const saveEditingPlot = async () => {
   if (!editingPlotForm.value.variedad_id) {
     if (editingPlotForm.value.variedad_name && editingPlotForm.value.variedad_name.trim() !== "") {
-      editingPlotForm.value.variedad_id = editingPlotForm.value.variedad_name.trim().toUpperCase();
+      const varietyName = editingPlotForm.value.variedad_name.trim().toUpperCase();
+      if (confirm(`La variedad "${varietyName}" no está registrada en la base de datos maestra. ¿Deseas registrarla ahora mismo para que quede disponible en el sistema?`)) {
+        try {
+          const res = await varietysServices.createVariety(varietyName);
+          editingPlotForm.value.variedad_id = res.data.id_nm_vrdad;
+          toast.success(`Variedad "${varietyName}" registrada exitosamente en la BD.`);
+          await loadVariedades();
+        } catch (error: any) {
+          toast.error("Error al registrar la variedad maestra: " + (error.response?.data?.error || error.message));
+          return;
+        }
+      } else {
+        editingPlotForm.value.variedad_id = varietyName;
+      }
     } else {
       toast.error("Debe seleccionar o escribir una variedad");
       return;
@@ -2175,7 +2188,21 @@ const loadParcelas = async () => {
 const submitParcela = async () => {
   if (!parcelaForm.value.variedad_id) {
     if (searchVariedad.value.trim() !== "") {
-      parcelaForm.value.variedad_id = searchVariedad.value.trim().toUpperCase();
+      const varietyName = searchVariedad.value.trim().toUpperCase();
+      if (confirm(`La variedad "${varietyName}" no está registrada en la base de datos maestra. ¿Deseas registrarla ahora mismo para que quede disponible en el sistema?`)) {
+        try {
+          const res = await varietysServices.createVariety(varietyName);
+          parcelaForm.value.variedad_id = res.data.id_nm_vrdad;
+          toast.success(`Variedad "${varietyName}" registrada exitosamente en la BD.`);
+          await loadVariedades(); // Recargar el listado
+        } catch (error: any) {
+          toast.error("Error al registrar la variedad maestra: " + (error.response?.data?.error || error.message));
+          return;
+        }
+      } else {
+        // Fallback: usar el texto libre sin registrar
+        parcelaForm.value.variedad_id = varietyName;
+      }
     } else {
       toast.warning("Debe seleccionar o escribir una variedad");
       return;

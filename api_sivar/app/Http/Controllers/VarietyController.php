@@ -454,6 +454,25 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
         }
     }    
 
+    public function store(Request $request)
+    {
+        try {
+            $request->validate([
+                'nm_vrdad' => 'required|string|unique:maestro_V_VIC_BG,nm_vrdad'
+            ]);
+
+            $maxId = Variety::max('id_nm_vrdad') ?? 0;
+            $variety = Variety::create([
+                'id_nm_vrdad' => $maxId + 1,
+                'nm_vrdad' => strtoupper(trim($request->nm_vrdad))
+            ]);
+
+            return response()->json($variety, 201);
+        } catch (Exception $ex) {
+            return response()->json(['error' => $ex->getMessage()], 500);
+        }
+    }
+
     public function getVarietyProfile(Request $request, $var)
     {
         try {

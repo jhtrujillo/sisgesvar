@@ -35,6 +35,7 @@ Route::group([
     Route::get('/varietyProfile/{var}', [\App\Http\Controllers\VarietyController::class, 'getVarietyProfile'])->where('var', '.*');
     Route::get('/variety', [\App\Http\Controllers\VarietyController::class, 'getVariety']);
     Route::get('/varietysList', [\App\Http\Controllers\VarietyController::class, 'varietysList']);
+    Route::post('/varietys', [\App\Http\Controllers\VarietyController::class, 'store']);
     Route::get('/germoplasmBankList', [\App\Http\Controllers\VarietyController::class, 'germoplasmBankList']);
     Route::get('/historyDatatable', [\App\Http\Controllers\VarietyController::class, 'historyDatatable']);
     Route::get('historyDatatable/{var}/{estado}/{tipo}', [\App\Http\Controllers\VarietyController::class, 'historyDatatable']);

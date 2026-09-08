@@ -6,8 +6,13 @@ export async function getVarietysList() {
   return await api.get(urls.API_VARIETYSLIST, {}, true);
 }
 
+export async function createVariety(nm_vrdad: string) {
+  return await api.post('/api/varietys', { nm_vrdad }, {}, true);
+}
+
 const varietysService = {
-  getVarietysList
+  getVarietysList,
+  createVariety
 };
 
 export default varietysService;
