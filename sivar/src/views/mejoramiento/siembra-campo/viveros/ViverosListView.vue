@@ -264,7 +264,7 @@
                               class="border-b border-slate-100 hover:bg-slate-50 transition-colors"
                             >
                               <td class="px-4 py-2.5 font-bold text-slate-800">{{ p.numero_parcela }}</td>
-                              <td class="px-4 py-2.5 font-bold text-cenicana">{{ p.variedad?.nm_vrdad || "N/A" }}</td>
+                              <td class="px-4 py-2.5 font-bold text-cenicana">{{ p.variedad?.nm_vrdad || p.variedad_id || "N/A" }}</td>
                               <td class="px-4 py-2.5 text-slate-500">{{ p.variedad?.pdgree || "N/A" }}</td>
                               <td class="px-4 py-2.5 text-slate-600">
                                 <span v-if="p.caracter?.nombre">{{ p.caracter.nombre }}</span>

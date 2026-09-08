@@ -1045,10 +1045,10 @@
                   <template v-else>
                     <td
                       class="px-4 py-3 font-bold text-cenicana hover:text-emerald-800 cursor-pointer hover:underline transition-colors"
-                      @click="openVarietyProfile(p.variedad?.nm_vrdad)"
+                      @click="openVarietyProfile(p.variedad?.nm_vrdad || p.variedad_id)"
                       title="Ver hoja de vida de la variedad"
                     >
-                      {{ p.variedad?.nm_vrdad }}
+                      {{ p.variedad?.nm_vrdad || p.variedad_id }}
                     </td>
                     <td class="px-4 py-3 text-slate-600 text-xs">{{ p.variedad?.pdgree || "N/A" }}</td>
                     <td class="px-4 py-3 text-slate-600 text-xs">
@@ -2112,8 +2112,12 @@ const updateEditingPlotIdOrigen = () => {
 const isSubmittingEditingPlot = ref(false);
 const saveEditingPlot = async () => {
   if (!editingPlotForm.value.variedad_id) {
-    toast.error("Debe seleccionar una variedad");
-    return;
+    if (editingPlotForm.value.variedad_name && editingPlotForm.value.variedad_name.trim() !== "") {
+      editingPlotForm.value.variedad_id = editingPlotForm.value.variedad_name.trim().toUpperCase();
+    } else {
+      toast.error("Debe seleccionar o escribir una variedad");
+      return;
+    }
   }
   isSubmittingEditingPlot.value = true;
   try {
@@ -2170,8 +2174,12 @@ const loadParcelas = async () => {
 
 const submitParcela = async () => {
   if (!parcelaForm.value.variedad_id) {
-    toast.warning("Debe seleccionar una variedad");
-    return;
+    if (searchVariedad.value.trim() !== "") {
+      parcelaForm.value.variedad_id = searchVariedad.value.trim().toUpperCase();
+    } else {
+      toast.warning("Debe seleccionar o escribir una variedad");
+      return;
+    }
   }
   isSubmittingParcela.value = true;
   try {
