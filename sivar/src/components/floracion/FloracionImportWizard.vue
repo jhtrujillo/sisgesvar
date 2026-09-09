@@ -32,10 +32,10 @@
       </div>
 
       <!-- Content -->
-      <div class="p-6 overflow-y-auto flex-1 bg-slate-50/50">
+      <div class="p-6 flex-1 bg-slate-50/50" :class="step === 1 ? 'overflow-visible' : 'overflow-y-auto'">
         
         <!-- STEP 1: Select Vivero -->
-        <div v-show="step === 1" class="space-y-6">
+        <div v-show="step === 1" class="space-y-6 min-h-[320px]">
           <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
             <h5 class="text-sm font-bold text-blue-800 mb-2">Paso 1: Identificación del Vivero</h5>
             <p class="text-xs text-blue-600 leading-relaxed">
