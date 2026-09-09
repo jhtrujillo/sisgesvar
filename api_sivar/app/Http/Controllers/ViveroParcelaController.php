@@ -76,7 +76,7 @@ class ViveroParcelaController extends Controller
         $request->validate([
             'parcelas' => 'required|array',
             'parcelas.*.numero_parcela' => 'required|numeric',
-            'parcelas.*.variedad_id' => 'required',
+            'parcelas.*.variedad_id' => 'nullable',
             'parcelas.*.numero_parcela_origen' => 'nullable|numeric',
             'parcelas.*.id_plot_origen' => 'nullable',
             'parcelas.*.caracter_id' => 'nullable|numeric',
