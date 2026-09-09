@@ -251,13 +251,21 @@
             <!-- Individual Vivero Parcel capacity list -->
             <div class="space-y-3">
               <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Configuración de Viveros</label>
-              <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+              
+              <!-- GRID HEADERS -->
+              <div class="grid grid-cols-3 gap-3 px-2 mb-1">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ID Vivero</div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ID Inicial</div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Parcelas</div>
+              </div>
+
+              <!-- SCROLLABLE LIST -->
+              <div class="space-y-2 max-h-56 overflow-y-auto pr-2 custom-scrollbar">
                 <div
                   v-for="(vConfig, index) in viverosConfig"
                   :key="index"
-                  class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 flex items-center gap-3"
+                  class="grid grid-cols-3 gap-3 bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 items-center hover:bg-slate-100 transition-colors"
                 >
-                  <span class="text-[10px] font-black text-slate-400 uppercase w-16 shrink-0">ID Vivero:</span>
                   <input
                     v-model.number="vConfig.id"
                     type="number"
@@ -265,9 +273,8 @@
                     required
                     title="Consecutivo Global del Vivero"
                     placeholder="Vivero"
-                    class="w-16 shrink-0 bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+                    class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-3 py-2 focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana outline-none shadow-sm"
                   />
-                  <span class="text-[10px] font-black text-slate-400 uppercase w-16 shrink-0 ml-1">ID Inicial:</span>
                   <input
                     v-model.number="vConfig.inicio"
                     type="number"
@@ -275,22 +282,26 @@
                     required
                     title="ID Inicial de la primera parcela"
                     placeholder="Inicio"
-                    class="w-20 shrink-0 bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+                    class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-3 py-2 focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana outline-none shadow-sm"
                   />
-                  <span class="text-[10px] font-black text-slate-400 uppercase w-16 shrink-0 ml-1">Total:</span>
                   <input
                     v-model.number="vConfig.parcelas"
                     type="number"
                     min="1"
                     required
                     title="Total de Parcelas"
-                    class="flex-1 bg-white border border-slate-200 text-slate-800 text-xs font-black text-center rounded-lg py-1.5 focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+                    class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-black rounded-lg px-3 py-2 focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana outline-none shadow-sm text-center"
                   />
                 </div>
               </div>
-              <p class="text-[10px] text-slate-400">
-                <strong>ID Vivero:</strong> Consecutivo del vivero. <strong>ID Inicial:</strong> ID de la 1ª parcela. <strong>Total:</strong> parcelas a generar.
-              </p>
+
+              <div class="bg-blue-50/50 p-2.5 rounded-lg border border-blue-100 mt-2">
+                <p class="text-[10px] text-slate-500 leading-tight">
+                  <strong class="text-slate-700">ID Vivero:</strong> Consecutivo del vivero. 
+                  <strong class="text-slate-700 ml-1">ID Inicial:</strong> Número de la primera parcela. 
+                  <strong class="text-slate-700 ml-1">Total:</strong> Cantidad de parcelas a generar en secuencia.
+                </p>
+              </div>
             </div>
           </div>
 
