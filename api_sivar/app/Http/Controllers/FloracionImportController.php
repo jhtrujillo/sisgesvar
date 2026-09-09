@@ -34,9 +34,11 @@ class FloracionImportController extends Controller
         // Fetch valid parcelas for this vivero
         $parcelas = DB::connection('sivar')->table('vivero_parcelas')->where('vivero_id', $viveroId)->get();
         $parcelasMap = []; // parcel_number => variedad_name
+        $plotOrigenMap = []; // parcel_number => id_plot_origen
         foreach ($parcelas as $p) {
             $variedad = DB::connection('sivar')->table('maestro_V_VIC_BG')->where('id_nm_vrdad', $p->variedad_id)->first();
             $parcelasMap[$p->numero_parcela] = $variedad ? trim($variedad->nm_vrdad) : null;
+            $plotOrigenMap[$p->numero_parcela] = $p->id_plot_origen ? trim($p->id_plot_origen) : null;
         }
 
         $file = $request->file('file');
@@ -74,9 +76,24 @@ class FloracionImportController extends Controller
             $excelVariedad = trim($row[$variedadIdx]);
             $excelProyecto = $colIndex['proyecto'] !== false ? trim($row[$colIndex['proyecto']]) : null;
 
-            // Rule 1: Check Vivero ID
-            if ($excelVivero && strtolower($excelVivero) !== strtolower($vivero->identificador_unico)) {
-                $errors[] = ['row' => $i + 1, 'message' => "El Origen/Vivero '{$excelVivero}' no coincide con el vivero seleccionado '{$vivero->identificador_unico}'."];
+            // Rule 1: Check Vivero ID (can be the vivero ID itself, or the vivero ID + "-" + parcela, or the id_plot_origen of the parcela)
+            $plotIdComputed = $vivero->identificador_unico . '-' . $excelParcela;
+            $plotIdOrigen = $plotOrigenMap[$excelParcela] ?? null;
+            
+            $viveroMatch = false;
+            if (!$excelVivero) {
+                $viveroMatch = true;
+            } else {
+                $evLower = strtolower($excelVivero);
+                if ($evLower === strtolower($vivero->identificador_unico) || 
+                    $evLower === strtolower($plotIdComputed) || 
+                    ($plotIdOrigen && $evLower === strtolower($plotIdOrigen))) {
+                    $viveroMatch = true;
+                }
+            }
+            
+            if (!$viveroMatch) {
+                $errors[] = ['row' => $i + 1, 'message' => "El Origen '{$excelVivero}' no coincide con el vivero '{$vivero->identificador_unico}' ni con el ID Plot de la parcela '{$excelParcela}'."];
                 continue;
             }
 
