@@ -376,20 +376,6 @@
                 </select>
               </div>
 
-              <!-- Año -->
-              <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="anio">Año de Configuración</label>
-                <select
-                  v-model="form.anio"
-                  :disabled="isEditing"
-                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
-                  :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': isEditing }"
-                  id="anio"
-                >
-                  <option v-for="y in [new Date().getFullYear() - 1, new Date().getFullYear(), new Date().getFullYear() + 1]" :key="y" :value="y">{{ y }}</option>
-                </select>
-              </div>
-
               <!-- Hacienda -->
               <div>
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="hacienda">Hacienda</label>
@@ -422,7 +408,7 @@
                   >
                     <option value="">Seleccione un Lote</option>
                     <option v-for="lote in lotes" :key="lote.id" :value="lote.id">
-                      {{ lote.nombre_lote }} (Año: {{ lote.viveros && lote.viveros.length ? lote.viveros[0].fecha_siembra.split('-')[0] : 'N/A' }} | Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
+                      {{ lote.nombre_lote }} (Año: {{ lote.viveros && lote.viveros.length ? lote.viveros[lote.viveros.length - 1].fecha_siembra.split('-')[0] : 'N/A' }} | Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
                     </option>
                   </select>
                   <button
@@ -1325,7 +1311,6 @@ const form = ref({
   nombre: "",
   ingenio: "",
   hacienda: "",
-  anio: new Date().getFullYear(),
   suerte: "",
   fecha_siembra: "",
   numero_corte: 1,
@@ -2281,8 +2266,7 @@ const loadLotesForLocation = async () => {
   try {
     const res = await viverosServices.getLotes({
       ingenio_codigo: form.value.ingenio,
-      hacienda_codigo: form.value.hacienda,
-      year: form.value.anio
+      hacienda_codigo: form.value.hacienda
     });
     lotes.value = res.data;
   } catch (error) {
@@ -2291,7 +2275,7 @@ const loadLotesForLocation = async () => {
   }
 };
 
-watch([() => form.value.ingenio, () => form.value.hacienda, () => form.value.anio], () => {
+watch([() => form.value.ingenio, () => form.value.hacienda], () => {
   if (!isEditing.value) {
     form.value.lote_id = "";
   }
@@ -2456,7 +2440,6 @@ const resetAndLoad = async () => {
     nombre: "",
     ingenio: "",
     hacienda: "",
-    anio: new Date().getFullYear(),
     suerte: "",
     proyecto_id: "",
     ambiente: "",
