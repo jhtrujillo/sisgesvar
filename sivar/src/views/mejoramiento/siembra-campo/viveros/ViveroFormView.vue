@@ -914,10 +914,16 @@
         </div>
 
         <!-- Tabla de parcelas -->
-        <div class="flex justify-between items-center mb-3 mt-4">
-          <h4 class="text-sm font-bold text-slate-700">
-            Parcelas Agregadas <span class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs ml-1">{{ parcelas.length }}</span>
-          </h4>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 mt-4 gap-3">
+          <div class="flex items-center gap-4">
+            <h4 class="text-sm font-bold text-slate-700">
+              Parcelas Agregadas <span class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs ml-1">{{ parcelas.length }}</span>
+            </h4>
+            <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors">
+              <input type="checkbox" v-model="showEmptyPlots" class="rounded text-cenicana focus:ring-cenicana w-3.5 h-3.5" />
+              <span class="font-semibold">Ver parcelas vacías</span>
+            </label>
+          </div>
           <div class="relative w-full max-w-xs">
             <input
               v-model="searchParcela"
@@ -1655,6 +1661,7 @@ const editingPlotForm = ref({
 });
 const showEditingVariedades = ref(false);
 const searchParcela = ref("");
+const showEmptyPlots = ref(false);
 const parcelaForm = ref({
   numero_parcela: 1,
   variedad_id: "",
