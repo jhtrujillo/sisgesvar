@@ -81,8 +81,10 @@ class ViveroController extends Controller
 
                 $preCreatedId = null;
                 if ($request->consecutivo_vivero_ingenio) {
+                    $yearReq = date('Y', strtotime($request->fecha_siembra));
                     $preCreated = Vivero::where('lote_id', $lote->id)
                         ->where('consecutivo_vivero_ingenio', $request->consecutivo_vivero_ingenio)
+                        ->whereYear('fecha_siembra', $yearReq)
                         ->first();
                     if ($preCreated) {
                         $preCreatedId = $preCreated->id;
@@ -120,9 +122,11 @@ class ViveroController extends Controller
                 }
             }
 
+            $yearRequest = date('Y', strtotime($request->fecha_siembra));
             $vivero = Vivero::withTrashed()
                 ->where('lote_id', $request->lote_id)
                 ->where('consecutivo_vivero_ingenio', $consecutivoViveroIngenio)
+                ->whereYear('fecha_siembra', $yearRequest)
                 ->first();
 
             if ($vivero) {
@@ -339,9 +343,11 @@ class ViveroController extends Controller
         $newConsecutivo = $request->consecutivo;
 
         // Find the destination Vivero B (the slot placeholder, including soft-deleted ones)
+        $yearA = date('Y', strtotime($viveroA->fecha_siembra));
         $viveroB = Vivero::withTrashed()
             ->where('lote_id', $newLoteId)
             ->where('consecutivo_vivero_ingenio', $newConsecutivo)
+            ->whereYear('fecha_siembra', $yearA)
             ->first();
 
         if ($viveroB && $viveroB->trashed()) {
