@@ -20,7 +20,24 @@ class ViveroController extends Controller
     {
         $this->viveroService = $viveroService;
     }
+        public function searchForImport(Request $request)
+    {
+        $q = $request->get('q', '');
+        if (strlen($q) < 2) return response()->json([]);
+        
+        $viveros = DB::connection('sivar')->table('viveros')
+            ->where('identificador_unico', 'like', "%{$q}%")
+            ->orWhere('nombre', 'like', "%{$q}%")
+            ->orWhere('hacienda_codigo', 'like', "%{$q}%")
+            ->select('id', 'identificador_unico', 'hacienda_codigo as hacienda', 'ingenio_codigo as ingenio', 'lote_codigo as suerte', 'consecutivo_vivero_ingenio')
+            ->limit(10)
+            ->get();
+            
+        return response()->json($viveros);
+    }
+
     public function index(Request $request)
+
     {
         if ($request->query('slim') === 'true') {
             $viveros = Vivero::with(['parcelas:id,vivero_id,numero_parcela,numero_parcela_origen,id_plot_origen'])
