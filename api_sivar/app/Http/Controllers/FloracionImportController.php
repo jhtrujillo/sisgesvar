@@ -11,6 +11,8 @@ class FloracionImportController extends Controller
 {
     public function validateImport(Request $request)
     {
+        set_time_limit(300);
+
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls',
             'vivero_id' => 'required|integer',
@@ -127,6 +129,8 @@ class FloracionImportController extends Controller
 
     public function executeImport(Request $request)
     {
+        set_time_limit(300);
+
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls',
             'vivero_id' => 'required|integer',
