@@ -194,7 +194,7 @@
 
     <!-- Modal Form (Crear / Editar) -->
     <div v-if="isModalOpen" class="fixed inset-0 flex items-center justify-center bg-slate-900/60 z-50 transition-opacity duration-300">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden border border-slate-100">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 overflow-hidden border border-slate-100">
         <!-- Header -->
         <div class="flex justify-between items-center border-b border-slate-100 p-5 bg-slate-50">
           <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide">
@@ -223,7 +223,7 @@
               />
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-4 items-end">
               <div>
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Capacidad Máxima (Viveros)</label>
                 <input
