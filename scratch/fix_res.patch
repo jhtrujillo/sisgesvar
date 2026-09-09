@@ -1,0 +1,17 @@
+--- sivar/src/views/mejoramiento/siembra-campo/viveros/ViveroFormView.vue
++++ sivar/src/views/mejoramiento/siembra-campo/viveros/ViveroFormView.vue
+@@ -2508,10 +2508,10 @@
+         if (pry) searchProyecto.value = formatProjectName(pry);
+ 
+         await loadCaracteres(form.value.proyecto_id);
+-        if (res.data.caracteres && res.data.caracteres.length > 0) {
+-          form.value.caracteres_ids = res.data.caracteres.map((c: any) => c.id);
+-        } else if (res.data.caracter_id) {
+-          form.value.caracteres_ids = [res.data.caracter_id];
++        if (form.value.caracteres && form.value.caracteres.length > 0) {
++          form.value.caracteres_ids = form.value.caracteres.map((c: any) => c.id);
++        } else if (form.value.caracter_id) {
++          form.value.caracteres_ids = [form.value.caracter_id];
+         }
+       }
+       if (form.value.responsable_id) {

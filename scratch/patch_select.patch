@@ -1,0 +1,21 @@
+--- sivar/src/views/mejoramiento/siembra-campo/viveros/ViveroFormView.vue
++++ sivar/src/views/mejoramiento/siembra-campo/viveros/ViveroFormView.vue
+@@ -1815,7 +1815,7 @@
+ };
+ 
+ const selectCaracter = (car: any) => {
+-  if (!form.value.caracteres_ids) {
++  if (!Array.isArray(form.value.caracteres_ids)) {
+     form.value.caracteres_ids = [];
+   }
+   if (!form.value.caracteres_ids.includes(car.id)) {
+@@ -1825,6 +1825,9 @@
+ };
+ 
+ const removeCaracter = (id: number) => {
++  if (!Array.isArray(form.value.caracteres_ids)) {
++    return;
++  }
+   form.value.caracteres_ids = form.value.caracteres_ids.filter((c) => c !== id);
+ };
+ 

@@ -1,0 +1,20 @@
+--- sivar/src/views/mejoramiento/siembra-campo/viveros/ViveroFormView.vue
++++ sivar/src/views/mejoramiento/siembra-campo/viveros/ViveroFormView.vue
+@@ -2448,7 +2448,7 @@
+       if (vivero.fecha_siembra) {
+         vivero.fecha_siembra = vivero.fecha_siembra.substring(0, 10);
+       }
+-      form.value = { ...vivero };
++      form.value = { ...vivero, caracteres_ids: [] };
+ 
+       if (form.value.ingenio && form.value.hacienda) {
+         await loadLotesForLocation();
+@@ -2509,9 +2509,9 @@
+ 
+         await loadCaracteres(form.value.proyecto_id);
+         if (form.value.caracteres && form.value.caracteres.length > 0) {
+           form.value.caracteres_ids = form.value.caracteres.map((c: any) => c.id);
+         } else if (form.value.caracter_id) {
+           form.value.caracteres_ids = [form.value.caracter_id];
+         }
+       }
