@@ -94,12 +94,15 @@ class ViveroParcelaController extends Controller
                 $caracter_id = (isset($data['caracter_id']) && $data['caracter_id'] !== '') ? $data['caracter_id'] : null;
 
                 if ($data['variedad_id'] !== null && $data['variedad_id'] !== '') {
+                    \Log::info("Checking variedad_id: " . $data['variedad_id'] . " for plot: " . $data['numero_parcela']);
                     $existsVariedad = $vivero->parcelas()
                         ->where('variedad_id', $data['variedad_id'])
                         ->where('numero_parcela', '!=', $data['numero_parcela'])
                         ->exists();
                     if ($existsVariedad) continue;
                 }
+
+                \Log::info("Updating plot: " . $data['numero_parcela'] . " with variedad_id: " . $data['variedad_id']);
 
                 $parcela = $vivero->parcelas()->updateOrCreate(
                     ['numero_parcela' => $data['numero_parcela']],
