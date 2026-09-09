@@ -141,7 +141,7 @@ class ViveroParcelaController extends Controller
         return response()->json(null, 204);
     }
 
-    public function destroyAll($vivero_id)
+    public function clearAll($vivero_id)
     {
         $vivero = Vivero::findOrFail($vivero_id);
         
@@ -153,13 +153,13 @@ class ViveroParcelaController extends Controller
             $hasCuts = Vivero::where('origen_parcela', 'like', $plotId . '%')->exists();
             if ($hasCuts) {
                 return response()->json([
-                    'message' => 'No se pueden eliminar las parcelas porque existen cortes o viveros registrados que dependen de algunas de ellas.'
+                    'message' => 'No se pueden limpiar las parcelas porque existen cortes o viveros registrados que dependen de algunas de ellas.'
                 ], 400);
             }
         }
         
-        $vivero->parcelas()->delete();
-        return response()->json(['message' => 'Todas las parcelas han sido eliminadas correctamente.']);
+        $vivero->parcelas()->update(['variedad_id' => null, 'caracter_id' => null]);
+        return response()->json(['message' => 'Todas las parcelas han sido limpiadas correctamente.']);
     }
 
     public function update(Request $request, $vivero_id, $parcela_id)

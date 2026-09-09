@@ -148,7 +148,7 @@ Route::group([
     Route::get('siembra-campo/viveros/{id}/parcelas', [\App\Http\Controllers\ViveroParcelaController::class, 'index']);
     Route::post('siembra-campo/viveros/{id}/parcelas', [\App\Http\Controllers\ViveroParcelaController::class, 'store']);
     Route::post('siembra-campo/viveros/{id}/parcelas/import-batch', [\App\Http\Controllers\ViveroParcelaController::class, 'importBatch']);
-    Route::delete('siembra-campo/viveros/{vivero_id}/parcelas', [\App\Http\Controllers\ViveroParcelaController::class, 'destroyAll']);
+    Route::delete('siembra-campo/viveros/{vivero_id}/parcelas', [\App\Http\Controllers\ViveroParcelaController::class, 'clearAll']);
     Route::delete('siembra-campo/viveros/{vivero_id}/parcelas/{parcela_id}', [\App\Http\Controllers\ViveroParcelaController::class, 'destroy']);
     Route::put('siembra-campo/viveros/{vivero_id}/parcelas/{parcela_id}', [\App\Http\Controllers\ViveroParcelaController::class, 'update']);
 

@@ -845,8 +845,8 @@
             <button
               v-if="parcelas.length > 0"
               type="button"
-              @click="deleteAllParcelas"
-              class="bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-bold py-2.5 px-6 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2 mr-auto"
+              @click="clearAllParcelas"
+              class="bg-white border border-amber-200 text-amber-600 hover:bg-amber-50 hover:border-amber-300 font-bold py-2.5 px-6 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2 mr-auto"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -861,7 +861,7 @@
                 <polyline points="3 6 5 6 21 6"></polyline>
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
               </svg>
-              Eliminar Todas
+              Limpiar Parcelas
             </button>
 
             <button
@@ -2389,12 +2389,12 @@ const deleteParcela = async (parcelaId: string | number) => {
   }
 };
 
-const deleteAllParcelas = async () => {
-  if (!confirm("¿Está seguro de que desea eliminar TODAS las parcelas de este vivero? Esta acción no se puede deshacer.")) return;
+const clearAllParcelas = async () => {
+  if (!confirm("¿Está seguro de que desea limpiar las variedades de TODAS las parcelas? Esto dejará las parcelas en blanco pero no eliminará su número.? Esta acción no se puede deshacer.")) return;
 
   try {
     await viverosServices.deleteAllParcelas(route.params.id as string);
-    toast.success("Todas las parcelas fueron eliminadas");
+    toast.success("Todas las parcelas fueron limpiadas");
     await loadParcelas();
   } catch (error: any) {
     console.error("Error al eliminar parcelas:", error);
