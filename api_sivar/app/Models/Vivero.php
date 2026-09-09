@@ -76,6 +76,11 @@ class Vivero extends Model
         return $this->belongsTo(\App\Models\ProyectoCaracter::class, 'caracter_id');
     }
 
+    public function caracteres()
+    {
+        return $this->belongsToMany(\App\Models\ProyectoCaracter::class, 'vivero_caracteres', 'vivero_id', 'caracter_id')->withTimestamps();
+    }
+
     public function getNombreProyectoAttribute()
     {
         return $this->proyecto?->nm_prycto;

@@ -43,7 +43,8 @@ class UpdateViveroRequest extends FormRequest
             'numero_corte' => 'nullable|integer',
             'temporada_floracion' => 'nullable|string',
             'condicion' => 'nullable|string',
-            'caracter_id' => 'nullable|integer',
+            'caracteres_ids' => 'nullable|array',
+            'caracteres_ids.*' => 'integer|exists:proyecto_caracteres,id',
             'es_corte' => 'nullable|boolean',
         ];
     }
