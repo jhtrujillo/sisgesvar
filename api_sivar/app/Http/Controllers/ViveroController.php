@@ -293,6 +293,10 @@ class ViveroController extends Controller
                 $vivero->save();
             }
 
+            if ($request->has('caracteres_ids')) {
+                $vivero->caracteres()->sync($request->caracteres_ids);
+            }
+
             return response()->json($vivero);
         });
     }
@@ -425,10 +429,6 @@ class ViveroController extends Controller
                         ->where('id', $p->id)
                         ->update(['id_plot_origen' => $newIdPlot]);
                 }
-            }
-
-            if ($request->has('caracteres_ids')) {
-                $viveroA->caracteres()->sync($request->caracteres_ids);
             }
 
             // Manage Lote History (either Lote or slot changed!)
