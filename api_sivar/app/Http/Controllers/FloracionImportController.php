@@ -35,7 +35,7 @@ class FloracionImportController extends Controller
         $parcelas = DB::connection('sivar')->table('vivero_parcelas')->where('vivero_id', $viveroId)->get();
         $parcelasMap = []; // parcel_number => variedad_name
         foreach ($parcelas as $p) {
-            $variedad = DB::connection('sivar')->table('variedades')->where('id_nm_vrdad', $p->variedad_id)->first();
+            $variedad = DB::connection('sivar')->table('maestro_V_VIC_BG')->where('id_nm_vrdad', $p->variedad_id)->first();
             $parcelasMap[$p->numero_parcela] = $variedad ? trim($variedad->nm_vrdad) : null;
         }
 
