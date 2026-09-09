@@ -12,6 +12,8 @@ const API_INGENIOS = API_URL + "siembra-campo/ingenios";
 const API_HACIENDAS = API_URL + "siembra-campo/haciendas";
 const API_SUERTES = API_URL + "siembra-campo/suertes";
 const API_LOTES = API_URL + "siembra-campo/lotes";
+const API_FLORACION_VALIDATE = API_URL + "siembra-campo/floracion/validate-import";
+const API_FLORACION_EXECUTE = API_URL + "siembra-campo/floracion/execute-import";
 
 // URLS USERs
 const API_USERS = API_URL + "users";
@@ -93,6 +95,8 @@ export default {
   API_HACIENDAS,
   API_SUERTES,
   API_LOTES,
+  API_FLORACION_VALIDATE,
+  API_FLORACION_EXECUTE,
   API_PROYECTOS: API_URL + "siembra-campo/proyectos",
   API_RESPONSABLES: API_URL + "siembra-campo/responsables",
   API_AMBIENTES: API_URL + "siembra-campo/ambientes"

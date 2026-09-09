@@ -417,9 +417,8 @@ const performValidation = async () => {
     formData.append('mapping', JSON.stringify(mapping.value));
     
     // Validate only endpoint
-    const response = await api.post(`${urls.API_URL}siembra-campo/floracion/validate-import`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+    const [response, error] = await api.postWithImages(urls.API_FLORACION_VALIDATE, formData);
+    if (error) throw error;
     
     if (response.data.errors && response.data.errors.length > 0) {
       validationErrors.value = response.data.errors;
@@ -445,9 +444,8 @@ const submitImport = async () => {
     formData.append('sheet_name', selectedSheet.value);
     formData.append('mapping', JSON.stringify(mapping.value));
     
-    await api.post(`${urls.API_URL}siembra-campo/floracion/execute-import`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+    const [response, error] = await api.postWithImages(urls.API_FLORACION_EXECUTE, formData);
+    if (error) throw error;
     
     toast.success(`${validRowsCount.value} flores importadas exitosamente.`);
     emit('imported');
