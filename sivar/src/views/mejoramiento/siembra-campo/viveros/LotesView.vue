@@ -237,12 +237,15 @@
 
               <div>
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Fecha de Creación/Siembra <span class="normal-case text-[9px] text-slate-400 font-normal tracking-normal">(Día / Mes / Año)</span>
+                  Fecha de Creación <span class="normal-case text-[9px] text-slate-400 font-normal tracking-normal">(Año)</span>
                 </label>
                 <input
-                  v-model="form.fecha_siembra"
-                  type="date"
+                  v-model.number="form.anio_creacion"
+                  type="number"
+                  min="2000"
+                  max="2100"
                   required
+                  placeholder="Ej. 2026"
                   class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
                 />
               </div>
@@ -344,7 +347,7 @@ const form = ref({
   capacidad_maxima: 5,
   total_parcelas_vivero: 0,
   hacienda_codigo: "",
-  fecha_siembra: new Date().toISOString().split('T')[0],
+  anio_creacion: new Date().getFullYear(),
   parcelas_por_vivero: {} as Record<number, number>,
   nombres_por_vivero: {} as Record<number, string>
 });
@@ -489,13 +492,13 @@ const openEditModal = async (lote: any) => {
   editingLoteId.value = lote.id;
   viverosConfig.value = [];
   
-  let f_siembra = selectedYear.value === new Date().getFullYear().toString() 
-    ? new Date().toISOString().split('T')[0] 
-    : `${selectedYear.value}-01-01`;
+  let a_creacion = selectedYear.value === new Date().getFullYear().toString() 
+    ? new Date().getFullYear() 
+    : parseInt(selectedYear.value);
 
   if (lote.viveros && lote.viveros.length > 0) {
     if (lote.viveros[0].fecha_siembra) {
-      f_siembra = lote.viveros[0].fecha_siembra.split(' ')[0].split('T')[0];
+      a_creacion = parseInt(lote.viveros[0].fecha_siembra.split('-')[0]);
     }
     lote.viveros.forEach((v: any) => {
       const pos = v.consecutivo_vivero_ingenio;
@@ -514,7 +517,7 @@ const openEditModal = async (lote: any) => {
     capacidad_maxima: lote.capacidad_maxima,
     total_parcelas_vivero: lote.total_parcelas_vivero ?? 0,
     hacienda_codigo: lote.hacienda_codigo || selectedHacienda.value,
-    fecha_siembra: f_siembra,
+    anio_creacion: a_creacion,
     parcelas_por_vivero: {},
     nombres_por_vivero: {}
   };
@@ -537,7 +540,15 @@ const submitForm = async () => {
     nombres_por_vivero[vc.id] = vc.nombre;
     inicio_por_vivero[vc.id] = vc.inicio || 1;
   }
-  const payload = { ...form.value, parcelas_por_vivero, nombres_por_vivero, inicio_por_vivero, ingenio_codigo: selectedIngenio.value };
+  
+  const payload = { 
+    ...form.value, 
+    fecha_siembra: `${form.value.anio_creacion}-01-01`,
+    parcelas_por_vivero, 
+    nombres_por_vivero, 
+    inicio_por_vivero, 
+    ingenio_codigo: selectedIngenio.value 
+  };
 
   try {
     if (editingLoteId.value) {
