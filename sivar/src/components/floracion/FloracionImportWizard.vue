@@ -48,7 +48,7 @@
             <input
               v-model="searchQuery"
               @input="onSearchInput"
-              @focus="showViverosDropdown = true"
+              @focus="onFocusInput"
               type="text"
               placeholder="Buscar por ID, nombre o hacienda..."
               class="w-full bg-white border border-slate-300 text-slate-800 text-sm rounded-xl px-4 py-3 focus:ring-2 focus:ring-cenicana focus:border-cenicana outline-none shadow-sm"
@@ -292,22 +292,29 @@ const isLoadingViveros = ref(false);
 const filteredViveros = ref<any[]>([]);
 const selectedVivero = ref<any>(null);
 
-const onSearchInput = _.debounce(async () => {
-  if (!searchQuery.value || searchQuery.value.length < 2) {
-    filteredViveros.value = [];
-    return;
-  }
+const fetchViveros = async (q: string) => {
   isLoadingViveros.value = true;
   showViverosDropdown.value = true;
   try {
-    const response = await api.get(`${urls.API_VIVEROS}/search-import?q=${searchQuery.value}`);
+    const response = await api.get(`${urls.API_VIVEROS}/search-import?q=${q}`);
     filteredViveros.value = response.data;
   } catch (error) {
     console.error("Error searching viveros:", error);
   } finally {
     isLoadingViveros.value = false;
   }
+};
+
+const onSearchInput = _.debounce(() => {
+  fetchViveros(searchQuery.value);
 }, 300);
+
+const onFocusInput = () => {
+  showViverosDropdown.value = true;
+  if (filteredViveros.value.length === 0) {
+    fetchViveros(searchQuery.value);
+  }
+};
 
 const selectVivero = (vivero: any) => {
   selectedVivero.value = vivero;

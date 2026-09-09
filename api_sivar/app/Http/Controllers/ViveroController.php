@@ -23,14 +23,18 @@ class ViveroController extends Controller
         public function searchForImport(Request $request)
     {
         $q = $request->get('q', '');
-        if (strlen($q) < 2) return response()->json([]);
         
-        $viveros = DB::connection('sivar')->table('viveros')
-            ->where('identificador_unico', 'like', "%{$q}%")
-            ->orWhere('nombre', 'like', "%{$q}%")
-            ->orWhere('hacienda', 'like', "%{$q}%")
-            ->select('id', 'identificador_unico', 'hacienda', 'ingenio', 'suerte', 'consecutivo_vivero_ingenio')
-            ->limit(10)
+        $query = DB::connection('sivar')->table('viveros');
+            
+        if (strlen($q) > 0) {
+            $query->where('identificador_unico', 'ilike', "%{$q}%")
+                  ->orWhere('nombre', 'ilike', "%{$q}%")
+                  ->orWhere('hacienda', 'ilike', "%{$q}%");
+        }
+        
+        $viveros = $query->select('id', 'identificador_unico', 'hacienda', 'ingenio', 'suerte', 'consecutivo_vivero_ingenio')
+            ->orderBy('id', 'desc')
+            ->limit(30)
             ->get();
             
         return response()->json($viveros);
