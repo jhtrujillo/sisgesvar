@@ -28,16 +28,27 @@
         </div>
 
         <!-- Switch Histórico alineado con el título -->
-        <label
-          class="relative inline-flex items-center cursor-pointer group shrink-0 mt-1"
-          title="Visualizar todos los registros de floración de los últimos 10 años"
-        >
-          <input type="checkbox" v-model="verHistorico" class="sr-only peer" />
-          <div
-            class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"
-          ></div>
-          <span class="ml-3 text-sm font-bold text-slate-600 group-hover:text-emerald-700 transition-colors">Modo Histórico</span>
-        </label>
+        <div class="flex flex-col items-end gap-3 shrink-0 mt-1">
+          <label
+            class="relative inline-flex items-center cursor-pointer group"
+            title="Visualizar todos los registros de floración de los últimos 10 años"
+          >
+            <input type="checkbox" v-model="verHistorico" class="sr-only peer" />
+            <div
+              class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"
+            ></div>
+            <span class="ml-3 text-sm font-bold text-slate-600 group-hover:text-emerald-700 transition-colors">Modo Histórico</span>
+          </label>
+          <button
+            @click="isImportWizardOpen = true"
+            class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            Importar Excel
+          </button>
+        </div>
       </div>
     </div>
 
@@ -89,6 +100,12 @@
         :columns="conlumnsInfo"
       ></TableComponent>
     </div>
+    
+    <FloracionImportWizard
+      :is-open="isImportWizardOpen"
+      @close="isImportWizardOpen = false"
+      @imported="onImportSuccess"
+    />
   </div>
 </template>
 
@@ -98,10 +115,18 @@ import { useFloweringStore } from "@/stores/flowering";
 import TableComponent from "../../../components/app-table/TableComponent.vue";
 import type { Column } from "../../../components/app-table/models";
 import BackButton from "@/components/BackButton.vue";
+import FloracionImportWizard from "@/components/floracion/FloracionImportWizard.vue";
 
 const floweringListsStore = useFloweringStore();
 const verHistorico = ref(false);
 const isLoading = ref(false);
+const isImportWizardOpen = ref(false);
+
+const onImportSuccess = async () => {
+  isLoading.value = true;
+  await floweringListsStore.loadFloweringList(verHistorico.value);
+  isLoading.value = false;
+};
 
 onMounted(async () => {
   isLoading.value = true;
