@@ -24,12 +24,16 @@ class ViveroController extends Controller
     {
         $q = $request->get('q', '');
         
-        $query = DB::connection('sivar')->table('viveros');
+        $query = DB::connection('sivar')->table('viveros')
+            ->whereNotNull('proyecto_id')
+            ->where('estado', '!=', 'Cosechado');
             
         if (strlen($q) > 0) {
-            $query->where('identificador_unico', 'ilike', "%{$q}%")
-                  ->orWhere('nombre', 'ilike', "%{$q}%")
-                  ->orWhere('hacienda', 'ilike', "%{$q}%");
+            $query->where(function($sub) use ($q) {
+                $sub->where('identificador_unico', 'ilike', "%{$q}%")
+                    ->orWhere('nombre', 'ilike', "%{$q}%")
+                    ->orWhere('hacienda', 'ilike', "%{$q}%");
+            });
         }
         
         $viveros = $query->select('id', 'identificador_unico', 'hacienda', 'ingenio', 'suerte', 'consecutivo_vivero_ingenio')
