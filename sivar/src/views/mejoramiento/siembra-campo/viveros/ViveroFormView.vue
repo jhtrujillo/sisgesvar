@@ -866,7 +866,7 @@
 
             <button
               type="button"
-              @click="showImportWizard = true"
+              @click="openImportWizard"
               class="bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold py-2.5 px-6 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
             >
               <svg
@@ -1710,6 +1710,11 @@ const clearVariedad = () => {
   parcelaForm.value.variedad_id = "";
   searchVariedad.value = "";
   showVariedades.value = true;
+};
+
+const openImportWizard = async () => {
+  await loadVariedadesIfNeeded();
+  showImportWizard.value = true;
 };
 
 const hideVariedadesDelay = () => {

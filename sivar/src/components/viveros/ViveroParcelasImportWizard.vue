@@ -139,8 +139,13 @@
                       <input type="checkbox" v-model="showOnlyUnresolved" class="rounded border-slate-300 text-cenicana focus:ring-cenicana w-4 h-4" />
                       <span class="text-sm font-medium text-slate-700">Mostrar solo filas sin resolver ({{ unresolvedCount }})</span>
                     </label>
-                    <div class="text-xs text-slate-500 font-medium">
-                      <span class="font-bold text-emerald-600">{{ conflicts.length - unresolvedCount }}</span> auto-resueltas
+                    <div class="flex items-center gap-4">
+                      <BaseButton v-if="unresolvedCount > 0" variant="primary" size="xs" @click="registerAllUnresolved" :loading="isRegisteringAll">
+                        Crear todas las desconocidas ({{ uniqueUnresolvedCount }})
+                      </BaseButton>
+                      <div class="text-xs text-slate-500 font-medium">
+                        <span class="font-bold text-emerald-600">{{ conflicts.length - unresolvedCount }}</span> auto-resueltas
+                      </div>
                     </div>
                   </div>
 
@@ -291,6 +296,7 @@ const readyToImport = ref<any[]>([]);
 const isSubmitting = ref(false);
 const isAnalyzing = ref(false);
 const showOnlyUnresolved = ref(false);
+const isRegisteringAll = ref(false);
 
 const displayedConflicts = computed(() => {
   if (showOnlyUnresolved.value) {
@@ -514,6 +520,52 @@ const registerNewVariety = async (conflict: any) => {
     } catch (e: any) {
       toast.error("Error al registrar: " + (e.response?.data?.message || e.message));
     }
+  }
+};
+
+const uniqueUnresolvedCount = computed(() => {
+  const uniqueNames = new Set();
+  conflicts.value.forEach((c) => {
+    if (!c.resolvedId && c.excelVariedad) {
+      uniqueNames.add(c.excelVariedad.trim().toUpperCase());
+    }
+  });
+  return uniqueNames.size;
+});
+
+const registerAllUnresolved = async () => {
+  const uniqueUnresolved = new Map();
+  conflicts.value.forEach((c) => {
+    if (!c.resolvedId && c.excelVariedad) {
+      const name = c.excelVariedad.trim().toUpperCase();
+      if (!uniqueUnresolved.has(name)) {
+        uniqueUnresolved.set(name, []);
+      }
+      uniqueUnresolved.get(name).push(c);
+    }
+  });
+
+  if (uniqueUnresolved.size === 0) return;
+  if (!confirm(`¿Estás seguro de registrar las ${uniqueUnresolved.size} variedades nuevas en la base maestra?`)) return;
+
+  isRegisteringAll.value = true;
+  let successCount = 0;
+  for (const [name, rows] of uniqueUnresolved.entries()) {
+    try {
+      const res = await varietysServices.createVariety(name);
+      const newId = String(res.data.id_nm_vrdad || res.data.id);
+      rows.forEach((c: any) => {
+        c.resolvedId = newId;
+        c.resolvedName = name;
+      });
+      successCount++;
+    } catch (e: any) {
+      console.error("Error registering variety:", name, e);
+    }
+  }
+  isRegisteringAll.value = false;
+  if (successCount > 0) {
+    toast.success(`Se registraron ${successCount} variedades nuevas exitosamente.`);
   }
 };
 
