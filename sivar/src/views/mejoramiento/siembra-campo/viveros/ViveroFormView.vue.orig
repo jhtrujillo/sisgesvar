@@ -273,6 +273,18 @@
               <!-- Carácter -->
               <div class="relative md:col-span-2">
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="caracter_id">Carácter (Opcional)</label>
+                
+                <div class="flex flex-wrap gap-2 mb-2" v-if="form.caracteres_ids && form.caracteres_ids.length > 0">
+                  <div v-for="c_id in form.caracteres_ids" :key="c_id" class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-emerald-200">
+                    {{ getCaracterName(c_id) }}
+                    <button type="button" @click="removeCaracter(c_id)" class="text-emerald-600 hover:text-emerald-900 focus:outline-none">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
                 <div class="relative">
                   <input
                     type="text"
@@ -285,7 +297,7 @@
                     :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.proyecto_id }"
                   />
                   <button
-                    v-if="form.caracter_id"
+                    v-if="form.caracteres_ids && form.caracteres_ids.length > 0"
                     @click="clearCaracter"
                     type="button"
                     class="absolute right-3.5 top-3 text-slate-400 hover:text-red-500 transition-colors"
@@ -315,9 +327,10 @@
                     <div
                       v-for="car in filteredCaracteres"
                       :key="car.id"
-                      @mousedown="selectCaracter(car)"
+                      v-show="!Array.isArray(form.caracteres_ids) || !form.caracteres_ids.includes(car.id)"
+                      @click="selectCaracter(car)"
                       class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
-                      :class="form.caracter_id === car.id ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
+                      :class="form.caracteres_ids && form.caracteres_ids.includes(car.id) ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
                     >
                       {{ car.nombre }}
                     </div>
@@ -1054,7 +1067,7 @@
                     <td class="px-4 py-3 text-slate-600 text-xs">{{ p.variedad?.pdgree || "N/A" }}</td>
                     <td class="px-4 py-3 text-slate-600 text-xs">
                       <span v-if="p.caracter?.nombre">{{ p.caracter.nombre }}</span>
-                      <span v-else-if="form.caracter_id && getCaracterGlobalNombre()" class="text-slate-400 italic" title="Heredado del Vivero">{{
+                      <span v-else-if="form.caracteres_ids && form.caracteres_ids.length > 0 && getCaracterGlobalNombre()" class="text-slate-400 italic" title="Heredado del Vivero">{{
                         getCaracterGlobalNombre()
                       }}</span>
                       <span v-else>N/A</span>

@@ -722,7 +722,7 @@
           <div class="flex items-center gap-2">
             <!-- Next / Save Buttons -->
             <button
-              v-show="activeTab === 'generales'"
+              v-show="activeTab === 'generales' && !isEditing"
               type="button"
               @click="activeTab = 'origen'"
               class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md transition-all duration-200 cursor-pointer"
@@ -746,7 +746,7 @@
             </button>
 
             <button
-              v-show="activeTab === 'origen'"
+              v-show="activeTab === 'origen' || isEditing"
               class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-md shadow-emerald-950/10 transition-all duration-200 cursor-pointer"
               type="submit"
               :disabled="isSubmitting"
