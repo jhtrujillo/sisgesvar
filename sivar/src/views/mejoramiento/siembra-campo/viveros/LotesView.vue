@@ -482,7 +482,8 @@ const openEditModal = async (lote: any) => {
       viverosConfig.value.push({
         id: pos,
         parcelas: v.total_parcelas ?? 0,
-        nombre: name
+        nombre: name,
+        inicio: v.parcela_inicio ?? 1
       });
     });
   }
@@ -507,12 +508,14 @@ const submitForm = async () => {
   saving.value = true;
   const parcelas_por_vivero: Record<number, number> = {};
   const nombres_por_vivero: Record<number, string> = {};
+  const inicio_por_vivero: Record<number, number> = {};
   
   for(const vc of viverosConfig.value) {
     parcelas_por_vivero[vc.id] = vc.parcelas;
     nombres_por_vivero[vc.id] = vc.nombre;
+    inicio_por_vivero[vc.id] = vc.inicio || 1;
   }
-  const payload = { ...form.value, parcelas_por_vivero, nombres_por_vivero, ingenio_codigo: selectedIngenio.value };
+  const payload = { ...form.value, parcelas_por_vivero, nombres_por_vivero, inicio_por_vivero, ingenio_codigo: selectedIngenio.value };
 
   try {
     if (editingLoteId.value) {

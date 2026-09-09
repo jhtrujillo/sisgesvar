@@ -167,6 +167,7 @@ class LoteController extends Controller
     {
         $parcelasPorViveroRequest = request('parcelas_por_vivero', []); // Array of [consecutivo => total_parcelas]
         $nombresPorViveroRequest = request('nombres_por_vivero', []);  // Array of [consecutivo => nombre]
+        $inicioPorViveroRequest = request('inicio_por_vivero', []);  // Array of [consecutivo => inicio]
         
         $consecutivos = array_keys($parcelasPorViveroRequest);
         if (empty($consecutivos)) {
@@ -239,6 +240,16 @@ class LoteController extends Controller
                 }
             }
 
+            $inicioParcela = 1;
+            if (isset($inicioPorViveroRequest[$i])) {
+                $inicioParcela = intval($inicioPorViveroRequest[$i]);
+            } else {
+                $existingVivero = $existingViveros->where('consecutivo_vivero_ingenio', $i)->first();
+                if ($existingVivero && $existingVivero->parcela_inicio) {
+                    $inicioParcela = $existingVivero->parcela_inicio;
+                }
+            }
+
             $customNombre = null;
             if (isset($nombresPorViveroRequest[$i])) {
                 $trimmed = trim($nombresPorViveroRequest[$i]);
@@ -267,16 +278,17 @@ class LoteController extends Controller
                     'lote_id' => $lote->id,
                     'fecha_siembra' => request('fecha_siembra', now()->format('Y-m-d')),
                     'consecutivo_vivero_ingenio' => $i,
-                    'total_parcelas' => $totalParcelas
+                    'total_parcelas' => $totalParcelas,
+                    'parcela_inicio' => $inicioParcela
                 ]);
 
                 // Create default parcelas
-                for ($p = 1; $p <= $totalParcelas; $p++) {
+                for ($p = 0; $p < $totalParcelas; $p++) {
                     \Illuminate\Support\Facades\DB::connection('sivar')
                         ->table('vivero_parcelas')
                         ->insert([
                             'vivero_id' => $vivero->id,
-                            'numero_parcela' => $p,
+                            'numero_parcela' => $inicioParcela + $p,
                             'created_at' => now(),
                             'updated_at' => now()
                         ]);
@@ -290,10 +302,31 @@ class LoteController extends Controller
                         $vivero->restore();
                     }
 
-                    $updates = ['total_parcelas' => $totalParcelas];
+                    $updates = [
+                        'total_parcelas' => $totalParcelas,
+                        'parcela_inicio' => $inicioParcela
+                    ];
 
                     if ($customNombre !== null && !$vivero->proyecto_id) {
                         $updates['nombre'] = $customNombre;
+                    }
+
+                    // Handle renaming parcel IDs if `inicio` changed, but only if they don't have varieties assigned!
+                    if ($vivero->parcela_inicio != $inicioParcela) {
+                        $hasVarieties = \Illuminate\Support\Facades\DB::connection('sivar')
+                            ->table('vivero_parcelas')
+                            ->where('vivero_id', $vivero->id)
+                            ->whereNotNull('variedad_id')
+                            ->exists();
+                        if ($hasVarieties) {
+                            throw new \Exception("No se puede cambiar el ID Inicial del Vivero {$vivero->consecutivo_vivero_ingenio} porque ya tiene variedades registradas en sus parcelas. Hazlo manualmente desde la administración del vivero.");
+                        } else {
+                            // If empty, it's safe to just recreate the parcels from scratch
+                            \Illuminate\Support\Facades\DB::connection('sivar')
+                                ->table('vivero_parcelas')
+                                ->where('vivero_id', $vivero->id)
+                                ->delete();
+                        }
                     }
 
                     $existingParcelCount = \Illuminate\Support\Facades\DB::connection('sivar')
@@ -302,35 +335,60 @@ class LoteController extends Controller
                         ->count();
 
                     if ($existingParcelCount < $totalParcelas) {
-                        for ($p = $existingParcelCount + 1; $p <= $totalParcelas; $p++) {
+                        // Find the max parcel to continue sequence
+                        $maxParcela = \Illuminate\Support\Facades\DB::connection('sivar')
+                            ->table('vivero_parcelas')
+                            ->where('vivero_id', $vivero->id)
+                            ->max('numero_parcela');
+                            
+                        if ($maxParcela === null) {
+                            $maxParcela = $inicioParcela - 1;
+                        }
+
+                        $toAdd = $totalParcelas - $existingParcelCount;
+                        for ($p = 1; $p <= $toAdd; $p++) {
                             \Illuminate\Support\Facades\DB::connection('sivar')
                                 ->table('vivero_parcelas')
                                 ->insert([
                                     'vivero_id' => $vivero->id,
-                                    'numero_parcela' => $p,
+                                    'numero_parcela' => $maxParcela + $p,
                                     'created_at' => now(),
                                     'updated_at' => now()
                                 ]);
                         }
                     } elseif ($existingParcelCount > $totalParcelas) {
-                        $parcelasConDatos = \Illuminate\Support\Facades\DB::connection('sivar')
+                        // Sort by numero_parcela descending and get the ones to delete
+                        $toRemove = $existingParcelCount - $totalParcelas;
+                        
+                        $parcelasToDelete = \Illuminate\Support\Facades\DB::connection('sivar')
                             ->table('vivero_parcelas')
                             ->where('vivero_id', $vivero->id)
-                            ->where('numero_parcela', '>', $totalParcelas)
-                            ->whereNotNull('variedad_id')
-                            ->pluck('numero_parcela')
-                            ->toArray();
+                            ->orderBy('numero_parcela', 'desc')
+                            ->limit($toRemove)
+                            ->get();
+                            
+                        $idsToDelete = [];
+                        $parcelasConDatos = [];
+                        
+                        foreach ($parcelasToDelete as $par) {
+                            if ($par->variedad_id !== null) {
+                                $parcelasConDatos[] = $par->numero_parcela;
+                            } else {
+                                $idsToDelete[] = $par->id;
+                            }
+                        }
 
                         if (!empty($parcelasConDatos)) {
                             $nums = implode(', ', $parcelasConDatos);
-                            throw new \Exception("No se puede reducir la capacidad de parcelas del Vivero {$vivero->consecutivo_vivero_ingenio} a {$totalParcelas} porque las parcelas ({$nums}) contienen variedades registradas.");
+                            throw new \Exception("No se puede reducir la capacidad de parcelas del Vivero {$vivero->consecutivo_vivero_ingenio} a {$totalParcelas} porque las últimas parcelas ({$nums}) contienen variedades registradas. Bórralas manualmente.");
                         }
 
-                        \Illuminate\Support\Facades\DB::connection('sivar')
-                            ->table('vivero_parcelas')
-                            ->where('vivero_id', $vivero->id)
-                            ->where('numero_parcela', '>', $totalParcelas)
-                            ->delete();
+                        if (!empty($idsToDelete)) {
+                            \Illuminate\Support\Facades\DB::connection('sivar')
+                                ->table('vivero_parcelas')
+                                ->whereIn('id', $idsToDelete)
+                                ->delete();
+                        }
                     }
 
                     if (request()->has('fecha_siembra')) {
