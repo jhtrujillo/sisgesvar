@@ -1822,7 +1822,7 @@ const selectCaracter = (car: any) => {
     form.value.caracteres_ids = [];
   }
   if (!form.value.caracteres_ids.includes(car.id)) {
-    form.value.caracteres_ids.push(car.id);
+    form.value.caracteres_ids = [...form.value.caracteres_ids, car.id];
   }
   searchCaracter.value = "";
 };

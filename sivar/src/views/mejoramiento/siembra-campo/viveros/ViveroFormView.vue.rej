@@ -1,0 +1,28 @@
+@@ -274,8 +274,8 @@
+               <div class="relative md:col-span-2">
+                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="caracter_id">Carácter (Opcional)</label>
+                 
+-                <div class="flex flex-wrap gap-2 mb-2" v-if="form.caracteres_ids && form.caracteres_ids.length > 0">
+-                  <div v-for="c_id in form.caracteres_ids" :key="c_id" class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-emerald-200">
++                <div class="flex flex-wrap gap-2 mb-2" v-if="selectedCaracteres && selectedCaracteres.length > 0">
++                  <div v-for="c_id in selectedCaracteres" :key="c_id" class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-emerald-200">
+                     {{ getCaracterName(c_id) }}
+                     <button type="button" @click="removeCaracter(c_id)" class="text-emerald-600 hover:text-emerald-900 focus:outline-none">
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+@@ -314,7 +314,7 @@
+                     <div
+                       v-for="car in filteredCaracteres"
+                       :key="car.id"
+-                      v-show="!Array.isArray(form.caracteres_ids) || !form.caracteres_ids.includes(car.id)"
++                      v-show="!selectedCaracteres.includes(car.id)"
+                       @mousedown="selectCaracter(car)"
+                       class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
+                     >
+@@ -1232,6 +1231,7 @@
+ const searchCaracter = ref("");
+ const searchResponsable = ref("");
+ const searchOrigenVivero = ref("");
++const selectedCaracteres = ref<number[]>([]);
+ const showProyectos = ref(false);
+ const showCaracteres = ref(false);
+ const showResponsables = ref(false);

@@ -1,0 +1,167 @@
+--- sivar/src/views/mejoramiento/siembra-campo/viveros/ViveroFormView.vue
++++ sivar/src/views/mejoramiento/siembra-campo/viveros/ViveroFormView.vue
+@@ -274,8 +274,8 @@
+               <div class="relative md:col-span-2">
+                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="caracter_id">Carácter (Opcional)</label>
+                 
+-                <div class="flex flex-wrap gap-2 mb-2" v-if="form.caracteres_ids && form.caracteres_ids.length > 0">
+-                  <div v-for="c_id in form.caracteres_ids" :key="c_id" class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-emerald-200">
++                <div class="flex flex-wrap gap-2 mb-2" v-if="selectedCaracteres && selectedCaracteres.length > 0">
++                  <div v-for="c_id in selectedCaracteres" :key="c_id" class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-emerald-200">
+                     {{ getCaracterName(c_id) }}
+                     <button type="button" @click="removeCaracter(c_id)" class="text-emerald-600 hover:text-emerald-900 focus:outline-none">
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+@@ -314,7 +314,7 @@
+                     <div
+                       v-for="car in filteredCaracteres"
+                       :key="car.id"
+-                      v-show="!Array.isArray(form.caracteres_ids) || !form.caracteres_ids.includes(car.id)"
++                      v-show="!selectedCaracteres.includes(car.id)"
+                       @mousedown="selectCaracter(car)"
+                       class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
+                     >
+@@ -1070,7 +1070,7 @@
+         :viveroIdentificador="form.identificador_unico"
+         :origenParcela="form.origen_parcela"
+         :consecutivoCorte="form.consecutivo_corte"
+-        :caracterId="form.caracteres_ids && form.caracteres_ids.length > 0 ? form.caracteres_ids[0] : ''"
++        :caracterId="selectedCaracteres.length > 0 ? selectedCaracteres[0] : ''"
+         @close="showImportWizard = false"
+         @imported="loadParcelas"
+       />
+@@ -1304,7 +1304,6 @@
+   ambiente: "",
+   responsable_id: "",
+   condicion: "",
+-  caracteres_ids: [] as number[],
+   origen_ingenio: "",
+   origen_hacienda: "",
+   origen_suerte: "",
+@@ -1320,6 +1319,7 @@
+ const searchCaracter = ref("");
+ const searchResponsable = ref("");
+ const searchOrigenVivero = ref("");
++const selectedCaracteres = ref<number[]>([]);
+ const showProyectos = ref(false);
+ const showCaracteres = ref(false);
+ const showResponsables = ref(false);
+@@ -1690,8 +1690,8 @@
+ });
+ 
+ const getCaracterGlobalNombre = () => {
+-  if (!form.value.caracteres_ids || form.value.caracteres_ids.length === 0) return "";
+-  const nombres = form.value.caracteres_ids.map((id) => getCaracterName(id)).filter(n => n !== "");
++  if (selectedCaracteres.value.length === 0) return "";
++  const nombres = selectedCaracteres.value.map((id) => getCaracterName(id)).filter(n => n !== "");
+   return nombres.join(", ");
+ };
+ 
+@@ -1765,14 +1765,14 @@
+   searchProyecto.value = formatProjectName(pry);
+   showProyectos.value = false;
+   // Reset caracter and load new ones
+-  form.value.caracteres_ids = [];
++  selectedCaracteres.value = [];
+   searchCaracter.value = "";
+   loadCaracteres(pry.id_prycto);
+ };
+ 
+ const clearProyecto = () => {
+   form.value.proyecto_id = "";
+   searchProyecto.value = "";
+   showProyectos.value = true;
+-  form.value.caracteres_ids = [];
++  selectedCaracteres.value = [];
+   searchCaracter.value = "";
+   caracteres.value = [];
+@@ -1815,19 +1815,14 @@
+ };
+ 
+ const selectCaracter = (car: any) => {
+-  if (!Array.isArray(form.value.caracteres_ids)) {
+-    form.value.caracteres_ids = [];
+-  }
+-  if (!form.value.caracteres_ids.includes(car.id)) {
+-    form.value.caracteres_ids = [...form.value.caracteres_ids, car.id];
++  if (!selectedCaracteres.value.includes(car.id)) {
++    selectedCaracteres.value.push(car.id);
+   }
+   searchCaracter.value = "";
+ };
+ 
+ const removeCaracter = (id: number) => {
+-  if (!Array.isArray(form.value.caracteres_ids)) {
+-    return;
+-  }
+-  form.value.caracteres_ids = form.value.caracteres_ids.filter((c) => c !== id);
++  selectedCaracteres.value = selectedCaracteres.value.filter((c) => c !== id);
+ };
+ 
+ const selectNewCaracter = async () => {
+@@ -1848,7 +1843,7 @@
+ };
+ 
+ const clearCaracter = () => {
+-  form.value.caracteres_ids = [];
++  selectedCaracteres.value = [];
+   searchCaracter.value = "";
+   showCaracteres.value = true;
+ };
+@@ -2019,10 +2014,13 @@
+   }
+ 
+   isSubmitting.value = true;
++  
++  const payload = { ...form.value, caracteres_ids: selectedCaracteres.value };
++  
+   try {
+ 
+     if (isEditing.value) {
+-      await viverosServices.updateVivero(route.params.id as string, form.value);
++      await viverosServices.updateVivero(route.params.id as string, payload);
+       toast.success("Vivero actualizado correctamente");
+     } else {
+-      await viverosServices.createVivero(form.value);
++      await viverosServices.createVivero(payload);
+       toast.success("Vivero registrado correctamente");
+     }
+     router.push({ name: "siembra_campo_viveros.show" });
+@@ -2427,7 +2425,6 @@
+     numero_corte: 1,
+     temporada_floracion: "",
+     condicion: "",
+-    caracteres_ids: [],
+     origen_ingenio: "",
+     origen_hacienda: "",
+     origen_suerte: "",
+@@ -2448,7 +2445,8 @@
+       if (vivero.fecha_siembra) {
+         vivero.fecha_siembra = vivero.fecha_siembra.substring(0, 10);
+       }
+-      form.value = { ...vivero, caracteres_ids: [] };
++      form.value = { ...vivero };
++      selectedCaracteres.value = [];
+ 
+       if (form.value.ingenio && form.value.hacienda) {
+         await loadLotesForLocation();
+@@ -2509,10 +2507,10 @@
+ 
+         await loadCaracteres(form.value.proyecto_id);
+         if (form.value.caracteres && form.value.caracteres.length > 0) {
+-          form.value.caracteres_ids = form.value.caracteres.map((c: any) => c.id);
++          selectedCaracteres.value = form.value.caracteres.map((c: any) => c.id);
+         } else if (form.value.caracter_id) {
+-          form.value.caracteres_ids = [form.value.caracter_id];
++          selectedCaracteres.value = [form.value.caracter_id];
+         }
+       }
+       if (form.value.responsable_id) {
+@@ -2552,7 +2550,7 @@
+         await loadCaracteres(form.value.proyecto_id);
+       }
+       if (route.query.caracter_id) {
+-        form.value.caracteres_ids = [Number(route.query.caracter_id)];
++        selectedCaracteres.value = [Number(route.query.caracter_id)];
+       }
+     }
+   } catch (error) {
