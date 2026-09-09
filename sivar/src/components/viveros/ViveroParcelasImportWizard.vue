@@ -64,9 +64,9 @@
                 <p class="text-sm text-slate-600 mb-6 bg-slate-50 p-3 rounded-lg border border-slate-200">
                   Por favor, relaciona las columnas requeridas por el sistema con los encabezados que hemos detectado en tu archivo Excel.
                 </p>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
                   <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Columna Plot (Número)</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Columna Parcela</label>
                     <select
                       v-model="mapping.plot"
                       class="w-full pl-3 pr-10 py-2 border-slate-300 rounded-md border text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-slate-50"
@@ -74,19 +74,6 @@
                       <option value="">-- Seleccionar --</option>
                       <option v-for="col in headers" :key="col" :value="col">{{ col }}</option>
                     </select>
-                  </div>
-                  <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Columna Plot Origen</label>
-                    <select
-                      v-model="mapping.plot_origen"
-                      class="w-full pl-3 pr-10 py-2 border-slate-300 rounded-md border text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-slate-50"
-                    >
-                      <option value="">-- Opcional --</option>
-                      <option v-for="col in headers" :key="col" :value="col">{{ col }}</option>
-                    </select>
-                    <p class="text-[10px] text-slate-500 mt-2 font-mono bg-slate-100 p-1 rounded">
-                      El ID Plot se autocalculará como: {{ viveroIdentificador }}-XX
-                    </p>
                   </div>
                   <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm border-l-4 border-l-cenicana">
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Columna Variedad</label>
@@ -296,7 +283,6 @@ const rawData = ref<any[]>([]);
 
 const mapping = ref({
   plot: "",
-  plot_origen: "",
   variedad: ""
 });
 
@@ -336,7 +322,7 @@ const resetState = () => {
   selectedSheet.value = "";
   headers.value = [];
   rawData.value = [];
-  mapping.value = { plot: "", plot_origen: "", variedad: "" };
+  mapping.value = { plot: "", variedad: "" };
   conflicts.value = [];
   readyToImport.value = [];
   isSubmitting.value = false;
@@ -383,11 +369,8 @@ const processSheet = () => {
   headers.value = (data[0] as string[]).map((h) => String(h).trim()).filter((h) => h);
 
   // Auto-guess columns
-  const plotCol = headers.value.find((h) => h.toLowerCase().includes("plot") && !h.toLowerCase().includes("origen"));
+  const plotCol = headers.value.find((h) => (h.toLowerCase().includes("plot") || h.toLowerCase().includes("parcela")) && !h.toLowerCase().includes("origen") && !h.toLowerCase().includes("iorigen"));
   if (plotCol) mapping.value.plot = plotCol;
-
-  const plotOrigenCol = headers.value.find((h) => h.toLowerCase().includes("origen") || h.toLowerCase().includes("iorigen"));
-  if (plotOrigenCol) mapping.value.plot_origen = plotOrigenCol;
 
   const varCol = headers.value.find((h) => h.toLowerCase().includes("variedad"));
   if (varCol) mapping.value.variedad = varCol;
@@ -473,19 +456,12 @@ const validateData = async () => {
 
     const exactMatch = varMap.get(varVal.toLowerCase());
 
-    const getIdPlotOrigen = (pOrigenVal: any) => {
-      if (props.origenParcela && props.consecutivoCorte) {
-        return `${props.origenParcela}-${props.consecutivoCorte}`;
-      }
-      return pOrigenVal ? `${props.viveroIdentificador}-${pOrigenVal}` : null;
-    };
-
     if (exactMatch) {
       readyToImport.value.push({
         numero_parcela: plotVal,
         variedad_id: exactMatch.id_nm_vrdad,
-        numero_parcela_origen: plotOrigenVal,
-        id_plot_origen: getIdPlotOrigen(plotOrigenVal),
+        numero_parcela_origen: null,
+        id_plot_origen: `${props.viveroIdentificador}-${plotVal}`,
         caracter_id: props.caracterId || null
       });
     } else {
@@ -556,18 +532,12 @@ const submitImport = async () => {
   const payload = [
     ...readyToImport.value,
     ...conflicts.value.map((c) => {
-      const plotOrigenVal = mapping.value.plot_origen ? c.row[mapping.value.plot_origen] : null;
-      const getIdPlotOrigen = (pOrigenVal: any) => {
-        if (props.origenParcela && props.consecutivoCorte) {
-          return `${props.origenParcela}-${props.consecutivoCorte}`;
-        }
-        return pOrigenVal ? `${props.viveroIdentificador}-${pOrigenVal}` : null;
-      };
+      const plotVal = c.row[mapping.value.plot];
       return {
-        numero_parcela: c.row[mapping.value.plot],
+        numero_parcela: plotVal,
         variedad_id: c.resolvedId,
-        numero_parcela_origen: plotOrigenVal,
-        id_plot_origen: getIdPlotOrigen(plotOrigenVal),
+        numero_parcela_origen: null,
+        id_plot_origen: `${props.viveroIdentificador}-${plotVal}`,
         caracter_id: props.caracterId || null
       };
     })
