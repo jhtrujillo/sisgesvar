@@ -28,8 +28,8 @@ class ViveroController extends Controller
         $viveros = DB::connection('sivar')->table('viveros')
             ->where('identificador_unico', 'like', "%{$q}%")
             ->orWhere('nombre', 'like', "%{$q}%")
-            ->orWhere('hacienda_codigo', 'like', "%{$q}%")
-            ->select('id', 'identificador_unico', 'hacienda_codigo as hacienda', 'ingenio_codigo as ingenio', 'lote_codigo as suerte', 'consecutivo_vivero_ingenio')
+            ->orWhere('hacienda', 'like', "%{$q}%")
+            ->select('id', 'identificador_unico', 'hacienda', 'ingenio', 'suerte', 'consecutivo_vivero_ingenio')
             ->limit(10)
             ->get();
             

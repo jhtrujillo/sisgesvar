@@ -172,9 +172,9 @@ class FloracionImportController extends Controller
             }
 
             $inserts[] = [
-                'hcnda' => $vivero->hacienda_codigo,
+                'hcnda' => $vivero->hacienda,
                 'fcha' => $fechaParsed,
-                'lte' => $vivero->lote_codigo,
+                'lte' => $vivero->suerte,
                 'prcla' => $excelParcela,
                 'vrdad' => $excelVariedad,
                 'flrcion' => $floracionTipo ?? 'Natural',
