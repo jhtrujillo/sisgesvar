@@ -432,10 +432,6 @@ const findBestMatch = (term: string) => {
     }
   }
 
-  // Auto-assign if distance is 3 or less (minor typo)
-  if (minDistance <= 3 && bestMatch) {
-    return bestMatch;
-  }
   return null;
 };
 
