@@ -93,22 +93,23 @@ class ViveroParcelaController extends Controller
                 $id_plot_origen = (isset($data['id_plot_origen']) && $data['id_plot_origen'] !== '') ? $data['id_plot_origen'] : null;
                 $caracter_id = (isset($data['caracter_id']) && $data['caracter_id'] !== '') ? $data['caracter_id'] : null;
 
-                // Check if exists (either plot or variedad)
-                $existsPlot = $vivero->parcelas()->where('numero_parcela', $data['numero_parcela'])->exists();
-                if ($existsPlot) continue;
-
                 if ($data['variedad_id'] !== null && $data['variedad_id'] !== '') {
-                    $existsVariedad = $vivero->parcelas()->where('variedad_id', $data['variedad_id'])->exists();
+                    $existsVariedad = $vivero->parcelas()
+                        ->where('variedad_id', $data['variedad_id'])
+                        ->where('numero_parcela', '!=', $data['numero_parcela'])
+                        ->exists();
                     if ($existsVariedad) continue;
                 }
 
-                $parcela = $vivero->parcelas()->create([
-                    'numero_parcela' => $data['numero_parcela'],
-                    'variedad_id' => $data['variedad_id'],
-                    'numero_parcela_origen' => $numero_parcela_origen,
-                    'id_plot_origen' => $id_plot_origen,
-                    'caracter_id' => $caracter_id,
-                ]);
+                $parcela = $vivero->parcelas()->updateOrCreate(
+                    ['numero_parcela' => $data['numero_parcela']],
+                    [
+                        'variedad_id' => $data['variedad_id'],
+                        'numero_parcela_origen' => $numero_parcela_origen,
+                        'id_plot_origen' => $id_plot_origen,
+                        'caracter_id' => $caracter_id,
+                    ]
+                );
                 
                 $insertedIds[] = $parcela->id;
             }
