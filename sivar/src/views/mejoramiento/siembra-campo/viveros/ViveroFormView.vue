@@ -422,7 +422,7 @@
                   >
                     <option value="">Seleccione un Lote</option>
                     <option v-for="lote in lotes" :key="lote.id" :value="lote.id">
-                      {{ lote.nombre_lote }} (Año: {{ lote.viveros && lote.viveros.length ? new Date(lote.viveros[0].fecha_siembra).getFullYear() : 'N/A' }} | Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
+                      {{ lote.nombre_lote }} (Año: {{ lote.viveros && lote.viveros.length ? lote.viveros[0].fecha_siembra.split('-')[0] : 'N/A' }} | Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
                     </option>
                   </select>
                   <button
@@ -1576,7 +1576,7 @@ const filteredOrigenViveros = computed(() => {
 const selectOrigenVivero = async (v: any) => {
   viveroSeleccionadoOrigen.value = v;
   form.value.origen_ingenio = v.ingenio || "";
-  form.value.origen_anio = v.fecha_siembra ? new Date(v.fecha_siembra).getFullYear() : null;
+  form.value.origen_anio = v.fecha_siembra ? Number(v.fecha_siembra.split('-')[0]) : null;
 
   await loadHaciendasOrigen(false);
   form.value.origen_hacienda = v.hacienda || "";
