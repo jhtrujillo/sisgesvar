@@ -1671,21 +1671,30 @@ const parcelaForm = ref({
 });
 
 const filteredParcelas = computed(() => {
-  if (!searchParcela.value) return parcelas.value;
-  const q = searchParcela.value.toLowerCase();
-  return parcelas.value.filter((p) => {
-    const inheritedCaracter = getCaracterGlobalNombre();
-    const activeCaracter = p.caracter?.nombre || inheritedCaracter || "N/A";
+  let filtered = parcelas.value;
+  
+  if (!showEmptyPlots.value) {
+    filtered = filtered.filter((p) => p.variedad_id || p.variedad);
+  }
 
-    return (
-      p.numero_parcela?.toString().includes(q) ||
-      p.variedad?.nm_vrdad?.toLowerCase().includes(q) ||
-      p.variedad?.pdgree?.toLowerCase().includes(q) ||
-      p.numero_parcela_origen?.toString().includes(q) ||
-      p.id_plot_origen?.toLowerCase().includes(q) ||
-      activeCaracter.toLowerCase().includes(q)
-    );
-  });
+  if (searchParcela.value) {
+    const q = searchParcela.value.toLowerCase();
+    filtered = filtered.filter((p) => {
+      const inheritedCaracter = getCaracterGlobalNombre();
+      const activeCaracter = p.caracter?.nombre || inheritedCaracter || "N/A";
+
+      return (
+        p.numero_parcela?.toString().includes(q) ||
+        p.variedad?.nm_vrdad?.toLowerCase().includes(q) ||
+        p.variedad?.pdgree?.toLowerCase().includes(q) ||
+        p.numero_parcela_origen?.toString().includes(q) ||
+        p.id_plot_origen?.toLowerCase().includes(q) ||
+        activeCaracter.toLowerCase().includes(q)
+      );
+    });
+  }
+  
+  return filtered;
 });
 
 const currentPage = ref(1);
