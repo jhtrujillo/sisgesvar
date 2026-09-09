@@ -417,7 +417,7 @@ const performValidation = async () => {
     formData.append('mapping', JSON.stringify(mapping.value));
     
     // Validate only endpoint
-    const response = await api.post(`/siembra-campo/floracion/validate-import`, formData, {
+    const response = await api.post(`${urls.API_URL}siembra-campo/floracion/validate-import`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     
@@ -445,7 +445,7 @@ const submitImport = async () => {
     formData.append('sheet_name', selectedSheet.value);
     formData.append('mapping', JSON.stringify(mapping.value));
     
-    await api.post(`/siembra-campo/floracion/execute-import`, formData, {
+    await api.post(`${urls.API_URL}siembra-campo/floracion/execute-import`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     
