@@ -453,9 +453,16 @@ const validateData = async () => {
     varMap.set(v.nm_vrdad.toLowerCase().trim(), v);
   });
 
+  // Get unique rows based on the plot column
+  const uniqueRows = [];
+  const seenPlots = new Set();
+  
   rawData.value.forEach((row) => {
     const plotVal = row[mapping.value.plot];
     if (plotVal === undefined || plotVal === null || plotVal === "") return; // Skip empty rows
+    
+    if (seenPlots.has(plotVal)) return; // Skip duplicates
+    seenPlots.add(plotVal);
 
     const varVal = row[mapping.value.variedad] ? String(row[mapping.value.variedad]).trim() : "";
     const plotOrigenVal = mapping.value.plot_origen ? row[mapping.value.plot_origen] : null;
