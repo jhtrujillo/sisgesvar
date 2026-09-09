@@ -304,7 +304,7 @@
                   >
                     <div
                       v-if="searchCaracter && !exactMatchCaracter"
-                      @mousedown="selectNewCaracter"
+                      @mousedown.prevent="selectNewCaracter"
                       class="cursor-pointer select-none py-2 px-3.5 hover:bg-emerald-50 text-cenicana font-bold border-b border-slate-100 transition-colors"
                     >
                       + Agregar nuevo: "{{ searchCaracter }}"
@@ -315,7 +315,7 @@
                     <div
                       v-for="car in filteredCaracteres"
                       :key="car.id"
-                      @mousedown="selectCaracter(car)"
+                      @mousedown.prevent="selectCaracter(car)"
                       class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
                       :class="form.caracter_id === car.id ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
                     >
@@ -2467,7 +2467,7 @@ const resetAndLoad = async () => {
       if (vivero.fecha_siembra) {
         vivero.fecha_siembra = vivero.fecha_siembra.substring(0, 10);
       }
-      form.value = { ...vivero };
+      form.value = { ...vivero, caracteres_ids: [] };
 
       if (form.value.ingenio && form.value.hacienda) {
         await loadLotesForLocation();
