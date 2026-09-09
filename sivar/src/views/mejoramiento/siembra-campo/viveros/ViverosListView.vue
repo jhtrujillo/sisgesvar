@@ -520,6 +520,39 @@
         </div>
       </div>
     </div>
+    <!-- Confirm Dialog -->
+    <div v-if="confirmDialog.isOpen" class="fixed inset-0 flex items-center justify-center bg-slate-900/60 z-[100] transition-opacity duration-300">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 overflow-hidden border border-slate-100 transform transition-all">
+        <div class="p-6 text-center">
+          <div :class="['mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4', confirmDialog.isDanger ? 'bg-red-100' : 'bg-amber-100']">
+            <svg v-if="confirmDialog.isDanger" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <svg v-else class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-lg leading-6 font-bold text-slate-900 mb-2">{{ confirmDialog.title }}</h3>
+          <p class="text-sm text-slate-500 whitespace-pre-line">{{ confirmDialog.message }}</p>
+        </div>
+        <div class="bg-slate-50 px-4 py-3 sm:px-6 flex flex-row-reverse gap-2">
+          <button 
+            type="button" 
+            @click="handleConfirm"
+            :class="['w-full inline-flex justify-center rounded-lg border border-transparent px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm focus:outline-none sm:w-auto', confirmDialog.isDanger ? 'bg-red-600 hover:bg-red-700' : 'bg-cenicana hover:bg-cenicana-800']"
+          >
+            {{ confirmDialog.confirmText }}
+          </button>
+          <button 
+            type="button" 
+            @click="confirmDialog.isOpen = false"
+            class="mt-3 w-full inline-flex justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none sm:mt-0 sm:w-auto"
+          >
+            {{ confirmDialog.cancelText }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -532,6 +565,35 @@ import { useToast } from "vue-toastification";
 import ViveroTreeComponent from "@/components/viveros/ViveroTreeComponent.vue";
 
 const toast = useToast();
+
+const confirmDialog = ref({
+  isOpen: false,
+  title: "",
+  message: "",
+  confirmText: "Confirmar",
+  cancelText: "Cancelar",
+  isDanger: false,
+  onConfirm: () => {}
+});
+
+const showConfirm = (options) => {
+  confirmDialog.value = {
+    isOpen: true,
+    title: options.title || "Confirmar acción",
+    message: options.message || "¿Está seguro?",
+    confirmText: options.confirmText || "Confirmar",
+    cancelText: options.cancelText || "Cancelar",
+    isDanger: options.isDanger || false,
+    onConfirm: options.onConfirm
+  };
+};
+
+const handleConfirm = () => {
+  if (confirmDialog.value.onConfirm) {
+    confirmDialog.value.onConfirm();
+  }
+  confirmDialog.value.isOpen = false;
+};
 const router = useRouter();
 const viveros = ref<any[]>([]);
 const loading = ref(true);
@@ -687,17 +749,24 @@ const loadViveros = async () => {
 };
 
 const deleteVivero = async (id: number) => {
-  if (confirm("¿Está seguro de que desea eliminar este vivero?")) {
-    try {
-      await viverosServices.deleteVivero(id);
-      toast.success("Vivero eliminado correctamente");
-      loadViveros();
-    } catch (error: any) {
-      console.error("Error deleting vivero:", error);
-      const msg = error.response?.data?.message || "Error al eliminar el vivero";
-      toast.error(msg);
+  showConfirm({
+    title: "Eliminar Vivero",
+    message: "¿Está seguro de que desea eliminar este vivero? Esta acción no se puede deshacer.",
+    confirmText: "Eliminar",
+    cancelText: "Cancelar",
+    isDanger: true,
+    onConfirm: async () => {
+      try {
+        await viverosServices.deleteVivero(id);
+        toast.success("Vivero eliminado correctamente");
+        loadViveros();
+      } catch (error: any) {
+        console.error("Error deleting vivero:", error);
+        const msg = error.response?.data?.message || "Error al eliminar el vivero";
+        toast.error(msg);
+      }
     }
-  }
+  });
 };
 
 const formatDate = (dateString: string) => {
@@ -769,16 +838,23 @@ const closeHistorialModal = () => {
 };
 
 const confirmarCosecha = async (vivero: any) => {
-  if (confirm(`¿Está seguro de que desea marcar el vivero ${vivero.identificador_unico} como COSECHADO?\n\nEsto finalizará su ciclo y liberará su ID (${vivero.consecutivo_vivero_ingenio}) para que pueda ser reutilizado.`)) {
-    try {
-      await api.post(`/siembra-campo/viveros/${vivero.id}/marcar-cosechado`, {});
-      toast.success("Vivero marcado como cosechado correctamente.");
-      await loadViveros();
-    } catch (error) {
-      console.error("Error marcando como cosechado:", error);
-      toast.error("Error al marcar el vivero como cosechado.");
+  showConfirm({
+    title: "Marcar como Cosechado",
+    message: `¿Está seguro de que desea marcar el vivero ${vivero.identificador_unico} como COSECHADO?\n\nEsto finalizará su ciclo y liberará su ID (${vivero.consecutivo_vivero_ingenio}) para que pueda ser reutilizado.`,
+    confirmText: "Cosechar Vivero",
+    cancelText: "Cancelar",
+    isDanger: true,
+    onConfirm: async () => {
+      try {
+        await api.post(`/siembra-campo/viveros/${vivero.id}/marcar-cosechado`, {});
+        toast.success("Vivero marcado como cosechado correctamente.");
+        await loadViveros();
+      } catch (error) {
+        console.error("Error marcando como cosechado:", error);
+        toast.error("Error al marcar el vivero como cosechado.");
+      }
     }
-  }
+  });
 };
 
 onMounted(() => {
