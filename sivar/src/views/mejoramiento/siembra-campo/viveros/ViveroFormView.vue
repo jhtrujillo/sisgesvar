@@ -1168,6 +1168,7 @@
         v-if="isEditing && route.params.id"
         :show="showImportWizard"
         :variedades="variedades"
+        :caracteres="caracteres"
         :viveroId="route.params.id"
         :viveroIdentificador="form.identificador_unico"
         :origenParcela="form.origen_parcela"

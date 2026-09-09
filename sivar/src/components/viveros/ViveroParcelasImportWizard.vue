@@ -5,7 +5,7 @@
       <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
       <div
-        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl w-full"
+        class="inline-block align-bottom bg-white rounded-lg text-left overflow-visible shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl w-full"
       >
         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
           <div class="sm:flex sm:items-start">
@@ -64,7 +64,7 @@
                 <p class="text-sm text-slate-600 mb-6 bg-slate-50 p-3 rounded-lg border border-slate-200">
                   Por favor, relaciona las columnas requeridas por el sistema con los encabezados que hemos detectado en tu archivo Excel.
                 </p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
                   <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Columna Parcela</label>
                     <select
@@ -82,6 +82,16 @@
                       class="w-full pl-3 pr-10 py-2 border-slate-300 rounded-md border text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-slate-50"
                     >
                       <option value="">-- Seleccionar --</option>
+                      <option v-for="col in headers" :key="col" :value="col">{{ col }}</option>
+                    </select>
+                  </div>
+                  <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm border-l-4 border-l-blue-400">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Columna Carácter (Opcional)</label>
+                    <select
+                      v-model="mapping.caracter"
+                      class="w-full pl-3 pr-10 py-2 border-slate-300 rounded-md border text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-slate-50"
+                    >
+                      <option value="">-- No incluir --</option>
                       <option v-for="col in headers" :key="col" :value="col">{{ col }}</option>
                     </select>
                   </div>
@@ -149,7 +159,7 @@
                     </div>
                   </div>
 
-                  <div class="max-h-96 overflow-y-auto border border-slate-200 rounded-lg shadow-inner bg-slate-50 relative">
+                  <div class="border border-slate-200 rounded-lg shadow-inner bg-slate-50 relative">
                     <div v-if="displayedConflicts.length === 0" class="p-8 text-center text-slate-500">¡No hay filas para mostrar con este filtro!</div>
                     <table v-else class="min-w-full divide-y divide-slate-200 text-sm">
                       <thead class="bg-slate-100 sticky top-0 z-10">
@@ -190,7 +200,7 @@
                               </div>
                               <div
                                 v-if="conflict.showDropdown"
-                                class="absolute z-20 w-[90%] mt-1 bg-white shadow-xl max-h-48 rounded-lg py-1 text-xs overflow-auto border border-slate-200 left-4"
+                                class="absolute z-50 w-full mt-1 bg-white shadow-2xl max-h-60 rounded-lg py-1 text-xs overflow-auto border border-slate-300 left-0"
                               >
                                 <div v-if="getFilteredVarieties(conflict.searchTerm).length === 0" class="px-3 py-2 text-slate-400">Sin resultados</div>
                                 <div
@@ -268,6 +278,7 @@ import varietysServices from "@/services/varietys.services";
 const props = defineProps<{
   show: boolean;
   variedades: any[];
+  caracteres: any[];
   viveroId: string | number;
   viveroIdentificador: string;
   origenParcela?: string;
@@ -286,10 +297,7 @@ const selectedSheet = ref("");
 const headers = ref<string[]>([]);
 const rawData = ref<any[]>([]);
 
-const mapping = ref({
-  plot: "",
-  variedad: ""
-});
+const mapping = ref({ plot: "", variedad: "", caracter: "" });
 
 const conflicts = ref<any[]>([]);
 const readyToImport = ref<any[]>([]);
@@ -381,6 +389,9 @@ const processSheet = () => {
   const varCol = headers.value.find((h) => h.toLowerCase().includes("variedad"));
   if (varCol) mapping.value.variedad = varCol;
 
+  const carCol = headers.value.find((h) => h.toLowerCase().includes("caracter") || h.toLowerCase().includes("carácter"));
+  if (carCol) mapping.value.caracter = carCol;
+
   const raw = XLSX.utils.sheet_to_json(worksheet);
   rawData.value = raw.map((row: any) => {
     const newRow: any = {};
@@ -464,6 +475,16 @@ const validateData = async () => {
     const plotOrigenVal = mapping.value.plot_origen ? row[mapping.value.plot_origen] : null;
 
     const exactMatch = varMap.get(varVal.toLowerCase());
+    
+    // Find caracter match if mapped
+    let resolvedCaracterId = props.caracterId || null;
+    if (mapping.value.caracter && row[mapping.value.caracter]) {
+      const carText = String(row[mapping.value.caracter]).trim().toLowerCase();
+      const carMatch = props.caracteres.find(c => c.nombre.toLowerCase() === carText || c.nombre.toLowerCase().includes(carText));
+      if (carMatch) {
+        resolvedCaracterId = carMatch.id;
+      }
+    }
 
     if (exactMatch) {
       readyToImport.value.push({
@@ -471,7 +492,7 @@ const validateData = async () => {
         variedad_id: exactMatch.id_nm_vrdad,
         numero_parcela_origen: null,
         id_plot_origen: `${props.viveroIdentificador}-${plotVal}`,
-        caracter_id: props.caracterId || null
+        caracter_id: resolvedCaracterId
       });
     } else {
       // Try to find a fuzzy best match
@@ -588,12 +609,22 @@ const submitImport = async () => {
     ...readyToImport.value,
     ...conflicts.value.map((c) => {
       const plotVal = c.row[mapping.value.plot];
+      
+      let resolvedCaracterId = props.caracterId || null;
+      if (mapping.value.caracter && c.row[mapping.value.caracter]) {
+        const carText = String(c.row[mapping.value.caracter]).trim().toLowerCase();
+        const carMatch = props.caracteres.find(car => car.nombre.toLowerCase() === carText || car.nombre.toLowerCase().includes(carText));
+        if (carMatch) {
+          resolvedCaracterId = carMatch.id;
+        }
+      }
+
       return {
         numero_parcela: plotVal,
         variedad_id: c.resolvedId,
         numero_parcela_origen: null,
         id_plot_origen: `${props.viveroIdentificador}-${plotVal}`,
-        caracter_id: props.caracterId || null
+        caracter_id: resolvedCaracterId
       };
     })
   ];
