@@ -214,6 +214,7 @@ class FloracionImportController extends Controller
                 'vivero' => $vivero->identificador_unico,
                 'id_smbra_cmpo' => $vivero->id, // Store reference
                 'estado' => '1',
+                'id_pr' => $vivero->proyecto_id,
                 'usrio_edto' => auth()->id() ?? 1,
                 'fcha_edto' => $now
             ];
