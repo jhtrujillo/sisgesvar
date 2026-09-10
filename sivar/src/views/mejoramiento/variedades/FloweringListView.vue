@@ -123,9 +123,14 @@ const isLoading = ref(false);
 const isImportWizardOpen = ref(false);
 
 const onImportSuccess = async () => {
-  isLoading.value = true;
-  await floweringListsStore.loadFloweringList(verHistorico.value);
-  isLoading.value = false;
+  try {
+    isLoading.value = true;
+    await floweringListsStore.getFlowering(verHistorico.value);
+  } catch (e) {
+    console.error('Error reloading flowering list:', e);
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 onMounted(async () => {
