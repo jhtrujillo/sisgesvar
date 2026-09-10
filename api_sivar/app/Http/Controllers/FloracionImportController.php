@@ -213,7 +213,7 @@ class FloracionImportController extends Controller
                 'polen' => is_numeric($polen) ? (int)$polen : null,
                 'vivero' => $vivero->identificador_unico,
                 'id_smbra_cmpo' => $vivero->id, // Store reference
-                'estado' => 'Activo',
+                'estado' => '1',
                 'usrio_edto' => auth()->id() ?? 1,
                 'fcha_edto' => $now
             ];
