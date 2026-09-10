@@ -1,4 +1,5 @@
 <template>
+<div>
   <div class="space-y-6 w-full max-w-[98%] mx-auto px-2 sm:px-4 pt-4">
     <router-link :to="{ name: 'crossing_weighted.show' }">
       <button
@@ -290,6 +291,7 @@
     :fatherName="comparatorFather"
     :initiallyViable="comparatorInitiallyViable"
   />
+</div>
 </template>
 
 <script setup lang="ts">
@@ -362,14 +364,6 @@ onMounted(() => {
     selectedCdCntble.value = storedCdCntble;
   }
 
-  // Agregar cruzamientos seleccionados que ya están en true
-  MatrixCrossingStore.matrixCrossingsFilter.viabilidad?.forEach((viabilidadRow) => {
-    viabilidadRow.forEach((car: any) => {
-      if (car?.viabilidad) {
-        addCruzamientoSeleccionado(car);
-      }
-    });
-  });
 });
 
 // Watch para recargar los datos al cambiar los filtros con indicador de carga
@@ -379,14 +373,6 @@ watch([selectedMegaAmbiente, selectedCdCntble, selectedVariety], async ([newMega
     try {
       await MatrixCrossingStore.getMatrixCrossingList(newCdCntble, newCdCntble, newVariety, newMegaAmbiente);
 
-      // Agregar cruzamientos seleccionados que ya están en true tras cargar los datos
-      MatrixCrossingStore.matrixCrossingsFilter.viabilidad?.forEach((viabilidadRow) => {
-        viabilidadRow.forEach((car: any) => {
-          if (car?.viabilidad) {
-            addCruzamientoSeleccionado(car);
-          }
-        });
-      });
     } catch (error) {
       console.error("Error al cargar la matriz de cruzamientos:", error);
       toast.error("Error al calcular la matriz de cruzamientos");
