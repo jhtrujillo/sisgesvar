@@ -1285,6 +1285,9 @@ async function loadSuggestionCrossings() {
         selectedMegaAmbiente.value
       );
 
+      if (!ParametizeWeightedStore.parametizeWeightedCrossingFilter || !ParametizeWeightedStore.parametizeWeightedCrossingFilter.ponderados) {
+        await ParametizeWeightedStore.getParametizeWeightedCrossingList(selectedCdCntble.value, selectedMegaAmbiente.value);
+      }
       // Restaurar borrador de cruzamientos deshabilitados si existe
       const storedDraft = localStorage.getItem(draftKey.value);
       if (storedDraft) {
