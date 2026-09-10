@@ -155,85 +155,49 @@ watch(verHistorico, async (nuevoValor) => {
  */
 const conlumnsInfo: Array<Column> = [
   // ==========================================
-  // COLUMNAS VISIBLES POR DEFECTO (AGRUPADAS)
+  // COLUMNAS VISIBLES POR DEFECTO
   // ==========================================
-
-  // Identificador único de la floración en la base de datos
-  { keyName: "id_flrcion", text: "Id" },
-
-  // Nombre de la variedad de la planta o especie botánica recolectada
+  { keyName: "vivero", text: "Vivero" },
   { keyName: "vrdad", text: "Variedad" },
-
-  // Columna combinada que muestra el día y la hora exacta en que se registró la floración
-  {
-    keyName: "fecha_hora",
-    text: "Fecha y Hora",
-    formatFromRow: (row) => `${row.fcha || ""} ${row.hra || ""}`.trim()
-  },
-
-  // Columna combinada que resume la localización geográfica y parcelaria (Hacienda, Lote, Parcela, Surco)
+  { keyName: "nmbre_crcter", text: "Caracter" },
   {
     keyName: "ubicacion",
     text: "Ubicación",
     formatFromRow: (row) => `${row.hcnda || ""} (L${row.lte || "-"} P${row.prcla || "-"} S${row.srco || "-"})`
   },
-
-  // Columna combinada que muestra el sexo original de la planta y, si hubo una mutación/cambio inducido, lo indica con una flecha
   {
     keyName: "sexo_comp",
     text: "Sexo",
     formatFromRow: (row) => (row.cmbio_sxo ? `${row.sxo} ➝ ${row.cmbio_sxo}` : row.sxo || "N/A")
   },
-
-  // Porcentaje de viabilidad o cantidad del polen disponible en la flor
   {
     keyName: "polen_comp",
     text: "Polen",
     formatFromRow: (row) => (row.polen ? `${row.polen}%` : "N/A")
   },
 
-  // Nombre del proyecto de investigación genética al cual está asociada esta flor
-  { keyName: "nm_prycto", text: "Proyecto" },
-
   // ==========================================
-  // COLUMNAS OCULTAS POR DEFECTO (DETALLADAS)
-  // Disponibles en el botón 'Columnas' y en Exportación Excel
+  // COLUMNAS OCULTAS POR DEFECTO
   // ==========================================
-
-  // Fecha bruta sin hora
+  { keyName: "id_flrcion", text: "Id", hiddenByDefault: true },
+  {
+    keyName: "fecha_hora",
+    text: "Fecha y Hora",
+    hiddenByDefault: true,
+    formatFromRow: (row) => `${row.fcha || ""} ${row.hra || ""}`.trim()
+  },
+  { keyName: "nm_prycto", text: "Proyecto", hiddenByDefault: true },
   { keyName: "fcha", text: "Fecha (Original)", hiddenByDefault: true },
-
-  // Hora bruta sin fecha
   { keyName: "hra", text: "Hora (Original)", hiddenByDefault: true },
-
-  // Nombre de la hacienda o estación experimental
   { keyName: "hcnda", text: "Hacienda (Original)", hiddenByDefault: true },
-
-  // Número o identificador del lote en el campo
   { keyName: "lte", text: "Lote (Original)", hiddenByDefault: true },
-
-  // Número o identificador de la parcela específica
   { keyName: "prcla", text: "Parcela (Original)", hiddenByDefault: true },
-
-  // Número de surco donde está sembrada la planta
   { keyName: "srco", text: "Surco (Original)", hiddenByDefault: true },
-
-  // Sexo biológico base de la planta (Ej. Macho, Hembra, etc.)
   { keyName: "sxo", text: "Sexo (Original)", hiddenByDefault: true },
-
-  // Sexo secundario o modificado por inducción/químicos
   { keyName: "cmbio_sxo", text: "Cambio de Sexo (Original)", hiddenByDefault: true },
-
-  // Valor numérico crudo del polen
   { keyName: "polen", text: "Polen (Original)", hiddenByDefault: true },
-
-  // Estado fenológico o tipo de floración observada
   { keyName: "flrcion", text: "Floración", hiddenByDefault: true },
-
-  // Grupo de cruzamiento o familia al que pertenece
   { keyName: "grpo", text: "Grupo", hiddenByDefault: true },
-
-  // Conteos sucesivos de granos de polen viables vs totales en diferentes mediciones o muestras (1 a 5)
   { keyName: "grnos_vbles1", text: "Granos Viables 1", hiddenByDefault: true },
   { keyName: "ttal_grnos1", text: "Total Granos 1", hiddenByDefault: true },
   { keyName: "grnos_vbles2", text: "Granos Viables 2", hiddenByDefault: true },
@@ -244,26 +208,14 @@ const conlumnsInfo: Array<Column> = [
   { keyName: "ttal_grnos4", text: "Total Granos 4", hiddenByDefault: true },
   { keyName: "grnos_vbles5", text: "Granos Viables 5", hiddenByDefault: true },
   { keyName: "ttal_grnos5", text: "Total Granos 5", hiddenByDefault: true },
-
-  // Booleano o indicador si la flor fue seleccionada explícitamente para un cruce
   { keyName: "slcciondo", text: "Seleccionado", hiddenByDefault: true },
-
-  // Características morfológicas relevantes de la planta
-  { keyName: "nmbre_crcter", text: "Caracter", hiddenByDefault: true },
-
-  // Nombre o id del vivero de aclimatación, si aplica
-  { keyName: "vivero", text: "Vivero", hiddenByDefault: true },
-
-  // Notas textuales adicionales hechas por el investigador en el campo
   { keyName: "obsrvcn", text: "Observación", hiddenByDefault: true },
-
-  // Nombre o ID del usuario del sistema que ingresó o modificó este registro
-  { keyName: "usuario", text: "Usuario que Editó", hiddenByDefault: true },
-
-  // Ingenio azucarero o institución primaria responsable
-  { keyName: "ingnio", text: "Ingenio", hiddenByDefault: true },
-
-  // Identificador referencial a la tabla de siembras de campo
-  { keyName: "id_smbra_cmpo", text: "Id Siembra de Campo", hiddenByDefault: true }
+  {
+    keyName: "usrio_edto_comp",
+    text: "Editado Por",
+    hiddenByDefault: true,
+    formatFromRow: (row) => `${row.prmer_nmbre || ""} ${row.aplldo || ""}`.trim()
+  },
+  { keyName: "fcha_edto", text: "Fecha de Edición", hiddenByDefault: true }
 ];
 </script>
