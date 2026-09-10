@@ -44,13 +44,16 @@ class FloracionImportController extends Controller
         }
 
         $file = $request->file('file');
-        $data = Excel::toArray(new \stdClass(), $file);
         
-        // Find sheet
-        $sheetIndex = 0; // Default
-        // This is a simplified read, Excel::toArray reads all sheets. 
-        // We will just read the first sheet for now unless we do custom PhpSpreadsheet logic.
-        $rows = $data[0]; 
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getPathname());
+        $sheetName = $request->input('sheet_name');
+        
+        $worksheet = $spreadsheet->getSheetByName($sheetName);
+        if (!$worksheet) {
+            $worksheet = $spreadsheet->getActiveSheet();
+        }
+        
+        $rows = $worksheet->toArray(); 
 
         $header = array_map('trim', $rows[0]);
         $errors = [];
@@ -144,8 +147,15 @@ class FloracionImportController extends Controller
         $vivero = DB::connection('sivar')->table('viveros')->where('id', $viveroId)->first();
         
         $file = $request->file('file');
-        $data = Excel::toArray(new \stdClass(), $file);
-        $rows = $data[0]; 
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getPathname());
+        $sheetName = $request->input('sheet_name');
+        
+        $worksheet = $spreadsheet->getSheetByName($sheetName);
+        if (!$worksheet) {
+            $worksheet = $spreadsheet->getActiveSheet();
+        }
+        
+        $rows = $worksheet->toArray(); 
         $header = array_map('trim', $rows[0]);
 
         $colIndex = [];
