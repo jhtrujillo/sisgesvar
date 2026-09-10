@@ -431,54 +431,28 @@ const getDistancia = (varA: string, varB: string) => {
   return distancias[varA]?.[varB] || "NA";
 };
 
-// Función para agregar un cruzamiento al array si ya está seleccionado
-const addCruzamientoSeleccionado = (car: CruzamientoSeleccionado) => {
-  const cruzamientoSeleccionado = {
-    varA: car?.varA || "N/A",
-    varB: car?.varB || "N/A",
-    viabilidad: car?.viabilidad !== undefined ? car.viabilidad : false,
-    distancia: getDistancia(car?.varA, car?.varB) || "NA",
-    vm: car?.vm || "0",
-    vm2: car?.vm2 || "0"
-  };
 
-  // Verificar si el cruzamiento ya está en la lista
-  const index = MatrixCrossingStore.cruzamientosSeleccionados.findIndex(
-    (c) => c.varA === cruzamientoSeleccionado.varA && c.varB === cruzamientoSeleccionado.varB
-  );
-
-  if (index === -1) {
-    // Si no está, agregarlo
-    MatrixCrossingStore.cruzamientosSeleccionados.push(cruzamientoSeleccionado);
-  }
-};
+// El draftKey debe coincidir con el usado en la vista de Programacion de Cruzamientos
+const draftKey = computed(() => `sivarcc_draft_crossings_${selectedCdCntble.value}_${selectedMegaAmbiente.value}`);
 
 // Función para alternar el cruzamiento cuando se hace click
-const toggleCruzamiento = (car: CruzamientoSeleccionado) => {
-  const cruzamientoSeleccionado = {
-    varA: car?.varA || "N/A",
-    varB: car?.varB || "N/A",
-    viabilidad: car?.viabilidad !== undefined ? car.viabilidad : false,
-    distancia: getDistancia(car?.varA, car?.varB) || "NA",
-    vm: car?.vm || "0",
-    vm2: car?.vm2 || "0"
-  };
+const toggleCruzamiento = (car: any) => {
+  // Mutar la viabilidad localmente
+  car.viabilidad = !car.viabilidad;
 
-  // Verificar si el cruzamiento ya está en la lista
-  const index = MatrixCrossingStore.cruzamientosSeleccionados.findIndex(
-    (c) => c.varA === cruzamientoSeleccionado.varA && c.varB === cruzamientoSeleccionado.varB
-  );
+  // Recolectar todos los cruces deshabilitados para guardarlos en el borrador
+  const disabledCrosses: Array<{ varA: string; varB: string }> = [];
+  const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
+  viabilidades.forEach((row: any) => {
+    row.forEach((c: any) => {
+      if (c && c.viabilidad === false) {
+        disabledCrosses.push({ varA: c.varA, varB: c.varB });
+      }
+    });
+  });
 
-  if (index === -1) {
-    // Si no está en la lista, agregarlo
-    MatrixCrossingStore.cruzamientosSeleccionados.push(cruzamientoSeleccionado);
-  } else {
-    // Si ya está en la lista, removerlo (cuando se deselecciona)
-    MatrixCrossingStore.cruzamientosSeleccionados.splice(index, 1);
-  }
-
-  // Mostrar los cruzamientos seleccionados después de cada interacción
-  console.log("Cruzamientos seleccionados actualmente:", MatrixCrossingStore.cruzamientosSeleccionados);
+  // Guardar en localStorage para que el Paso 3 lo recupere
+  localStorage.setItem(draftKey.value, JSON.stringify(disabledCrosses));
 };
 
 // Función para enviar los cruzamientos y pasar al siguiente paso
