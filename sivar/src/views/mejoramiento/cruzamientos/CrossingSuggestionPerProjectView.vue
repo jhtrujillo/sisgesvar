@@ -1320,8 +1320,12 @@ async function loadSuggestionCrossings() {
         rows.forEach((row: any) => {
           row.forEach((car: any) => {
             if (car && car.varA && car.varB) {
-              const match = savedState.find((d: any) => d.varA === car.varA && d.varB === car.varB);
+
+              const match = savedState.find((d: any) => d.varA === car.varA.trim() && d.varB === car.varB.trim());
               if (match) {
+                if (car.varA === "CP 67-412" && car.varB === "CP 80-1827") {
+                  console.log("🔥 ENCONTRÓ EN DRAFT CP 67-412 x CP 80-1827:", match.viabilidad);
+                }
                 car.viabilidad = match.viabilidad;
                 if (!car.viabilidad) {
                   car.flores_madre = 0;
@@ -1330,7 +1334,12 @@ async function loadSuggestionCrossings() {
                   car.flores_madre = car.flores_madre || 1;
                   car.flores_padre = car.flores_padre || 1;
                 }
+              } else {
+                if (car.varA === "CP 67-412" && car.varB === "CP 80-1827") {
+                  console.log("❌ NO ESTÁ EN DRAFT CP 67-412 x CP 80-1827!");
+                }
               }
+
             }
           });
         });
@@ -1484,7 +1493,7 @@ function toggleCruzamiento(car: any) {
   rows.forEach((row: any) => {
     row.forEach((c: any) => {
       if (c && c.varA && c.varB) {
-        savedState.push({ varA: c.varA, varB: c.varB, viabilidad: !!c.viabilidad });
+        savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad });
       }
     });
   });

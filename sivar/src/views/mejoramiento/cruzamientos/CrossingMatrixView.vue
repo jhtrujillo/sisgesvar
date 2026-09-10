@@ -382,7 +382,7 @@ watch([selectedMegaAmbiente, selectedCdCntble, selectedVariety], async ([newMega
         viabilidades.forEach((row: any) => {
           row.forEach((car: any) => {
             if (car && car.varA && car.varB) {
-              const match = savedState.find((d: any) => d.varA === car.varA && d.varB === car.varB);
+              const match = savedState.find((d: any) => d.varA === car.varA.trim() && d.varB === car.varB.trim());
               if (match) {
                 car.viabilidad = match.viabilidad;
               }
@@ -451,7 +451,7 @@ const toggleCruzamiento = (car: any) => {
   viabilidades.forEach((row: any) => {
     row.forEach((c: any) => {
       if (c && c.varA && c.varB) {
-        savedState.push({ varA: c.varA, varB: c.varB, viabilidad: !!c.viabilidad });
+        savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad });
       }
     });
   });
