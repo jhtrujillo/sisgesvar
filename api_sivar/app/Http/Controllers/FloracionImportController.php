@@ -98,7 +98,8 @@ class FloracionImportController extends Controller
             }
             
             if (!$viveroMatch) {
-                $errors[] = ['row' => $i + 1, 'message' => "El Origen '{$excelVivero}' no coincide con el vivero '{$vivero->identificador_unico}' ni con el ID Plot de la parcela '{$excelParcela}'."];
+                $filename = $request->file('file')->getClientOriginalName();
+$errors[] = ['row' => $i + 1, 'message' => "El Origen '{$excelVivero}' en el archivo '{$filename}' no coincide con el vivero '{$vivero->identificador_unico}' ni con el ID Plot de la parcela '{$excelParcela}'."];
                 continue;
             }
 
