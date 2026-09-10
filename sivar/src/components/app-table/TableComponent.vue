@@ -117,6 +117,52 @@
                   <span class="sr-only">Edit</span>
                 </th>
               </tr>
+              <tr v-if="haveColumnFilters" class="bg-gray-100 border-b border-gray-300">
+                <template v-for="(col, index) in columns" :key="'filter_' + index">
+                  <th
+                    v-if="columnsToShow.includes(col.text)"
+                    scope="col"
+                    class="px-2 py-1 relative"
+                  >
+                    <Popover v-slot="{ open }" class="relative">
+                      <PopoverButton class="flex items-center justify-between w-full rounded border border-gray-200 px-2 py-1 text-xs shadow-sm bg-white hover:bg-gray-50 focus:outline-none">
+                        <span class="truncate text-gray-500 font-normal">
+                           {{ columnFiltersData[col.keyName] && columnFiltersData[col.keyName].length > 0 ? `(${columnFiltersData[col.keyName].length}) Selec...` : 'Todos' }}
+                        </span>
+                        <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </PopoverButton>
+                      <PopoverPanel class="absolute z-50 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg max-h-72 overflow-y-auto">
+                        <div class="p-2 space-y-1">
+                          <div class="flex items-center pb-2 border-b border-gray-100 mb-2">
+                             <span class="text-xs text-blue-600 font-bold cursor-pointer hover:underline" @click="clearColumnFilter(col.keyName)">Limpiar Filtro</span>
+                          </div>
+
+                          <div class="mb-2">
+                            <input 
+                              type="text" 
+                              v-model="columnSearchQueries[col.keyName]" 
+                              placeholder="Buscar..." 
+                              class="block w-full rounded border-gray-300 px-2 py-1 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500 font-normal bg-gray-50"
+                            />
+                          </div>
+                          
+                          <div v-for="val in (columnDistinctValues[col.keyName] || []).filter(v => !columnSearchQueries[col.keyName] || String(v).toLowerCase().includes(columnSearchQueries[col.keyName].toLowerCase()))" :key="val" class="flex items-center">
+                             <input type="checkbox" 
+                               :value="val"
+                               v-model="columnFiltersData[col.keyName]"
+                               @change="filterRecords"
+                               class="h-3 w-3 text-indigo-600 rounded border-gray-300 mr-2 cursor-pointer focus:ring-0"
+                             />
+                             <span class="text-xs text-gray-600 font-normal truncate" :title="val">{{ val }}</span>
+                          </div>
+                          <div v-if="!columnDistinctValues[col.keyName]?.length" class="text-xs text-gray-400 italic py-1 font-normal">Sin datos</div>
+                        </div>
+                      </PopoverPanel>
+                    </Popover>
+                  </th>
+                </template>
+                <th v-if="isDelete || isEditable" class="px-2 py-1"></th>
+              </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 bg-white">
               <template v-for="(row, index) in showedRecords" :key="index">
@@ -229,9 +275,9 @@
 </template>
 
 <script setup lang="ts">
-import { toRefs, ref, watchEffect, watch, onMounted } from "vue";
+import { toRefs, ref, computed, watchEffect, watch, onMounted } from "vue";
 import exportExcel from "./exportExcel";
-import { Combobox, ComboboxButton, ComboboxOptions, ComboboxOption, TransitionRoot } from "@headlessui/vue";
+import { Combobox, ComboboxButton, ComboboxOptions, ComboboxOption, TransitionRoot, Popover, PopoverButton, PopoverPanel } from "@headlessui/vue";
 import type { Column } from "./models";
 import { filterObjectList } from "../../utils";
 import { orderBy, chunk } from "lodash";
@@ -255,6 +301,7 @@ const props = withDefaults(
     nameExcel?: string;
     allowHideColumns?: boolean;
     haveSearch?: boolean;
+    haveColumnFilters?: boolean;
   }>(),
   {
     isOrdened: false,
@@ -264,10 +311,11 @@ const props = withDefaults(
     haveButtonExcel: false,
     nameExcel: "data",
     allowHideColumns: false,
-    haveSearch: false
+    haveSearch: false,
+    haveColumnFilters: false
   }
 );
-const { rows, columns, isOrdened, isDelete, isEditable, otherButtonText, haveButtonAddNew, haveButtonExcel, nameExcel, haveSearch } = toRefs(props);
+const { rows, columns, isOrdened, isDelete, isEditable, otherButtonText, haveButtonAddNew, haveButtonExcel, nameExcel, haveSearch, haveColumnFilters } = toRefs(props);
 
 const filteredRecords = ref([...rows.value]);
 const perPageRecordOptions = ref([
@@ -369,10 +417,63 @@ const nextPage = () => {
     showedRecords.value = chunk(filteredRecords.value, perPageRecordNumber.value)[currentPage.value];
   }
 };
+const columnFiltersData = ref<Record<string, any[]>>({});
+const columnSearchQueries = ref<Record<string, string>>({});
+
+// Compute unique values for each column based on the formatted rows
+const columnDistinctValues = computed(() => {
+  const distinct: Record<string, any[]> = {};
+  
+  // Use formatted rows if available
+  let baseRecords = rows.value;
+  if (needFormat.value) {
+    baseRecords = rows.value.map((row) => formatRow(row, columns.value));
+  }
+  
+  columns.value.forEach(col => {
+    const vals = new Set<any>();
+    baseRecords.forEach(row => {
+      const v = row[col.keyName];
+      if (v !== undefined && v !== null && v !== "") {
+        vals.add(v);
+      }
+    });
+    // Convert to array and sort, handle numbers vs strings gracefully
+    distinct[col.keyName] = Array.from(vals).sort((a, b) => {
+      if (typeof a === 'number' && typeof b === 'number') return a - b;
+      return String(a).localeCompare(String(b));
+    });
+    
+    // Initialize array if not present
+    if (!columnFiltersData.value[col.keyName]) {
+      columnFiltersData.value[col.keyName] = [];
+    }
+  });
+  
+  return distinct;
+});
+
+function clearColumnFilter(keyName: string) {
+  columnFiltersData.value[keyName] = [];
+  filterRecords();
+}
+
 function filterRecords() {
   refreshFilteredRecords();
+  
+  // Global filter
   if (filterInputValue.value) {
     filteredRecords.value = filterObjectList(filteredRecords.value, filterInputValue.value);
+  }
+  
+  // Column specific filters (Dropdown Checkboxes)
+  for (const [key, selectedArray] of Object.entries(columnFiltersData.value)) {
+    if (selectedArray && selectedArray.length > 0) {
+      filteredRecords.value = filteredRecords.value.filter(row => {
+        const val = row[key];
+        return selectedArray.includes(val);
+      });
+    }
   }
 }
 const getVarsFromObject = (obj: { [key: string]: any }, keyNames: string[]) => {

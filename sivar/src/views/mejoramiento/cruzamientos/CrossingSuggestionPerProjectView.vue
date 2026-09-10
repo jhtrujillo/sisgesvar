@@ -2233,7 +2233,101 @@ async function finalizarProceso() {
   }
 }
 
+
+async function exportarProgramacionExcel() {
+  if (resumenCrucesGuardados.value.length === 0) {
+    toast.warning("No hay datos para exportar.");
+    return;
+  }
+  
+  const idPonderado = resumenCrucesGuardados.value[0].id_ponderados;
+  try {
+    toast.info("Generando Excel, por favor espera...");
+    const response = await CrossingsService.getCrossingsByPonderado(idPonderado);
+    const dbCrossings = response.data || [];
+    
+    if (dbCrossings.length === 0) {
+      toast.warning("No se encontraron registros en la base de datos para este proyecto.");
+      return;
+    }
+    
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Programacion Cruzamientos");
+    
+    // Exact columns requested by user
+    sheet.addRow([
+      "Fecha_programacion", "Año", "Estacion", "Programa", "Cruzamiento", "Cruza_Id", 
+      "Vivero", "Plot", "Origen_Hembra", "VariedadMadre", "Pedigri", "Caracter Madre", "Flor", "%Polen", 
+      "RC (R)", "RC (S)", "RN (R)", "RN (S)", "Sacarosa", "TCH", "Aspecto", "Salivazo", "Diatraea", "Diatraea2", "MM", "Comentarios", 
+      "X/A", 
+      "Vivero3", "Plot4", "Origen Macho", "VariedadPadre", "Pedigri5", "Caracter Padre", "Flor6", "%Polen7", 
+      "RC (R)8", "RC (S)9", "RN (R)10", "RN (S)11", "Sacarosa12", "TCH13", "Aspecto14", "Salivazo15", "Diatraea16", "Diatraea17", "MM18", 
+      "Pedigree", "Veces cruzados año", "Veces cruzados historico", "Origen_Cruza", "Obser", "Parentesco", "Comentarios19", "Estacion", 
+      "Macho1", "CaracterM1", "Macho2", "CaracterM2", "Macho3", "CaracterM3", "Macho4", "CaracterM4", "Macho5", "CaracterM5", "Macho6", "CaracterM6", 
+      "Proyecto madre", "Proyecto padre", "Tipo de flor"
+    ]);
+
+    let cruzaId = 1;
+    const yearCode = new Date().getFullYear().toString().substring(2);
+    const dateFormatted = new Date().toISOString().split('T')[0];
+
+    dbCrossings.forEach(c => {
+      const isAuto = c.vrdad_mdre === c.vrdad_pdre1;
+      const x_a = isAuto ? "Auto" : "X";
+      const cruzamientoCode = `${cruzaId}CNC${yearCode}`;
+      const pedigreeCombined = isAuto ? `${c.vrdad_mdre} x` : `${c.vrdad_mdre} x ${c.vrdad_pdre1}`;
+      
+      const row = [
+        dateFormatted, // Fecha_programacion
+        yearCode, // Año
+        "EESA", // Estacion
+        "CNC", // Programa
+        cruzamientoCode, // Cruzamiento
+        cruzaId, // Cruza_Id
+        c.mdre_vivero || "", // Vivero Madre
+        c.mdre_lte || "", // Plot Madre
+        c.id_pr_mdre || "", // Origen_Hembra (Proyecto)
+        c.vrdad_mdre || "", // VariedadMadre
+        c.pdgree || "", // Pedigri Madre
+        c.grpo_crzmnto_mdre || "", // Caracter Madre
+        1, // Flor (Madre qty)
+        c.mdre_polen || "", // %Polen Madre
+        "", "", "", "", "", "", "", "", "", "", "", "", // RC, RN, Sacarosa...
+        x_a, // X/A
+        c.pdre_vivero || "", // Vivero Padre
+        c.pdre_lte || "", // Plot Padre
+        c.id_pr_pdre1 || "", // Origen Macho
+        c.vrdad_pdre1 || "", // VariedadPadre
+        c.pdgree || "", // Pedigri Padre (could differ, just taking base)
+        c.grpo_crzmnto_pdre || "", // Caracter Padre
+        1, // Flor (Padre qty)
+        c.pdre_polen || "", // %Polen Padre
+        "", "", "", "", "", "", "", "", "", "", "", // RC, RN...
+        pedigreeCombined, // Pedigree
+        "", "", "", c.obsrvcnes || "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+        c.id_pr_mdre || "", // Proyecto madre
+        c.id_pr_pdre1 || "", // Proyecto padre
+        c.tpo_flrcion || "" // Tipo flor
+      ];
+      sheet.addRow(row);
+      cruzaId++;
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `Programacion_Cruzamientos_${selectedCdCntble.value}.xlsx`;
+    link.click();
+    toast.success("Excel descargado correctamente.");
+  } catch (error) {
+    console.error(error);
+    toast.error("Ocurrió un error al generar el Excel.");
+  }
+}
+
 // ==========================================
+
 // LÓGICA VISTA DRAG & DROP
 // ==========================================
 

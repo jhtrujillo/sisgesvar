@@ -94,6 +94,7 @@
       <TableComponent
         :rows="floweringListsStore.FloweringList"
         :have-search="true"
+        :have-column-filters="true"
         :have-button-excel="true"
         :allow-hide-columns="true"
         name-excel="flowering"
@@ -154,68 +155,22 @@ watch(verHistorico, async (nuevoValor) => {
  * mostrando solo las columnas más críticas de inicio y ocultando el resto para visualización posterior.
  */
 const conlumnsInfo: Array<Column> = [
-  // ==========================================
-  // COLUMNAS VISIBLES POR DEFECTO
-  // ==========================================
-  { keyName: "vivero", text: "Vivero" },
+  { keyName: "grpo", text: "Origen" },
   { keyName: "vrdad", text: "Variedad" },
   { keyName: "nmbre_crcter", text: "Caracter" },
-  {
-    keyName: "ubicacion",
-    text: "Ubicación",
-    formatFromRow: (row) => `${row.hcnda || ""} (L${row.lte || "-"} P${row.prcla || "-"} S${row.srco || "-"})`
-  },
-  {
-    keyName: "sexo_comp",
-    text: "Sexo",
-    formatFromRow: (row) => (row.cmbio_sxo ? `${row.sxo} ➝ ${row.cmbio_sxo}` : row.sxo || "N/A")
-  },
-  {
-    keyName: "polen_comp",
-    text: "Polen",
-    formatFromRow: (row) => (row.polen ? `${row.polen}%` : "N/A")
-  },
-
-  // ==========================================
-  // COLUMNAS OCULTAS POR DEFECTO
-  // ==========================================
-  { keyName: "id_flrcion", text: "Id", hiddenByDefault: true },
-  {
-    keyName: "fecha_hora",
-    text: "Fecha y Hora",
-    hiddenByDefault: true,
-    formatFromRow: (row) => `${row.fcha || ""} ${row.hra || ""}`.trim()
-  },
-  { keyName: "nm_prycto", text: "Proyecto", hiddenByDefault: true },
-  { keyName: "fcha", text: "Fecha (Original)", hiddenByDefault: true },
-  { keyName: "hra", text: "Hora (Original)", hiddenByDefault: true },
-  { keyName: "hcnda", text: "Hacienda (Original)", hiddenByDefault: true },
-  { keyName: "lte", text: "Lote (Original)", hiddenByDefault: true },
-  { keyName: "prcla", text: "Parcela (Original)", hiddenByDefault: true },
-  { keyName: "srco", text: "Surco (Original)", hiddenByDefault: true },
-  { keyName: "sxo", text: "Sexo (Original)", hiddenByDefault: true },
-  { keyName: "cmbio_sxo", text: "Cambio de Sexo (Original)", hiddenByDefault: true },
-  { keyName: "polen", text: "Polen (Original)", hiddenByDefault: true },
-  { keyName: "flrcion", text: "Floración", hiddenByDefault: true },
-  { keyName: "grpo", text: "Grupo", hiddenByDefault: true },
-  { keyName: "grnos_vbles1", text: "Granos Viables 1", hiddenByDefault: true },
-  { keyName: "ttal_grnos1", text: "Total Granos 1", hiddenByDefault: true },
-  { keyName: "grnos_vbles2", text: "Granos Viables 2", hiddenByDefault: true },
-  { keyName: "ttal_grnos2", text: "Total Granos 2", hiddenByDefault: true },
-  { keyName: "grnos_vbles3", text: "Granos Viables 3", hiddenByDefault: true },
-  { keyName: "ttal_grnos3", text: "Total Granos 3", hiddenByDefault: true },
-  { keyName: "grnos_vbles4", text: "Granos Viables 4", hiddenByDefault: true },
-  { keyName: "ttal_grnos4", text: "Total Granos 4", hiddenByDefault: true },
-  { keyName: "grnos_vbles5", text: "Granos Viables 5", hiddenByDefault: true },
-  { keyName: "ttal_grnos5", text: "Total Granos 5", hiddenByDefault: true },
-  { keyName: "slcciondo", text: "Seleccionado", hiddenByDefault: true },
-  { keyName: "obsrvcn", text: "Observación", hiddenByDefault: true },
-  {
-    keyName: "usrio_edto_comp",
-    text: "Editado Por",
-    hiddenByDefault: true,
-    formatFromRow: (row) => `${row.prmer_nmbre || ""} ${row.aplldo || ""}`.trim()
-  },
-  { keyName: "fcha_edto", text: "Fecha de Edición", hiddenByDefault: true }
+  { keyName: "vivero", text: "Vivero" },
+  { keyName: "ingnio", text: "Ingenio" },
+  { keyName: "hcnda", text: "Hacienda" },
+  { keyName: "lte", text: "Lote" },
+  { keyName: "prcla", text: "Parcela" },
+  { keyName: "flores", text: "Flores", formatFromRow: () => '1' },
+  { keyName: "polen", text: "Polen", formatFromRow: (row) => (row.polen ? `${row.polen}%` : "") },
+  { keyName: "sxo", text: "Sexo", formatFromRow: (row) => (row.cmbio_sxo ? `${row.sxo} -> ${row.cmbio_sxo}` : row.sxo || "") },
+  { keyName: "flrcion", text: "Floracion" },
+  { keyName: "fcha", text: "Fecha" },
+  { keyName: "anio", text: "Año", formatFromRow: (row) => (row.fcha ? row.fcha.substring(0, 4) : "") },
+  { keyName: "nm_prycto", text: "Proyecto" },
+  { keyName: "usuario", text: "Usuario", formatFromRow: (row) => `${row.prmer_nmbre || ""} ${row.aplldo || ""}`.trim() },
+  { keyName: "obsrvcn", text: "Observaciones" }
 ];
 </script>

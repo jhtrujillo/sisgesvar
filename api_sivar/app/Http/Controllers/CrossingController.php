@@ -323,7 +323,8 @@ class CrossingController extends Controller
         $cruzamiento->grpo_crzmnto_mdre = $caracterMadre;
 
         // Realiza otras operaciones relacionadas con la obtención de ID
-        $this->obtenerIdFlorCruzamiento($proyectoMadre, $florMadre[0], $caracterMadre);
+        $id_flr_mdre = $this->obtenerIdFlorCruzamiento($proyectoMadre, $florMadre[0], $caracterMadre);
+        $cruzamiento->id_flrcion_mdre = $id_flr_mdre;
 
         $padre = explode(",", $padres);
         $caracter_padre = "";
@@ -334,11 +335,13 @@ class CrossingController extends Controller
                 $caracter_padre = $caracter_padre . "," . $flor_padre[2];
                 $caracteristica = "vrdad_pdre" . $i;
                 $origen = "id_pr_pdre" . $i;
+                $col_id_flr = "id_flrcion_pdre" . $i;
                 $cruzamiento->$caracteristica = $flor_padre[0]; //$padre[$i-1];
                 $id_pr_padre_auto = $proyecto_padre; //$this->obtener_id_flor_cruzamiento($proyecto_padre,$padre[$i-1],$flor_padre[2]);
                 $cruzamiento->$origen = $id_pr_padre_auto;
                 $cruzamiento->grpo_crzmnto_pdre = $caracter_padre;
-                $this->obtenerIdFlorCruzamiento($proyecto_padre, $flor_padre[0], $flor_padre[2]);
+                $id_flr_pdre = $this->obtenerIdFlorCruzamiento($proyecto_padre, $flor_padre[0], $flor_padre[2]);
+                $cruzamiento->$col_id_flr = $id_flr_pdre;
             }
         }
         $cruzamiento->save();
@@ -359,6 +362,15 @@ class CrossingController extends Controller
             $cruzamiento_auto->usuario_creacion = $usuario ? $usuario->id_usrio : null;
             $cruzamiento_auto->proyecto = $proyecto_padre;
             $cruzamiento_auto->id_ponderados = $idPonderado;
+            
+            // Re-fetch or reuse a flower ID for the autofecundacion? 
+            // The frontend logic sends the father's flower as autofecundado. 
+            // We fetch a NEW flower for this auto-cross since it's consuming a new flower instance.
+            $id_flr_auto_mdre = $this->obtenerIdFlorCruzamiento($proyecto_padre, $flor_padre[0], $flor_padre[2]);
+            $id_flr_auto_pdre = $this->obtenerIdFlorCruzamiento($proyecto_padre, $flor_padre[0], $flor_padre[2]);
+            $cruzamiento_auto->id_flrcion_mdre = $id_flr_auto_mdre;
+            $cruzamiento_auto->id_flrcion_pdre1 = $id_flr_auto_pdre;
+
             $cruzamiento_auto->save();
         }
 
@@ -404,7 +416,13 @@ class CrossingController extends Controller
             ->select('ponderados_valor_merito.*', 'caracteristicas_valor_merito.nombre', 'caracteristicas_valor_merito.id_caracteristica')
             ->get();
 
+        $procesados = [];
         foreach ($ponderados as $ponderado) {
+            if (in_array($ponderado->id_caracteristica, $procesados)) {
+                continue;
+            }
+            $procesados[] = $ponderado->id_caracteristica;
+
             $nuevoPonderado = new PonderadoCruzamiento();
             $nuevoPonderado->id_ponderado = $idPonderado;
             $nuevoPonderado->id_caracteristica = $ponderado->id_caracteristica;
@@ -415,6 +433,22 @@ class CrossingController extends Controller
 
         return $idPonderado;
     }
+    public function obtenerCruzamientosPorPonderado($idPonderado)
+    {
+        $cruzamientos = DB::connection('sivar')
+            ->table('cruzamientos')
+            ->leftJoin('floracion as f_mdre', 'cruzamientos.id_flrcion_mdre', '=', 'f_mdre.id_flrcion')
+            ->leftJoin('floracion as f_pdre', 'cruzamientos.id_flrcion_pdre1', '=', 'f_pdre.id_flrcion')
+            ->where('cruzamientos.id_ponderados', $idPonderado)
+            ->select(
+                'cruzamientos.*',
+                'f_mdre.vivero as mdre_vivero', 'f_mdre.lte as mdre_lte', 'f_mdre.prcla as mdre_prcla', 'f_mdre.polen as mdre_polen',
+                'f_pdre.vivero as pdre_vivero', 'f_pdre.lte as pdre_lte', 'f_pdre.prcla as pdre_prcla', 'f_pdre.polen as pdre_polen'
+            )
+            ->get();
+        return response()->json($cruzamientos);
+    }
+    
     public function consolidado(Request $request)
     {
         $primerDiaDelAno = Carbon::parse('first day of January');

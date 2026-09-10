@@ -68,12 +68,18 @@ async function saveCrossingsBatch(crossings: any[]): Promise<any> {
   return await api.post(url, { crossings }, true);
 }
 
+async function getCrossingsByPonderado(idPonderado: string): Promise<any> {
+  const url = `${urls.API_URL}crossing/programming/get_by_ponderado/${idPonderado}`;
+  return await api.get(url, {}, true);
+}
+
 const CrossingsService = {
   getCrossingsList,
   getCrossingInitialData,
   getParametizeWeightedCrossing,
   modifyFeatures,
   getMatrix,
+  getCrossingsByPonderado,
   GetSuggestionCrossings,
   GetSuggestionCrossingsPerProject,
   saveWeight,

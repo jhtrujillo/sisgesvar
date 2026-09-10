@@ -66,6 +66,7 @@ Route::group([
     Route::get('consultarHistoricoCruzamiento/{madre}/{padres}', [\App\Http\Controllers\CrossingController::class, 'consultarHistoricoCruzamiento']);
     Route::get('/crossing/programming/save_weight/{proyecto}', [\App\Http\Controllers\CrossingController::class, 'guardarPonderados']);
     Route::get('/crossing/consolidated', [\App\Http\Controllers\CrossingController::class, 'consolidado']);
+    Route::get('/crossing/programming/get_by_ponderado/{idPonderado}', [\App\Http\Controllers\CrossingController::class, 'obtenerCruzamientosPorPonderado']);
     Route::get('/crossing/programming/send_mail/{string}', [\App\Http\Controllers\CrossingController::class, 'enviarCorreoPracticos']);
     Route::get('/consolidadoDatatable/{tipo}', [\App\Http\Controllers\CrossingController::class, 'consolidadoDatatable']);
     Route::get('/crossing/upload/', [\App\Http\Controllers\CrossingController::class, 'cargarCruzamientos']);
