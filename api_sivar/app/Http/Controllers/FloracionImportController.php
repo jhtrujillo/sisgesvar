@@ -53,7 +53,7 @@ class FloracionImportController extends Controller
             $worksheet = $spreadsheet->getActiveSheet();
         }
         
-        $rows = $worksheet->toArray(); 
+        $rows = $worksheet->toArray(null, false, false, false); 
 
         $header = array_map('trim', $rows[0]);
         $errors = [];
@@ -155,7 +155,7 @@ class FloracionImportController extends Controller
             $worksheet = $spreadsheet->getActiveSheet();
         }
         
-        $rows = $worksheet->toArray(); 
+        $rows = $worksheet->toArray(null, false, false, false); 
         $header = array_map('trim', $rows[0]);
 
         $colIndex = [];
@@ -213,7 +213,7 @@ class FloracionImportController extends Controller
                 'polen' => is_numeric($polen) ? (int)$polen : null,
                 'vivero' => $vivero->identificador_unico,
                 'id_smbra_cmpo' => $vivero->id, // Store reference
-                'estado' => '1',
+                'estado' => '0',
                 'id_pr' => $vivero->proyecto_id,
                 'usrio_edto' => auth()->id() ?? 1,
                 'fcha_edto' => $now
