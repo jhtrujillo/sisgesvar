@@ -1641,7 +1641,7 @@ function getCausaInviabilidad(cell: any): string {
     }
   }
 
-  return motivos.length > 0 ? motivos.join(" | ") : "Veto manual o restricciones de autogamia";
+  return motivos.length > 0 ? motivos.join(" | ") : "-";
 }
 
 /**
@@ -2004,7 +2004,9 @@ async function autoOptimizarFlores(silent: boolean | Event = false) {
   rows.forEach((row: any) => {
     row.forEach((car: any) => {
       if (car) {
-        // Solo modificamos si es estrictamente necesario para evitar colapsar la reactividad de Vue
+        if (car.original_viabilidad === undefined) {
+          car.original_viabilidad = car.viabilidad;
+        }
         if (car.viabilidad) car.viabilidad = false;
         if (car.flores_madre !== 0) car.flores_madre = 0;
         if (car.flores_padre !== 0) car.flores_padre = 0;
@@ -2069,7 +2071,7 @@ async function autoOptimizarFlores(silent: boolean | Event = false) {
         memoCausa.set(key, causa);
       }
 
-      let isBiologicallyValid = true;
+      let isBiologicallyValid = car.original_viabilidad === true;
       if (causa.includes("Incompatibilidad de sexo")) isBiologicallyValid = false;
       if (causa.includes("Restricción de Autogamia")) isBiologicallyValid = false;
       if (causa.includes("excede límite")) isBiologicallyValid = false;
