@@ -1311,22 +1311,31 @@ async function loadSuggestionCrossings() {
         });
       }
 
-      // Restaurar borrador de cruzamientos deshabilitados si existe
+
+      // Restaurar borrador de cruzamientos si existe
       const storedDraft = localStorage.getItem(draftKey.value);
       if (storedDraft) {
-        const disabledCrosses = JSON.parse(storedDraft);
+        const savedState = JSON.parse(storedDraft);
         const rows = viabilidadesMatriz.value || [];
         rows.forEach((row: any) => {
           row.forEach((car: any) => {
-            if (car) {
-              const matches = disabledCrosses.some((d: any) => d.varA === car.varA && d.varB === car.varB);
-              if (matches) {
-                car.viabilidad = false;
+            if (car && car.varA && car.varB) {
+              const match = savedState.find((d: any) => d.varA === car.varA && d.varB === car.varB);
+              if (match) {
+                car.viabilidad = match.viabilidad;
+                if (!car.viabilidad) {
+                  car.flores_madre = 0;
+                  car.flores_padre = 0;
+                } else {
+                  car.flores_madre = car.flores_madre || 1;
+                  car.flores_padre = car.flores_padre || 1;
+                }
               }
             }
           });
         });
       } else {
+
         // Si no hay borrador, optimizar automáticamente por defecto para no desbordar el inventario
         await autoOptimizarFlores(true);
       }
@@ -1468,18 +1477,19 @@ function toggleCruzamiento(car: any) {
     car.flores_padre = 0;
   }
 
-  // Guardar estado actual de cruzamientos deshabilitados en localStorage (Auto-save)
+
+  // Guardar estado actual de cruzamientos en localStorage (Auto-save)
   const rows = viabilidadesMatriz.value || [];
-  const disabledCrosses: Array<{ varA: string; varB: string }> = [];
+  const savedState: Array<{ varA: string; varB: string; viabilidad: boolean }> = [];
   rows.forEach((row: any) => {
     row.forEach((c: any) => {
-      if (c && c.viabilidad === false) {
-        disabledCrosses.push({ varA: c.varA, varB: c.varB });
+      if (c && c.varA && c.varB) {
+        savedState.push({ varA: c.varA, varB: c.varB, viabilidad: !!c.viabilidad });
       }
     });
   });
+  localStorage.setItem(draftKey.value, JSON.stringify(savedState));
 
-  localStorage.setItem(draftKey.value, JSON.stringify(disabledCrosses));
 }
 
 function toggleAutofecundar(varName: string) {

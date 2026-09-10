@@ -371,7 +371,25 @@ watch([selectedMegaAmbiente, selectedCdCntble, selectedVariety], async ([newMega
   if (newMegaAmbiente && newCdCntble && newVariety) {
     isLoading.value = true;
     try {
+
       await MatrixCrossingStore.getMatrixCrossingList(newCdCntble, newCdCntble, newVariety, newMegaAmbiente);
+
+      // Restaurar el borrador para sincronizar Step 2 y Step 3 en ambas direcciones
+      const storedDraft = localStorage.getItem(`sivarcc_draft_crossings_${newCdCntble}_${newMegaAmbiente}`);
+      if (storedDraft) {
+        const savedState = JSON.parse(storedDraft);
+        const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
+        viabilidades.forEach((row: any) => {
+          row.forEach((car: any) => {
+            if (car && car.varA && car.varB) {
+              const match = savedState.find((d: any) => d.varA === car.varA && d.varB === car.varB);
+              if (match) {
+                car.viabilidad = match.viabilidad;
+              }
+            }
+          });
+        });
+      }
 
     } catch (error) {
       console.error("Error al cargar la matriz de cruzamientos:", error);
@@ -426,19 +444,21 @@ const toggleCruzamiento = (car: any) => {
   // Mutar la viabilidad localmente
   car.viabilidad = !car.viabilidad;
 
-  // Recolectar todos los cruces deshabilitados para guardarlos en el borrador
-  const disabledCrosses: Array<{ varA: string; varB: string }> = [];
+
+  // Recolectar todos los cruces para guardarlos en el borrador exacto
+  const savedState: Array<{ varA: string; varB: string; viabilidad: boolean }> = [];
   const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
   viabilidades.forEach((row: any) => {
     row.forEach((c: any) => {
-      if (c && c.viabilidad === false) {
-        disabledCrosses.push({ varA: c.varA, varB: c.varB });
+      if (c && c.varA && c.varB) {
+        savedState.push({ varA: c.varA, varB: c.varB, viabilidad: !!c.viabilidad });
       }
     });
   });
 
   // Guardar en localStorage para que el Paso 3 lo recupere
-  localStorage.setItem(draftKey.value, JSON.stringify(disabledCrosses));
+  localStorage.setItem(draftKey.value, JSON.stringify(savedState));
+
 };
 
 // Función para enviar los cruzamientos y pasar al siguiente paso
