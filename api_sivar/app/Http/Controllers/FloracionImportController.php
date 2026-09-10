@@ -50,7 +50,8 @@ class FloracionImportController extends Controller
         
         $worksheet = $spreadsheet->getSheetByName($sheetName);
         if (!$worksheet) {
-            $worksheet = $spreadsheet->getActiveSheet();
+            $sheetNames = $spreadsheet->getSheetNames();
+            return response()->json(['errors' => [['row' => 0, 'message' => "Debug: Sheet '$sheetName' not found. Available: " . implode(', ', $sheetNames)]]]);
         }
         
         $rows = $worksheet->toArray(); 
@@ -89,10 +90,15 @@ class FloracionImportController extends Controller
             if (!$excelVivero) {
                 $viveroMatch = true;
             } else {
-                $evLower = strtolower($excelVivero);
-                if ($evLower === strtolower($vivero->identificador_unico) || 
-                    $evLower === strtolower($plotIdComputed) || 
-                    ($plotIdOrigen && $evLower === strtolower($plotIdOrigen))) {
+                // Normalize by removing hyphens and spaces
+                $evNormalized = str_replace(['-', ' '], '', strtolower($excelVivero));
+                $viveroIdNormalized = str_replace(['-', ' '], '', strtolower($vivero->identificador_unico));
+                $plotIdComputedNormalized = str_replace(['-', ' '], '', strtolower($plotIdComputed));
+                $plotIdOrigenNormalized = $plotIdOrigen ? str_replace(['-', ' '], '', strtolower($plotIdOrigen)) : null;
+
+                if ($evNormalized === $viveroIdNormalized || 
+                    $evNormalized === $plotIdComputedNormalized || 
+                    ($plotIdOrigenNormalized && $evNormalized === $plotIdOrigenNormalized)) {
                     $viveroMatch = true;
                 }
             }
@@ -152,7 +158,8 @@ class FloracionImportController extends Controller
         
         $worksheet = $spreadsheet->getSheetByName($sheetName);
         if (!$worksheet) {
-            $worksheet = $spreadsheet->getActiveSheet();
+            $sheetNames = $spreadsheet->getSheetNames();
+            return response()->json(['errors' => [['row' => 0, 'message' => "Debug: Sheet '$sheetName' not found. Available: " . implode(', ', $sheetNames)]]]);
         }
         
         $rows = $worksheet->toArray(); 
