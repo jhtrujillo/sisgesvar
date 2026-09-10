@@ -453,7 +453,7 @@
                             class="block text-slate-800 font-extrabold leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors"
                             @click="openVarietyProfile(flor.variedad)"
                           >
-                            {{ flor.variedad }}
+                            {{ flor.variedad }} (col:{{indexCol}}, viable:{{isColumnViable(indexCol)}}, hide:{{ocultarInviables}})
                           </span>
                           <div class="flex flex-col items-center justify-center text-[9px] font-semibold text-slate-500 mt-1 space-y-0.5 mb-1">
                             <span v-if="viabilidadesMatriz?.[0]?.[indexCol]?.vm2 !== undefined">VM: {{ viabilidadesMatriz[0][indexCol].vm2 }}</span>
@@ -1092,7 +1092,7 @@ const isSaving = ref(false);
 const isFinished = ref(false);
 const resumenCrucesGuardados = ref<any[]>([]);
 
-const ocultarInviables = ref(true); // Vista compacta limpia por defecto
+const ocultarInviables = ref(false); // Vista compacta limpia por defecto
 const isLoading = ref(false); // Ref para spinner de carga
 const showICHelp = ref(false);
 const isOptimizing = ref(false); // Ref para spinner de optimización
