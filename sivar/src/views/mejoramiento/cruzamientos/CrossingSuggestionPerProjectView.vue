@@ -453,7 +453,7 @@
                             class="block text-slate-800 font-extrabold leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors"
                             @click="openVarietyProfile(flor.variedad)"
                           >
-                            {{ flor.variedad }} (col:{{indexCol}}, viable:{{isColumnViable(indexCol)}}, hide:{{ocultarInviables}})
+                            {{ flor.variedad }}
                           </span>
                           <div class="flex flex-col items-center justify-center text-[9px] font-semibold text-slate-500 mt-1 space-y-0.5 mb-1">
                             <span v-if="viabilidadesMatriz?.[0]?.[indexCol]?.vm2 !== undefined">VM: {{ viabilidadesMatriz[0][indexCol].vm2 }}</span>
@@ -1288,6 +1288,29 @@ async function loadSuggestionCrossings() {
       if (!ParametizeWeightedStore.parametizeWeightedCrossingFilter || !ParametizeWeightedStore.parametizeWeightedCrossingFilter.ponderados) {
         await ParametizeWeightedStore.getParametizeWeightedCrossingList(selectedCdCntble.value, selectedMegaAmbiente.value);
       }
+      
+      // Invalidar caché de distancias para forzar reconstrucción con los nuevos datos
+      distanciasCache = null;
+      
+      // Respaldar viabilidad biológica pura dictaminada por el servidor
+      const rowsToBackup = viabilidadesMatriz.value || [];
+      rowsToBackup.forEach((row: any) => {
+        row.forEach((car: any) => {
+          if (car && car.original_viabilidad === undefined) {
+            car.original_viabilidad = car.viabilidad;
+          }
+        });
+      });
+
+      // Activar autofecundación por defecto para todos los machos (columnas)
+      if (viabilidadesMatriz.value && viabilidadesMatriz.value.length > 0) {
+        viabilidadesMatriz.value[0].forEach((cell: any) => {
+          if (cell && cell.varB && Number(cell.polen2) > 20) {
+            autofecundacionesSeleccionadas.value.add(cell.varB);
+          }
+        });
+      }
+
       // Restaurar borrador de cruzamientos deshabilitados si existe
       const storedDraft = localStorage.getItem(draftKey.value);
       if (storedDraft) {
