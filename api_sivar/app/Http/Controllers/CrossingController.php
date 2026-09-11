@@ -219,6 +219,7 @@ class CrossingController extends Controller
                         "proyecto" => $proyectoMadre,
                         "id_ponderados" => $idPondVal,
                         "grpo_crzmnto_mdre" => $caracterMadre,
+                        "id_flrcion_mdre" => isset($flowersMap[$mKey]) ? $flowersMap[$mKey] : null,
                     ];
 
                     $padre = explode(",", $padresVal);
@@ -238,6 +239,8 @@ class CrossingController extends Controller
                             if (isset($flowersMap[$pKey])) {
                                 $flowerIdsToDeactivate[] = $flowersMap[$pKey];
                             }
+                            $id_flrcion_col = "id_flrcion_pdre" . $i;
+                            $crossingRecord[$id_flrcion_col] = isset($flowersMap[$pKey]) ? $flowersMap[$pKey] : null;
                         }
                     }
                     $crossingsToInsert[] = $crossingRecord;
@@ -258,6 +261,8 @@ class CrossingController extends Controller
                             "grpo_crzmnto_mdre" => $flor_padre[2],
                             "id_pr_pdre1" => $proyecto_padre,
                             "obsrvcnes" => $obsVal,
+                            "id_flrcion_mdre" => isset($flowersMap["{$flor_padre[0]}_{$proyecto_padre}_{$flor_padre[2]}"]) ? $flowersMap["{$flor_padre[0]}_{$proyecto_padre}_{$flor_padre[2]}"] : null,
+                            "id_flrcion_pdre1" => isset($flowersMap["{$flor_padre[0]}_{$proyecto_padre}_{$flor_padre[2]}"]) ? $flowersMap["{$flor_padre[0]}_{$proyecto_padre}_{$flor_padre[2]}"] : null,
                             "fcha_crzmnto" => now(),
                             "usuario_creacion" => $usuario ? $usuario->id_usrio : null,
                             "proyecto" => $proyecto_padre,
