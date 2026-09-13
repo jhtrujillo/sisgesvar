@@ -33,6 +33,7 @@ Route::group([
     // Route::get('/flowering/list', [\App\Http\Controllers\FloweringController::class, 'floweringList']);
     Route::get('/variety/{var}', [\App\Http\Controllers\VarietyController::class, 'getVarietyById']);
     Route::get('/varietyProfile/{var}', [\App\Http\Controllers\VarietyController::class, 'getVarietyProfile'])->where('var', '.*');
+    Route::get('/varietyCrossingsHistory/{var}', [\App\Http\Controllers\VarietyController::class, 'getVarietyCrossingsHistory'])->where('var', '.*');
     Route::get('/variety', [\App\Http\Controllers\VarietyController::class, 'getVariety']);
     Route::get('/varietysList', [\App\Http\Controllers\VarietyController::class, 'varietysList']);
     Route::post('/varietys', [\App\Http\Controllers\VarietyController::class, 'store']);

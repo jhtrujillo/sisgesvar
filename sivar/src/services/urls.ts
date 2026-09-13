@@ -27,6 +27,7 @@ const API_VARIETYSLIST = API_URL + "varietysList";
 const API_VARIETY = API_URL + "variety";
 const API_VARIETY_PROFILE = API_URL + "varietyProfile";
 const API_VARIETY_HISTORY = API_URL + "historyDatatable";
+const API_VARIETY_CROSSINGS_HISTORY = API_URL + "varietyCrossingsHistory";
 const API_GERMOPLASM_BANK = API_URL + "germoplasmBankList";
 const API_PARENTS_DIAGRAM = API_URL + "getParents";
 const API_PARENTS_DIAGRAM_LEVEL = API_URL + "getParentsLevel";
@@ -69,6 +70,7 @@ export default {
   API_CROSSING_LIST,
   API_VARIETYSLIST,
   API_VARIETY_HISTORY,
+  API_VARIETY_CROSSINGS_HISTORY,
   API_VARIETY,
   API_VARIETY_PROFILE,
   API_GERMOPLASM_BANK,
