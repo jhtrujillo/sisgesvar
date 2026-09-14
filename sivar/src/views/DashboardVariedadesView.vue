@@ -22,7 +22,7 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Siembra Campo Card -->
+      <!-- Viveros Card -->
       <router-link
         class="group relative flex flex-col bg-white border border-slate-100 hover:border-emerald-100 rounded-2xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
         :to="{ name: 'siembra_campo_viveros.show' }"
@@ -35,7 +35,7 @@
               <path fill="currentColor" d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3zm0 2.83l7 7V18h-4v-6H9v6H5v-5.17l7-7z" />
             </svg>
           </div>
-          <h3 class="text-lg font-bold text-slate-800 mb-2 group-hover:text-cenicana transition-colors">Siembra Campo</h3>
+          <h3 class="text-lg font-bold text-slate-800 mb-2 group-hover:text-cenicana transition-colors">Viveros</h3>
           <p class="text-slate-500 text-xs leading-relaxed mb-4">Administración de viveros, siembras, parcelas, polen y floración en campo.</p>
 
           <span class="inline-flex items-center text-xs font-semibold text-emerald-600 mt-auto">
