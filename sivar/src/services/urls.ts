@@ -37,15 +37,22 @@ const API_MODIFY_FEATURES_CROSSING = API_URL + "modifyFeatures";
 const API_GENERATE_MATRIX = API_URL + "generateMatrix";
 const API_SUGGESTION_CROSSING = API_URL + "suggestionCrossings";
 const API_SUGGESTION_CROSSING_PER_PROJECT = API_URL + "suggestionCrossingsPerProject";
+const API_CROSSING_CONSOLIDATED = API_URL + "crossing/consolidated";
+const API_CONSOLIDADO_DATATABLE = API_URL + "consolidadoDatatable";
 
 // URLS Experiments
 const API_SEARCH_PARAMETERS = API_URL + "getSearchParameters";
 const API_AREAS_PROGRAM = API_URL + "getAreasProgram";
 const API_PROJECTS_AREA = API_URL + "getProjectsArea";
 const API_EXPERIMENT = API_URL + "getExperiment";
+const API_GRABAR_ENCABEZADO = API_URL + "grabarEncabezado";
 const API_TREATMENTS_SEASON = API_URL + "getTreatmentsSeason";
 const API_TREATMENTS_EXPERIMENTS = API_URL + "getTreatmentsExperiments";
 const API_ADD_DESIGNS_DETAILS = API_URL + "addDesingsDetails";
+
+// URLS Libro de Campo
+const API_LIBRO_CAMPO = API_URL + "getLibroCampo";
+const API_CREAR_LIBRO_CAMPO = API_URL + "crearLibroCampo";
 
 // URLS Registro Ensayos
 const API_ENSAYOS = API_URL + "ensayos";
@@ -78,13 +85,18 @@ export default {
   API_GENERATE_MATRIX,
   API_SUGGESTION_CROSSING,
   API_SUGGESTION_CROSSING_PER_PROJECT,
+  API_CROSSING_CONSOLIDATED,
+  API_CONSOLIDADO_DATATABLE,
   API_SEARCH_PARAMETERS,
   API_AREAS_PROGRAM,
   API_PROJECTS_AREA,
   API_EXPERIMENT,
+  API_GRABAR_ENCABEZADO,
   API_TREATMENTS_SEASON,
   API_TREATMENTS_EXPERIMENTS,
   API_ADD_DESIGNS_DETAILS,
+  API_LIBRO_CAMPO,
+  API_CREAR_LIBRO_CAMPO,
   API_ENSAYOS,
   API_CATALOGOS,
   API_ACTIVIDADES,

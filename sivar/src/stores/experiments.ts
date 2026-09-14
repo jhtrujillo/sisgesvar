@@ -23,8 +23,25 @@ export const useExperimentsStore = defineStore("experiments", () => {
     }
   };
 
+  const createExperiment = async (idProyecto: string | number, Serie: string | number, Estado: string, idAmbiente: number = 1): Promise<any> => {
+    try {
+      const payload = {
+        id_pr: idProyecto,
+        srie: Serie,
+        estdo: Estado,
+        id_ambnte: idAmbiente
+      };
+      const result = await ExperimentsService.grabarEncabezado(payload);
+      return result;
+    } catch (error) {
+      console.error("Error al crear experimento", error);
+      throw error;
+    }
+  };
+
   return {
     experimentsFilter,
-    getExperimentsList
+    getExperimentsList,
+    createExperiment
   };
 });

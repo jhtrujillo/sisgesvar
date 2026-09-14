@@ -119,9 +119,11 @@ class ExperimentosController extends Controller
                 "listAreas" => $areas,
                 "listProyectos" => $proyectos,
                 "listSeries" => [],
-                "listEstados" => [
-                    ["id" => 1, "text" => "E1 en prueba"],
-                ],
+                "listEstados" => [ ["id" => 1, "text" => "E1 en prueba"],
+                ["id" => 2, "text" => "E1 probado"],
+                ["id" => 3, "text" => "E2"],
+                ["id" => 4, "text" => "E3"],
+                ["id" => 5, "text" => "P Regionales"],],
                 "listTemporadas" => $temporadasCruzamiento,
                 "listCruzamientoMadre" => [
                     ["id" => 1, "text" => "EZH"],
@@ -275,8 +277,37 @@ class ExperimentosController extends Controller
         }
     }
 
-    public function grabarEncabezado($estdo, $srie, $id_pr, $id_ambnte)
+    public function grabarEncabezado(Request $request, $estdo = null, $srie = null, $id_pr = null, $id_ambnte = null)
     {
+        $estdo = $request->input('estdo', $estdo);
+        $srie = $request->input('srie', $srie);
+        $id_pr = $request->input('id_pr', $id_pr);
+        $id_ambnte = $request->input('id_ambnte', $id_ambnte) ?? 1;
+
+        if (empty($estdo) || empty($srie) || empty($id_pr)) {
+            return response()->json([
+                'code' => 400,
+                'message' => 'Faltan parámetros requeridos (estdo, srie, id_pr)'
+            ], 400);
+        }
+
+        // Verificar si ya existen diseños para esta combinación
+        $existentes = DisenoEncabezado::where([
+            ['id_pr', '=', $id_pr],
+            ['srie', '=', $srie],
+            ['estdo', '=', $estdo],
+        ])->get();
+
+        if ($existentes->isNotEmpty()) {
+            return response()->json([
+                'code' => 200,
+                'message' => 'El experimento ya se encontraba registrado',
+                'IdsDisenosCreados' => [
+                    'idDisenoF' => $existentes->where('tpo_ensyo', 'F')->first()?->id_dsno_enc,
+                    'idDisenoI' => $existentes->where('tpo_ensyo', 'I')->first()?->id_dsno_enc,
+                ]
+            ], 200);
+        }
 
         // Iniciar la transacción
         DB::beginTransaction();
@@ -289,7 +320,6 @@ class ExperimentosController extends Controller
             $newDisenoEncabezadoF->id_pr = $id_pr;
             $newDisenoEncabezadoF->id_ambnte = $id_ambnte;
             $newDisenoEncabezadoF->tpo_ensyo = 'F';
-            $newDisenoEncabezadoF->prgrso = 1;
             $newDisenoEncabezadoF->save();
 
             // Verificar si se guardó correctamente el primer encabezado
@@ -308,7 +338,6 @@ class ExperimentosController extends Controller
             $newDisenoEncabezadoI->id_pr = $id_pr;
             $newDisenoEncabezadoI->id_ambnte = $id_ambnte;
             $newDisenoEncabezadoI->tpo_ensyo = 'I';
-            $newDisenoEncabezadoI->prgrso = 1;
             $newDisenoEncabezadoI->save();
 
             // Verificar si se guardó correctamente el segundo encabezado
@@ -453,10 +482,16 @@ class ExperimentosController extends Controller
         }
     }
 
-    public function addDisenosDetalles($id_dsno_enc, $nTipoParcela, $cTestigo, $nTotalPlantas, $arrIds)
+    public function addDisenosDetalles(Request $request, $id_dsno_enc = null, $nTipoParcela = null, $cTestigo = null, $nTotalPlantas = null, $arrIds = null)
     {
 
         try {
+            $id_dsno_enc = $request->input('nIdDiseno', $request->input('id_dsno_enc', $id_dsno_enc));
+            $nTipoParcela = $request->input('nTipoParcela', $nTipoParcela);
+            $cTestigo = $request->input('cTestigo', $cTestigo);
+            $nTotalPlantas = $request->input('nTotalPlantas', $nTotalPlantas);
+            $arrIds = $request->input('arrayIds', $request->input('arrIds', $arrIds));
+
 
             // Verificar si se van a usar todas las plantas
             $allPlantulas = false;

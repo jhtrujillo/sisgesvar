@@ -30,7 +30,6 @@ Route::group([
     Route::get('processesList', [\App\Http\Controllers\ProcessesListController::class, 'processesList']);
     Route::post('processesList', [\App\Http\Controllers\ProcessesListController::class, 'processesList']);
     Route::get('floweringList', [\App\Http\Controllers\FloweringController::class, 'floweringList']);
-    // Route::get('/flowering/list', [\App\Http\Controllers\FloweringController::class, 'floweringList']);
     Route::get('/variety/{var}', [\App\Http\Controllers\VarietyController::class, 'getVarietyById']);
     Route::get('/varietyProfile/{var}', [\App\Http\Controllers\VarietyController::class, 'getVarietyProfile'])->where('var', '.*');
     Route::get('/variety', [\App\Http\Controllers\VarietyController::class, 'getVariety']);
@@ -78,16 +77,16 @@ Route::group([
     Route::get('getSearchParameters', [\App\Http\Controllers\ExperimentosController::class, 'getSearchParameters']);
     Route::get('getAreasProgram/{id_area}', [\App\Http\Controllers\ExperimentosController::class, 'getAreasProgram']);
     Route::get('getProjectsArea/{id_area_trbjo}', [\App\Http\Controllers\ExperimentosController::class, 'getProjectsArea']);
-    Route::get('getExperiment/{id_pr}/{srie}/{estdo}', [\App\Http\Controllers\ExperimentosController::class, 'getExperiment']);  
-    Route::get('getCriteriosSeleccion', [\App\Http\Controllers\ExperimentosController::class, 'getCriteriosSeleccion']);   
-    Route::post('grabarEncabezado', [\App\Http\Controllers\ExperimentosController::class, 'grabarEncabezado']);  
+    Route::get('getExperiment/{id_pr}/{srie}/{estdo}', [\App\Http\Controllers\ExperimentosController::class, 'getExperiment']);
+    Route::get('getCriteriosSeleccion', [\App\Http\Controllers\ExperimentosController::class, 'getCriteriosSeleccion']);
+    Route::post('grabarEncabezado', [\App\Http\Controllers\ExperimentosController::class, 'grabarEncabezado']);
     Route::get('getTreatmentsSeason/{ano}/{id_dsno_enc}/{min_plantulas}/{plantulas_ttles}', [\App\Http\Controllers\ExperimentosController::class, 'getTreatmentsSeason']);
     Route::get('getTreatmentsExperiments/{id_dsno_enc_f}/{id_dsno_enc_i}', [\App\Http\Controllers\ExperimentosController::class, 'getTreatmentsExperiments']);
-    Route::post('addDisenoDetalle/{id_dsno_enc}/{cTestigo}/{nTipoParcela}/{nTotalPlantas}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'addDisenoDetalle']);  
-    Route::post('addDisenoDetalles/{id_dsno_enc}/{nTipoParcela}/{cTestigo}/{nTotalPlantas}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'addDisenoDetalles']);  
-    Route::post('removeDetalle/{id_dsno_enc}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'removeDetalle']);  
+    Route::post('addDisenoDetalle/{id_dsno_enc}/{cTestigo}/{nTipoParcela}/{nTotalPlantas}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'addDisenoDetalle']);
+    Route::post('addDisenoDetalles/{id_dsno_enc}/{nTipoParcela}/{cTestigo}/{nTotalPlantas}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'addDisenoDetalles']);
+    Route::post('removeDetalle/{id_dsno_enc}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'removeDetalle']);
     Route::get('getRegistros/{tipo}/{tipo_registro}/{search}/{id_dsno_enc}', [\App\Http\Controllers\ExperimentosController::class, 'getRegistros']);
-    Route::post('grabarDiseno/{id_dsno_enc}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'grabarDiseno']);  
+    Route::post('grabarDiseno/{id_dsno_enc}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'grabarDiseno']);
     Route::post('saveGenericDesign/{id_dsno_enc}', [\App\Http\Controllers\ExperimentosController::class, 'saveGenericDesign']);
     Route::post('generateDesign/{id_dsno_enc}', [\App\Http\Controllers\ExperimentosController::class, 'generateDesign']);
 
@@ -156,7 +155,7 @@ Route::group([
     Route::get('siembra-campo/proyectos', [\App\Http\Controllers\ViveroController::class, 'getProyectos']);
     Route::get('siembra-campo/proyectos/{id}/caracteres', [\App\Http\Controllers\ViveroController::class, 'getCaracteresPorProyecto']);
     Route::post('siembra-campo/proyectos/{id}/caracteres', [\App\Http\Controllers\ViveroController::class, 'storeCaracter']);
-    
+
     Route::get('siembra-campo/responsables', [\App\Http\Controllers\ViveroController::class, 'getResponsables']);
     Route::get('siembra-campo/ambientes', [\App\Http\Controllers\ViveroController::class, 'getAmbientes']);
 });
