@@ -1285,18 +1285,23 @@ onUnmounted(() => {
 watch([selectedIdProject, selectedMegaAmbiente, selectedCdCntble, selectedVariety], loadSuggestionCrossings);
 
 async function loadSuggestionCrossings() {
-  if (selectedIdProject.value && selectedMegaAmbiente.value && selectedCdCntble.value && selectedVariety.value) {
+  const activeProj = selectedCdCntble.value || localStorage.getItem("lastSelectedCdCntble") || localStorage.getItem("selectedCdCntble") || "010105";
+  const activeAmb = selectedMegaAmbiente.value || localStorage.getItem("selectedMegaAmbiente") || "Semiseco";
+  const activeVariety = selectedVariety.value || localStorage.getItem("selectedVariety") || "";
+  const activeIdProj = selectedIdProject.value || localStorage.getItem("selectedIdProject") || "140";
+
+  if ((selectedMegaAmbiente.value || selectedCdCntble.value || activeProj) && activeVariety) {
     isLoading.value = true;
     try {
       await SuggestionCrossingPerProjectStore.getSuggestionCrossingPerProjectList(
-        selectedIdProject.value,
-        selectedCdCntble.value,
-        selectedVariety.value,
-        selectedMegaAmbiente.value
+        activeIdProj,
+        activeProj,
+        activeVariety,
+        activeAmb
       );
 
       if (!ParametizeWeightedStore.parametizeWeightedCrossingFilter || !ParametizeWeightedStore.parametizeWeightedCrossingFilter.ponderados) {
-        await ParametizeWeightedStore.getParametizeWeightedCrossingList(selectedCdCntble.value, selectedMegaAmbiente.value);
+        await ParametizeWeightedStore.getParametizeWeightedCrossingList(activeProj, activeAmb);
       }
       
       // Invalidar caché de distancias para forzar reconstrucción con los nuevos datos
