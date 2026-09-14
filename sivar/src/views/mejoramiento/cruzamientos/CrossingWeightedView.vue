@@ -39,7 +39,7 @@
 
     <!-- Panel de Configuración -->
     <div class="bg-white border border-slate-100 rounded-2xl p-6 shadow-premium">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <!-- Testigo Selector -->
         <div>
           <label class="block uppercase tracking-wider text-slate-600 text-xs font-bold mb-3">Variedad Testigo (Referencia)</label>
@@ -61,11 +61,25 @@
             v-model="selectedMegaAmbiente"
             class="w-full px-4 py-2.5 text-sm bg-white border border-slate-200 rounded-xl shadow-sm focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 outline-none transition-all duration-200 text-slate-700 font-medium"
           >
-            <option value="" disabled>Seleccione el ambiente...</option>
+            <option value="">Seleccione el ambiente...</option>
             <option value="Semiseco">Seco Semiseco</option>
             <option value="Humedo">Húmedo</option>
             <option value="Piedemonte">Piedemonte</option>
           </select>
+        </div>
+
+        <!-- Proyecto Selector -->
+        <div>
+          <label class="block uppercase tracking-wider text-slate-600 text-xs font-bold mb-3">Proyecto</label>
+          <div class="relative">
+            <ComboBoxMultiple
+              :data-list="mappedProjects"
+              :column-value="'cd_cntble'"
+              :column-to-show="'combinedValue'"
+              v-model:selectedData="selectedCdCntble"
+              placeholder="Seleccione un proyecto..."
+            />
+          </div>
         </div>
       </div>
 
@@ -141,9 +155,13 @@
       </div>
 
       <!-- Tabla de Ponderados -->
-      <div v-if="selectedVariety && selectedMegaAmbiente" class="mt-8 space-y-3">
+      <div v-if="selectedVariety && (selectedMegaAmbiente || selectedCdCntble)" class="mt-8 space-y-3">
         <div class="flex items-center space-x-2">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Ponderados de Características para la Matriz</h3>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Ponderados de Características para la Matriz
+            <span v-if="selectedMegaAmbiente" class="text-emerald-600 font-semibold">(Por Mega Ambiente: {{ selectedMegaAmbiente }})</span>
+            <span v-else-if="selectedCdCntble" class="text-emerald-600 font-semibold">(Por Proyecto: {{ selectedCdCntble }})</span>
+          </h3>
           <BaseButton
             variant="ghost"
             size="sm"
@@ -204,18 +222,23 @@
         </div>
       </div>
 
-      <!-- Estado vacío cuando no han seleccionado testigo/ambiente -->
+      <!-- Estado vacío cuando no han seleccionado testigo y (ambiente o proyecto) -->
       <div v-else class="flex flex-col items-center justify-center py-12 text-center text-slate-400 space-y-3">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span class="text-sm font-medium">Seleccione una variedad testigo y un mega ambiente para desplegar y editar los pesos ponderados.</span>
+        <span class="text-sm font-medium">Seleccione una variedad testigo y elija <strong>únicamente una opción</strong> (Mega Ambiente ó Proyecto) para desplegar y editar los pesos ponderados.</span>
       </div>
     </div>
 
     <!-- Botones de Navegación -->
     <div class="flex justify-end pt-4">
-      <BaseButton variant="primary" size="md" :to="{ name: 'crossing_matrix.show' }" :disabled="!selectedVariety || !selectedMegaAmbiente">
+      <BaseButton
+        variant="primary"
+        size="md"
+        :to="{ name: 'crossing_matrix.show' }"
+        :disabled="!selectedVariety || (!selectedMegaAmbiente && !selectedCdCntble)"
+      >
         Generar Matriz
         <template #icon-right>
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -237,8 +260,9 @@
         <!-- Cuerpo del modal -->
         <div class="p-6 space-y-6">
           <div class="p-3 bg-emerald-50/50 text-emerald-900 text-xs font-semibold rounded-lg border border-emerald-100/50">
-            Editando <span class="underline font-bold">{{ nombre }}</span> para el proyecto <span class="font-bold">{{ selectedCdCntble }}</span
-            >.
+            Editando <span class="underline font-bold">{{ nombre }}</span>
+            <span v-if="selectedCdCntble"> para el proyecto <span class="font-bold">{{ selectedCdCntble }}</span></span>
+            <span v-else-if="selectedMegaAmbiente"> para el mega ambiente <span class="font-bold">{{ selectedMegaAmbiente }}</span></span>.
           </div>
 
           <!-- Mensaje de error -->
@@ -341,6 +365,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from "vue";
 import { useVarietyStore } from "@/stores/variety";
+import { useCrossingInitialDataStore } from "@/stores/crossinginitialdata";
 import { useParametizeWeightedCrossingStore } from "@/stores/crossignparametizeweighted";
 import { useModifyFeaturesCrossingStore } from "@/stores/crossignmodifyfeatures";
 import { useToast } from "vue-toastification";
@@ -351,6 +376,7 @@ import urls from "@/services/urls";
 
 // Declaración de variables
 const varietyStore = useVarietyStore();
+const crossingInitialDataStore = useCrossingInitialDataStore();
 const parametizeWeightedCrossignStore = useParametizeWeightedCrossingStore();
 const modifyFeaturesStore = useModifyFeaturesCrossingStore();
 const toast = useToast();
@@ -363,6 +389,13 @@ const selectedCdCntble = ref<string | null>(localStorage.getItem("selectedCdCntb
 const dataListVariedades = varietyStore.Variety;
 const columnValueVariedades = "nm_vrdad";
 const columnToShowVariedades = "nm_vrdad";
+
+const mappedProjects = computed(() => {
+  return crossingInitialDataStore.crossingInitialDataList.map((item) => ({
+    ...item,
+    combinedValue: `${item.cd_cntble} - ${item.nm_prycto}`
+  }));
+});
 
 const varietyProfileData = ref<any>(null);
 const isFetchingProfile = ref(false);
@@ -404,9 +437,41 @@ const fetchVarietyProfile = async (varName: string) => {
   }
 };
 
+const getActiveProjectCode = () => {
+  if (selectedCdCntble.value) {
+    return selectedCdCntble.value;
+  }
+  if (selectedMegaAmbiente.value) {
+    return "General";
+  }
+  const storedProj = storedCdCntble.value || localStorage.getItem("selectedCdCntble");
+  if (storedProj) {
+    return storedProj;
+  }
+  const storedAmb = storedMegaAmbiente.value || localStorage.getItem("selectedMegaAmbiente");
+  if (storedAmb) {
+    return "General";
+  }
+  return "General";
+};
+
+const getActiveAmbiente = () => {
+  if (selectedMegaAmbiente.value) {
+    return selectedMegaAmbiente.value;
+  }
+  return storedMegaAmbiente.value || localStorage.getItem("selectedMegaAmbiente") || "Semiseco";
+};
+
+const fetchPonderados = async () => {
+  const proj = getActiveProjectCode();
+  const amb = getActiveAmbiente();
+  await parametizeWeightedCrossignStore.getParametizeWeightedCrossingList(proj, amb);
+};
+
 // OnMounted para cargar datos y recuperar valores de localStorage
 onMounted(async () => {
   await varietyStore.getVariety();
+  await crossingInitialDataStore.getCrossingInitialDataList();
 
   // Cargar valores desde el localStorage si existen
   if (storedVariety.value) {
@@ -414,9 +479,48 @@ onMounted(async () => {
     fetchVarietyProfile(storedVariety.value);
   }
   if (storedMegaAmbiente.value) selectedMegaAmbiente.value = storedMegaAmbiente.value;
+  if (storedCdCntble.value) selectedCdCntble.value = storedCdCntble.value;
+
+  if (selectedMegaAmbiente.value || selectedCdCntble.value) {
+    await fetchPonderados();
+  }
 });
 
-// Watchers para guardar los cambios en localStorage cuando se actualizan las selecciones
+// Watcher para Mega Ambiente (Exclusivo)
+watch(
+  () => selectedMegaAmbiente.value,
+  (newMegaAmbiente) => {
+    if (newMegaAmbiente) {
+      if (selectedCdCntble.value) {
+        localStorage.setItem("lastSelectedCdCntble", selectedCdCntble.value);
+        selectedCdCntble.value = "";
+        localStorage.removeItem("selectedCdCntble");
+      }
+      localStorage.setItem("selectedMegaAmbiente", newMegaAmbiente);
+    }
+  }
+);
+
+// Watcher para Proyecto (Exclusivo)
+watch(
+  () => selectedCdCntble.value,
+  (newCdCntble) => {
+    if (newCdCntble) {
+      if (selectedMegaAmbiente.value) {
+        selectedMegaAmbiente.value = "";
+        localStorage.removeItem("selectedMegaAmbiente");
+      }
+      localStorage.setItem("selectedCdCntble", newCdCntble);
+      localStorage.setItem("lastSelectedCdCntble", newCdCntble);
+      const proj = crossingInitialDataStore.crossingInitialDataList.find((p) => p.cd_cntble === newCdCntble);
+      if (proj) {
+        localStorage.setItem("selectedIdProject", proj.id_prycto.toString());
+      }
+    }
+  }
+);
+
+// Watchers para guardar variedad en localStorage
 watch(
   () => selectedVariety.value,
   (newVariety) => {
@@ -429,19 +533,10 @@ watch(
   }
 );
 
-watch(
-  () => selectedMegaAmbiente.value,
-  (newMegaAmbiente) => {
-    if (newMegaAmbiente) localStorage.setItem("selectedMegaAmbiente", newMegaAmbiente);
-  }
-);
-
-// Watch para filtrar en base a los cambios
-watch([selectedMegaAmbiente, selectedCdCntble], async ([selectedMegaAmbiente, selectedCdCntble]) => {
-  if (selectedMegaAmbiente && selectedCdCntble !== null) {
-    const proyecto = selectedCdCntble;
-    const megaAmbiente = selectedMegaAmbiente;
-    await parametizeWeightedCrossignStore.getParametizeWeightedCrossingList(proyecto, megaAmbiente);
+// Watch para consultar los ponderados según la opción seleccionada
+watch([selectedMegaAmbiente, selectedCdCntble], async ([newAmbiente, newCdCntble]) => {
+  if (newAmbiente || newCdCntble) {
+    await fetchPonderados();
   }
 });
 
@@ -526,23 +621,22 @@ const modificarCaracteristica = async () => {
     return;
   }
 
+  const proyectoParam = getActiveProjectCode();
+  const ambienteParam = getActiveAmbiente();
+
   try {
     const result = await modifyFeaturesStore.getModifyFeaturesCrossingList(
       id_caracteristica.value ?? "",
-      selectedCdCntble.value ?? "",
+      proyectoParam,
       nivelValue.toString(),
       ponderadoValue.toString(),
-      selectedMegaAmbiente.value ?? "",
+      ambienteParam,
       nuevoValue
     );
 
     if (result) {
       toast.success("Actualizado con éxito");
-
-      const proyecto = selectedCdCntble.value ?? "";
-      const megaAmbiente = selectedMegaAmbiente.value ?? "";
-
-      await parametizeWeightedCrossignStore.getParametizeWeightedCrossingList(proyecto, megaAmbiente);
+      await fetchPonderados();
       closeModal();
     }
   } catch (error) {

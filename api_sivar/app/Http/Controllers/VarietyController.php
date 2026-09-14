@@ -351,7 +351,15 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
     {
         try {
             // Retrieve all records from the 'caracterizacion_banco_germoplasma' table
-            $model = DB::connection('sivar')->table('caracterizacion_banco_germoplasma')->paginate(10);
+            $query = DB::connection('sivar')->table('caracterizacion_banco_germoplasma');
+            $search = $request->query('search');
+            if (!empty($search)) {
+                $query->where('variedad', 'ilike', '%' . $search . '%')
+                      ->orWhere('ensayo', 'ilike', '%' . $search . '%')
+                      ->orWhere('madre', 'ilike', '%' . $search . '%')
+                      ->orWhere('padre', 'ilike', '%' . $search . '%');
+            }
+            $model = $query->paginate($request->query('perPage', 50));
     
             // Check if records are found
             if ($model->isNotEmpty()) {

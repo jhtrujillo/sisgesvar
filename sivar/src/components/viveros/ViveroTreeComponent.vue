@@ -272,33 +272,7 @@
         </div>
       </div>
 
-      <!-- Render Cortes -->
-      <div v-if="cortesGenerales.length > 0" v-show="showCortesGenerales" class="relative mt-2 pl-6 border-l border-dashed border-orange-200 ml-5">
-        <div v-for="c in cortesGenerales" :key="'tree_c_corte_' + c.id" class="relative mt-3">
-          <!-- Horizontal line connecting to branch -->
-          <div class="absolute top-6 -left-6 w-6 border-t border-dashed border-slate-300"></div>
-          <div
-            class="absolute -top-2.5 left-0 text-[8px] font-bold uppercase text-orange-600 bg-orange-50 px-1 rounded border border-orange-100 flex items-center gap-1"
-          >
-            <span>Corte</span>
-          </div>
-          <div class="pt-2">
-            <ViveroTreeComponent :node="c" :search-query="searchQuery" @close-modal="emitClose" @delete-node="(id, uid) => emit('delete-node', id, uid)" />
-          </div>
-        </div>
-      </div>
 
-      <!-- Render Viveros Hijos -->
-      <div v-if="viverosHijos.length > 0" v-show="showViverosHijos" class="relative mt-2 pl-6 border-l border-dashed border-blue-200 ml-5">
-        <div v-for="c in viverosHijos" :key="'tree_c_hijo_' + c.id" class="relative mt-3">
-          <!-- Horizontal line connecting to branch -->
-          <div class="absolute top-6 -left-6 w-6 border-t border-dashed border-slate-300"></div>
-          <div class="absolute -top-2.5 left-0 text-[8px] font-bold uppercase text-blue-600 bg-blue-50 px-1 rounded border border-blue-100">Vivero Hijo</div>
-          <div class="pt-2">
-            <ViveroTreeComponent :node="c" :search-query="searchQuery" @close-modal="emitClose" @delete-node="(id, uid) => emit('delete-node', id, uid)" />
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>

@@ -368,14 +368,16 @@ onMounted(() => {
 
 // Watch para recargar los datos al cambiar los filtros con indicador de carga
 watch([selectedMegaAmbiente, selectedCdCntble, selectedVariety], async ([newMegaAmbiente, newCdCntble, newVariety]) => {
-  if (newMegaAmbiente && newCdCntble && newVariety) {
+  const activeProj = newCdCntble || localStorage.getItem("lastSelectedCdCntble") || localStorage.getItem("selectedCdCntble") || "010105";
+  const activeAmb = newMegaAmbiente || localStorage.getItem("selectedMegaAmbiente") || "Semiseco";
+
+  if ((newMegaAmbiente || newCdCntble) && newVariety) {
     isLoading.value = true;
     try {
-
-      await MatrixCrossingStore.getMatrixCrossingList(newCdCntble, newCdCntble, newVariety, newMegaAmbiente);
+      await MatrixCrossingStore.getMatrixCrossingList(activeProj, activeProj, newVariety, activeAmb);
 
       // Restaurar el borrador para sincronizar Step 2 y Step 3 en ambas direcciones
-      const storedDraft = localStorage.getItem(`sivarcc_draft_crossings_${newCdCntble}_${newMegaAmbiente}`);
+      const storedDraft = localStorage.getItem(`sivarcc_draft_crossings_${activeProj}_${activeAmb}`);
       if (storedDraft) {
         const savedState = JSON.parse(storedDraft);
         const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];

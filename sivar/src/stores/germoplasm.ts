@@ -10,15 +10,17 @@ import type { AxiosResponse } from "axios";
 export const useGermoplasmBankStore = defineStore("germoplasmBank", () => {
   const germplasm = ref<Germoplasma[]>([]);
   const currentPage = ref(1);
-  const perPage = ref(10);
+  const currentSearch = ref("");
+  const perPage = ref(50);
   const totalRecords = ref(0);
   const totalPages = ref(0);
 
-  const getGermoplasmBank = async () => {
+  const getGermoplasmBank = async (search: string = "") => {
+    currentSearch.value = search;
     try {
       const response: AxiosResponse<{ data: Germoplasma[]; total: number }> = await germoplasmBankService.getGermoplasmBankList(
         currentPage.value,
-        perPage.value
+        perPage.value, currentSearch.value
       );
       const { data, total } = response.data;
 
@@ -34,12 +36,12 @@ export const useGermoplasmBankStore = defineStore("germoplasmBank", () => {
   const setCurrentPage = async (page: number) => {
     if (page >= 1 && page <= totalPages.value) {
       currentPage.value = page;
-      await getGermoplasmBank();
+      await getGermoplasmBank(currentSearch.value);
     }
   };
   const setPerPage = async (numberPage: number) => {
     perPage.value = numberPage;
-    await getGermoplasmBank();
+    await getGermoplasmBank(currentSearch.value);
   };
 
   return {

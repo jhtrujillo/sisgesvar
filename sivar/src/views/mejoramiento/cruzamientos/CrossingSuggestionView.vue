@@ -382,10 +382,13 @@ onMounted(() => {
 
 // Watch para recargar los datos al cambiar los filtros con indicador de carga
 watch([selectedMegaAmbiente, selectedCdCntble, selectedVariety], async ([newMegaAmbiente, newCdCntble, newVariety]) => {
-  if (newMegaAmbiente && newCdCntble && newVariety) {
+  const activeProj = newCdCntble || localStorage.getItem("lastSelectedCdCntble") || localStorage.getItem("selectedCdCntble") || "010105";
+  const activeAmb = newMegaAmbiente || localStorage.getItem("selectedMegaAmbiente") || "Semiseco";
+
+  if ((newMegaAmbiente || newCdCntble) && newVariety) {
     isLoading.value = true;
     try {
-      await SuggestionCrossingStore.getSuggestionCrossingList(newCdCntble, newCdCntble, newVariety, newMegaAmbiente);
+      await SuggestionCrossingStore.getSuggestionCrossingList(activeProj, activeProj, newVariety, activeAmb);
     } catch (error) {
       console.error("Error al cargar cruzamientos recomendados:", error);
     } finally {

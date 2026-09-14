@@ -1000,6 +1000,28 @@ class CrossingService
         $ponderados = [];
         $sumaPonderados = 0;
 
+        if ($proyecto === 'General' && !empty($ambiente)) {
+            $count = DB::connection('sivar')->table('ponderados_valor_merito')
+                ->where('id_proyecto', 'General')
+                ->where('ambiente', $ambiente)
+                ->count();
+            if ($count == 0) {
+                $base = DB::connection('sivar')->table('ponderados_valor_merito')
+                    ->where('id_proyecto', '010105')
+                    ->where('ambiente', $ambiente)
+                    ->get();
+                foreach ($base as $row) {
+                    DB::connection('sivar')->table('ponderados_valor_merito')->insert([
+                        'id_proyecto' => 'General',
+                        'ambiente' => $ambiente,
+                        'id_caracteristica' => $row->id_caracteristica,
+                        'nivel' => $row->nivel,
+                        'ponderado' => $row->ponderado
+                    ]);
+                }
+            }
+        }
+
         if ($proyecto != 'x') {
             $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
                 ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto, $ambiente) {
