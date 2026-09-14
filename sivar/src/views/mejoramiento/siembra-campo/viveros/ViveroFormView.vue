@@ -952,12 +952,13 @@
                 <th class="px-4 py-3 border-b border-slate-200">Pedigree</th>
                 <th class="px-4 py-3 border-b border-slate-200">Carácter</th>
                 <th class="px-4 py-3 border-b border-slate-200">ID Plot</th>
+                <th class="px-4 py-3 border-b border-slate-200">ID Plot Origen</th>
                 <th class="px-4 py-3 border-b border-slate-200 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="loadingParcelas">
-                <td colspan="6" class="text-center py-8 text-slate-500">
+                <td colspan="7" class="text-center py-8 text-slate-500">
                   <div class="flex items-center justify-center space-x-2">
                     <div class="w-4 h-4 border-2 border-cenicana border-t-transparent rounded-full animate-spin"></div>
                     <span>Cargando parcelas...</span>
@@ -965,10 +966,10 @@
                 </td>
               </tr>
               <tr v-else-if="parcelas.length === 0">
-                <td colspan="6" class="text-center py-8 text-slate-500 bg-slate-50">No hay parcelas registradas en este vivero.</td>
+                <td colspan="7" class="text-center py-8 text-slate-500 bg-slate-50">No hay parcelas registradas en este vivero.</td>
               </tr>
               <tr v-else-if="filteredParcelas.length === 0">
-                <td colspan="6" class="text-center py-8 text-slate-500 bg-slate-50">No se encontraron parcelas que coincidan con la búsqueda.</td>
+                <td colspan="7" class="text-center py-8 text-slate-500 bg-slate-50">No se encontraron parcelas que coincidan con la búsqueda.</td>
               </tr>
               <template v-else>
                 <tr
@@ -1024,16 +1025,16 @@
                         <option v-for="c in caracteres" :key="'edit_c_' + c.id" :value="c.id">{{ c.nombre }}</option>
                       </select>
                     </td>
-                    <td class="px-4 py-3 min-w-[100px]">
-                      <input
-                        v-model="editingPlotForm.numero_parcela_origen"
-                        type="number"
-                        placeholder="No."
-                        class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
-                      />
+                    <td class="px-4 py-3 text-slate-700 font-mono text-xs font-semibold">
+                      {{ (form.identificador_unico ? form.identificador_unico + '-' : '') + p.numero_parcela }}
                     </td>
-                    <td class="px-4 py-3 text-slate-600 font-mono text-xs">
-                      {{ editingPlotForm.id_plot_origen || "N/A" }}
+                    <td class="px-4 py-3 min-w-[140px]">
+                      <input
+                        v-model="editingPlotForm.id_plot_origen"
+                        type="text"
+                        placeholder="ID Plot Origen"
+                        class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
+                      />
                     </td>
                     <td class="px-4 py-3 text-center">
                       <div class="flex items-center justify-center gap-2">
@@ -1077,6 +1078,9 @@
                         getCaracterGlobalNombre()
                       }}</span>
                       <span v-else>N/A</span>
+                    </td>
+                    <td class="px-4 py-3 text-slate-700 font-mono text-xs font-semibold">
+                      {{ (form.identificador_unico ? form.identificador_unico + '-' : '') + p.numero_parcela }}
                     </td>
                     <td class="px-4 py-3 text-slate-600 font-mono text-xs">{{ p.id_plot_origen || "N/A" }}</td>
                     <td class="px-4 py-3 text-center">
@@ -1682,9 +1686,11 @@ const filteredParcelas = computed(() => {
     filtered = filtered.filter((p) => {
       const inheritedCaracter = getCaracterGlobalNombre();
       const activeCaracter = p.caracter?.nombre || inheritedCaracter || "N/A";
+      const currentPlotId = form.value.identificador_unico ? `${form.value.identificador_unico}-${p.numero_parcela}` : "";
 
       return (
         p.numero_parcela?.toString().includes(q) ||
+        currentPlotId.toLowerCase().includes(q) ||
         p.variedad?.nm_vrdad?.toLowerCase().includes(q) ||
         p.variedad?.pdgree?.toLowerCase().includes(q) ||
         p.numero_parcela_origen?.toString().includes(q) ||
