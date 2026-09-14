@@ -291,6 +291,7 @@ class ViveroController extends Controller
                 }
             }
 
+            $originalIdent = $vivero->getOriginal('identificador_unico');
             $vivero->fill($request->except('identificador_unico'));
 
             if (!$vivero->suerte && $vivero->lote_id) {
@@ -300,20 +301,30 @@ class ViveroController extends Controller
                 }
             }
 
-            // Siempre generar el identificador_unico usando el método helper en el update
-            // (ya no se concatena el número de corte)
-            $parts = explode('-', $vivero->identificador_unico);
+            // Generar el identificador_unico y verificar que no colisione con otro vivero
+            $parts = explode('-', $originalIdent ?: $vivero->identificador_unico);
             $consecutivo = end($parts);
             if (!is_numeric($consecutivo) || intval($consecutivo) <= 0) {
-                $consecutivo = $vivero->id;
+                $consecutivo = $vivero->consecutivo_vivero_ingenio ?: $vivero->id;
             }
-            $vivero->identificador_unico = $this->viveroService->generarIdentificadorUnico(
+
+            $newIdent = $this->viveroService->generarIdentificadorUnico(
                 $vivero->ingenio,
                 $vivero->hacienda,
                 $vivero->suerte,
                 $vivero->fecha_siembra,
                 $consecutivo
             );
+
+            $existsOther = Vivero::where('identificador_unico', $newIdent)
+                ->where('id', '!=', $vivero->id)
+                ->exists();
+
+            if ($existsOther && $originalIdent) {
+                $vivero->identificador_unico = $originalIdent;
+            } else {
+                $vivero->identificador_unico = $newIdent;
+            }
 
             $vivero->save();
 
