@@ -1765,28 +1765,38 @@ const hideVariedadesDelay = () => {
 };
 
 const getParcIdPlotOrigen = (p: any) => {
-  const currentPlotId = form.value.identificador_unico ? `${form.value.identificador_unico}-${p.numero_parcela}` : "";
-  let raw = p.id_plot_origen;
-
-  if (raw && raw.trim() !== '' && raw !== currentPlotId) {
-    return raw.trim();
+  if (p.id_plot_origen && p.id_plot_origen.trim() !== '') {
+    const raw = p.id_plot_origen.trim();
+    if (!p.numero_parcela_origen) {
+      const parts = raw.split('-');
+      if (parts.length === 5 && parts[4] === String(p.numero_parcela)) {
+        return parts.slice(0, 4).join('-');
+      }
+    }
+    return raw;
   }
 
-  const parcNum = p.numero_parcela_origen || p.numero_parcela;
-
+  let baseOrigen = "";
   if (form.value.origen_vivero_id && allViverosList.value && allViverosList.value.length > 0) {
     const parent = allViverosList.value.find((v: any) => v.id == form.value.origen_vivero_id);
     if (parent && parent.identificador_unico) {
-      return parcNum ? `${parent.identificador_unico}-${parcNum}` : parent.identificador_unico;
+      baseOrigen = parent.identificador_unico;
     }
   }
 
-  if (form.value.origen_parcela && form.value.origen_parcela.trim() !== '') {
-    const base = form.value.origen_parcela.trim();
-    if (base.split('-').length >= 5) {
-      return base;
+  if (!baseOrigen && form.value.origen_parcela && form.value.origen_parcela.trim() !== '') {
+    baseOrigen = form.value.origen_parcela.trim();
+  }
+
+  if (!baseOrigen && form.value.identificador_unico) {
+    baseOrigen = form.value.identificador_unico;
+  }
+
+  if (baseOrigen) {
+    if (p.numero_parcela_origen) {
+      return `${baseOrigen}-${p.numero_parcela_origen}`;
     }
-    return parcNum ? `${base}-${parcNum}` : base;
+    return baseOrigen;
   }
 
   return "N/A";
@@ -1803,7 +1813,7 @@ const updateIdPlotOrigen = () => {
   }
 
   if (!baseOrigen) {
-    baseOrigen = form.value.origen_parcela || "";
+    baseOrigen = form.value.origen_parcela || form.value.identificador_unico || "";
   }
 
   if (!baseOrigen) {
@@ -1811,8 +1821,11 @@ const updateIdPlotOrigen = () => {
     return;
   }
 
-  const parcNum = parcelaForm.value.numero_parcela_origen || parcelaForm.value.numero_parcela;
-  parcelaForm.value.id_plot_origen = parcNum ? `${baseOrigen}-${parcNum}` : baseOrigen;
+  if (parcelaForm.value.numero_parcela_origen) {
+    parcelaForm.value.id_plot_origen = `${baseOrigen}-${parcelaForm.value.numero_parcela_origen}`;
+  } else {
+    parcelaForm.value.id_plot_origen = baseOrigen;
+  }
 };
 const ingenios = ref<any[]>([]);
 const haciendas = ref<any[]>([]);
@@ -2199,34 +2212,29 @@ const cancelEditingPlot = () => {
 };
 
 const updateEditingPlotIdOrigen = () => {
-  if (editingPlotForm.value.id_plot_origen && editingPlotForm.value.id_plot_origen.trim() !== '') {
-    return;
-  }
-  const parcelNum = editingPlotForm.value.numero_parcela_origen || editingPlotForm.value.numero_parcela;
-  if (!parcelNum) {
-    editingPlotForm.value.id_plot_origen = "";
-    return;
-  }
+  let baseOrigen = "";
 
   if (form.value.origen_vivero_id && allViverosList.value && allViverosList.value.length > 0) {
     const parent = allViverosList.value.find((v: any) => v.id == form.value.origen_vivero_id);
     if (parent && parent.identificador_unico) {
-      editingPlotForm.value.id_plot_origen = `${parent.identificador_unico}-${parcelNum}`;
-      return;
+      baseOrigen = parent.identificador_unico;
     }
   }
 
-  let baseOrigen = form.value.origen_parcela || form.value.identificador_unico || "";
+  if (!baseOrigen) {
+    baseOrigen = form.value.origen_parcela || form.value.identificador_unico || "";
+  }
+
   if (!baseOrigen) {
     editingPlotForm.value.id_plot_origen = "";
     return;
   }
 
-  const parts = baseOrigen.split("-");
-  if (parts.length === 4) {
-    baseOrigen = parts.slice(0, 3).join("-");
+  if (editingPlotForm.value.numero_parcela_origen) {
+    editingPlotForm.value.id_plot_origen = `${baseOrigen}-${editingPlotForm.value.numero_parcela_origen}`;
+  } else {
+    editingPlotForm.value.id_plot_origen = baseOrigen;
   }
-  editingPlotForm.value.id_plot_origen = `${baseOrigen}-${parcelNum}`;
 };
 
 const isSubmittingEditingPlot = ref(false);
