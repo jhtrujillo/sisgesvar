@@ -1082,7 +1082,7 @@
                     <td class="px-4 py-3 text-slate-700 font-mono text-xs font-semibold">
                       {{ (form.identificador_unico ? form.identificador_unico + '-' : '') + p.numero_parcela }}
                     </td>
-                    <td class="px-4 py-3 text-slate-600 font-mono text-xs">{{ p.id_plot_origen || "N/A" }}</td>
+                    <td class="px-4 py-3 text-slate-600 font-mono text-xs">{{ getParcIdPlotOrigen(p) }}</td>
                     <td class="px-4 py-3 text-center">
                       <div class="flex items-center justify-center gap-2">
                         <button
@@ -1764,10 +1764,41 @@ const hideVariedadesDelay = () => {
   }, 200);
 };
 
+const getParcIdPlotOrigen = (p: any) => {
+  if (p.id_plot_origen && p.id_plot_origen.trim() !== '') {
+    return p.id_plot_origen;
+  }
+  const baseOrigen = form.value.origen_parcela || form.value.identificador_unico || "";
+  if (!baseOrigen) return "N/A";
+  const parcelNum = p.numero_parcela_origen || p.numero_parcela;
+  if (!parcelNum) return baseOrigen;
+
+  const parts = baseOrigen.split("-");
+  if (parts.length > 3) {
+    if (p.numero_parcela_origen) {
+      parts[parts.length - 1] = p.numero_parcela_origen.toString();
+      return parts.join("-");
+    }
+    return baseOrigen;
+  }
+  return `${baseOrigen}-${parcelNum}`;
+};
+
 const updateIdPlotOrigen = () => {
-  if (parcelaForm.value.numero_parcela) {
-    const baseId = form.value.identificador_unico || "";
-    parcelaForm.value.id_plot_origen = baseId ? `${baseId}-${parcelaForm.value.numero_parcela}` : "";
+  const baseOrigen = form.value.origen_parcela || form.value.identificador_unico || "";
+  const parcelNum = parcelaForm.value.numero_parcela_origen || parcelaForm.value.numero_parcela;
+  if (baseOrigen && parcelNum) {
+    const parts = baseOrigen.split("-");
+    if (parts.length > 3) {
+      if (parcelaForm.value.numero_parcela_origen) {
+        parts[parts.length - 1] = parcelaForm.value.numero_parcela_origen.toString();
+        parcelaForm.value.id_plot_origen = parts.join("-");
+      } else {
+        parcelaForm.value.id_plot_origen = baseOrigen;
+      }
+    } else {
+      parcelaForm.value.id_plot_origen = `${baseOrigen}-${parcelNum}`;
+    }
   } else {
     parcelaForm.value.id_plot_origen = "";
   }
@@ -2157,9 +2188,23 @@ const cancelEditingPlot = () => {
 };
 
 const updateEditingPlotIdOrigen = () => {
-  if (editingPlotForm.value.numero_parcela) {
-    const baseId = form.value.identificador_unico || "";
-    editingPlotForm.value.id_plot_origen = baseId ? `${baseId}-${editingPlotForm.value.numero_parcela}` : "";
+  if (editingPlotForm.value.id_plot_origen && editingPlotForm.value.id_plot_origen.trim() !== '') {
+    return;
+  }
+  const baseOrigen = form.value.origen_parcela || form.value.identificador_unico || "";
+  const parcelNum = editingPlotForm.value.numero_parcela_origen || editingPlotForm.value.numero_parcela;
+  if (baseOrigen && parcelNum) {
+    const parts = baseOrigen.split("-");
+    if (parts.length > 3) {
+      if (editingPlotForm.value.numero_parcela_origen) {
+        parts[parts.length - 1] = editingPlotForm.value.numero_parcela_origen.toString();
+        editingPlotForm.value.id_plot_origen = parts.join("-");
+      } else {
+        editingPlotForm.value.id_plot_origen = baseOrigen;
+      }
+    } else {
+      editingPlotForm.value.id_plot_origen = `${baseOrigen}-${parcelNum}`;
+    }
   } else {
     editingPlotForm.value.id_plot_origen = "";
   }
