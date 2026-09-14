@@ -1765,57 +1765,36 @@ const hideVariedadesDelay = () => {
 };
 
 const getParcIdPlotOrigen = (p: any) => {
+  const currentPlotId = form.value.identificador_unico ? `${form.value.identificador_unico}-${p.numero_parcela}` : "";
   let raw = p.id_plot_origen;
 
-  if (!raw || raw.trim() === '') {
-    if (form.value.origen_vivero_id && allViverosList.value && allViverosList.value.length > 0) {
-      const parent = allViverosList.value.find((v: any) => v.id == form.value.origen_vivero_id);
-      if (parent && parent.identificador_unico) {
-        raw = p.numero_parcela_origen ? `${parent.identificador_unico}-${p.numero_parcela_origen}` : parent.identificador_unico;
-      }
-    }
-    if (!raw) {
-      let base = form.value.origen_parcela || form.value.identificador_unico || "";
-      if (base) {
-        const parts = base.split("-");
-        if (parts.length === 4) {
-          base = parts.slice(0, 3).join("-");
-        }
-        raw = p.numero_parcela_origen ? `${base}-${p.numero_parcela_origen}` : base;
-      }
+  if (raw && raw.trim() !== '' && raw !== currentPlotId) {
+    return raw.trim();
+  }
+
+  const parcNum = p.numero_parcela_origen || p.numero_parcela;
+
+  if (form.value.origen_vivero_id && allViverosList.value && allViverosList.value.length > 0) {
+    const parent = allViverosList.value.find((v: any) => v.id == form.value.origen_vivero_id);
+    if (parent && parent.identificador_unico) {
+      return parcNum ? `${parent.identificador_unico}-${parcNum}` : parent.identificador_unico;
     }
   }
 
-  if (!raw || raw.trim() === '') return "N/A";
-  const str = raw.trim();
-  const parts = str.split("-");
-
-  // 5 parts: e.g. "CN2025-EESA-2-38-14"
-  if (parts.length === 5) {
-    if (p.numero_parcela_origen) {
-      return `${parts[0]}-${parts[1]}-${parts[2]}-${p.numero_parcela_origen}`;
+  if (form.value.origen_parcela && form.value.origen_parcela.trim() !== '') {
+    const base = form.value.origen_parcela.trim();
+    if (base.split('-').length >= 5) {
+      return base;
     }
-    return `${parts[0]}-${parts[1]}-${parts[2]}`;
+    return parcNum ? `${base}-${parcNum}` : base;
   }
 
-  // 4 parts: e.g. "CN2025-EESA-2-38"
-  if (parts.length === 4) {
-    const currentViveroConsecutivo = String(form.value.consecutivo_vivero_ingenio || "");
-    const viveroIdent = form.value.identificador_unico || "";
-
-    if ((currentViveroConsecutivo && parts[3] === currentViveroConsecutivo) || (viveroIdent && viveroIdent.endsWith('-' + parts[3]))) {
-      if (p.numero_parcela_origen) {
-        return `${parts[0]}-${parts[1]}-${parts[2]}-${p.numero_parcela_origen}`;
-      }
-      return `${parts[0]}-${parts[1]}-${parts[2]}`;
-    }
-  }
-
-  return str;
+  return "N/A";
 };
 
 const updateIdPlotOrigen = () => {
-  let baseOrigen = form.value.origen_parcela || form.value.identificador_unico || "";
+  let baseOrigen = "";
+
   if (form.value.origen_vivero_id && allViverosList.value && allViverosList.value.length > 0) {
     const parent = allViverosList.value.find((v: any) => v.id == form.value.origen_vivero_id);
     if (parent && parent.identificador_unico) {
@@ -1824,16 +1803,16 @@ const updateIdPlotOrigen = () => {
   }
 
   if (!baseOrigen) {
+    baseOrigen = form.value.origen_parcela || "";
+  }
+
+  if (!baseOrigen) {
     parcelaForm.value.id_plot_origen = "";
     return;
   }
 
-  const parts = baseOrigen.split("-");
-  if (parts.length === 4) {
-    baseOrigen = parts.slice(0, 3).join("-");
-  }
-
-  parcelaForm.value.id_plot_origen = parcelaForm.value.numero_parcela_origen ? `${baseOrigen}-${parcelaForm.value.numero_parcela_origen}` : baseOrigen;
+  const parcNum = parcelaForm.value.numero_parcela_origen || parcelaForm.value.numero_parcela;
+  parcelaForm.value.id_plot_origen = parcNum ? `${baseOrigen}-${parcNum}` : baseOrigen;
 };
 const ingenios = ref<any[]>([]);
 const haciendas = ref<any[]>([]);
