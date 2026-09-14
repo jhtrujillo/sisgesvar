@@ -1768,11 +1768,10 @@ const getParcIdPlotOrigen = (p: any) => {
   let raw = p.id_plot_origen;
 
   if (!raw || raw.trim() === '') {
-    const parc = p.numero_parcela_origen || p.numero_parcela;
     if (form.value.origen_vivero_id && allViverosList.value && allViverosList.value.length > 0) {
       const parent = allViverosList.value.find((v: any) => v.id == form.value.origen_vivero_id);
       if (parent && parent.identificador_unico) {
-        raw = `${parent.identificador_unico}-${parc}`;
+        raw = p.numero_parcela_origen ? `${parent.identificador_unico}-${p.numero_parcela_origen}` : parent.identificador_unico;
       }
     }
     if (!raw) {
@@ -1782,7 +1781,7 @@ const getParcIdPlotOrigen = (p: any) => {
         if (parts.length === 4) {
           base = parts.slice(0, 3).join("-");
         }
-        raw = `${base}-${parc}`;
+        raw = p.numero_parcela_origen ? `${base}-${p.numero_parcela_origen}` : base;
       }
     }
   }
@@ -1791,21 +1790,24 @@ const getParcIdPlotOrigen = (p: any) => {
   const str = raw.trim();
   const parts = str.split("-");
 
-  // 5 parts: e.g. "CN2025-EESA-2-38-14" -> drop nursery consecutivo "38" -> "CN2025-EESA-2-14"
+  // 5 parts: e.g. "CN2025-EESA-2-38-14"
   if (parts.length === 5) {
-    const parc = p.numero_parcela_origen || parts[4];
-    return `${parts[0]}-${parts[1]}-${parts[2]}-${parc}`;
+    if (p.numero_parcela_origen) {
+      return `${parts[0]}-${parts[1]}-${parts[2]}-${p.numero_parcela_origen}`;
+    }
+    return `${parts[0]}-${parts[1]}-${parts[2]}`;
   }
 
-  // 4 parts: e.g. "CN2025-EESA-2-38" or "CN2025-EESA-2-14"
+  // 4 parts: e.g. "CN2025-EESA-2-38"
   if (parts.length === 4) {
     const currentViveroConsecutivo = String(form.value.consecutivo_vivero_ingenio || "");
     const viveroIdent = form.value.identificador_unico || "";
 
-    // If the 4th part is the nursery consecutivo (e.g. 38)
     if ((currentViveroConsecutivo && parts[3] === currentViveroConsecutivo) || (viveroIdent && viveroIdent.endsWith('-' + parts[3]))) {
-      const parc = p.numero_parcela_origen || p.numero_parcela;
-      return `${parts[0]}-${parts[1]}-${parts[2]}-${parc}`;
+      if (p.numero_parcela_origen) {
+        return `${parts[0]}-${parts[1]}-${parts[2]}-${p.numero_parcela_origen}`;
+      }
+      return `${parts[0]}-${parts[1]}-${parts[2]}`;
     }
   }
 
@@ -1831,8 +1833,7 @@ const updateIdPlotOrigen = () => {
     baseOrigen = parts.slice(0, 3).join("-");
   }
 
-  const parc = parcelaForm.value.numero_parcela_origen || parcelaForm.value.numero_parcela;
-  parcelaForm.value.id_plot_origen = parc ? `${baseOrigen}-${parc}` : baseOrigen;
+  parcelaForm.value.id_plot_origen = parcelaForm.value.numero_parcela_origen ? `${baseOrigen}-${parcelaForm.value.numero_parcela_origen}` : baseOrigen;
 };
 const ingenios = ref<any[]>([]);
 const haciendas = ref<any[]>([]);
