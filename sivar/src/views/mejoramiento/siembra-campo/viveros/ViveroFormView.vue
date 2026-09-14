@@ -1768,40 +1768,59 @@ const getParcIdPlotOrigen = (p: any) => {
   if (p.id_plot_origen && p.id_plot_origen.trim() !== '') {
     return p.id_plot_origen;
   }
-  const baseOrigen = form.value.origen_parcela || form.value.identificador_unico || "";
-  if (!baseOrigen) return "N/A";
+
   const parcelNum = p.numero_parcela_origen || p.numero_parcela;
-  if (!parcelNum) return baseOrigen;
+
+  if (form.value.origen_vivero_id && allViverosList.value && allViverosList.value.length > 0) {
+    const parent = allViverosList.value.find((v: any) => v.id == form.value.origen_vivero_id);
+    if (parent && parent.identificador_unico) {
+      return `${parent.identificador_unico}-${parcelNum}`;
+    }
+  }
+
+  let baseOrigen = form.value.origen_parcela || form.value.identificador_unico || "";
+  if (!baseOrigen) return "N/A";
 
   const parts = baseOrigen.split("-");
-  if (parts.length > 3) {
+  if (parts.length === 4) {
+    baseOrigen = parts.slice(0, 3).join("-");
+  } else if (parts.length > 4) {
     if (p.numero_parcela_origen) {
       parts[parts.length - 1] = p.numero_parcela_origen.toString();
       return parts.join("-");
     }
     return baseOrigen;
   }
-  return `${baseOrigen}-${parcelNum}`;
+
+  return parcelNum ? `${baseOrigen}-${parcelNum}` : baseOrigen;
 };
 
 const updateIdPlotOrigen = () => {
-  const baseOrigen = form.value.origen_parcela || form.value.identificador_unico || "";
   const parcelNum = parcelaForm.value.numero_parcela_origen || parcelaForm.value.numero_parcela;
-  if (baseOrigen && parcelNum) {
-    const parts = baseOrigen.split("-");
-    if (parts.length > 3) {
-      if (parcelaForm.value.numero_parcela_origen) {
-        parts[parts.length - 1] = parcelaForm.value.numero_parcela_origen.toString();
-        parcelaForm.value.id_plot_origen = parts.join("-");
-      } else {
-        parcelaForm.value.id_plot_origen = baseOrigen;
-      }
-    } else {
-      parcelaForm.value.id_plot_origen = `${baseOrigen}-${parcelNum}`;
-    }
-  } else {
+  if (!parcelNum) {
     parcelaForm.value.id_plot_origen = "";
+    return;
   }
+
+  if (form.value.origen_vivero_id && allViverosList.value && allViverosList.value.length > 0) {
+    const parent = allViverosList.value.find((v: any) => v.id == form.value.origen_vivero_id);
+    if (parent && parent.identificador_unico) {
+      parcelaForm.value.id_plot_origen = `${parent.identificador_unico}-${parcelNum}`;
+      return;
+    }
+  }
+
+  let baseOrigen = form.value.origen_parcela || form.value.identificador_unico || "";
+  if (!baseOrigen) {
+    parcelaForm.value.id_plot_origen = "";
+    return;
+  }
+
+  const parts = baseOrigen.split("-");
+  if (parts.length === 4) {
+    baseOrigen = parts.slice(0, 3).join("-");
+  }
+  parcelaForm.value.id_plot_origen = `${baseOrigen}-${parcelNum}`;
 };
 const ingenios = ref<any[]>([]);
 const haciendas = ref<any[]>([]);
@@ -2191,23 +2210,31 @@ const updateEditingPlotIdOrigen = () => {
   if (editingPlotForm.value.id_plot_origen && editingPlotForm.value.id_plot_origen.trim() !== '') {
     return;
   }
-  const baseOrigen = form.value.origen_parcela || form.value.identificador_unico || "";
   const parcelNum = editingPlotForm.value.numero_parcela_origen || editingPlotForm.value.numero_parcela;
-  if (baseOrigen && parcelNum) {
-    const parts = baseOrigen.split("-");
-    if (parts.length > 3) {
-      if (editingPlotForm.value.numero_parcela_origen) {
-        parts[parts.length - 1] = editingPlotForm.value.numero_parcela_origen.toString();
-        editingPlotForm.value.id_plot_origen = parts.join("-");
-      } else {
-        editingPlotForm.value.id_plot_origen = baseOrigen;
-      }
-    } else {
-      editingPlotForm.value.id_plot_origen = `${baseOrigen}-${parcelNum}`;
-    }
-  } else {
+  if (!parcelNum) {
     editingPlotForm.value.id_plot_origen = "";
+    return;
   }
+
+  if (form.value.origen_vivero_id && allViverosList.value && allViverosList.value.length > 0) {
+    const parent = allViverosList.value.find((v: any) => v.id == form.value.origen_vivero_id);
+    if (parent && parent.identificador_unico) {
+      editingPlotForm.value.id_plot_origen = `${parent.identificador_unico}-${parcelNum}`;
+      return;
+    }
+  }
+
+  let baseOrigen = form.value.origen_parcela || form.value.identificador_unico || "";
+  if (!baseOrigen) {
+    editingPlotForm.value.id_plot_origen = "";
+    return;
+  }
+
+  const parts = baseOrigen.split("-");
+  if (parts.length === 4) {
+    baseOrigen = parts.slice(0, 3).join("-");
+  }
+  editingPlotForm.value.id_plot_origen = `${baseOrigen}-${parcelNum}`;
 };
 
 const isSubmittingEditingPlot = ref(false);
