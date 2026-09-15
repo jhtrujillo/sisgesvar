@@ -776,7 +776,6 @@
               <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Plot (No.)</label>
               <input
                 v-model="parcelaForm.numero_parcela"
-                @input="updateIdPlotOrigen"
                 type="number"
                 class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
               />
@@ -835,16 +834,17 @@
               </select>
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Parcela</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Parcela Origen</label>
               <input
                 v-model="parcelaForm.numero_parcela_origen"
+                @input="updateIdPlotOrigen"
                 type="number"
                 placeholder="No."
                 class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
               />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">ID Plot</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">ID Plot Origen</label>
               <input
                 v-model="parcelaForm.id_plot_origen"
                 type="text"
@@ -1764,9 +1764,36 @@ const hideVariedadesDelay = () => {
   }, 200);
 };
 
+const getBaseOrigen = () => {
+  if (form.value.origen_vivero_id && allViverosList.value && allViverosList.value.length > 0) {
+    const parent = allViverosList.value.find((v: any) => v.id == form.value.origen_vivero_id);
+    if (parent && parent.identificador_unico) {
+      return parent.identificador_unico;
+    }
+  }
+
+  if (form.value.origen_parcela && form.value.origen_parcela.trim() !== '') {
+    const orig = form.value.origen_parcela.trim();
+    const parts = orig.split('-');
+    if (parts.length >= 4) {
+      return parts.slice(0, 4).join('-');
+    }
+    return orig;
+  }
+
+  return form.value.identificador_unico || "";
+};
+
 const getParcIdPlotOrigen = (p: any) => {
+  const baseOrigen = getBaseOrigen();
+
   if (p.id_plot_origen && p.id_plot_origen.trim() !== '') {
-    const raw = p.id_plot_origen.trim();
+    let raw = p.id_plot_origen.trim();
+
+    if (form.value.identificador_unico && raw.startsWith(form.value.identificador_unico) && baseOrigen && baseOrigen !== form.value.identificador_unico) {
+      raw = baseOrigen + raw.substring(form.value.identificador_unico.length);
+    }
+
     if (!p.numero_parcela_origen) {
       const parts = raw.split('-');
       if (parts.length === 5 && parts[4] === String(p.numero_parcela)) {
@@ -1774,22 +1801,6 @@ const getParcIdPlotOrigen = (p: any) => {
       }
     }
     return raw;
-  }
-
-  let baseOrigen = "";
-  if (form.value.origen_vivero_id && allViverosList.value && allViverosList.value.length > 0) {
-    const parent = allViverosList.value.find((v: any) => v.id == form.value.origen_vivero_id);
-    if (parent && parent.identificador_unico) {
-      baseOrigen = parent.identificador_unico;
-    }
-  }
-
-  if (!baseOrigen && form.value.origen_parcela && form.value.origen_parcela.trim() !== '') {
-    baseOrigen = form.value.origen_parcela.trim();
-  }
-
-  if (!baseOrigen && form.value.identificador_unico) {
-    baseOrigen = form.value.identificador_unico;
   }
 
   if (baseOrigen) {
@@ -1803,19 +1814,7 @@ const getParcIdPlotOrigen = (p: any) => {
 };
 
 const updateIdPlotOrigen = () => {
-  let baseOrigen = "";
-
-  if (form.value.origen_vivero_id && allViverosList.value && allViverosList.value.length > 0) {
-    const parent = allViverosList.value.find((v: any) => v.id == form.value.origen_vivero_id);
-    if (parent && parent.identificador_unico) {
-      baseOrigen = parent.identificador_unico;
-    }
-  }
-
-  if (!baseOrigen) {
-    baseOrigen = form.value.origen_parcela || form.value.identificador_unico || "";
-  }
-
+  const baseOrigen = getBaseOrigen();
   if (!baseOrigen) {
     parcelaForm.value.id_plot_origen = "";
     return;
@@ -2212,19 +2211,7 @@ const cancelEditingPlot = () => {
 };
 
 const updateEditingPlotIdOrigen = () => {
-  let baseOrigen = "";
-
-  if (form.value.origen_vivero_id && allViverosList.value && allViverosList.value.length > 0) {
-    const parent = allViverosList.value.find((v: any) => v.id == form.value.origen_vivero_id);
-    if (parent && parent.identificador_unico) {
-      baseOrigen = parent.identificador_unico;
-    }
-  }
-
-  if (!baseOrigen) {
-    baseOrigen = form.value.origen_parcela || form.value.identificador_unico || "";
-  }
-
+  const baseOrigen = getBaseOrigen();
   if (!baseOrigen) {
     editingPlotForm.value.id_plot_origen = "";
     return;
