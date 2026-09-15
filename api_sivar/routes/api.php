@@ -59,6 +59,7 @@ Route::group([
     Route::get('suggestionCrossingsPerProject/{proyectos}/{proyecto}/{testigo}/{ambiente}', [\App\Http\Controllers\CrossingController::class, 'suggestionCrossingsPerProject']);
     Route::get('/crossing/programming/change_proyect_flower/{variedad}/{proyecto}/{bolsa}', [\App\Http\Controllers\CrossingController::class, 'enviarFlorAProyecto']);
     Route::get('/crossing/programming/flores_otros_proyectos', [\App\Http\Controllers\CrossingController::class, 'floresOtrosProyectos']);
+    Route::get('/crossing/programming/devolver_flor_bolsa_comun/{variedad}/{proyecto}', [\App\Http\Controllers\CrossingController::class, 'devolverFlorABolsaComun']);
     Route::get('sugerenciasCruzamientosBolsaComun/{proyectos}/{proyecto}/{testigo}/{ambiente}', [\App\Http\Controllers\CrossingController::class, 'sugerenciasCruzamientosBolsaComun']);
     Route::get('/crossing/programming/send_common_bag/{variedad}', [\App\Http\Controllers\CrossingController::class, 'enviarABolsaComun']);
     Route::get('/crossing/programming/criteria/', [\App\Http\Controllers\CrossingController::class, 'criteriosBancoGermoplasma']);

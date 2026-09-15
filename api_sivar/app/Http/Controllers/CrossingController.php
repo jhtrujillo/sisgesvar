@@ -117,6 +117,16 @@ class CrossingController extends Controller
         $flores = $this->crossingService->floresOtrosProyectos($proyectoActual);
         return response()->json($flores);
     }
+
+    public function devolverFlorABolsaComun(Request $request, $variedad, $proyecto)
+    {
+        $result = $this->crossingService->devolverFlorABolsaComun($variedad, $proyecto);
+        if ($result['status']) {
+            return response()->json(['message' => $result['message']]);
+        } else {
+            return response()->json(['message' => $result['message']], 404);
+        }
+    }
     public function criteriosBancoGermoplasma(Request $request)
     {
         $bg = "";

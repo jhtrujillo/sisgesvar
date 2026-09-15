@@ -1231,6 +1231,45 @@ class CrossingService
         return ['status' => false, 'message' => 'Flor no encontrada o ya asignada'];
     }
 
+    public function devolverFlorABolsaComun($variedad, $proyecto)
+    {
+        $var = explode("_", $variedad);
+        $fechaf = Carbon::today()->format('Y-m-d');
+        $fechai = Carbon::today()->subDays(60)->format('Y-m-d');
+
+        $targetProj = DB::connection('sivar')->table('remote_pg_sipro')
+            ->where('cd_cntble', $proyecto)
+            ->orWhere('id_prycto', $proyecto)
+            ->first();
+        $targetIdPrycto = $targetProj ? $targetProj->id_prycto : $proyecto;
+
+        $idCrcter = $var[2] ?? null;
+        $vrdadName = $var[0] ?? '';
+
+        $query = DB::connection('sivar')->table('floracion')
+            ->whereBetween('floracion.fcha', array($fechai, $fechaf))
+            ->where('floracion.estado', '=', '0')
+            ->where('floracion.vrdad', '=', $vrdadName)
+            ->where('floracion.id_pr', '=', $targetIdPrycto)
+            ->where('floracion.bolsa_comun', 0);
+
+        if ($idCrcter) {
+            $query->where('floracion.id_crcter', '=', $idCrcter);
+        }
+
+        $flor = $query->first();
+
+        if ($flor) {
+            DB::connection('sivar')->table('floracion')
+                ->where('id_flrcion', '=', $flor->id_flrcion)
+                ->update(['bolsa_comun' => 1]);
+
+            return ['status' => true, 'message' => 'Flor devuelta a la Bolsa Común con éxito'];
+        }
+
+        return ['status' => false, 'message' => 'No se encontró la flor para devolver'];
+    }
+
     public function floresOtrosProyectos($proyectoActual)
     {
         $fechaf = Carbon::today()->format('Y-m-d');

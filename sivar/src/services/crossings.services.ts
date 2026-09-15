@@ -89,6 +89,11 @@ async function enviarFlorAProyecto(variedadKey: string, proyectoDestino: string,
   return await api.get(url, {}, true);
 }
 
+async function devolverFlorABolsaComun(variedadKey: string, proyecto: string): Promise<any> {
+  const url = `${urls.API_URL}crossing/programming/devolver_flor_bolsa_comun/${encodeURIComponent(variedadKey)}/${encodeURIComponent(proyecto)}`;
+  return await api.get(url, {}, true);
+}
+
 const CrossingsService = {
   getCrossingsList,
   getCrossingInitialData,
@@ -103,7 +108,8 @@ const CrossingsService = {
   saveCrossingsBatch,
   enviarFloresLibresABolsaComun,
   getFloresOtrosProyectos,
-  enviarFlorAProyecto
+  enviarFlorAProyecto,
+  devolverFlorABolsaComun
 };
 
 export default CrossingsService;
