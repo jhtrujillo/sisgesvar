@@ -1028,13 +1028,42 @@
                     <td class="px-4 py-3 text-slate-700 font-mono text-xs font-semibold">
                       {{ (form.identificador_unico ? form.identificador_unico + '-' : '') + p.numero_parcela }}
                     </td>
-                    <td class="px-4 py-3 min-w-[140px]">
+                    <td class="px-4 py-3 min-w-[220px] relative">
                       <input
                         v-model="editingPlotForm.id_plot_origen"
+                        @focus="showEditPlotOrigenDropdown = true"
+                        @blur="hideEditPlotOrigenDelay"
+                        @input="showEditPlotOrigenDropdown = true"
                         type="text"
-                        placeholder="ID Plot Origen"
-                        class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
+                        placeholder="Buscar ID Plot Origen..."
+                        class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
+                        autocomplete="off"
                       />
+                      <div
+                        v-if="showEditPlotOrigenDropdown"
+                        class="absolute z-50 left-0 right-0 top-full mt-1 bg-white shadow-2xl max-h-60 rounded-lg py-1 text-xs ring-1 ring-black/10 overflow-auto border border-slate-200"
+                      >
+                        <div v-if="filteredEditPlotOrigenOptions.length === 0" class="cursor-default select-none py-2 px-3 text-slate-400 italic">
+                          No se encontraron viveros ni parcelas coincidentes
+                        </div>
+                        <div
+                          v-for="opt in filteredEditPlotOrigenOptions"
+                          :key="opt.id"
+                          @mousedown="selectEditPlotOrigenOption(opt.id, opt.numParcela)"
+                          class="cursor-pointer select-none py-1.5 px-3 hover:bg-slate-100 border-b border-slate-50 last:border-0 transition-colors flex flex-col justify-center"
+                        >
+                          <div class="font-bold font-mono text-xs text-slate-800 flex items-center justify-between">
+                            <span>{{ opt.label }}</span>
+                            <span
+                              :class="opt.type === 'vivero' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200'"
+                              class="px-1.5 py-0.5 rounded text-[9px] font-sans font-medium border"
+                            >
+                              {{ opt.type === 'vivero' ? 'Vivero' : 'Parcela' }}
+                            </span>
+                          </div>
+                          <div class="text-[10px] text-slate-400 mt-0.5 truncate">{{ opt.sublabel }}</div>
+                        </div>
+                      </div>
                     </td>
                     <td class="px-4 py-3 text-center">
                       <div class="flex items-center justify-center gap-2">
@@ -2200,10 +2229,10 @@ const startEditingPlot = (p: any) => {
     variedad_id: p.variedad_id || "",
     variedad_name: p.variedad?.nm_vrdad || p.variedad_id || "",
     numero_parcela_origen: p.numero_parcela_origen || "",
-    id_plot_origen: p.id_plot_origen || "",
+    id_plot_origen: getParcIdPlotOrigen(p),
     caracter_id: p.caracter_id || ""
   };
-  updateEditingPlotIdOrigen();
+  showEditPlotOrigenDropdown.value = false;
 };
 
 const cancelEditingPlot = () => {
@@ -2223,6 +2252,74 @@ const updateEditingPlotIdOrigen = () => {
     editingPlotForm.value.id_plot_origen = baseOrigen;
   }
 };
+
+const showEditPlotOrigenDropdown = ref(false);
+
+const hideEditPlotOrigenDelay = () => {
+  setTimeout(() => {
+    showEditPlotOrigenDropdown.value = false;
+  }, 200);
+};
+
+const selectEditPlotOrigenOption = (optionValue: string, numParcelaOrigen?: number) => {
+  editingPlotForm.value.id_plot_origen = optionValue;
+  if (numParcelaOrigen !== undefined && numParcelaOrigen !== null) {
+    editingPlotForm.value.numero_parcela_origen = numParcelaOrigen;
+  } else {
+    const parts = optionValue.split('-');
+    if (parts.length === 5 && !isNaN(Number(parts[4]))) {
+      editingPlotForm.value.numero_parcela_origen = Number(parts[4]);
+    } else {
+      editingPlotForm.value.numero_parcela_origen = "";
+    }
+  }
+  showEditPlotOrigenDropdown.value = false;
+};
+
+const allPlotOrigenOptions = computed(() => {
+  const options: Array<{ id: string; label: string; sublabel: string; type: string; numParcela?: number }> = [];
+  if (!allViverosList.value || allViverosList.value.length === 0) return options;
+
+  for (const v of allViverosList.value) {
+    if (!v.identificador_unico) continue;
+
+    const statusText = v.estado ? `(${v.estado})` : '';
+    const locText = [getIngenioName(v.ingenio), v.hacienda, v.suerte].filter(Boolean).join(' - ');
+    options.push({
+      id: v.identificador_unico,
+      label: v.identificador_unico,
+      sublabel: `Vivero ${statusText} ${locText ? '• ' + locText : ''}`,
+      type: 'vivero'
+    });
+
+    if (v.parcelas && Array.isArray(v.parcelas)) {
+      for (const p of v.parcelas) {
+        if (p.numero_parcela !== undefined && p.numero_parcela !== null) {
+          const parcPlotId = `${v.identificador_unico}-${p.numero_parcela}`;
+          options.push({
+            id: parcPlotId,
+            label: parcPlotId,
+            sublabel: `Parcela ${p.numero_parcela} del vivero ${v.identificador_unico}`,
+            type: 'parcela',
+            numParcela: p.numero_parcela
+          });
+        }
+      }
+    }
+  }
+
+  return options;
+});
+
+const filteredEditPlotOrigenOptions = computed(() => {
+  const query = (editingPlotForm.value.id_plot_origen || '').trim().toLowerCase();
+  if (!query) {
+    return allPlotOrigenOptions.value.slice(0, 50);
+  }
+  return allPlotOrigenOptions.value
+    .filter((opt) => opt.label.toLowerCase().includes(query) || opt.sublabel.toLowerCase().includes(query))
+    .slice(0, 100);
+});
 
 const isSubmittingEditingPlot = ref(false);
 const saveEditingPlot = async () => {
