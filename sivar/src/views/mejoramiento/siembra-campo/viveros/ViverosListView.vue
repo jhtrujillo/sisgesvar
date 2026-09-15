@@ -58,7 +58,7 @@
               <th class="py-3 px-4 text-center w-12"></th>
               <th class="py-3 px-4 text-left">Vivero</th>
               <th class="py-3 px-4 text-left">Ubicación</th>
-              <th class="py-3 px-4 text-left">Origen</th>
+              <th class="py-3 px-4 text-left">ID Plot Origen</th>
               <th class="py-3 px-4 text-left">Proyecto y Fecha</th>
               <th class="py-3 px-4 text-center">Estado</th>
               <th class="py-3 px-4 text-center">Acciones</th>
