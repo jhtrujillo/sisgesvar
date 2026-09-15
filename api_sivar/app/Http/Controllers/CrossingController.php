@@ -896,4 +896,45 @@ class CrossingController extends Controller
 
         return response()->json(['message' => 'Cruzamiento cargado con éxito']);
     }
+
+    public function enviarFloresLibresABolsaComun(Request $request)
+    {
+        $proyecto = $request->input('proyecto');
+
+        if (empty($proyecto)) {
+            return response()->json(['error' => 'Proyecto es requerido'], 400);
+        }
+
+        $idPrycto = null;
+        if (is_numeric($proyecto) && (int)$proyecto < 100000) {
+            $idPrycto = (int)$proyecto;
+        } else {
+            $projDb = DB::connection('sivar')
+                ->table('remote_pg_sipro')
+                ->where('cd_cntble', (string)$proyecto)
+                ->first();
+            if ($projDb) {
+                $idPrycto = $projDb->id_prycto;
+            }
+        }
+
+        $query = DB::connection('sivar')
+            ->table('floracion')
+            ->where(function ($q) {
+                $q->where('estado', 0)->orWhere('estado', '0');
+            })
+            ->where('bolsa_comun', 0);
+
+        if ($idPrycto) {
+            $query->where('id_pr', $idPrycto);
+        }
+
+        $updatedCount = $query->update(['bolsa_comun' => 1]);
+
+        return response()->json([
+            'success' => true,
+            'updated_count' => $updatedCount,
+            'message' => "Se enviaron {$updatedCount} flores libres a la Bolsa Común con éxito."
+        ]);
+    }
 }

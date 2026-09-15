@@ -986,6 +986,114 @@
             </svg>
             Programar Nuevo Proyecto
           </button>
+    <!-- Modal Elegante de Finalización de Cruzamientos -->
+    <div
+      v-if="showFinalizeModal"
+      class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in"
+      @click.self="cerrarModalFinalizado"
+    >
+      <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-lg w-full overflow-hidden transform transition-all animate-scale-up">
+        <!-- Encabezado con Gradiente Elegante -->
+        <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 p-6 text-white text-center relative overflow-hidden">
+          <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+          <div class="inline-flex p-3 bg-white/20 backdrop-blur-md rounded-2xl mb-3 shadow-inner">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h2 class="text-2xl font-black tracking-tight">¡Programación Finalizada!</h2>
+          <p class="text-xs text-emerald-100 font-medium mt-1">
+            Los cruzamientos han sido guardados con éxito en la base de datos de Cenicaña.
+          </p>
+        </div>
+
+        <!-- Cuerpo del Modal -->
+        <div class="p-6 space-y-6">
+          <!-- Tarjetas de Estadísticas (KPIs) -->
+          <div class="grid grid-cols-3 gap-3">
+            <div class="bg-rose-50/80 border border-rose-100 p-3.5 rounded-2xl text-center shadow-sm">
+              <div class="text-[11px] font-bold text-rose-600 uppercase tracking-wider mb-1 flex items-center justify-center">
+                <span>🌸 Usadas</span>
+              </div>
+              <div class="text-2xl font-black text-rose-700">{{ totalFloresUsadas }}</div>
+              <div class="text-[10px] text-rose-500 font-semibold mt-0.5">Descontadas</div>
+            </div>
+
+            <div class="bg-emerald-50/80 border border-emerald-100 p-3.5 rounded-2xl text-center shadow-sm">
+              <div class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider mb-1 flex items-center justify-center">
+                <span>🌿 Libres</span>
+              </div>
+              <div class="text-2xl font-black text-emerald-700">{{ totalFloresLibres }}</div>
+              <div class="text-[10px] text-emerald-500 font-semibold mt-0.5">Disponibles</div>
+            </div>
+
+            <div class="bg-sky-50/80 border border-sky-100 p-3.5 rounded-2xl text-center shadow-sm">
+              <div class="text-[11px] font-bold text-sky-600 uppercase tracking-wider mb-1 flex items-center justify-center">
+                <span>🧬 Cruces</span>
+              </div>
+              <div class="text-2xl font-black text-sky-700">{{ resumenCrucesGuardados.length }}</div>
+              <div class="text-[10px] text-sky-500 font-semibold mt-0.5">Guardados</div>
+            </div>
+          </div>
+
+          <!-- Bloque de Gestión de Flores Libres a Bolsa Común -->
+          <div v-if="totalFloresLibres > 0" class="bg-gradient-to-br from-slate-50 to-emerald-50/40 border border-emerald-200/60 rounded-2xl p-4 space-y-3">
+            <div class="flex items-start space-x-3">
+              <div class="p-2 bg-emerald-100 text-emerald-700 rounded-xl mt-0.5 shadow-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h4 class="text-sm font-bold text-slate-800">Bolsa Común de Flores</h4>
+                <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                  Quedan <strong class="text-emerald-700 font-extrabold">{{ totalFloresLibres }} flores libres</strong> en este proyecto.
+                  ¿Deseas enviarlas a la <strong>Bolsa Común</strong> para que estén disponibles en otros proyectos?
+                </p>
+              </div>
+            </div>
+
+            <!-- Estado de confirmación enviado a Bolsa Común -->
+            <div v-if="floresEnviadasABolsa" class="bg-emerald-100/80 border border-emerald-300 text-emerald-800 px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 animate-fade-in">
+              <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+              <span>¡{{ totalFloresLibres }} flores libres enviadas a la Bolsa Común con éxito!</span>
+            </div>
+
+            <!-- Botones de Acción Bolsa Común -->
+            <div v-else class="flex flex-col sm:flex-row items-center gap-2 pt-1">
+              <button
+                @click="confirmarEnviarBolsaComun"
+                :disabled="isSendingBolsa"
+                class="w-full sm:flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-extrabold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center"
+              >
+                <svg v-if="isSendingBolsa" class="animate-spin h-3.5 w-3.5 mr-2 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                <svg v-else class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                {{ isSendingBolsa ? "Enviando..." : "Sí, Enviar a Bolsa Común" }}
+              </button>
+
+              <button
+                @click="cerrarModalFinalizado"
+                class="w-full sm:w-auto px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold rounded-xl transition-all duration-200"
+              >
+                Conservar en Proyecto
+              </button>
+            </div>
+          </div>
+
+          <div v-else class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-center text-xs text-slate-500 font-medium">
+            Todas las flores disponibles para este proyecto fueron asignadas y consumidas en los cruzamientos.
+          </div>
+
+          <!-- Botón de Cierre / Continuar al Resumen -->
+          <div class="pt-2">
+            <button
+              @click="cerrarModalFinalizado"
+              class="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white text-xs font-black rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center space-x-2"
+            >
+              <span>Ver Resumen Detallado de Cruzamientos</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1101,6 +1209,34 @@ const draftKey = computed(() => `sivarcc_draft_crossings_${selectedCdCntble.valu
 const isSaving = ref(false);
 const isFinished = ref(false);
 const resumenCrucesGuardados = ref<any[]>([]);
+
+// Modal Elegante de Finalización & Bolsa Común
+const showFinalizeModal = ref(false);
+const totalFloresUsadas = ref(0);
+const totalFloresLibres = ref(0);
+const floresEnviadasABolsa = ref(false);
+const isSendingBolsa = ref(false);
+
+function cerrarModalFinalizado() {
+  showFinalizeModal.value = false;
+  isFinished.value = true;
+}
+
+async function confirmarEnviarBolsaComun() {
+  if (totalFloresLibres.value <= 0) return;
+  isSendingBolsa.value = true;
+  try {
+    const projCode = selectedCdCntble.value || localStorage.getItem("lastSelectedCdCntble") || localStorage.getItem("selectedCdCntble") || "010105";
+    const res = await CrossingsService.enviarFloresLibresABolsaComun(projCode);
+    floresEnviadasABolsa.value = true;
+    toast.success(res?.data?.message || `¡${totalFloresLibres.value} flores libres fueron enviadas a la Bolsa Común!`);
+  } catch (err: any) {
+    console.error("Error al enviar flores libres a Bolsa Común:", err);
+    toast.error("Ocurrió un error al enviar las flores a la Bolsa Común.");
+  } finally {
+    isSendingBolsa.value = false;
+  }
+}
 
 const ocultarInviables = ref(false); // Vista compacta limpia por defecto
 const isLoading = ref(false); // Ref para spinner de carga
@@ -2289,11 +2425,24 @@ async function finalizarProceso() {
     localStorage.removeItem(draftKey.value);
     localStorage.removeItem("cruzamientos");
 
-    toast.success("¡Programación de cruzamientos guardada y finalizada con éxito!");
+    toast.success("¡Programación de cruzamientos guardada con éxito!");
 
-    // 6. En lugar de redirigir a History directamente, mostrar el resumen
+    // 6. Calcular estadísticas de resumen de flores usadas y libres
+    let usadasCount = 0;
+    batchPayload.forEach((c: any) => {
+      usadasCount += Number(c.flores_madre ?? 1) + Number(c.flores_padre ?? 1);
+    });
+    totalFloresUsadas.value = usadasCount;
+
+    let totalDisponiblesInicial = 0;
+    Object.keys(cantidadesMap.value || {}).forEach((v: string) => {
+      totalDisponiblesInicial += Number(cantidadesMap.value[v] || 0);
+    });
+    totalFloresLibres.value = Math.max(0, totalDisponiblesInicial - usadasCount);
+
     resumenCrucesGuardados.value = batchPayload;
-    isFinished.value = true;
+    floresEnviadasABolsa.value = false;
+    showFinalizeModal.value = true;
   } catch (error: any) {
     console.error("Error al guardar la programación de cruzamientos:", error);
     const apiErrorMsg = error?.response?.data?.error || error?.response?.data?.message || error?.message || "Ocurrió un error al guardar la programación de cruzamientos en la base de datos.";

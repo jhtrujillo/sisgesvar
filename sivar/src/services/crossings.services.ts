@@ -74,6 +74,11 @@ async function getCrossingsByPonderado(idPonderado: string): Promise<any> {
   return await api.get(url, {}, true);
 }
 
+async function enviarFloresLibresABolsaComun(proyecto: string): Promise<any> {
+  const url = `${urls.API_URL}crossing/programming/send_free_to_common_bag`;
+  return await api.post(url, { proyecto }, true);
+}
+
 const CrossingsService = {
   getCrossingsList,
   getCrossingInitialData,
@@ -85,7 +90,8 @@ const CrossingsService = {
   GetSuggestionCrossingsPerProject,
   saveWeight,
   saveCrossing,
-  saveCrossingsBatch
+  saveCrossingsBatch,
+  enviarFloresLibresABolsaComun
 };
 
 export default CrossingsService;
