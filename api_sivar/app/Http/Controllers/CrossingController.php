@@ -408,8 +408,9 @@ class CrossingController extends Controller
 
         return null;
     }
-    public function guardarPonderados(Request $request, $proyecto)
+    public function guardarPonderados(Request $request, $proyecto = null)
     {
+        $proyecto = ($proyecto && trim($proyecto) !== '') ? trim($proyecto) : '010105';
         $idPonderado = Carbon::now()->toDateTimeString() . "++" . $proyecto;
 
         $ponderados = DB::connection('sivar')

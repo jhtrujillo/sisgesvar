@@ -36,7 +36,8 @@ async function GetSuggestionCrossingsPerProject(proyectos: string, proyecto: str
 }
 
 async function saveWeight(proyecto: string): Promise<any> {
-  const url = `${urls.API_URL}crossing/programming/save_weight/${proyecto}`;
+  const proj = (proyecto && proyecto.trim() !== '') ? proyecto.trim() : '010105';
+  const url = `${urls.API_URL}crossing/programming/save_weight/${proj}`;
   return await api.get(url, {}, true);
 }
 

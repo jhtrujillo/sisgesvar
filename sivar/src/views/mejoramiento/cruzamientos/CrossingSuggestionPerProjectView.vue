@@ -2218,8 +2218,9 @@ async function finalizarProceso() {
 
   try {
     // 2. Guardar pesos ponderados en la base de datos y obtener el idPonderado
-    const responseWeight = await CrossingsService.saveWeight(selectedCdCntble.value);
-    const idPonderado = responseWeight ? responseWeight.data : null;
+    const projCode = selectedCdCntble.value || localStorage.getItem("lastSelectedCdCntble") || localStorage.getItem("selectedCdCntble") || "010105";
+    const responseWeight = await CrossingsService.saveWeight(projCode);
+    const idPonderado = responseWeight ? (typeof responseWeight.data === "string" ? responseWeight.data : responseWeight.data?.id_ponderado || responseWeight.data) : null;
     if (!idPonderado) {
       throw new Error("No se pudo obtener el ID del ponderado");
     }
