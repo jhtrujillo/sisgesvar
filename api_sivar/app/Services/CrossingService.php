@@ -1249,17 +1249,8 @@ class CrossingService
             ->leftJoin('remote_pg_sipro', 'remote_pg_sipro.id_prycto', '=', 'floracion.id_pr')
             ->leftJoin('caracteres', 'caracteres.id_crcter', '=', 'floracion.id_crcter')
             ->whereBetween('floracion.fcha', [$fechai, $fechaf])
-            ->where('floracion.estado', '=', 0);
-
-        if (!empty($currentIdPrycto)) {
-            $query->where(function($q) use ($currentIdPrycto) {
-                $q->where('floracion.bolsa_comun', 1)
-                  ->orWhere(function($sub) use ($currentIdPrycto) {
-                      $sub->where('floracion.id_pr', '!=', $currentIdPrycto)
-                          ->where('floracion.bolsa_comun', 0);
-                  });
-            });
-        }
+            ->where('floracion.estado', '=', 0)
+            ->where('floracion.bolsa_comun', '=', 1);
 
         $flores = $query->groupBy(
                 'floracion.vrdad',

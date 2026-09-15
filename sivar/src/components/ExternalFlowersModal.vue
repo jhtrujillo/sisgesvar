@@ -19,10 +19,10 @@
               </div>
               <div>
                 <h3 class="text-lg font-black tracking-tight flex items-center gap-2">
-                  Flores Disponibles de Otros Proyectos y Bolsa Común
+                  💼 Flores Disponibles en Bolsa Común
                 </h3>
                 <p class="text-xs text-emerald-200/90 font-medium mt-0.5">
-                  Consulte y transfiera flores activas de otros proyectos o Bolsa Común a este proyecto.
+                  Consulte e integre flores libres de la Bolsa Común a la matriz del proyecto actual.
                 </p>
               </div>
             </div>
