@@ -156,8 +156,8 @@ class CrossingController extends Controller
                 $usedIdsInBatch = [];
 
                 foreach ($crossings as $cData) {
-                    $madreVal = $cData['madre'];
-                    $padresVal = $cData['padres'];
+                    $madreVal = $cData['madre'] ?? '';
+                    $padresVal = $cData['padres'] ?? '';
                     $obsVal = $cData['observaciones'] ?? 'Programacion de Cruzamientos';
                     $idPondVal = $cData['id_ponderados'] ?? $request->input('id_ponderados') ?? $request->input('id_ponderado');
                     $autoVal = $cData['autofecundado'] ?? 0;
@@ -165,11 +165,12 @@ class CrossingController extends Controller
                     $cantPadre = isset($cData['flores_padre']) ? max(1, (int)$cData['flores_padre']) : 1;
 
                     $florMadre = explode("_", $madreVal);
-                    $varMadre = $florMadre[0];
-                    $proyectoMadre = str_replace("9999", "", $florMadre[1]);
-                    $caracterMadre = $florMadre[2] ?? null;
+                    $varMadre = $florMadre[0] ?? '';
+                    $projMadreRaw = isset($florMadre[1]) ? str_replace("9999", "", $florMadre[1]) : null;
+                    $caracterMadre = isset($florMadre[2]) && $florMadre[2] !== '' ? $florMadre[2] : null;
+                    $idPrMadre = (isset($projMadreRaw) && is_numeric($projMadreRaw) && trim((string)$projMadreRaw) !== '') ? (int)$projMadreRaw : null;
 
-                    $madreFlowerIds = $this->obtenerYDesactivarFlores($varMadre, $proyectoMadre, $caracterMadre, $cantMadre, $usedIdsInBatch);
+                    $madreFlowerIds = $this->obtenerYDesactivarFlores($varMadre, $projMadreRaw, $caracterMadre, $cantMadre, $usedIdsInBatch);
                     $idFlrMadre = !empty($madreFlowerIds) ? $madreFlowerIds[0] : null;
 
                     $crossingRecord = [
@@ -177,11 +178,11 @@ class CrossingController extends Controller
                         "Sitio de cruzamiento" => "CNC",
                         "Estacion_Experimental" => "EESA",
                         "vrdad_mdre" => $varMadre,
-                        "id_pr_mdre" => $proyectoMadre,
+                        "id_pr_mdre" => $idPrMadre,
                         "usuario_creacion" => $usuario ? $usuario->id_usrio : null,
                         "obsrvcnes" => $obsVal,
                         "fcha_crzmnto" => now(),
-                        "proyecto" => $proyectoMadre,
+                        "proyecto" => $projMadreRaw,
                         "id_ponderados" => $idPondVal,
                         "grpo_crzmnto_mdre" => $caracterMadre,
                         "id_flrcion_mdre" => $idFlrMadre,
@@ -190,14 +191,19 @@ class CrossingController extends Controller
                     $padre = explode(",", $padresVal);
                     $caracter_padre = "";
                     for ($i = 1; $i <= count($padre); $i++) {
-                        if ($padre[$i - 1] !== "") {
-                            $flor_padre = explode("_", $padre[$i - 1]);
-                            $varPadre = $flor_padre[0];
-                            $proyecto_padre = str_replace("9999", "", $flor_padre[1]);
-                            $carPadre = $flor_padre[2] ?? null;
-                            $caracter_padre = $caracter_padre . "," . $carPadre;
+                        $pItem = trim($padre[$i - 1]);
+                        if ($pItem !== "") {
+                            $flor_padre = explode("_", $pItem);
+                            $varPadre = $flor_padre[0] ?? '';
+                            $projPadreRaw = isset($flor_padre[1]) ? str_replace("9999", "", $flor_padre[1]) : null;
+                            $carPadre = isset($flor_padre[2]) && $flor_padre[2] !== '' ? $flor_padre[2] : null;
+                            if ($carPadre !== null) {
+                                $caracter_padre = $caracter_padre . "," . $carPadre;
+                            }
 
-                            $padreFlowerIds = $this->obtenerYDesactivarFlores($varPadre, $proyecto_padre, $carPadre, $cantPadre, $usedIdsInBatch);
+                            $idPrPadre = (isset($projPadreRaw) && is_numeric($projPadreRaw) && trim((string)$projPadreRaw) !== '') ? (int)$projPadreRaw : null;
+
+                            $padreFlowerIds = $this->obtenerYDesactivarFlores($varPadre, $projPadreRaw, $carPadre, $cantPadre, $usedIdsInBatch);
                             $idFlrPadre = !empty($padreFlowerIds) ? $padreFlowerIds[0] : null;
 
                             $caracteristica = "vrdad_pdre" . $i;
@@ -205,7 +211,7 @@ class CrossingController extends Controller
                             $id_flrcion_col = "id_flrcion_pdre" . $i;
 
                             $crossingRecord[$caracteristica] = $varPadre;
-                            $crossingRecord[$origen] = $proyecto_padre;
+                            $crossingRecord[$origen] = $idPrPadre;
                             $crossingRecord["grpo_crzmnto_pdre"] = $caracter_padre;
                             $crossingRecord[$id_flrcion_col] = $idFlrPadre;
                         }
@@ -214,30 +220,32 @@ class CrossingController extends Controller
 
                     if ($autoVal == 1) {
                         $padre = explode(",", $padresVal);
-                        $flor_padre = explode("_", $padre[0]);
-                        $varPadreAuto = $flor_padre[0];
-                        $proyecto_padre = str_replace("9999", "", $flor_padre[1]);
-                        $carPadreAuto = $flor_padre[2] ?? null;
+                        $pItemAuto = trim($padre[0] ?? '');
+                        $flor_padre = explode("_", $pItemAuto);
+                        $varPadreAuto = $flor_padre[0] ?? '';
+                        $projPadreAutoRaw = isset($flor_padre[1]) ? str_replace("9999", "", $flor_padre[1]) : null;
+                        $carPadreAuto = isset($flor_padre[2]) && $flor_padre[2] !== '' ? $flor_padre[2] : null;
+                        $idPrPadreAuto = (isset($projPadreAutoRaw) && is_numeric($projPadreAutoRaw) && trim((string)$projPadreAutoRaw) !== '') ? (int)$projPadreAutoRaw : null;
 
-                        $autoMadreIds = $this->obtenerYDesactivarFlores($varPadreAuto, $proyecto_padre, $carPadreAuto, 1, $usedIdsInBatch);
-                        $autoPadreIds = $this->obtenerYDesactivarFlores($varPadreAuto, $proyecto_padre, $carPadreAuto, 1, $usedIdsInBatch);
+                        $autoMadreIds = $this->obtenerYDesactivarFlores($varPadreAuto, $projPadreAutoRaw, $carPadreAuto, 1, $usedIdsInBatch);
+                        $autoPadreIds = $this->obtenerYDesactivarFlores($varPadreAuto, $projPadreAutoRaw, $carPadreAuto, 1, $usedIdsInBatch);
 
                         $crossingsToInsert[] = [
                             "pias de procedencia" => "Colombia",
                             "Sitio de cruzamiento" => "CNC",
                             "Estacion_Experimental" => "EESA",
                             "vrdad_mdre" => $varPadreAuto,
-                            "id_pr_mdre" => $proyecto_padre,
+                            "id_pr_mdre" => $idPrPadreAuto,
                             "vrdad_pdre1" => $varPadreAuto,
                             "grpo_crzmnto_pdre" => $carPadreAuto,
                             "grpo_crzmnto_mdre" => $carPadreAuto,
-                            "id_pr_pdre1" => $proyecto_padre,
+                            "id_pr_pdre1" => $idPrPadreAuto,
                             "obsrvcnes" => $obsVal,
                             "id_flrcion_mdre" => !empty($autoMadreIds) ? $autoMadreIds[0] : null,
                             "id_flrcion_pdre1" => !empty($autoPadreIds) ? $autoPadreIds[0] : null,
                             "fcha_crzmnto" => now(),
                             "usuario_creacion" => $usuario ? $usuario->id_usrio : null,
-                            "proyecto" => $proyecto_padre,
+                            "proyecto" => $projPadreAutoRaw,
                             "id_ponderados" => $idPondVal,
                         ];
                     }
@@ -268,70 +276,81 @@ class CrossingController extends Controller
         $proyectos = $proyectos ?? $request->input('proyectos');
         $autofecundado = $autofecundado ?? $request->input('autofecundado');
 
-        $florMadre = explode("_", $madre);
-
-        $proyectoMadre = str_replace("9999", "", $florMadre[1]);
-        $caracterMadre = $florMadre[2];
-        $proyecto = explode(",", $proyectos);
-        $idPrPadreAuto = "";
+        $florMadre = explode("_", (string)$madre);
+        $varMadre = $florMadre[0] ?? '';
+        $projMadreRaw = isset($florMadre[1]) ? str_replace("9999", "", $florMadre[1]) : null;
+        $caracterMadre = isset($florMadre[2]) && $florMadre[2] !== '' ? $florMadre[2] : null;
+        $idPrMadre = (isset($projMadreRaw) && is_numeric($projMadreRaw) && trim((string)$projMadreRaw) !== '') ? (int)$projMadreRaw : null;
 
         // Crea un nuevo objeto Crossing
         $cruzamiento = new Crossing;
         $cruzamiento->{"pias de procedencia"} = "Colombia";
         $cruzamiento->{"Sitio de cruzamiento"} = "CNC";
         $cruzamiento->{"Estacion_Experimental"} = "EESA";
-        $cruzamiento->vrdad_mdre = $florMadre[0];
-        $cruzamiento->id_pr_mdre = $proyectoMadre;
+        $cruzamiento->vrdad_mdre = $varMadre;
+        $cruzamiento->id_pr_mdre = $idPrMadre;
         $cruzamiento->usuario_creacion = $usuario ? $usuario->id_usrio : null;
         $cruzamiento->obsrvcnes = $observaciones;
         $cruzamiento->fcha_crzmnto = now();
-        $cruzamiento->proyecto = $proyectoMadre;
+        $cruzamiento->proyecto = $projMadreRaw;
         $cruzamiento->id_ponderados = $idPonderado;
         $cruzamiento->grpo_crzmnto_mdre = $caracterMadre;
 
         // Realiza otras operaciones relacionadas con la obtención de ID
-        $id_flr_mdre = $this->obtenerIdFlorCruzamiento($proyectoMadre, $florMadre[0], $caracterMadre);
+        $id_flr_mdre = $this->obtenerIdFlorCruzamiento($projMadreRaw, $varMadre, $caracterMadre);
         $cruzamiento->id_flrcion_mdre = $id_flr_mdre;
 
-        $padre = explode(",", $padres);
+        $padre = explode(",", (string)$padres);
         $caracter_padre = "";
-        for ($i = 1; $i <= sizeof($padre); $i++) {
-            if ($padre[$i - 1] != "") {
-                $flor_padre = explode("_", $padre[$i - 1]);
-                $proyecto_padre = str_replace("9999", "", $flor_padre[1]);
-                $caracter_padre = $caracter_padre . "," . $flor_padre[2];
+        for ($i = 1; $i <= count($padre); $i++) {
+            $pItem = trim($padre[$i - 1]);
+            if ($pItem !== "") {
+                $flor_padre = explode("_", $pItem);
+                $varPadre = $flor_padre[0] ?? '';
+                $projPadreRaw = isset($flor_padre[1]) ? str_replace("9999", "", $flor_padre[1]) : null;
+                $carPadre = isset($flor_padre[2]) && $flor_padre[2] !== '' ? $flor_padre[2] : null;
+                if ($carPadre !== null) {
+                    $caracter_padre = $caracter_padre . "," . $carPadre;
+                }
+
+                $idPrPadre = (isset($projPadreRaw) && is_numeric($projPadreRaw) && trim((string)$projPadreRaw) !== '') ? (int)$projPadreRaw : null;
+
                 $caracteristica = "vrdad_pdre" . $i;
                 $origen = "id_pr_pdre" . $i;
                 $col_id_flr = "id_flrcion_pdre" . $i;
-                $cruzamiento->$caracteristica = $flor_padre[0];
-                $id_pr_padre_auto = $proyecto_padre;
-                $cruzamiento->$origen = $id_pr_padre_auto;
+                $cruzamiento->$caracteristica = $varPadre;
+                $cruzamiento->$origen = $idPrPadre;
                 $cruzamiento->grpo_crzmnto_pdre = $caracter_padre;
-                $id_flr_pdre = $this->obtenerIdFlorCruzamiento($proyecto_padre, $flor_padre[0], $flor_padre[2]);
+                $id_flr_pdre = $this->obtenerIdFlorCruzamiento($projPadreRaw, $varPadre, $carPadre);
                 $cruzamiento->$col_id_flr = $id_flr_pdre;
             }
         }
         $cruzamiento->save();
 
         if ($autofecundado == 1) {
-            $padre = explode(",", $padres);
-            $flor_padre = explode("_", $padre[0]);
-            $proyecto_padre = str_replace("9999", "", $flor_padre[1]);
+            $padre = explode(",", (string)$padres);
+            $pItemAuto = trim($padre[0] ?? '');
+            $flor_padre = explode("_", $pItemAuto);
+            $varPadreAuto = $flor_padre[0] ?? '';
+            $projPadreAutoRaw = isset($flor_padre[1]) ? str_replace("9999", "", $flor_padre[1]) : null;
+            $carPadreAuto = isset($flor_padre[2]) && $flor_padre[2] !== '' ? $flor_padre[2] : null;
+            $idPrPadreAuto = (isset($projPadreAutoRaw) && is_numeric($projPadreAutoRaw) && trim((string)$projPadreAutoRaw) !== '') ? (int)$projPadreAutoRaw : null;
+
             $cruzamiento_auto = new Crossing;
-            $cruzamiento_auto->vrdad_mdre = $flor_padre[0];
-            $cruzamiento_auto->id_pr_mdre = $proyecto_padre;
-            $cruzamiento_auto->vrdad_pdre1 = $flor_padre[0];
-            $cruzamiento_auto->grpo_crzmnto_pdre = $flor_padre[2];
-            $cruzamiento_auto->grpo_crzmnto_mdre = $flor_padre[2];
-            $cruzamiento_auto->id_pr_pdre1 = $proyecto_padre;
+            $cruzamiento_auto->vrdad_mdre = $varPadreAuto;
+            $cruzamiento_auto->id_pr_mdre = $idPrPadreAuto;
+            $cruzamiento_auto->vrdad_pdre1 = $varPadreAuto;
+            $cruzamiento_auto->grpo_crzmnto_pdre = $carPadreAuto;
+            $cruzamiento_auto->grpo_crzmnto_mdre = $carPadreAuto;
+            $cruzamiento_auto->id_pr_pdre1 = $idPrPadreAuto;
             $cruzamiento_auto->obsrvcnes = $observaciones;
             $cruzamiento_auto->fcha_crzmnto = DB::raw('now()');
             $cruzamiento_auto->usuario_creacion = $usuario ? $usuario->id_usrio : null;
-            $cruzamiento_auto->proyecto = $proyecto_padre;
+            $cruzamiento_auto->proyecto = $projPadreAutoRaw;
             $cruzamiento_auto->id_ponderados = $idPonderado;
             
-            $id_flr_auto_mdre = $this->obtenerIdFlorCruzamiento($proyecto_padre, $flor_padre[0], $flor_padre[2]);
-            $id_flr_auto_pdre = $this->obtenerIdFlorCruzamiento($proyecto_padre, $flor_padre[0], $flor_padre[2]);
+            $id_flr_auto_mdre = $this->obtenerIdFlorCruzamiento($projPadreAutoRaw, $varPadreAuto, $carPadreAuto);
+            $id_flr_auto_pdre = $this->obtenerIdFlorCruzamiento($projPadreAutoRaw, $varPadreAuto, $carPadreAuto);
             $cruzamiento_auto->id_flrcion_mdre = $id_flr_auto_mdre;
             $cruzamiento_auto->id_flrcion_pdre1 = $id_flr_auto_pdre;
 
