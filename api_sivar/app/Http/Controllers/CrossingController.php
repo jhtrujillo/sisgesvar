@@ -110,6 +110,13 @@ class CrossingController extends Controller
             return response()->json(['message' => $result['message']], 404);
         }
     }
+
+    public function floresOtrosProyectos(Request $request)
+    {
+        $proyectoActual = $request->query('proyecto_actual', '');
+        $flores = $this->crossingService->floresOtrosProyectos($proyectoActual);
+        return response()->json($flores);
+    }
     public function criteriosBancoGermoplasma(Request $request)
     {
         $bg = "";

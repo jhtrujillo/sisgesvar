@@ -1187,26 +1187,123 @@ class CrossingService
         $var = explode("_", $variedad);
         $fechaf = Carbon::today()->format('Y-m-d');
         $fechai = Carbon::yesterday()->format('Y-m-d');
-        
-        $flor = DB::connection('sivar')->table('floracion')
-            ->whereBetween('floracion.fcha', array($fechai, $fechaf))
-            ->where('floracion.id_pr', '=', str_replace("9999", "", $var[1]))
-            ->where('floracion.id_crcter', '=', $var[2])
-            ->where('floracion.estado', '=', '0')
-            ->where('floracion.vrdad', '=', $var[0])
-            ->where('floracion.bolsa_comun', $bolsa)
+
+        // Resolve target project id_prycto if cd_cntble was passed
+        $targetProj = DB::connection('sivar')->table('remote_pg_sipro')
+            ->where('cd_cntble', $proyecto)
+            ->orWhere('id_prycto', $proyecto)
             ->first();
+        $targetIdPrycto = $targetProj ? $targetProj->id_prycto : $proyecto;
+
+        $idPrOrigin = str_replace("9999", "", $var[1] ?? '');
+        $idCrcter = $var[2] ?? null;
+        $vrdadName = $var[0] ?? '';
+
+        $query = DB::connection('sivar')->table('floracion')
+            ->whereBetween('floracion.fcha', array($fechai, $fechaf))
+            ->where('floracion.estado', '=', '0')
+            ->where('floracion.vrdad', '=', $vrdadName);
+
+        if ($idCrcter) {
+            $query->where('floracion.id_crcter', '=', $idCrcter);
+        }
+
+        if ((int)$bolsa === 1) {
+            $query->where('floracion.bolsa_comun', 1);
+        } else {
+            if ($idPrOrigin !== '') {
+                $query->where('floracion.id_pr', '=', $idPrOrigin);
+            }
+            $query->where('floracion.bolsa_comun', 0);
+        }
+
+        $flor = $query->first();
 
         if ($flor) {
             $id_flor = $flor->id_flrcion;
             DB::connection('sivar')->table('floracion')
                 ->where('id_flrcion', '=', $id_flor)
-                ->update(['id_pr' => $proyecto, 'bolsa_comun' => '0']);
+                ->update(['id_pr' => $targetIdPrycto, 'bolsa_comun' => 0]);
 
-            return ['status' => true, 'message' => 'Flower sent to project successfully'];
+            return ['status' => true, 'message' => 'Flor asignada al proyecto con éxito'];
         }
 
-        return ['status' => false, 'message' => 'Flower not found or already sent to the project'];
+        return ['status' => false, 'message' => 'Flor no encontrada o ya asignada'];
+    }
+
+    public function floresOtrosProyectos($proyectoActual)
+    {
+        $fechaf = Carbon::today()->format('Y-m-d');
+        $fechai = Carbon::yesterday()->format('Y-m-d');
+
+        $currentIdPrycto = null;
+        if (!empty($proyectoActual)) {
+            $currentProj = DB::connection('sivar')->table('remote_pg_sipro')
+                ->where('cd_cntble', $proyectoActual)
+                ->orWhere('id_prycto', $proyectoActual)
+                ->first();
+            $currentIdPrycto = $currentProj ? $currentProj->id_prycto : $proyectoActual;
+        }
+
+        $query = DB::connection('sivar')->table('floracion')
+            ->leftJoin('remote_pg_sipro', 'remote_pg_sipro.id_prycto', '=', 'floracion.id_pr')
+            ->leftJoin('caracteres', 'caracteres.id_crcter', '=', 'floracion.id_crcter')
+            ->whereBetween('floracion.fcha', [$fechai, $fechaf])
+            ->where('floracion.estado', '=', 0);
+
+        if (!empty($currentIdPrycto)) {
+            $query->where(function($q) use ($currentIdPrycto) {
+                $q->where('floracion.bolsa_comun', 1)
+                  ->orWhere(function($sub) use ($currentIdPrycto) {
+                      $sub->where('floracion.id_pr', '!=', $currentIdPrycto)
+                          ->where('floracion.bolsa_comun', 0);
+                  });
+            });
+        }
+
+        $flores = $query->groupBy(
+                'floracion.vrdad',
+                'floracion.sxo',
+                'floracion.polen',
+                'floracion.id_pr',
+                'floracion.id_crcter',
+                'floracion.bolsa_comun',
+                'remote_pg_sipro.nm_prycto',
+                'remote_pg_sipro.cd_cntble',
+                'caracteres.nmbre_crcter'
+            )
+            ->select(DB::raw('
+                floracion.vrdad,
+                floracion.sxo,
+                floracion.polen,
+                floracion.id_pr,
+                floracion.id_crcter,
+                floracion.bolsa_comun,
+                remote_pg_sipro.nm_prycto as nombre_proyecto,
+                remote_pg_sipro.cd_cntble as codigo_proyecto,
+                caracteres.nmbre_crcter as nombre_caracter,
+                count(*) as cantidad
+            '))
+            ->orderBy('floracion.vrdad', 'asc')
+            ->get();
+
+        return $flores->map(function($f) {
+            $idPrOrigin = $f->id_pr ?? '9999';
+            $variedadKey = $f->vrdad . '_' . $idPrOrigin . '_' . $f->id_crcter;
+            return [
+                'vrdad' => $f->vrdad,
+                'sxo' => $f->sxo,
+                'polen' => $f->polen,
+                'id_pr' => $f->id_pr,
+                'codigo_proyecto' => $f->codigo_proyecto,
+                'nombre_proyecto' => $f->bolsa_comun == 1 ? 'Bolsa Común' : ($f->nombre_proyecto ?? ('Proyecto ID: ' . $f->id_pr)),
+                'bolsa_comun' => $f->bolsa_comun,
+                'cantidad' => $f->cantidad,
+                'id_crcter' => $f->id_crcter,
+                'nombre_caracter' => $f->nombre_caracter,
+                'variedad_key' => $variedadKey
+            ];
+        });
     }
 
     public function criteriosBancoGermoplasmaPorVariedad($variedad)

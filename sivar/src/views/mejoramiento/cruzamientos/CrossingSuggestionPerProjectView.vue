@@ -912,8 +912,7 @@
         <h2 class="text-3xl font-extrabold text-slate-800 mb-2">¡Cruzamientos Programados Exitosamente!</h2>
         <p class="text-slate-500 mb-8 max-w-lg">
           Se han guardado y oficializado <strong class="text-emerald-700">{{ resumenCrucesGuardados.length }} cruzamientos</strong> para el proyecto
-          <strong class="text-emerald-700">{{ selectedCdCntble }}</strong
-          >. Ahora forman parte del historial de Cenicaña.
+          <strong class="text-emerald-700">{{ selectedCdCntble }}</strong>. Ahora forman parte del historial de Cenicaña.
         </p>
 
         <!-- Tabla Resumen -->
@@ -986,6 +985,10 @@
             </svg>
             Programar Nuevo Proyecto
           </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal Elegante de Finalización de Cruzamientos -->
     <div
       v-if="showFinalizeModal"

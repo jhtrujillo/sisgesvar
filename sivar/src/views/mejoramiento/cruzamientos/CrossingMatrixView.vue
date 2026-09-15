@@ -121,11 +121,20 @@
           </span>
         </div>
 
-        <!-- Botón de Filtro Interactivo -->
-        <div class="flex justify-end">
+        <!-- Botones de Acción y Filtro -->
+        <div class="flex items-center space-x-2 justify-end">
+          <button
+            @click="isExternalFlowersModalOpen = true"
+            class="flex items-center px-3 py-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg shadow-sm transition-all duration-200 cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            🔍 Flores de Otros Proyectos / Bolsa Común
+          </button>
           <button
             @click="ocultarInviables = !ocultarInviables"
-            class="flex items-center px-3 py-1 text-[11px] font-bold rounded-lg transition-all duration-200 border"
+            class="flex items-center px-3 py-1 text-[11px] font-bold rounded-lg transition-all duration-200 border cursor-pointer"
             :class="
               !ocultarInviables
                 ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm hover:bg-emerald-700'
@@ -291,6 +300,13 @@
     :fatherName="comparatorFather"
     :initiallyViable="comparatorInitiallyViable"
   />
+
+  <!-- Modal de Flores de Otros Proyectos / Bolsa Común -->
+  <ExternalFlowersModal
+    v-model:isOpen="isExternalFlowersModalOpen"
+    :currentProject="selectedCdCntble"
+    @flowerAssigned="handleFlowerAssigned"
+  />
 </div>
 </template>
 
@@ -302,6 +318,7 @@ import { useToast } from "vue-toastification";
 import type { CruzamientoSeleccionado } from "@/services/types";
 import VarietyProfileDrawer from "@/components/VarietyProfileDrawer.vue";
 import ParentComparatorModal from "@/components/ParentComparatorModal.vue";
+import ExternalFlowersModal from "@/components/ExternalFlowersModal.vue";
 
 const MatrixCrossingStore = useMatrixCrossingStore();
 const toast = useToast();
@@ -314,6 +331,26 @@ const ocultarInviables = ref(false); // Vista compacta limpia por defecto
 const isLoading = ref(false);
 const showICHelp = ref(false);
 const tipoMapaCalor = ref("");
+
+// State for ExternalFlowersModal
+const isExternalFlowersModalOpen = ref(false);
+
+const handleFlowerAssigned = async () => {
+  const activeProj = selectedCdCntble.value || localStorage.getItem("lastSelectedCdCntble") || localStorage.getItem("selectedCdCntble") || "010105";
+  const activeAmb = selectedMegaAmbiente.value || localStorage.getItem("selectedMegaAmbiente") || "Semiseco";
+  const activeVar = selectedVariety.value || localStorage.getItem("selectedVariety") || "";
+
+  if (activeProj && activeVar) {
+    isLoading.value = true;
+    try {
+      await MatrixCrossingStore.getMatrixCrossingList(activeProj, activeProj, activeVar, activeAmb);
+    } catch (error) {
+      console.error("Error al recargar matriz tras asignar flor:", error);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+};
 
 // Refs for VarietyProfileDrawer
 const isDrawerOpen = ref(false);
