@@ -377,9 +377,16 @@ class CrossingController extends Controller
             return [];
         }
 
+        if ($proyecto === 'null' || $proyecto === 'undefined' || trim((string)$proyecto) === '') {
+            $proyecto = null;
+        }
+        if ($caracter === 'null' || $caracter === 'undefined' || trim((string)$caracter) === '') {
+            $caracter = null;
+        }
+
         $idPrycto = null;
         if (!empty($proyecto)) {
-            if (is_numeric($proyecto) && (int)$proyecto < 1000) {
+            if (is_numeric($proyecto) && (int)$proyecto < 100000) {
                 $idPrycto = (int)$proyecto;
             } else {
                 $projDb = DB::connection('sivar')
@@ -409,13 +416,13 @@ class CrossingController extends Controller
                 $q->where('id_pr', $idPrycto)->orWhere('bolsa_comun', 1);
             });
         }
-        if (!empty($caracter)) {
-            $candQuery->where('id_crcter', $caracter);
+        if ($caracter !== null && is_numeric($caracter)) {
+            $candQuery->where('id_crcter', (int)$caracter);
         }
 
         $floresEncontradas = $candQuery->limit($cantidad)->get();
 
-        if ($floresEncontradas->count() < $cantidad && !empty($caracter)) {
+        if ($floresEncontradas->count() < $cantidad && $caracter !== null) {
             $candQuery2 = clone $query;
             if ($idPrycto) {
                 $candQuery2->where(function ($q) use ($idPrycto) {
