@@ -237,11 +237,15 @@ const assigningKey = ref<string | null>(null);
 const countBolsa = computed(() => flowersList.value.filter((f) => f.bolsa_comun === 1).length);
 const countOtrosProyectos = computed(() => flowersList.value.filter((f) => f.bolsa_comun === 0).length);
 
+const effectiveProject = computed(() => {
+  return props.currentProject || localStorage.getItem("selectedCdCntble") || localStorage.getItem("lastSelectedCdCntble") || "010105";
+});
+
 const loadExternalFlowers = async () => {
-  if (!props.currentProject) return;
   isLoading.value = true;
   try {
-    const res = await CrossingsService.getFloresOtrosProyectos(props.currentProject);
+    const proj = effectiveProject.value;
+    const res = await CrossingsService.getFloresOtrosProyectos(proj);
     flowersList.value = res.data || [];
   } catch (err) {
     console.error("Error al cargar flores de otros proyectos:", err);
@@ -286,7 +290,8 @@ const filteredFlowers = computed(() => {
 const assignFlower = async (item: any) => {
   assigningKey.value = item.variedad_key;
   try {
-    await CrossingsService.enviarFlorAProyecto(item.variedad_key, props.currentProject, item.bolsa_comun);
+    const proj = effectiveProject.value;
+    await CrossingsService.enviarFlorAProyecto(item.variedad_key, proj, item.bolsa_comun);
     toast.success(`Flor ${item.vrdad} asignada exitosamente a este proyecto.`);
     emit("flowerAssigned", item);
     await loadExternalFlowers();

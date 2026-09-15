@@ -1186,7 +1186,7 @@ class CrossingService
     {
         $var = explode("_", $variedad);
         $fechaf = Carbon::today()->format('Y-m-d');
-        $fechai = Carbon::yesterday()->format('Y-m-d');
+        $fechai = Carbon::today()->subDays(60)->format('Y-m-d');
 
         // Resolve target project id_prycto if cd_cntble was passed
         $targetProj = DB::connection('sivar')->table('remote_pg_sipro')
@@ -1234,7 +1234,7 @@ class CrossingService
     public function floresOtrosProyectos($proyectoActual)
     {
         $fechaf = Carbon::today()->format('Y-m-d');
-        $fechai = Carbon::yesterday()->format('Y-m-d');
+        $fechai = Carbon::today()->subDays(60)->format('Y-m-d');
 
         $currentIdPrycto = null;
         if (!empty($proyectoActual)) {
