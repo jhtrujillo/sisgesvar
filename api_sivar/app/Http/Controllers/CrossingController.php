@@ -265,7 +265,15 @@ class CrossingController extends Controller
                 if (DB::connection('sivar')->transactionLevel() > 0) {
                     DB::connection('sivar')->rollBack();
                 }
-                return response()->json(['error' => $ex->getMessage()], 500);
+                \Log::error("Error en guardarCruzamiento: " . $ex->getMessage(), [
+                    'exception' => $ex,
+                    'crossings' => $crossings
+                ]);
+                return response()->json([
+                    'error' => $ex->getMessage(),
+                    'file' => $ex->getFile(),
+                    'line' => $ex->getLine()
+                ], 500);
             }
         }
 

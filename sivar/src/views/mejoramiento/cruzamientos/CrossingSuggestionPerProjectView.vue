@@ -2294,9 +2294,10 @@ async function finalizarProceso() {
     // 6. En lugar de redirigir a History directamente, mostrar el resumen
     resumenCrucesGuardados.value = batchPayload;
     isFinished.value = true;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error al guardar la programación de cruzamientos:", error);
-    toast.error("Ocurrió un error al guardar la programación de cruzamientos en la base de datos.");
+    const apiErrorMsg = error?.response?.data?.error || error?.response?.data?.message || error?.message || "Ocurrió un error al guardar la programación de cruzamientos en la base de datos.";
+    toast.error(`Error al guardar: ${apiErrorMsg}`);
   } finally {
     isSaving.value = false;
   }
