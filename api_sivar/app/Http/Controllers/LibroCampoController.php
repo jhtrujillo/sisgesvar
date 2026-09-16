@@ -44,9 +44,7 @@ class LibroCampoController extends Controller
 
     public function getLibroCampo($id_pr, $srie, $estdo)
     {
-        $idEstdo = "";
         try {
-
             // Obtener los registros de diseño de encabezado
             $diseno_enc = DisenoEncabezado::select()
                 ->where([['id_pr', $id_pr], ['srie', $srie], ['estdo', $estdo]])
@@ -82,54 +80,27 @@ class LibroCampoController extends Controller
 
             // Verificar si existen los registros de diseño de encabezado
             if ($diseno_enc->isNotEmpty()) {
-                if ($idEstdo == '1') {
-                    $datosCampo = [];
-                    $datosCampoIndividual = [];
+                $hasDatosCampo = false;
 
-                    // Procesar los registros de diseño según tipo de ensayo
-                    foreach ($diseno_enc as $diseno) {
-                        $idDsnoEnc = $diseno['id_dsno_enc'];
-                        if ($diseno->tpo_ensyo == 'F') {
-                            $datosCampo = DB::connection('sivar')->table('datos_campo')
-                                ->where('id_dsno_enc', $idDsnoEnc)
-                                ->get();
-
-                            if ($datosCampo->isNotEmpty()) {
-                                $libroF = $this->makeLibroCampo($idDsnoEnc);
-                            }
-                        } elseif ($diseno->tpo_ensyo == 'I') {
-                            $datosCampoIndividual = DB::connection('sivar')->table('datos_campo')
-                                ->where('id_dsno_enc', $idDsnoEnc)
-                                ->get();
-
-                            if ($datosCampoIndividual->isNotEmpty()) {
-                                $libroI = $this->makeLibroCampo($idDsnoEnc);
-                            }
-                        }
-                    }
-
-                    // Si no se encontraron datos de campo, devolver variables
-                    if ($datosCampo->isEmpty() && $datosCampoIndividual->isEmpty()) {
-                        $listVariables = $variables;
-                    } else {
-                        // Verificar si existen datos del libro de familias
-                        if (empty($libroF)) {
-                            $error = 1;
-                            $mensajeError[] = 'No existe el diseño de familias';
-                        }
-                    }
-                } else {
-                    // Obtener los datos del campo si no es estado 1
+                foreach ($diseno_enc as $diseno) {
+                    $idDsnoEnc = $diseno->id_dsno_enc;
                     $datosCampo = DB::connection('sivar')->table('datos_campo')
-                        ->where('id_dsno_enc', $diseno_enc[0]['id_dsno_enc'])
+                        ->where('id_dsno_enc', $idDsnoEnc)
                         ->get();
 
-                    if ($datosCampo->isEmpty()) {
-                        $listVariables = $variables;
-                    } else {
-                        $libroCampo = [];
-                        // Lógica adicional para cargar el libro existente si es necesario
+                    if ($datosCampo->isNotEmpty()) {
+                        $hasDatosCampo = true;
+                        $dataLibro = $this->makeLibroCampoData($idDsnoEnc);
+                        if ($diseno->tpo_ensyo == 'F') {
+                            $libroF = $dataLibro;
+                        } elseif ($diseno->tpo_ensyo == 'I') {
+                            $libroI = $dataLibro;
+                        }
                     }
+                }
+
+                if (!$hasDatosCampo) {
+                    $listVariables = $variables;
                 }
             } else {
                 $error = 1;
@@ -155,136 +126,136 @@ class LibroCampoController extends Controller
         }
     }
 
+    public function makeLibroCampoData($idDsnoEnc)
+    {
+        // Traer la distribución de tratamientos creada por el modelo estadístico en el diseño de experimentos
+        $libroExperimento = DB::connection('sivar')->table('dissalida_det as dd')
+            ->select(
+                'dd.id_dsno_enc',
+                'dd.id_dissalida_det',
+                'dd.rptcion',
+                'dd.entrda',
+                'dd.lcldad',
+                'dd.block',
+                'maestro_V_VIC_BG.nm_vrdad as trtmnto',
+                'dd.prcla',
+                'dd.tstgo',
+                DB::raw('0 as nmro_clnes')
+            )
+            ->join('maestro_V_VIC_BG', function ($join) {
+                $join->on('dd.trtmnto', '=', 'maestro_V_VIC_BG.nm_vrdad');
+            })
+            ->where('id_dsno_enc', $idDsnoEnc)
+            ->union(
+                DB::connection('sivar')->table('dissalida_det as dd2')
+                    ->select(
+                        'dd2.id_dsno_enc',
+                        'dd2.id_dissalida_det',
+                        'dd2.rptcion',
+                        'dd2.entrda',
+                        'dd2.lcldad',
+                        'dd2.block',
+                        'cruzamientos.nm_fmlias as trtmnto',
+                        'dd2.prcla',
+                        'dd2.tstgo',
+                        DB::raw('0 as nmro_clnes')
+                    )
+                    ->join('cruzamientos', function ($join) {
+                        $join->on('dd2.trtmnto', '=', DB::raw('CAST(cruzamientos.id_crzmnto AS varchar)'));
+                    })
+                    ->where('id_dsno_enc', $idDsnoEnc)
+            )
+            ->orderBy('id_dissalida_det', 'asc')
+            ->get();
+
+        // Traer los campos del experimento
+        $campos = DB::connection('sivar')->table('conf_campos as cc')
+            ->select('cc.id_conf_campos', 'cc.nmro_cmpo', 'cc.nmbre_cmpo')
+            ->whereIn(
+                'cc.nmro_cmpo',
+                DB::connection('sivar')->table('datos_campo as dc1')
+                    ->select('dc1.nmro_cmpo')
+                    ->where('dc1.id_dsno_enc', $idDsnoEnc)
+                    ->distinct()
+            )
+            ->orderBy('cc.nmro_cmpo', 'asc')
+            ->get();
+
+        // Traer las variables del campo
+        $variablesCampo = DB::connection('sivar')->table('dissalida_det')
+            ->select(
+                DB::raw('CONCAT(a.id_dissalida_det, \'-\', a.nmro_cmpo) as clave'),
+                'dissalida_det.id_dissalida_det',
+                'conf_campos.nmro_cmpo',
+                'conf_campos.nmbre_cmpo',
+                DB::raw('COALESCE(a.vlor, \'\') as vlor')
+            )
+            ->join('maestro_V_VIC_BG', function ($join) {
+                $join->on('dissalida_det.trtmnto', '=', 'maestro_V_VIC_BG.nm_vrdad');
+            })
+            ->join('datos_campo as a', function ($join) {
+                $join->on('dissalida_det.id_dissalida_det', '=', 'a.id_dissalida_det');
+            })
+            ->join('conf_campos', function ($join) {
+                $join->on('a.nmro_cmpo', '=', 'conf_campos.nmro_cmpo');
+            })
+            ->join(DB::raw('(SELECT max(COALESCE(c.id_fcha_evlcion, 0)) as id_fcha_evlcion, c.id_dissalida_det, c.nmro_cmpo, c.id_dsno_enc FROM datos_campo c GROUP BY (c.id_dissalida_det, c.nmro_cmpo, c.id_dsno_enc)) as c'), function ($join) {
+                $join->on(DB::raw('COALESCE(a.id_fcha_evlcion, 0)'), '=', 'c.id_fcha_evlcion')
+                    ->on('a.id_dsno_enc', '=', 'c.id_dsno_enc')
+                    ->on('a.id_dissalida_det', '=', 'c.id_dissalida_det')
+                    ->on('a.nmro_cmpo', '=', 'c.nmro_cmpo');
+            })
+            ->where('dissalida_det.id_dsno_enc', $idDsnoEnc)
+            ->union(
+                DB::connection('sivar')->table('dissalida_det')
+                    ->select(
+                        DB::raw('CONCAT(e.id_dissalida_det, \'-\', e.nmro_cmpo) as clave'),
+                        'dissalida_det.id_dissalida_det',
+                        'conf_campos.nmro_cmpo',
+                        'conf_campos.nmbre_cmpo',
+                        DB::raw('COALESCE(e.vlor, \'\') as vlor')
+                    )
+                    ->join('cruzamientos', function ($join) {
+                        $join->on('dissalida_det.trtmnto', '=', DB::raw('CAST(cruzamientos.id_crzmnto AS varchar)'));
+                    })
+                    ->join('datos_campo as e', function ($join) {
+                        $join->on('dissalida_det.id_dissalida_det', '=', 'e.id_dissalida_det');
+                    })
+                    ->join('conf_campos', function ($join) {
+                        $join->on('e.nmro_cmpo', '=', 'conf_campos.nmro_cmpo');
+                    })
+                    ->join(DB::raw('(SELECT max(COALESCE(f.id_fcha_evlcion, 0)) as id_fcha_evlcion, f.id_dissalida_det, f.nmro_cmpo, f.id_dsno_enc FROM datos_campo f GROUP BY (f.id_dissalida_det, f.nmro_cmpo, f.id_dsno_enc)) as f'), function ($join) {
+                        $join->on(DB::raw('COALESCE(e.id_fcha_evlcion, 0)'), '=', 'f.id_fcha_evlcion')
+                            ->on('e.id_dsno_enc', '=', 'f.id_dsno_enc')
+                            ->on('e.id_dissalida_det', '=', 'f.id_dissalida_det')
+                            ->on('e.nmro_cmpo', '=', 'f.nmro_cmpo');
+                    })
+                    ->where('dissalida_det.id_dsno_enc', $idDsnoEnc)
+            )
+            ->orderBy('id_dissalida_det', 'asc')
+            ->orderBy('nmro_cmpo', 'asc')
+            ->get()
+            ->keyBy('clave');
+
+        // Asignar los valores a las variables del libro
+        foreach ($libroExperimento as $key1 => $variableExp) {
+            foreach ($campos as $key2 => $campo) {
+                $val = $campo->nmro_cmpo;
+                $keyClave = $variableExp->id_dissalida_det . '-' . $campo->nmro_cmpo;
+                $libroExperimento[$key1]->$val = isset($variablesCampo[$keyClave]) ? $variablesCampo[$keyClave]->vlor : '';
+            }
+        }
+
+        return [
+            'libroCampo' => $libroExperimento->values(),
+            'camposLibro' => $campos
+        ];
+    }
+
     public function makeLibroCampo($idDsnoEnc)
     {
         try {
-            // Inicializar las estructuras de datos
-            $libro = [
-                'libroCampo' => [],
-                'camposLibro' => []
-            ];
-
-            // Traer la distribución de tratamientos creada por el modelo estadístico en el diseño de experimentos
-            $libroExperimento = DB::connection('sivar')->table('dissalida_det as dd')
-                ->select(
-                    'dd.id_dsno_enc',
-                    'dd.id_dissalida_det',
-                    'dd.rptcion',
-                    'dd.entrda',
-                    'dd.lcldad',
-                    'dd.block',
-                    'maestro_V_VIC_BG.nm_vrdad as trtmnto',
-                    'dd.prcla',
-                    'dd.tstgo',
-                    DB::raw('0 as nmro_clnes')
-                )
-                ->join('maestro_V_VIC_BG', function ($join) {
-                    $join->on('dd.trtmnto', '=', 'maestro_V_VIC_BG.nm_vrdad');
-                })
-                ->where('id_dsno_enc', $idDsnoEnc)
-                ->union(
-                    DB::connection('sivar')->table('dissalida_det as dd2')
-                        ->select(
-                            'dd2.id_dsno_enc',
-                            'dd2.id_dissalida_det',
-                            'dd2.rptcion',
-                            'dd2.entrda',
-                            'dd2.lcldad',
-                            'dd2.block',
-                            'cruzamientos.nm_fmlias as trtmnto',
-                            'dd2.prcla',
-                            'dd2.tstgo',
-                            DB::raw('0 as nmro_clnes')
-                        )
-                        ->join('cruzamientos', function ($join) {
-                            $join->on('dd2.trtmnto', '=', DB::raw('CAST(cruzamientos.id_crzmnto AS varchar)'));
-                        })
-                        ->where('id_dsno_enc', $idDsnoEnc)
-                )
-                ->orderBy('id_dissalida_det', 'asc')
-                ->get();
-
-            // Traer los campos del experimento
-            $campos = DB::connection('sivar')->table('conf_campos as cc')
-                ->select('cc.id_conf_campos', 'cc.nmro_cmpo', 'cc.nmbre_cmpo')
-                ->whereIn(
-                    'cc.nmro_cmpo',
-                    DB::connection('sivar')->table('datos_campo as dc1')
-                        ->select('dc1.nmro_cmpo')
-                        ->where('dc1.id_dsno_enc', $idDsnoEnc)
-                        ->distinct()
-                )
-                ->orderBy('cc.nmro_cmpo', 'asc')
-                ->get();
-
-            // Traer las variables del campo
-            $variablesCampo = DB::connection('sivar')->table('dissalida_det')
-                ->select(
-                    DB::raw('CONCAT(a.id_dissalida_det, \'-\', a.nmro_cmpo) as clave'),
-                    'dissalida_det.id_dissalida_det',
-                    'conf_campos.nmro_cmpo',
-                    'conf_campos.nmbre_cmpo',
-                    DB::raw('COALESCE(a.vlor, \'\') as vlor')
-                )
-                ->join('maestro_V_VIC_BG', function ($join) {
-                    $join->on('dissalida_det.trtmnto', '=', 'maestro_V_VIC_BG.nm_vrdad');
-                })
-                ->join('datos_campo as a', function ($join) {
-                    $join->on('dissalida_det.id_dissalida_det', '=', 'a.id_dissalida_det');
-                })
-                ->join('conf_campos', function ($join) {
-                    $join->on('a.nmro_cmpo', '=', 'conf_campos.nmro_cmpo');
-                })
-                ->join(DB::raw('(SELECT max(COALESCE(c.id_fcha_evlcion, 0)) as id_fcha_evlcion, c.id_dissalida_det, c.nmro_cmpo, c.id_dsno_enc FROM datos_campo c GROUP BY (c.id_dissalida_det, c.nmro_cmpo, c.id_dsno_enc)) as c'), function ($join) {
-                    $join->on(DB::raw('COALESCE(a.id_fcha_evlcion, 0)'), '=', 'c.id_fcha_evlcion')
-                        ->on('a.id_dsno_enc', '=', 'c.id_dsno_enc')
-                        ->on('a.id_dissalida_det', '=', 'c.id_dissalida_det')
-                        ->on('a.nmro_cmpo', '=', 'c.nmro_cmpo');
-                })
-                ->where('dissalida_det.id_dsno_enc', $idDsnoEnc)
-                ->union(
-                    DB::connection('sivar')->table('dissalida_det')
-                        ->select(
-                            DB::raw('CONCAT(e.id_dissalida_det, \'-\', e.nmro_cmpo) as clave'),
-                            'dissalida_det.id_dissalida_det',
-                            'conf_campos.nmro_cmpo',
-                            'conf_campos.nmbre_cmpo',
-                            DB::raw('COALESCE(e.vlor, \'\') as vlor')
-                        )
-                        ->join('cruzamientos', function ($join) {
-                            $join->on('dissalida_det.trtmnto', '=', DB::raw('CAST(cruzamientos.id_crzmnto AS varchar)'));
-                        })
-                        ->join('datos_campo as e', function ($join) {
-                            $join->on('dissalida_det.id_dissalida_det', '=', 'e.id_dissalida_det');
-                        })
-                        ->join('conf_campos', function ($join) {
-                            $join->on('e.nmro_cmpo', '=', 'conf_campos.nmro_cmpo');
-                        })
-                        ->join(DB::raw('(SELECT max(COALESCE(f.id_fcha_evlcion, 0)) as id_fcha_evlcion, f.id_dissalida_det, f.nmro_cmpo, f.id_dsno_enc FROM datos_campo f GROUP BY (f.id_dissalida_det, f.nmro_cmpo, f.id_dsno_enc)) as f'), function ($join) {
-                            $join->on(DB::raw('COALESCE(e.id_fcha_evlcion, 0)'), '=', 'f.id_fcha_evlcion')
-                                ->on('e.id_dsno_enc', '=', 'f.id_dsno_enc')
-                                ->on('e.id_dissalida_det', '=', 'f.id_dissalida_det')
-                                ->on('e.nmro_cmpo', '=', 'f.nmro_cmpo');
-                        })
-                        ->where('dissalida_det.id_dsno_enc', $idDsnoEnc)
-                )
-                ->orderBy('id_dissalida_det', 'asc')
-                ->orderBy('nmro_cmpo', 'asc')
-                ->get()
-                ->keyBy('clave');
-
-            // Asignar los valores a las variables del libro
-            foreach ($libroExperimento as $key1 => $variableExp) {
-                foreach ($campos as $key2 => $campo) {
-                    $val = $campo->nmro_cmpo;
-                    $libroExperimento[$key1]->$val = $variablesCampo[$variableExp->id_dissalida_det . '-' . $campo->nmro_cmpo]->vlor;
-                }
-            }
-
-            // Asignar los resultados a la respuesta
-            $libro['libroCampo'] = $libroExperimento;
-            $libro['camposLibro'] = $campos;
-
+            $libro = $this->makeLibroCampoData($idDsnoEnc);
             return response()->json([
                 'success' => true,
                 'libro' => $libro,
@@ -301,63 +272,84 @@ class LibroCampoController extends Controller
 
     public function crearLibroCampo(Request $request)
     {
-        $libro = $request->libro;
-        $saveSalida = true;
-        
+        $libro = $request->input('libro', []);
+        if (empty($libro)) {
+            return response()->json([
+                "code" => 400,
+                "message" => 'No se recibieron datos para crear el libro de campo.'
+            ], 400);
+        }
+
         DB::beginTransaction();
-    
+
         try {
-            // Agrupar las salidas por id_dsno_enc
+            $totalInserts = 0;
+            $hasSalidas = false;
+
             foreach ($libro as $datos) {
+                if (empty($datos['id_dsno_enc']) || empty($datos['campos'])) {
+                    continue;
+                }
+
+                $idDsnoEnc = $datos['id_dsno_enc'];
+
+                // Obtener las salidas de diseño asociadas
                 $salidas = DB::connection('sivar')->table('dissalida_det')
                     ->select('id_dissalida_det', 'id_dsno_enc')
-                    ->where('id_dsno_enc', $datos['id_dsno_enc'])
+                    ->where('id_dsno_enc', $idDsnoEnc)
                     ->get();
-                
-                foreach ($salidas as $salida) {
-                    // Crear un array de inserciones en una sola operación
-                    $inserts = [];
-                    foreach ($datos['campos'] as $variable) {
-                        $inserts[] = [
-                            'id_dissalida_det' => $salida->id_dissalida_det,
-                            'id_dsno_enc' => $salida->id_dsno_enc,
-                            'nmro_cmpo' => $variable['nmro_cmpo']
-                        ];
+
+                if ($salidas->isNotEmpty()) {
+                    $hasSalidas = true;
+
+                    // Limpiar registros previos si se está re-configurando el libro
+                    DB::connection('sivar')->table('datos_campo')
+                        ->where('id_dsno_enc', $idDsnoEnc)
+                        ->delete();
+
+                    $batchInserts = [];
+                    foreach ($salidas as $salida) {
+                        foreach ($datos['campos'] as $variable) {
+                            $batchInserts[] = [
+                                'id_dissalida_det' => $salida->id_dissalida_det,
+                                'id_dsno_enc' => $salida->id_dsno_enc,
+                                'nmro_cmpo' => $variable['nmro_cmpo']
+                            ];
+
+                            if (count($batchInserts) >= 500) {
+                                DB::connection('sivar')->table('datos_campo')->insert($batchInserts);
+                                $totalInserts += count($batchInserts);
+                                $batchInserts = [];
+                            }
+                        }
                     }
-                    
-                    // Insertar todos los registros a la vez
-                    if ($inserts) {
-                        DB::connection('sivar')->table('datos_campo')->insert($inserts);
-                    } else {
-                        $saveSalida = false;
-                        break;
+
+                    if (!empty($batchInserts)) {
+                        DB::connection('sivar')->table('datos_campo')->insert($batchInserts);
+                        $totalInserts += count($batchInserts);
                     }
                 }
-                
-                if (!$saveSalida) break;
             }
-    
-            // Si todo fue exitoso, hacer commit
-            if ($saveSalida) {
-                DB::commit();
-                return response([
-                    "code" => 200,
-                    "message" => 'Se crea libro de campo con exito',
-                ], 200);
-            } else {
+
+            if (!$hasSalidas) {
                 DB::rollBack();
-                return response([
-                    "code" => 500,
-                    "message" => 'Error creando libro'
-                ], 500);
+                return response()->json([
+                    "code" => 422,
+                    "message" => 'El experimento aún no tiene parcelas de diseño (dissalida_det) generadas. Debe generar primero el diseño estadístico.'
+                ], 422);
             }
-            
-        } catch (Throwable $th) {
+
+            DB::commit();
+            return response()->json([
+                "code" => 200,
+                "message" => 'Se creó el libro de campo con éxito (' . $totalInserts . ' registros inicializados).',
+            ], 200);
+
+        } catch (\Throwable $th) {
             DB::rollBack();
-            return response([
+            return response()->json([
                 "code" => 500,
-                "message" => 'Error creando libro',
-                'errorSaving' => $th->getMessage()
+                "message" => 'Error al crear el libro de campo: ' . $th->getMessage(),
             ], 500);
         }
     }
