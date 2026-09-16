@@ -540,7 +540,13 @@ class ViveroController extends Controller
                 $suerte = $lote->nombre_lote ?: '00';
                 $suerteCleaned = trim(preg_replace('/\b(lote|vivero)\b/i', '', $suerte));
                 $anio = date('Y');
-                $identificadorDefault = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $haciendaCleaned, $suerteCleaned, $vivero->consecutivo_vivero_ingenio);
+                $baseIdent = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $haciendaCleaned, $suerteCleaned, $vivero->consecutivo_vivero_ingenio);
+                $identificadorDefault = $baseIdent;
+                $counter = 1;
+                while (Vivero::where('identificador_unico', $identificadorDefault)->where('id', '!=', $vivero->id)->exists()) {
+                    $identificadorDefault = $baseIdent . '-' . $counter;
+                    $counter++;
+                }
 
                 $vivero->update([
                     'identificador_unico' => $identificadorDefault,
