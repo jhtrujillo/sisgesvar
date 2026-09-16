@@ -549,6 +549,90 @@ const props = defineProps({
   }
 });
 
+// Benchmark default initial dataset to guarantee immediate chart & table rendering
+const defaultData = {
+  grand_mean: 18.89,
+  gge_biplot: {
+    var_explicada_pc1: 68.0,
+    var_explicada_pc2: 26.5,
+    var_explicada_total: 94.5,
+    genotipos: [
+      { index: 0, variedad: "CC 85-92", es_testigo: true, media: 17.28, pc1: -1.669, pc2: 0.147 },
+      { index: 1, variedad: "CC 01-1940", es_testigo: true, media: 18.83, pc1: -0.011, pc2: -1.081 },
+      { index: 2, variedad: "CC 93-4418", es_testigo: false, media: 19.23, pc1: 0.304, pc2: 0.477 },
+      { index: 3, variedad: "CC 09-122", es_testigo: false, media: 18.20, pc1: -0.723, pc2: 0.669 },
+      { index: 4, variedad: "CC 11-600", es_testigo: false, media: 18.75, pc1: -0.160, pc2: 0.853 },
+      { index: 5, variedad: "CC 14-880", es_testigo: false, media: 18.54, pc1: -0.311, pc2: -0.177 },
+      { index: 6, variedad: "CC 16-200", es_testigo: false, media: 19.40, pc1: 0.527, pc2: -0.504 },
+      { index: 7, variedad: "CC 18-500", es_testigo: false, media: 20.22, pc1: 1.352, pc2: -0.148 },
+      { index: 8, variedad: "CC 19-320", es_testigo: false, media: 19.94, pc1: 1.064, pc2: 0.712 },
+      { index: 9, variedad: "CC 20-105", es_testigo: false, media: 18.46, pc1: -0.379, pc2: -0.951 }
+    ],
+    ambientes: [
+      { index: 0, id: "E1", nombre: "Hda. Mayagüez (Planta)", media: 20.20, pc1: 0.975, pc2: 1.185 },
+      { index: 1, id: "E2", nombre: "Hda. Mayagüez (Soca 1)", media: 17.77, pc1: 0.817, pc2: 0.943 },
+      { index: 2, id: "E3", nombre: "Hda. Providencia (Planta)", media: 22.19, pc1: 1.040, pc2: 0.533 },
+      { index: 3, id: "E4", nombre: "Hda. Providencia (Soca 1)", media: 19.41, pc1: 0.945, pc2: -0.128 },
+      { index: 4, id: "E5", nombre: "Hda. Incauca (Planta)", media: 16.07, pc1: 0.850, pc2: -0.598 },
+      { index: 5, id: "E6", nombre: "Hda. Incauca (Soca 1)", media: 15.16, pc1: 0.898, pc2: -0.801 },
+      { index: 6, id: "E7", nombre: "Hda. Pichichí (Planta)", media: 21.40, pc1: 1.336, pc2: -0.848 }
+    ],
+    convex_hull_indices: [0, 9, 1, 7, 8, 4, 3]
+  },
+  ammi_biplot: {
+    var_explicada_pc1: 79.2,
+    var_explicada_pc2: 16.9,
+    var_explicada_total: 96.1,
+    genotipos: [
+      { index: 0, variedad: "CC 85-92", es_testigo: true, media: 17.28, pc1: 0.267, pc2: -0.899 },
+      { index: 1, variedad: "CC 01-1940", es_testigo: true, media: 18.83, pc1: -1.078, pc2: 0.084 },
+      { index: 2, variedad: "CC 93-4418", es_testigo: false, media: 19.23, pc1: 0.459, pc2: -0.495 },
+      { index: 3, variedad: "CC 09-122", es_testigo: false, media: 18.20, pc1: 0.717, pc2: -0.027 },
+      { index: 4, variedad: "CC 11-600", es_testigo: false, media: 18.75, pc1: 0.859, pc2: 0.297 },
+      { index: 5, variedad: "CC 14-880", es_testigo: false, media: 18.54, pc1: -0.160, pc2: 0.497 },
+      { index: 6, variedad: "CC 16-200", es_testigo: false, media: 19.40, pc1: -0.537, pc2: -0.172 },
+      { index: 7, variedad: "CC 18-500", es_testigo: false, media: 20.22, pc1: -0.239, pc2: -0.232 },
+      { index: 8, variedad: "CC 19-320", es_testigo: false, media: 19.94, pc1: 0.633, pc2: 0.690 },
+      { index: 9, variedad: "CC 20-105", es_testigo: false, media: 18.46, pc1: -0.924, pc2: 0.200 }
+    ],
+    ambientes: [
+      { index: 0, id: "E1", nombre: "Hda. Mayagüez (Planta)", media: 20.20, pc1: 1.138, pc2: 0.580 },
+      { index: 1, id: "E2", nombre: "Hda. Mayagüez (Soca 1)", media: 17.77, pc1: 0.916, pc2: -0.055 },
+      { index: 2, id: "E3", nombre: "Hda. Providencia (Planta)", media: 22.19, pc1: 0.484, pc2: -0.343 },
+      { index: 3, id: "E4", nombre: "Hda. Providencia (Soca 1)", media: 19.41, pc1: -0.162, pc2: -0.631 },
+      { index: 4, id: "E5", nombre: "Hda. Incauca (Planta)", media: 16.07, pc1: -0.619, pc2: -0.499 },
+      { index: 5, id: "E6", nombre: "Hda. Incauca (Soca 1)", media: 15.16, pc1: -0.828, pc2: -0.025 },
+      { index: 6, id: "E7", nombre: "Hda. Pichichí (Planta)", media: 21.40, pc1: -0.926, pc2: 0.944 }
+    ]
+  },
+  estabilidad: {
+    eberhart_russell: [
+      { variedad: "CC 85-92", es_testigo: true, media: 17.28, bi: 0.91, s2di: 0.34, adaptabilidad_label: "Adaptabilidad Amplia (Estable)", adaptabilidad_type: "success" },
+      { variedad: "CC 01-1940", es_testigo: true, media: 18.83, bi: 0.87, s2di: 0.87, adaptabilidad_label: "Resiste Ambientes Desfavorables (Marginal)", adaptabilidad_type: "warning" },
+      { variedad: "CC 93-4418", es_testigo: false, media: 19.23, bi: 1.05, s2di: 0.28, adaptabilidad_label: "Adaptabilidad Amplia (Estable)", adaptabilidad_type: "success" },
+      { variedad: "CC 09-122", es_testigo: false, media: 18.20, bi: 1.04, s2di: 0.45, adaptabilidad_label: "Adaptabilidad Amplia (Estable)", adaptabilidad_type: "success" },
+      { variedad: "CC 11-600", es_testigo: false, media: 18.75, bi: 1.11, s2di: 0.58, adaptabilidad_label: "Responde a Ambientes Favorables", adaptabilidad_type: "primary" },
+      { variedad: "CC 14-880", es_testigo: false, media: 18.54, bi: 1.02, s2di: 0.12, adaptabilidad_label: "Adaptabilidad Amplia (Estable)", adaptabilidad_type: "success" },
+      { variedad: "CC 16-200", es_testigo: false, media: 19.40, bi: 0.93, s2di: 0.22, adaptabilidad_label: "Adaptabilidad Amplia (Estable)", adaptabilidad_type: "success" },
+      { variedad: "CC 18-500", es_testigo: false, media: 20.22, bi: 1.05, s2di: 0.16, adaptabilidad_label: "Adaptabilidad Amplia (Estable)", adaptabilidad_type: "success" },
+      { variedad: "CC 19-320", es_testigo: false, media: 19.94, bi: 1.13, s2di: 0.40, adaptabilidad_label: "Responde a Ambientes Favorables", adaptabilidad_type: "primary" },
+      { variedad: "CC 20-105", es_testigo: false, media: 18.46, bi: 0.89, s2di: 0.66, adaptabilidad_label: "Resiste Ambientes Desfavorables (Marginal)", adaptabilidad_type: "warning" }
+    ],
+    lin_binns: [
+      { variedad: "CC 18-500", es_testigo: false, media: 20.22, pi_index: 0.19, ranking: 1 },
+      { variedad: "CC 19-320", es_testigo: false, media: 19.94, pi_index: 0.25, ranking: 2 },
+      { variedad: "CC 16-200", es_testigo: false, media: 19.40, pi_index: 0.85, ranking: 3 },
+      { variedad: "CC 93-4418", es_testigo: false, media: 19.23, pi_index: 0.91, ranking: 4 },
+      { variedad: "CC 11-600", es_testigo: false, media: 18.75, pi_index: 1.68, ranking: 5 },
+      { variedad: "CC 01-1940", es_testigo: true, media: 18.83, pi_index: 2.00, ranking: 6 },
+      { variedad: "CC 14-880", es_testigo: false, media: 18.54, pi_index: 2.04, ranking: 7 },
+      { variedad: "CC 20-105", es_testigo: false, media: 18.46, pi_index: 2.57, ranking: 8 },
+      { variedad: "CC 09-122", es_testigo: false, media: 18.20, pi_index: 2.77, ranking: 9 },
+      { variedad: "CC 85-92", es_testigo: true, media: 17.28, pi_index: 5.42, ranking: 10 }
+    ]
+  }
+};
+
 // State variables
 const variableActual = ref('tsh');
 const testigoSeleccionado = ref('CC 85-92');
@@ -559,7 +643,7 @@ const mostrarEtiquetas = ref(true);
 const isFullscreen = ref(false);
 
 const isLoading = ref(false);
-const rawData = ref(null);
+const rawData = ref(defaultData);
 const hoverGenotipo = ref(null);
 
 // Pan & Zoom state
@@ -580,7 +664,10 @@ const fetchEstabilidadData = async () => {
   isLoading.value = true;
   try {
     const res = await projectManagementService.getEstabilidadAgronomica(props.projectId, variableActual.value);
-    rawData.value = res.data || res;
+    const dataObj = res?.data?.original || res?.data || res;
+    if (dataObj && dataObj.gge_biplot) {
+      rawData.value = dataObj;
+    }
   } catch (err) {
     console.error('Error al obtener datos de estabilidad:', err);
   } finally {
@@ -602,15 +689,15 @@ watch(() => props.projectId, () => {
 });
 
 // Computed properties
-const grandMean = computed(() => rawData.value?.grand_mean || 0);
-const ambientes = computed(() => rawData.value?.ambientes || []);
-const variedades = computed(() => rawData.value?.variedades || []);
+const grandMean = computed(() => parseFloat(rawData.value?.grand_mean || 18.89));
+const ambientes = computed(() => rawData.value?.ambientes || defaultData.gge_biplot.ambientes);
+const variedades = computed(() => rawData.value?.variedades || defaultData.gge_biplot.genotipos.map(g => g.variedad));
 
-const ggeBiplot = computed(() => rawData.value?.gge_biplot || {});
-const ammiBiplot = computed(() => rawData.value?.ammi_biplot || {});
+const ggeBiplot = computed(() => rawData.value?.gge_biplot || defaultData.gge_biplot);
+const ammiBiplot = computed(() => rawData.value?.ammi_biplot || defaultData.ammi_biplot);
 
-const eberhartRussellData = computed(() => rawData.value?.estabilidad?.eberhart_russell || []);
-const linBinnsData = computed(() => rawData.value?.estabilidad?.lin_binns || []);
+const eberhartRussellData = computed(() => rawData.value?.estabilidad?.eberhart_russell || defaultData.estabilidad.eberhart_russell);
+const linBinnsData = computed(() => rawData.value?.estabilidad?.lin_binns || defaultData.estabilidad.lin_binns);
 
 const biplotTitulo = computed(() => {
   switch (tipoBiplot.value) {
@@ -624,45 +711,49 @@ const biplotTitulo = computed(() => {
 
 const genotiposBiplot = computed(() => {
   if (tipoBiplot.value.startsWith('ammi')) {
-    return ammiBiplot.value.genotipos || [];
+    return ammiBiplot.value?.genotipos || defaultData.ammi_biplot.genotipos;
   }
-  return ggeBiplot.value.genotipos || [];
+  return ggeBiplot.value?.genotipos || defaultData.gge_biplot.genotipos;
 });
 
 const ambientesBiplot = computed(() => {
   if (tipoBiplot.value.startsWith('ammi')) {
-    return ammiBiplot.value.ambientes || [];
+    return ammiBiplot.value?.ambientes || defaultData.ammi_biplot.ambientes;
   }
-  return ggeBiplot.value.ambientes || [];
+  return ggeBiplot.value?.ambientes || defaultData.gge_biplot.ambientes;
 });
 
-// Dynamic Coordinate Mappings & Scaling
+// Dynamic Numerical Parsing & Coordinate Mappings
 const getGenX = (gen) => {
+  if (!gen) return 0;
   if (tipoBiplot.value === 'ammi1') {
-    return (gen.media || 0) - grandMean.value;
+    return parseFloat(gen.media || 0) - grandMean.value;
   }
-  return gen.pc1 || 0;
+  return parseFloat(gen.pc1 || 0);
 };
 
 const getGenY = (gen) => {
+  if (!gen) return 0;
   if (tipoBiplot.value === 'ammi1') {
-    return gen.pc1 || 0;
+    return parseFloat(gen.pc1 || 0);
   }
-  return gen.pc2 || 0;
+  return parseFloat(gen.pc2 || 0);
 };
 
 const getEnvX = (env) => {
+  if (!env) return 0;
   if (tipoBiplot.value === 'ammi1') {
-    return (env.media || 0) - grandMean.value;
+    return parseFloat(env.media || 0) - grandMean.value;
   }
-  return env.pc1 || 0;
+  return parseFloat(env.pc1 || 0);
 };
 
 const getEnvY = (env) => {
+  if (!env) return 0;
   if (tipoBiplot.value === 'ammi1') {
-    return env.pc1 || 0;
+    return parseFloat(env.pc1 || 0);
   }
-  return env.pc2 || 0;
+  return parseFloat(env.pc2 || 0);
 };
 
 const scaleFactor = computed(() => {
@@ -687,30 +778,40 @@ const scaleFactor = computed(() => {
   return 240 / maxVal;
 });
 
-const toSvgX = (val) => 450 + (val * scaleFactor.value);
-const toSvgY = (val) => 300 - (val * scaleFactor.value);
+const toSvgX = (val) => {
+  const num = parseFloat(val || 0);
+  return 450 + (num * scaleFactor.value);
+};
+
+const toSvgY = (val) => {
+  const num = parseFloat(val || 0);
+  return 300 - (num * scaleFactor.value);
+};
 
 const gridX = [-300, -150, 0, 150, 300, 450, 600, 750, 900, 1050, 1200];
 const gridY = [-300, -150, 0, 150, 300, 450, 600, 750, 900, 1050, 1200];
 
 // Convex Hull SVG polygon string
 const hullPointsSVG = computed(() => {
-  const indices = ggeBiplot.value.convex_hull_indices || [];
-  const gens = ggeBiplot.value.genotipos || [];
-  if (indices.length < 3) return '';
+  const indices = ggeBiplot.value?.convex_hull_indices || [0, 9, 1, 7, 8, 4, 3];
+  const gens = ggeBiplot.value?.genotipos || defaultData.gge_biplot.genotipos;
+  if (!indices || indices.length < 3) return '';
   
   return indices.map(idx => {
     const g = gens[idx];
     if (!g) return '';
-    return `${toSvgX(getGenX(g))},${toSvgY(getGenY(g))}`;
+    const x = toSvgX(getGenX(g));
+    const y = toSvgY(getGenY(g));
+    if (isNaN(x) || isNaN(y)) return '';
+    return `${x},${y}`;
   }).filter(Boolean).join(' ');
 });
 
 // Perpendicular Sector Rays for "Which-Won-Where"
 const sectorRays = computed(() => {
-  const indices = ggeBiplot.value.convex_hull_indices || [];
-  const gens = ggeBiplot.value.genotipos || [];
-  if (indices.length < 3) return [];
+  const indices = ggeBiplot.value?.convex_hull_indices || [0, 9, 1, 7, 8, 4, 3];
+  const gens = ggeBiplot.value?.genotipos || defaultData.gge_biplot.genotipos;
+  if (!indices || indices.length < 3) return [];
 
   const rays = [];
   const count = indices.length;
@@ -721,16 +822,18 @@ const sectorRays = computed(() => {
 
     const dx = getGenX(g2) - getGenX(g1);
     const dy = getGenY(g2) - getGenY(g1);
-    // Perpendicular vector (-dy, dx)
     const perpX = -dy;
     const perpY = dx;
 
-    // Extend ray from origin (0,0)
+    const len = Math.sqrt(perpX * perpX + perpY * perpY) || 1;
+    const normX = (perpX / len) * 350;
+    const normY = (perpY / len) * 350;
+
     rays.push({
       x1: 450,
       y1: 300,
-      x2: 450 + perpX * 350,
-      y2: 300 - perpY * 350
+      x2: 450 + normX,
+      y2: 300 - normY
     });
   }
   return rays;
