@@ -110,6 +110,23 @@ class CrossingController extends Controller
             return response()->json(['message' => $result['message']], 404);
         }
     }
+
+    public function floresOtrosProyectos(Request $request)
+    {
+        $proyectoActual = $request->query('proyecto_actual', '');
+        $flores = $this->crossingService->floresOtrosProyectos($proyectoActual);
+        return response()->json($flores);
+    }
+
+    public function devolverFlorABolsaComun(Request $request, $variedad, $proyecto)
+    {
+        $result = $this->crossingService->devolverFlorABolsaComun($variedad, $proyecto);
+        if ($result['status']) {
+            return response()->json(['message' => $result['message']]);
+        } else {
+            return response()->json(['message' => $result['message']], 404);
+        }
+    }
     public function criteriosBancoGermoplasma(Request $request)
     {
         $bg = "";
@@ -150,147 +167,130 @@ class CrossingController extends Controller
 
         if (is_array($crossings)) {
             try {
-                $fechaFin = now()->format('Y-m-d');
-                $fechaInicio = now()->subDay()->format('Y-m-d');
-
-                // 1. Collect all unique variety names to load active flowers in bulk
-                $varNames = [];
-                foreach ($crossings as $cData) {
-                    $florMadre = explode("_", $cData['madre']);
-                    $varNames[] = $florMadre[0];
-                    if (!empty($cData['padres'])) {
-                        $padres = explode(",", $cData['padres']);
-                        foreach ($padres as $p) {
-                            if ($p !== "") {
-                                $florPadre = explode("_", $p);
-                                $varNames[] = $florPadre[0];
-                            }
-                        }
-                    }
-                }
-                $varNames = array_values(array_unique($varNames));
-
-                // 2. Load all matching active flowers in a single query
-                $activeFlowers = DB::connection('sivar')
-                    ->table('floracion')
-                    ->whereBetween('fcha', [$fechaInicio, $fechaFin])
-                    ->where('estado', 0)
-                    ->whereIn('vrdad', $varNames)
-                    ->get();
-
-                // 3. Map active flowers by variety, project, and character for O(1) lookup
-                $flowersMap = [];
-                foreach ($activeFlowers as $f) {
-                    $key = "{$f->vrdad}_{$f->id_pr}_{$f->id_crcter}";
-                    if (!isset($flowersMap[$key])) {
-                        $flowersMap[$key] = $f->id_flrcion;
-                    }
-                }
+                DB::connection('sivar')->beginTransaction();
 
                 $crossingsToInsert = [];
-                $flowerIdsToDeactivate = [];
+                $usedIdsInBatch = [];
 
-                // 4. Build records for bulk insert and deactivation list
                 foreach ($crossings as $cData) {
-                    $madreVal = $cData['madre'];
-                    $padresVal = $cData['padres'];
+                    $madreVal = $cData['madre'] ?? '';
+                    $padresVal = $cData['padres'] ?? '';
                     $obsVal = $cData['observaciones'] ?? 'Programacion de Cruzamientos';
                     $idPondVal = $cData['id_ponderados'] ?? $request->input('id_ponderados') ?? $request->input('id_ponderado');
                     $autoVal = $cData['autofecundado'] ?? 0;
+                    $cantMadre = isset($cData['flores_madre']) ? max(1, (int)$cData['flores_madre']) : 1;
+                    $cantPadre = isset($cData['flores_padre']) ? max(1, (int)$cData['flores_padre']) : 1;
 
                     $florMadre = explode("_", $madreVal);
-                    $proyectoMadre = str_replace("9999", "", $florMadre[1]);
-                    $caracterMadre = $florMadre[2];
+                    $varMadre = $florMadre[0] ?? '';
+                    $projMadreRaw = isset($florMadre[1]) ? str_replace("9999", "", $florMadre[1]) : null;
+                    $caracterMadre = isset($florMadre[2]) && $florMadre[2] !== '' ? $florMadre[2] : null;
+                    $idPrMadre = (isset($projMadreRaw) && is_numeric($projMadreRaw) && trim((string)$projMadreRaw) !== '') ? (int)$projMadreRaw : null;
 
-                    $mKey = "{$florMadre[0]}_{$proyectoMadre}_{$caracterMadre}";
-                    if (isset($flowersMap[$mKey])) {
-                        $flowerIdsToDeactivate[] = $flowersMap[$mKey];
-                    }
+                    $madreFlowerIds = $this->obtenerYDesactivarFlores($varMadre, $projMadreRaw, $caracterMadre, $cantMadre, $usedIdsInBatch);
+                    $idFlrMadre = !empty($madreFlowerIds) ? $madreFlowerIds[0] : null;
 
                     $crossingRecord = [
                         "pias de procedencia" => "Colombia",
                         "Sitio de cruzamiento" => "CNC",
                         "Estacion_Experimental" => "EESA",
-                        "vrdad_mdre" => $florMadre[0],
-                        "id_pr_mdre" => $proyectoMadre,
+                        "vrdad_mdre" => $varMadre,
+                        "id_pr_mdre" => $idPrMadre,
                         "usuario_creacion" => $usuario ? $usuario->id_usrio : null,
                         "obsrvcnes" => $obsVal,
                         "fcha_crzmnto" => now(),
-                        "proyecto" => $proyectoMadre,
+                        "proyecto" => $projMadreRaw,
                         "id_ponderados" => $idPondVal,
                         "grpo_crzmnto_mdre" => $caracterMadre,
+                        "id_flrcion_mdre" => $idFlrMadre,
                     ];
 
                     $padre = explode(",", $padresVal);
                     $caracter_padre = "";
-                    for ($i = 1; $i <= sizeof($padre); $i++) {
-                        if ($padre[$i - 1] != "") {
-                            $flor_padre = explode("_", $padre[$i - 1]);
-                            $proyecto_padre = str_replace("9999", "", $flor_padre[1]);
-                            $caracter_padre = $caracter_padre . "," . $flor_padre[2];
+                    for ($i = 1; $i <= count($padre); $i++) {
+                        $pItem = trim($padre[$i - 1]);
+                        if ($pItem !== "") {
+                            $flor_padre = explode("_", $pItem);
+                            $varPadre = $flor_padre[0] ?? '';
+                            $projPadreRaw = isset($flor_padre[1]) ? str_replace("9999", "", $flor_padre[1]) : null;
+                            $carPadre = isset($flor_padre[2]) && $flor_padre[2] !== '' ? $flor_padre[2] : null;
+                            if ($carPadre !== null) {
+                                $caracter_padre = $caracter_padre . "," . $carPadre;
+                            }
+
+                            $idPrPadre = (isset($projPadreRaw) && is_numeric($projPadreRaw) && trim((string)$projPadreRaw) !== '') ? (int)$projPadreRaw : null;
+
+                            $padreFlowerIds = $this->obtenerYDesactivarFlores($varPadre, $projPadreRaw, $carPadre, $cantPadre, $usedIdsInBatch);
+                            $idFlrPadre = !empty($padreFlowerIds) ? $padreFlowerIds[0] : null;
+
                             $caracteristica = "vrdad_pdre" . $i;
                             $origen = "id_pr_pdre" . $i;
-                            $crossingRecord[$caracteristica] = $flor_padre[0];
-                            $crossingRecord[$origen] = $proyecto_padre;
-                            $crossingRecord["grpo_crzmnto_pdre"] = $caracter_padre;
+                            $id_flrcion_col = "id_flrcion_pdre" . $i;
 
-                            $pKey = "{$flor_padre[0]}_{$proyecto_padre}_{$flor_padre[2]}";
-                            if (isset($flowersMap[$pKey])) {
-                                $flowerIdsToDeactivate[] = $flowersMap[$pKey];
-                            }
+                            $crossingRecord[$caracteristica] = $varPadre;
+                            $crossingRecord[$origen] = $idPrPadre;
+                            $crossingRecord["grpo_crzmnto_pdre"] = $caracter_padre;
+                            $crossingRecord[$id_flrcion_col] = $idFlrPadre;
                         }
                     }
                     $crossingsToInsert[] = $crossingRecord;
 
                     if ($autoVal == 1) {
                         $padre = explode(",", $padresVal);
-                        $flor_padre = explode("_", $padre[0]);
-                        $proyecto_padre = str_replace("9999", "", $flor_padre[1]);
+                        $pItemAuto = trim($padre[0] ?? '');
+                        $flor_padre = explode("_", $pItemAuto);
+                        $varPadreAuto = $flor_padre[0] ?? '';
+                        $projPadreAutoRaw = isset($flor_padre[1]) ? str_replace("9999", "", $flor_padre[1]) : null;
+                        $carPadreAuto = isset($flor_padre[2]) && $flor_padre[2] !== '' ? $flor_padre[2] : null;
+                        $idPrPadreAuto = (isset($projPadreAutoRaw) && is_numeric($projPadreAutoRaw) && trim((string)$projPadreAutoRaw) !== '') ? (int)$projPadreAutoRaw : null;
+
+                        $autoMadreIds = $this->obtenerYDesactivarFlores($varPadreAuto, $projPadreAutoRaw, $carPadreAuto, 1, $usedIdsInBatch);
+                        $autoPadreIds = $this->obtenerYDesactivarFlores($varPadreAuto, $projPadreAutoRaw, $carPadreAuto, 1, $usedIdsInBatch);
 
                         $crossingsToInsert[] = [
                             "pias de procedencia" => "Colombia",
                             "Sitio de cruzamiento" => "CNC",
                             "Estacion_Experimental" => "EESA",
-                            "vrdad_mdre" => $flor_padre[0],
-                            "id_pr_mdre" => $proyecto_padre,
-                            "vrdad_pdre1" => $flor_padre[0],
-                            "grpo_crzmnto_pdre" => $flor_padre[2],
-                            "grpo_crzmnto_mdre" => $flor_padre[2],
-                            "id_pr_pdre1" => $proyecto_padre,
+                            "vrdad_mdre" => $varPadreAuto,
+                            "id_pr_mdre" => $idPrPadreAuto,
+                            "vrdad_pdre1" => $varPadreAuto,
+                            "grpo_crzmnto_pdre" => $carPadreAuto,
+                            "grpo_crzmnto_mdre" => $carPadreAuto,
+                            "id_pr_pdre1" => $idPrPadreAuto,
                             "obsrvcnes" => $obsVal,
+                            "id_flrcion_mdre" => !empty($autoMadreIds) ? $autoMadreIds[0] : null,
+                            "id_flrcion_pdre1" => !empty($autoPadreIds) ? $autoPadreIds[0] : null,
                             "fcha_crzmnto" => now(),
                             "usuario_creacion" => $usuario ? $usuario->id_usrio : null,
-                            "proyecto" => $proyecto_padre,
+                            "proyecto" => $projPadreAutoRaw,
                             "id_ponderados" => $idPondVal,
                         ];
                     }
                 }
 
-                // 5. Save everything in a single transaction with bulk insert and update queries
-                DB::connection('sivar')->beginTransaction();
-                
                 if (count($crossingsToInsert) > 0) {
                     DB::connection('sivar')->table('cruzamientos')->insert($crossingsToInsert);
-                }
-
-                if (count($flowerIdsToDeactivate) > 0) {
-                    $flowerIdsToDeactivate = array_values(array_unique($flowerIdsToDeactivate));
-                    DB::connection('sivar')->table('floracion')
-                        ->whereIn('id_flrcion', $flowerIdsToDeactivate)
-                        ->update(['estado' => 1]);
                 }
 
                 DB::connection('sivar')->commit();
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Todos los cruzamientos se guardaron correctamente en lote.'
+                    'message' => 'Todos los cruzamientos se guardaron correctamente en lote y las flores fueron descontadas.'
                 ]);
             } catch (\Throwable $ex) {
                 if (DB::connection('sivar')->transactionLevel() > 0) {
                     DB::connection('sivar')->rollBack();
                 }
-                return response()->json(['error' => $ex->getMessage()], 500);
+                \Log::error("Error en guardarCruzamiento: " . $ex->getMessage(), [
+                    'exception' => $ex,
+                    'crossings' => $crossings
+                ]);
+                return response()->json([
+                    'error' => $ex->getMessage(),
+                    'file' => $ex->getFile(),
+                    'line' => $ex->getLine()
+                ], 500);
             }
         }
 
@@ -301,64 +301,84 @@ class CrossingController extends Controller
         $proyectos = $proyectos ?? $request->input('proyectos');
         $autofecundado = $autofecundado ?? $request->input('autofecundado');
 
-        $florMadre = explode("_", $madre);
-
-        $proyectoMadre = str_replace("9999", "", $florMadre[1]);
-        $caracterMadre = $florMadre[2];
-        $proyecto = explode(",", $proyectos);
-        $idPrPadreAuto = "";
+        $florMadre = explode("_", (string)$madre);
+        $varMadre = $florMadre[0] ?? '';
+        $projMadreRaw = isset($florMadre[1]) ? str_replace("9999", "", $florMadre[1]) : null;
+        $caracterMadre = isset($florMadre[2]) && $florMadre[2] !== '' ? $florMadre[2] : null;
+        $idPrMadre = (isset($projMadreRaw) && is_numeric($projMadreRaw) && trim((string)$projMadreRaw) !== '') ? (int)$projMadreRaw : null;
 
         // Crea un nuevo objeto Crossing
         $cruzamiento = new Crossing;
         $cruzamiento->{"pias de procedencia"} = "Colombia";
         $cruzamiento->{"Sitio de cruzamiento"} = "CNC";
         $cruzamiento->{"Estacion_Experimental"} = "EESA";
-        $cruzamiento->vrdad_mdre = $florMadre[0];
-        $cruzamiento->id_pr_mdre = $proyectoMadre;
+        $cruzamiento->vrdad_mdre = $varMadre;
+        $cruzamiento->id_pr_mdre = $idPrMadre;
         $cruzamiento->usuario_creacion = $usuario ? $usuario->id_usrio : null;
         $cruzamiento->obsrvcnes = $observaciones;
         $cruzamiento->fcha_crzmnto = now();
-        $cruzamiento->proyecto = $proyectoMadre;
+        $cruzamiento->proyecto = $projMadreRaw;
         $cruzamiento->id_ponderados = $idPonderado;
         $cruzamiento->grpo_crzmnto_mdre = $caracterMadre;
 
         // Realiza otras operaciones relacionadas con la obtención de ID
-        $this->obtenerIdFlorCruzamiento($proyectoMadre, $florMadre[0], $caracterMadre);
+        $id_flr_mdre = $this->obtenerIdFlorCruzamiento($projMadreRaw, $varMadre, $caracterMadre);
+        $cruzamiento->id_flrcion_mdre = $id_flr_mdre;
 
-        $padre = explode(",", $padres);
+        $padre = explode(",", (string)$padres);
         $caracter_padre = "";
-        for ($i = 1; $i <= sizeof($padre); $i++) {
-            if ($padre[$i - 1] != "") {
-                $flor_padre = explode("_", $padre[$i - 1]);
-                $proyecto_padre = str_replace("9999", "", $flor_padre[1]);
-                $caracter_padre = $caracter_padre . "," . $flor_padre[2];
+        for ($i = 1; $i <= count($padre); $i++) {
+            $pItem = trim($padre[$i - 1]);
+            if ($pItem !== "") {
+                $flor_padre = explode("_", $pItem);
+                $varPadre = $flor_padre[0] ?? '';
+                $projPadreRaw = isset($flor_padre[1]) ? str_replace("9999", "", $flor_padre[1]) : null;
+                $carPadre = isset($flor_padre[2]) && $flor_padre[2] !== '' ? $flor_padre[2] : null;
+                if ($carPadre !== null) {
+                    $caracter_padre = $caracter_padre . "," . $carPadre;
+                }
+
+                $idPrPadre = (isset($projPadreRaw) && is_numeric($projPadreRaw) && trim((string)$projPadreRaw) !== '') ? (int)$projPadreRaw : null;
+
                 $caracteristica = "vrdad_pdre" . $i;
                 $origen = "id_pr_pdre" . $i;
-                $cruzamiento->$caracteristica = $flor_padre[0]; //$padre[$i-1];
-                $id_pr_padre_auto = $proyecto_padre; //$this->obtener_id_flor_cruzamiento($proyecto_padre,$padre[$i-1],$flor_padre[2]);
-                $cruzamiento->$origen = $id_pr_padre_auto;
+                $col_id_flr = "id_flrcion_pdre" . $i;
+                $cruzamiento->$caracteristica = $varPadre;
+                $cruzamiento->$origen = $idPrPadre;
                 $cruzamiento->grpo_crzmnto_pdre = $caracter_padre;
-                $this->obtenerIdFlorCruzamiento($proyecto_padre, $flor_padre[0], $flor_padre[2]);
+                $id_flr_pdre = $this->obtenerIdFlorCruzamiento($projPadreRaw, $varPadre, $carPadre);
+                $cruzamiento->$col_id_flr = $id_flr_pdre;
             }
         }
         $cruzamiento->save();
 
         if ($autofecundado == 1) {
-            $padre = explode(",", $padres);
-            $flor_padre = explode("_", $padre[0]);
-            $proyecto_padre = str_replace("9999", "", $flor_padre[1]);
+            $padre = explode(",", (string)$padres);
+            $pItemAuto = trim($padre[0] ?? '');
+            $flor_padre = explode("_", $pItemAuto);
+            $varPadreAuto = $flor_padre[0] ?? '';
+            $projPadreAutoRaw = isset($flor_padre[1]) ? str_replace("9999", "", $flor_padre[1]) : null;
+            $carPadreAuto = isset($flor_padre[2]) && $flor_padre[2] !== '' ? $flor_padre[2] : null;
+            $idPrPadreAuto = (isset($projPadreAutoRaw) && is_numeric($projPadreAutoRaw) && trim((string)$projPadreAutoRaw) !== '') ? (int)$projPadreAutoRaw : null;
+
             $cruzamiento_auto = new Crossing;
-            $cruzamiento_auto->vrdad_mdre = $flor_padre[0];
-            $cruzamiento_auto->id_pr_mdre = $proyecto_padre;
-            $cruzamiento_auto->vrdad_pdre1 = $flor_padre[0];
-            $cruzamiento_auto->grpo_crzmnto_pdre = $flor_padre[2];
-            $cruzamiento_auto->grpo_crzmnto_mdre = $flor_padre[2];
-            $cruzamiento_auto->id_pr_pdre1 = $proyecto_padre;
+            $cruzamiento_auto->vrdad_mdre = $varPadreAuto;
+            $cruzamiento_auto->id_pr_mdre = $idPrPadreAuto;
+            $cruzamiento_auto->vrdad_pdre1 = $varPadreAuto;
+            $cruzamiento_auto->grpo_crzmnto_pdre = $carPadreAuto;
+            $cruzamiento_auto->grpo_crzmnto_mdre = $carPadreAuto;
+            $cruzamiento_auto->id_pr_pdre1 = $idPrPadreAuto;
             $cruzamiento_auto->obsrvcnes = $observaciones;
             $cruzamiento_auto->fcha_crzmnto = DB::raw('now()');
             $cruzamiento_auto->usuario_creacion = $usuario ? $usuario->id_usrio : null;
-            $cruzamiento_auto->proyecto = $proyecto_padre;
+            $cruzamiento_auto->proyecto = $projPadreAutoRaw;
             $cruzamiento_auto->id_ponderados = $idPonderado;
+            
+            $id_flr_auto_mdre = $this->obtenerIdFlorCruzamiento($projPadreAutoRaw, $varPadreAuto, $carPadreAuto);
+            $id_flr_auto_pdre = $this->obtenerIdFlorCruzamiento($projPadreAutoRaw, $varPadreAuto, $carPadreAuto);
+            $cruzamiento_auto->id_flrcion_mdre = $id_flr_auto_mdre;
+            $cruzamiento_auto->id_flrcion_pdre1 = $id_flr_auto_pdre;
+
             $cruzamiento_auto->save();
         }
 
@@ -367,32 +387,110 @@ class CrossingController extends Controller
             'message' => 'Cruzamiento guardado con éxito'
         ]);
     }
-    public function obtenerIdFlorCruzamiento($proyecto, $vrdad, $caracter)
-    {
-        $fechaFin = now()->format('Y-m-d');
-        $fechaInicio = now()->subDay()->format('Y-m-d');
 
-        $flores = DB::connection('sivar')
-            ->table('floracion')
-            ->whereBetween('floracion.fcha', [$fechaInicio, $fechaFin])
-            ->where('floracion.id_pr', $proyecto)
-            ->where('floracion.id_crcter', $caracter)
-            ->where('floracion.estado', 0)
-            ->where('floracion.vrdad', $vrdad)
-            ->first();
-        if ($flores) {
-            $idFlor = $flores->id_flrcion;
-            DB::connection('sivar')
-                ->table('floracion')
-                ->where('id_flrcion', $idFlor)
-                ->update(['estado' => 1]);
-            return $idFlor;
+    private function obtenerYDesactivarFlores($vrdad, $proyecto = null, $caracter = null, $cantidad = 1, &$usedIdsInBatch = [])
+    {
+        if ($cantidad <= 0) {
+            return [];
         }
 
-        return null;
+        if ($proyecto === 'null' || $proyecto === 'undefined' || trim((string)$proyecto) === '') {
+            $proyecto = null;
+        }
+        if ($caracter === 'null' || $caracter === 'undefined' || trim((string)$caracter) === '') {
+            $caracter = null;
+        }
+
+        $idPrycto = null;
+        if (!empty($proyecto)) {
+            if (is_numeric($proyecto) && (int)$proyecto < 100000) {
+                $idPrycto = (int)$proyecto;
+            } else {
+                $projDb = DB::connection('sivar')
+                    ->table('remote_pg_sipro')
+                    ->where('cd_cntble', (string)$proyecto)
+                    ->first();
+                if ($projDb) {
+                    $idPrycto = $projDb->id_prycto;
+                }
+            }
+        }
+
+        $query = DB::connection('sivar')
+            ->table('floracion')
+            ->where('vrdad', $vrdad)
+            ->where(function ($q) {
+                $q->where('estado', 0)->orWhere('estado', '0');
+            });
+
+        if (!empty($usedIdsInBatch)) {
+            $query->whereNotIn('id_flrcion', $usedIdsInBatch);
+        }
+
+        $candQuery = clone $query;
+        if ($idPrycto) {
+            $candQuery->where(function ($q) use ($idPrycto) {
+                $q->where('id_pr', $idPrycto)->orWhere('bolsa_comun', 1);
+            });
+        }
+        if ($caracter !== null && is_numeric($caracter)) {
+            $candQuery->where('id_crcter', (int)$caracter);
+        }
+
+        $floresEncontradas = $candQuery->limit($cantidad)->get();
+
+        if ($floresEncontradas->count() < $cantidad && $caracter !== null) {
+            $candQuery2 = clone $query;
+            if ($idPrycto) {
+                $candQuery2->where(function ($q) use ($idPrycto) {
+                    $q->where('id_pr', $idPrycto)->orWhere('bolsa_comun', 1);
+                });
+            }
+            $existingFound = $floresEncontradas->pluck('id_flrcion')->toArray();
+            if (!empty($existingFound)) {
+                $candQuery2->whereNotIn('id_flrcion', array_merge($usedIdsInBatch, $existingFound));
+            }
+            $faltantes = $cantidad - $floresEncontradas->count();
+            $moreFlores = $candQuery2->limit($faltantes)->get();
+            $floresEncontradas = $floresEncontradas->merge($moreFlores);
+        }
+
+        if ($floresEncontradas->count() < $cantidad) {
+            $existingFound = $floresEncontradas->pluck('id_flrcion')->toArray();
+            $candQuery3 = clone $query;
+            if (!empty($existingFound)) {
+                $candQuery3->whereNotIn('id_flrcion', array_merge($usedIdsInBatch, $existingFound));
+            }
+            $faltantes = $cantidad - $floresEncontradas->count();
+            $moreFlores = $candQuery3->limit($faltantes)->get();
+            $floresEncontradas = $floresEncontradas->merge($moreFlores);
+        }
+
+        $selectedIds = $floresEncontradas->pluck('id_flrcion')->toArray();
+
+        if (!empty($selectedIds)) {
+            DB::connection('sivar')
+                ->table('floracion')
+                ->whereIn('id_flrcion', $selectedIds)
+                ->update(['estado' => 1]);
+
+            foreach ($selectedIds as $id) {
+                $usedIdsInBatch[] = $id;
+            }
+        }
+
+        return $selectedIds;
     }
-    public function guardarPonderados(Request $request, $proyecto)
+
+    public function obtenerIdFlorCruzamiento($proyecto, $vrdad, $caracter)
     {
+        $usedIds = [];
+        $ids = $this->obtenerYDesactivarFlores($vrdad, $proyecto, $caracter, 1, $usedIds);
+        return !empty($ids) ? $ids[0] : null;
+    }
+    public function guardarPonderados(Request $request, $proyecto = null)
+    {
+        $proyecto = ($proyecto && trim($proyecto) !== '') ? trim($proyecto) : '010105';
         $idPonderado = Carbon::now()->toDateTimeString() . "++" . $proyecto;
 
         $ponderados = DB::connection('sivar')
@@ -404,7 +502,13 @@ class CrossingController extends Controller
             ->select('ponderados_valor_merito.*', 'caracteristicas_valor_merito.nombre', 'caracteristicas_valor_merito.id_caracteristica')
             ->get();
 
+        $procesados = [];
         foreach ($ponderados as $ponderado) {
+            if (in_array($ponderado->id_caracteristica, $procesados)) {
+                continue;
+            }
+            $procesados[] = $ponderado->id_caracteristica;
+
             $nuevoPonderado = new PonderadoCruzamiento();
             $nuevoPonderado->id_ponderado = $idPonderado;
             $nuevoPonderado->id_caracteristica = $ponderado->id_caracteristica;
@@ -415,6 +519,22 @@ class CrossingController extends Controller
 
         return $idPonderado;
     }
+    public function obtenerCruzamientosPorPonderado($idPonderado)
+    {
+        $cruzamientos = DB::connection('sivar')
+            ->table('cruzamientos')
+            ->leftJoin('floracion as f_mdre', 'cruzamientos.id_flrcion_mdre', '=', 'f_mdre.id_flrcion')
+            ->leftJoin('floracion as f_pdre', 'cruzamientos.id_flrcion_pdre1', '=', 'f_pdre.id_flrcion')
+            ->where('cruzamientos.id_ponderados', $idPonderado)
+            ->select(
+                'cruzamientos.*',
+                'f_mdre.vivero as mdre_vivero', 'f_mdre.lte as mdre_lte', 'f_mdre.prcla as mdre_prcla', 'f_mdre.polen as mdre_polen',
+                'f_pdre.vivero as pdre_vivero', 'f_pdre.lte as pdre_lte', 'f_pdre.prcla as pdre_prcla', 'f_pdre.polen as pdre_polen'
+            )
+            ->get();
+        return response()->json($cruzamientos);
+    }
+    
     public function consolidado(Request $request)
     {
         $primerDiaDelAno = Carbon::parse('first day of January');
@@ -792,5 +912,46 @@ class CrossingController extends Controller
         $cruzamiento->save();
 
         return response()->json(['message' => 'Cruzamiento cargado con éxito']);
+    }
+
+    public function enviarFloresLibresABolsaComun(Request $request)
+    {
+        $proyecto = $request->input('proyecto');
+
+        if (empty($proyecto)) {
+            return response()->json(['error' => 'Proyecto es requerido'], 400);
+        }
+
+        $idPrycto = null;
+        if (is_numeric($proyecto) && (int)$proyecto < 100000) {
+            $idPrycto = (int)$proyecto;
+        } else {
+            $projDb = DB::connection('sivar')
+                ->table('remote_pg_sipro')
+                ->where('cd_cntble', (string)$proyecto)
+                ->first();
+            if ($projDb) {
+                $idPrycto = $projDb->id_prycto;
+            }
+        }
+
+        $query = DB::connection('sivar')
+            ->table('floracion')
+            ->where(function ($q) {
+                $q->where('estado', 0)->orWhere('estado', '0');
+            })
+            ->where('bolsa_comun', 0);
+
+        if ($idPrycto) {
+            $query->where('id_pr', $idPrycto);
+        }
+
+        $updatedCount = $query->update(['bolsa_comun' => 1]);
+
+        return response()->json([
+            'success' => true,
+            'updated_count' => $updatedCount,
+            'message' => "Se enviaron {$updatedCount} flores libres a la Bolsa Común con éxito."
+        ]);
     }
 }

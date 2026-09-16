@@ -32,8 +32,10 @@ Route::group([
     Route::get('floweringList', [\App\Http\Controllers\FloweringController::class, 'floweringList']);
     Route::get('/variety/{var}', [\App\Http\Controllers\VarietyController::class, 'getVarietyById']);
     Route::get('/varietyProfile/{var}', [\App\Http\Controllers\VarietyController::class, 'getVarietyProfile'])->where('var', '.*');
+    Route::get('/varietyCrossingsHistory/{var}', [\App\Http\Controllers\VarietyController::class, 'getVarietyCrossingsHistory'])->where('var', '.*');
     Route::get('/variety', [\App\Http\Controllers\VarietyController::class, 'getVariety']);
     Route::get('/varietysList', [\App\Http\Controllers\VarietyController::class, 'varietysList']);
+    Route::post('/varietys', [\App\Http\Controllers\VarietyController::class, 'store']);
     Route::get('/germoplasmBankList', [\App\Http\Controllers\VarietyController::class, 'germoplasmBankList']);
     Route::get('/historyDatatable', [\App\Http\Controllers\VarietyController::class, 'historyDatatable']);
     Route::get('historyDatatable/{var}/{estado}/{tipo}', [\App\Http\Controllers\VarietyController::class, 'historyDatatable']);
@@ -55,15 +57,19 @@ Route::group([
     Route::get('suggestionCrossings/{proyectos}/{proyecto}/{testigo}/{ambiente}', [\App\Http\Controllers\CrossingController::class, 'suggestionCrossings']);
     Route::get('suggestionCrossingsPerProject/{proyectos}/{proyecto}/{testigo}/{ambiente}', [\App\Http\Controllers\CrossingController::class, 'suggestionCrossingsPerProject']);
     Route::get('/crossing/programming/change_proyect_flower/{variedad}/{proyecto}/{bolsa}', [\App\Http\Controllers\CrossingController::class, 'enviarFlorAProyecto']);
+    Route::get('/crossing/programming/flores_otros_proyectos', [\App\Http\Controllers\CrossingController::class, 'floresOtrosProyectos']);
+    Route::get('/crossing/programming/devolver_flor_bolsa_comun/{variedad}/{proyecto}', [\App\Http\Controllers\CrossingController::class, 'devolverFlorABolsaComun']);
     Route::get('sugerenciasCruzamientosBolsaComun/{proyectos}/{proyecto}/{testigo}/{ambiente}', [\App\Http\Controllers\CrossingController::class, 'sugerenciasCruzamientosBolsaComun']);
     Route::get('/crossing/programming/send_common_bag/{variedad}', [\App\Http\Controllers\CrossingController::class, 'enviarABolsaComun']);
     Route::get('/crossing/programming/criteria/', [\App\Http\Controllers\CrossingController::class, 'criteriosBancoGermoplasma']);
     Route::get('criteriosBancoGermoplasmaPorVariedad/{variedad}', [\App\Http\Controllers\CrossingController::class, 'criteriosBancoGermoplasmaPorVariedad']);
     Route::get('proyectosConFlores', [\App\Http\Controllers\CrossingController::class, 'proyectosConFlores']);
     Route::post('/crossing/programming/save_crossing', [\App\Http\Controllers\CrossingController::class, 'guardarCruzamiento']);
+    Route::post('/crossing/programming/send_free_to_common_bag', [\App\Http\Controllers\CrossingController::class, 'enviarFloresLibresABolsaComun']);
     Route::get('consultarHistoricoCruzamiento/{madre}/{padres}', [\App\Http\Controllers\CrossingController::class, 'consultarHistoricoCruzamiento']);
-    Route::get('/crossing/programming/save_weight/{proyecto}', [\App\Http\Controllers\CrossingController::class, 'guardarPonderados']);
+    Route::get('/crossing/programming/save_weight/{proyecto?}', [\App\Http\Controllers\CrossingController::class, 'guardarPonderados']);
     Route::get('/crossing/consolidated', [\App\Http\Controllers\CrossingController::class, 'consolidado']);
+    Route::get('/crossing/programming/get_by_ponderado/{idPonderado}', [\App\Http\Controllers\CrossingController::class, 'obtenerCruzamientosPorPonderado']);
     Route::get('/crossing/programming/send_mail/{string}', [\App\Http\Controllers\CrossingController::class, 'enviarCorreoPracticos']);
     Route::get('/consolidadoDatatable/{tipo}', [\App\Http\Controllers\CrossingController::class, 'consolidadoDatatable']);
     Route::get('/crossing/upload/', [\App\Http\Controllers\CrossingController::class, 'cargarCruzamientos']);
@@ -122,15 +128,22 @@ Route::group([
 
     // Módulo Laboratorio - Inventario    
     // Módulo Siembra-Campo: Viveros
+        Route::get('siembra-campo/viveros/search-import', [\App\Http\Controllers\ViveroController::class, 'searchForImport']);
+    Route::post('siembra-campo/floracion/validate-import', [\App\Http\Controllers\FloracionImportController::class, 'validateImport']);
+    Route::post('siembra-campo/floracion/execute-import', [\App\Http\Controllers\FloracionImportController::class, 'executeImport']);
+
     Route::get('siembra-campo/viveros', [\App\Http\Controllers\ViveroController::class, 'index']);
+
     Route::post('siembra-campo/viveros', [\App\Http\Controllers\ViveroController::class, 'store']);
     Route::get('siembra-campo/viveros/next-corte-consecutivo', [\App\Http\Controllers\ViveroController::class, 'getNextCorteConsecutivo']);
+    Route::get('siembra-campo/viveros/next-consecutivos', [\App\Http\Controllers\ViveroController::class, 'getNextConsecutivosGlobal']);
     Route::get('siembra-campo/viveros/{id}/estructura', [\App\Http\Controllers\ViveroController::class, 'getEstructura']);
     Route::get('siembra-campo/viveros/{id}', [\App\Http\Controllers\ViveroController::class, 'show']);
     Route::put('siembra-campo/viveros/{id}', [\App\Http\Controllers\ViveroController::class, 'update']);
     Route::delete('siembra-campo/viveros/{id}', [\App\Http\Controllers\ViveroController::class, 'destroy']);
 
     Route::post('siembra-campo/viveros/{id}/cosechar', [\App\Http\Controllers\ViveroController::class, 'registrarCosecha']);
+    Route::post('siembra-campo/viveros/{id}/marcar-cosechado', [\App\Http\Controllers\ViveroController::class, 'marcarComoCosechado']);
     Route::get('siembra-campo/viveros/{id}/cosechas', [\App\Http\Controllers\ViveroController::class, 'getHistorialCosechas']);
     Route::post('siembra-campo/viveros/{id}/trasladar-lote', [\App\Http\Controllers\ViveroController::class, 'trasladarLote']);
 
@@ -144,7 +157,7 @@ Route::group([
     Route::get('siembra-campo/viveros/{id}/parcelas', [\App\Http\Controllers\ViveroParcelaController::class, 'index']);
     Route::post('siembra-campo/viveros/{id}/parcelas', [\App\Http\Controllers\ViveroParcelaController::class, 'store']);
     Route::post('siembra-campo/viveros/{id}/parcelas/import-batch', [\App\Http\Controllers\ViveroParcelaController::class, 'importBatch']);
-    Route::delete('siembra-campo/viveros/{vivero_id}/parcelas', [\App\Http\Controllers\ViveroParcelaController::class, 'destroyAll']);
+    Route::delete('siembra-campo/viveros/{vivero_id}/parcelas', [\App\Http\Controllers\ViveroParcelaController::class, 'clearAll']);
     Route::delete('siembra-campo/viveros/{vivero_id}/parcelas/{parcela_id}', [\App\Http\Controllers\ViveroParcelaController::class, 'destroy']);
     Route::put('siembra-campo/viveros/{vivero_id}/parcelas/{parcela_id}', [\App\Http\Controllers\ViveroParcelaController::class, 'update']);
 
@@ -158,4 +171,13 @@ Route::group([
 
     Route::get('siembra-campo/responsables', [\App\Http\Controllers\ViveroController::class, 'getResponsables']);
     Route::get('siembra-campo/ambientes', [\App\Http\Controllers\ViveroController::class, 'getAmbientes']);
+
+    // Módulo de Administración de Proyectos y Permisos
+    Route::get('admin/proyectos', [\App\Http\Controllers\ProjectManagementController::class, 'index']);
+    Route::get('admin/proyectos/{id}/detalles', [\App\Http\Controllers\ProjectManagementController::class, 'getDetalleProyecto']);
+    Route::get('admin/proyectos/{id}/estabilidad-agronomica', [\App\Http\Controllers\ProjectManagementController::class, 'getEstabilidadAgronomica']);
+    Route::get('admin/proyectos/{id}/usuarios', [\App\Http\Controllers\ProjectManagementController::class, 'getUsuariosProyecto']);
+    Route::post('admin/proyectos/{id}/usuarios', [\App\Http\Controllers\ProjectManagementController::class, 'assignUsuarioProyecto']);
+    Route::delete('admin/proyectos/{id}/usuarios/{usuarioId}', [\App\Http\Controllers\ProjectManagementController::class, 'removeUsuarioProyecto']);
+    Route::get('admin/usuarios-disponibles', [\App\Http\Controllers\ProjectManagementController::class, 'getUsuariosDisponibles']);
 });

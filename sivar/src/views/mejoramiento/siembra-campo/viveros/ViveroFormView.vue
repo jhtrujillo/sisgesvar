@@ -273,6 +273,18 @@
               <!-- Carácter -->
               <div class="relative md:col-span-2">
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="caracter_id">Carácter (Opcional)</label>
+                
+                <div class="flex flex-wrap gap-2 mb-2" v-if="form.caracteres_ids && form.caracteres_ids.length > 0">
+                  <div v-for="c_id in form.caracteres_ids" :key="c_id" class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-emerald-200">
+                    {{ getCaracterName(c_id) }}
+                    <button type="button" @click="removeCaracter(c_id)" class="text-emerald-600 hover:text-emerald-900 focus:outline-none">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
                 <div class="relative">
                   <input
                     type="text"
@@ -285,7 +297,7 @@
                     :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.proyecto_id }"
                   />
                   <button
-                    v-if="form.caracter_id"
+                    v-if="form.caracteres_ids && form.caracteres_ids.length > 0"
                     @click="clearCaracter"
                     type="button"
                     class="absolute right-3.5 top-3 text-slate-400 hover:text-red-500 transition-colors"
@@ -315,9 +327,10 @@
                     <div
                       v-for="car in filteredCaracteres"
                       :key="car.id"
-                      @mousedown="selectCaracter(car)"
+                      v-show="!Array.isArray(form.caracteres_ids) || !form.caracteres_ids.includes(car.id)"
+                      @click="selectCaracter(car)"
                       class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
-                      :class="form.caracter_id === car.id ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
+                      :class="form.caracteres_ids && form.caracteres_ids.includes(car.id) ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
                     >
                       {{ car.nombre }}
                     </div>
@@ -358,7 +371,7 @@
                 >
                   <option value="">Seleccione un Ingenio</option>
                   <option v-for="ing in ingenios" :key="ing.cd_ingnio" :value="ing.cd_ingnio">
-                    {{ ing.nm_ingnio }}
+                    {{ decodeHTMLEntities(ing.nm_ingnio) }}
                   </option>
                 </select>
               </div>
@@ -375,7 +388,7 @@
                 >
                   <option value="">Seleccione una Hacienda</option>
                   <option v-for="hda in haciendas" :key="hda.cd_hcnda" :value="hda.cd_hcnda">
-                    {{ hda.nm_hcnda }}
+                    {{ decodeHTMLEntities(hda.nm_hcnda) }}
                   </option>
                 </select>
               </div>
@@ -395,7 +408,7 @@
                   >
                     <option value="">Seleccione un Lote</option>
                     <option v-for="lote in lotes" :key="lote.id" :value="lote.id">
-                      {{ lote.nombre_lote }} (Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
+                      {{ lote.nombre_lote }} (Año: {{ lote.viveros && lote.viveros.length ? lote.viveros[lote.viveros.length - 1].fecha_siembra.split('-')[0] : 'N/A' }} | Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
                     </option>
                   </select>
                   <button
@@ -519,7 +532,7 @@
                   class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 border-b border-slate-100 last:border-0 transition-colors"
                 >
                   <div class="font-bold font-mono text-xs text-slate-800">{{ v.identificador_unico }}</div>
-                  <div class="text-[10px] text-slate-400 mt-0.5">{{ getIngenioName(v.ingenio) }} - {{ v.hacienda || "N/A" }} - {{ v.suerte || "N/A" }}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">{{ getIngenioName(v.ingenio) }} - {{ decodeHTMLEntities(v.hacienda) || "N/A" }} - {{ decodeHTMLEntities(v.suerte) || "N/A" }}</div>
                 </div>
               </div>
             </div>
@@ -538,7 +551,7 @@
                 >
                   <option value="">Seleccione un Ingenio</option>
                   <option v-for="ing in ingenios" :key="'origen_ing_' + ing.cd_ingnio" :value="ing.cd_ingnio">
-                    {{ ing.nm_ingnio }}
+                    {{ decodeHTMLEntities(ing.nm_ingnio) }}
                   </option>
                 </select>
               </div>
@@ -573,7 +586,7 @@
                 >
                   <option value="">Seleccione una Hacienda</option>
                   <option v-for="hda in haciendasOrigen" :key="'origen_hda_' + hda.cd_hcnda" :value="hda.cd_hcnda">
-                    {{ hda.nm_hcnda }}
+                    {{ decodeHTMLEntities(hda.nm_hcnda) }}
                   </option>
                 </select>
               </div>
@@ -709,7 +722,7 @@
           <div class="flex items-center gap-2">
             <!-- Next / Save Buttons -->
             <button
-              v-show="activeTab === 'generales'"
+              v-show="activeTab === 'generales' && !isEditing"
               type="button"
               @click="activeTab = 'origen'"
               class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md transition-all duration-200 cursor-pointer"
@@ -733,7 +746,7 @@
             </button>
 
             <button
-              v-show="activeTab === 'origen'"
+              v-show="activeTab === 'origen' || isEditing"
               class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-md shadow-emerald-950/10 transition-all duration-200 cursor-pointer"
               type="submit"
               :disabled="isSubmitting"
@@ -773,6 +786,7 @@
                 <input
                   type="text"
                   v-model="searchVariedad"
+                  @input="parcelaForm.variedad_id = ''"
                   @focus="
                     showVariedades = true;
                     loadVariedadesIfNeeded();
@@ -820,7 +834,7 @@
               </select>
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Parcela</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Parcela Origen</label>
               <input
                 v-model="parcelaForm.numero_parcela_origen"
                 @input="updateIdPlotOrigen"
@@ -830,7 +844,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">ID Plot</label>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">ID Plot Origen</label>
               <input
                 v-model="parcelaForm.id_plot_origen"
                 type="text"
@@ -844,8 +858,8 @@
             <button
               v-if="parcelas.length > 0"
               type="button"
-              @click="deleteAllParcelas"
-              class="bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-bold py-2.5 px-6 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2 mr-auto"
+              @click="clearAllParcelas"
+              class="bg-white border border-amber-200 text-amber-600 hover:bg-amber-50 hover:border-amber-300 font-bold py-2.5 px-6 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2 mr-auto"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -860,12 +874,12 @@
                 <polyline points="3 6 5 6 21 6"></polyline>
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
               </svg>
-              Eliminar Todas
+              Limpiar Parcelas
             </button>
 
             <button
               type="button"
-              @click="showImportWizard = true"
+              @click="openImportWizard"
               class="bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold py-2.5 px-6 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
             >
               <svg
@@ -900,10 +914,16 @@
         </div>
 
         <!-- Tabla de parcelas -->
-        <div class="flex justify-between items-center mb-3 mt-4">
-          <h4 class="text-sm font-bold text-slate-700">
-            Parcelas Agregadas <span class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs ml-1">{{ parcelas.length }}</span>
-          </h4>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 mt-4 gap-3">
+          <div class="flex items-center gap-4">
+            <h4 class="text-sm font-bold text-slate-700">
+              Parcelas Agregadas <span class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs ml-1">{{ parcelas.length }}</span>
+            </h4>
+            <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors">
+              <input type="checkbox" v-model="showEmptyPlots" class="rounded text-cenicana focus:ring-cenicana w-3.5 h-3.5" />
+              <span class="font-semibold">Ver parcelas vacías</span>
+            </label>
+          </div>
           <div class="relative w-full max-w-xs">
             <input
               v-model="searchParcela"
@@ -927,12 +947,12 @@
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-slate-100 text-slate-600 uppercase text-xs">
-                <th class="px-4 py-3 border-b border-slate-200">Plot</th>
+                <th class="px-4 py-3 border-b border-slate-200">Parcela</th>
                 <th class="px-4 py-3 border-b border-slate-200">Variedad</th>
                 <th class="px-4 py-3 border-b border-slate-200">Pedigree</th>
                 <th class="px-4 py-3 border-b border-slate-200">Carácter</th>
-                <th class="px-4 py-3 border-b border-slate-200">Parcela</th>
                 <th class="px-4 py-3 border-b border-slate-200">ID Plot</th>
+                <th class="px-4 py-3 border-b border-slate-200">ID Plot Origen</th>
                 <th class="px-4 py-3 border-b border-slate-200 text-center">Acciones</th>
               </tr>
             </thead>
@@ -968,6 +988,7 @@
                         <input
                           type="text"
                           v-model="editingPlotForm.variedad_name"
+                          @input="editingPlotForm.variedad_id = ''"
                           @focus="
                             showEditingVariedades = true;
                             loadVariedadesIfNeeded();
@@ -1004,17 +1025,45 @@
                         <option v-for="c in caracteres" :key="'edit_c_' + c.id" :value="c.id">{{ c.nombre }}</option>
                       </select>
                     </td>
-                    <td class="px-4 py-3 min-w-[100px]">
-                      <input
-                        v-model="editingPlotForm.numero_parcela_origen"
-                        @input="updateEditingPlotIdOrigen"
-                        type="number"
-                        placeholder="No."
-                        class="w-full border border-slate-300 rounded px-2 py-1.5 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
-                      />
+                    <td class="px-4 py-3 text-slate-700 font-mono text-xs font-semibold">
+                      {{ (form.identificador_unico ? form.identificador_unico + '-' : '') + p.numero_parcela }}
                     </td>
-                    <td class="px-4 py-3 text-slate-600 font-mono text-xs">
-                      {{ editingPlotForm.id_plot_origen || "N/A" }}
+                    <td class="px-4 py-3 min-w-[220px] relative">
+                      <input
+                        v-model="editingPlotForm.id_plot_origen"
+                        @focus="showEditPlotOrigenDropdown = true"
+                        @blur="hideEditPlotOrigenDelay"
+                        @input="showEditPlotOrigenDropdown = true"
+                        type="text"
+                        placeholder="Buscar ID Plot Origen..."
+                        class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-cenicana bg-white shadow-sm"
+                        autocomplete="off"
+                      />
+                      <div
+                        v-if="showEditPlotOrigenDropdown"
+                        class="absolute z-50 left-0 right-0 top-full mt-1 bg-white shadow-2xl max-h-60 rounded-lg py-1 text-xs ring-1 ring-black/10 overflow-auto border border-slate-200"
+                      >
+                        <div v-if="filteredEditPlotOrigenOptions.length === 0" class="cursor-default select-none py-2 px-3 text-slate-400 italic">
+                          No se encontraron viveros ni parcelas coincidentes
+                        </div>
+                        <div
+                          v-for="opt in filteredEditPlotOrigenOptions"
+                          :key="opt.id"
+                          @mousedown="selectEditPlotOrigenOption(opt.id, opt.numParcela)"
+                          class="cursor-pointer select-none py-1.5 px-3 hover:bg-slate-100 border-b border-slate-50 last:border-0 transition-colors flex flex-col justify-center"
+                        >
+                          <div class="font-bold font-mono text-xs text-slate-800 flex items-center justify-between">
+                            <span>{{ opt.label }}</span>
+                            <span
+                              :class="opt.type === 'vivero' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200'"
+                              class="px-1.5 py-0.5 rounded text-[9px] font-sans font-medium border"
+                            >
+                              {{ opt.type === 'vivero' ? 'Vivero' : 'Parcela' }}
+                            </span>
+                          </div>
+                          <div class="text-[10px] text-slate-400 mt-0.5 truncate">{{ opt.sublabel }}</div>
+                        </div>
+                      </div>
                     </td>
                     <td class="px-4 py-3 text-center">
                       <div class="flex items-center justify-center gap-2">
@@ -1046,21 +1095,23 @@
                   <template v-else>
                     <td
                       class="px-4 py-3 font-bold text-cenicana hover:text-emerald-800 cursor-pointer hover:underline transition-colors"
-                      @click="openVarietyProfile(p.variedad?.nm_vrdad)"
+                      @click="openVarietyProfile(p.variedad?.nm_vrdad || p.variedad_id)"
                       title="Ver hoja de vida de la variedad"
                     >
-                      {{ p.variedad?.nm_vrdad }}
+                      {{ p.variedad?.nm_vrdad || p.variedad_id }}
                     </td>
                     <td class="px-4 py-3 text-slate-600 text-xs">{{ p.variedad?.pdgree || "N/A" }}</td>
                     <td class="px-4 py-3 text-slate-600 text-xs">
                       <span v-if="p.caracter?.nombre">{{ p.caracter.nombre }}</span>
-                      <span v-else-if="form.caracter_id && getCaracterGlobalNombre()" class="text-slate-400 italic" title="Heredado del Vivero">{{
+                      <span v-else-if="form.caracteres_ids && form.caracteres_ids.length > 0 && getCaracterGlobalNombre()" class="text-slate-400 italic" title="Heredado del Vivero">{{
                         getCaracterGlobalNombre()
                       }}</span>
                       <span v-else>N/A</span>
                     </td>
-                    <td class="px-4 py-3 text-slate-600 font-bold">{{ p.numero_parcela_origen || "N/A" }}</td>
-                    <td class="px-4 py-3 text-slate-600 font-mono text-xs">{{ p.id_plot_origen || "N/A" }}</td>
+                    <td class="px-4 py-3 text-slate-700 font-mono text-xs font-semibold">
+                      {{ (form.identificador_unico ? form.identificador_unico + '-' : '') + p.numero_parcela }}
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 font-mono text-xs">{{ getParcIdPlotOrigen(p) }}</td>
                     <td class="px-4 py-3 text-center">
                       <div class="flex items-center justify-center gap-2">
                         <button
@@ -1156,11 +1207,12 @@
         v-if="isEditing && route.params.id"
         :show="showImportWizard"
         :variedades="variedades"
+        :caracteres="caracteres"
         :viveroId="route.params.id"
         :viveroIdentificador="form.identificador_unico"
         :origenParcela="form.origen_parcela"
         :consecutivoCorte="form.consecutivo_corte"
-        :caracterId="form.caracter_id"
+        :caracterId="form.caracteres_ids && form.caracteres_ids.length > 0 ? form.caracteres_ids[0] : ''"
         @close="showImportWizard = false"
         @imported="loadParcelas"
       />
@@ -1192,7 +1244,7 @@
                 >
                   <option value="" disabled>Seleccione el ingenio...</option>
                   <option v-for="ing in ingenios" :key="'traslado_ing_' + ing.cd_ingnio" :value="ing.cd_ingnio">
-                    {{ ing.nm_ingnio }}
+                    {{ decodeHTMLEntities(ing.nm_ingnio) }}
                   </option>
                 </select>
               </div>
@@ -1208,7 +1260,7 @@
                 >
                   <option value="" disabled>Seleccione la hacienda...</option>
                   <option v-for="hac in trasladoHaciendas" :key="'traslado_hac_' + hac.cd_hcnda" :value="hac.cd_hcnda">
-                    {{ hac.nm_hcnda }}
+                    {{ decodeHTMLEntities(hac.nm_hcnda) }}
                   </option>
                 </select>
               </div>
@@ -1282,6 +1334,13 @@ const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 
+const decodeHTMLEntities = (text: string) => {
+  if (!text) return "";
+  const textArea = document.createElement("textarea");
+  textArea.innerHTML = text;
+  return textArea.value;
+};
+
 const isEditing = ref(false);
 const activeTab = ref("generales");
 const showImportWizard = ref(false);
@@ -1299,7 +1358,7 @@ const form = ref({
   ambiente: "",
   responsable_id: "",
   condicion: "",
-  caracter_id: "",
+  caracteres_ids: [] as number[],
   origen_ingenio: "",
   origen_hacienda: "",
   origen_suerte: "",
@@ -1398,20 +1457,18 @@ const parseViveroIdToFields = (viveroId: string) => {
 const availableViveroNumbers = computed(() => {
   if (!form.value.lote_id) return [];
   const selectedLote = lotes.value.find((l) => l.id === form.value.lote_id);
-  if (!selectedLote) return [];
-
-  const capacity = selectedLote.capacidad_maxima || 5;
-  const activeNumbers = allViverosList.value
-    .filter((v) => v.lote_id === form.value.lote_id && v.proyecto_id && (!isEditing.value || v.id !== form.value.id))
-    .map((v) => v.consecutivo_vivero_ingenio);
+  if (!selectedLote || !selectedLote.viveros) return [];
 
   const options = [];
   if (isEditing.value && form.value.consecutivo_vivero_ingenio) {
     options.push(form.value.consecutivo_vivero_ingenio);
   }
-  for (let i = 1; i <= capacity; i++) {
-    if (!activeNumbers.includes(i) && !options.includes(i)) {
-      options.push(i);
+  
+  for (const v of selectedLote.viveros) {
+    if (!v.proyecto_id && v.estado !== 'Cosechado') {
+      if (!options.includes(v.consecutivo_vivero_ingenio)) {
+        options.push(v.consecutivo_vivero_ingenio);
+      }
     }
   }
   return options.sort((a, b) => a - b);
@@ -1543,7 +1600,7 @@ const filteredOrigenViveros = computed(() => {
 const selectOrigenVivero = async (v: any) => {
   viveroSeleccionadoOrigen.value = v;
   form.value.origen_ingenio = v.ingenio || "";
-  form.value.origen_anio = v.fecha_siembra ? new Date(v.fecha_siembra).getFullYear() : null;
+  form.value.origen_anio = v.fecha_siembra ? Number(v.fecha_siembra.split('-')[0]) : null;
 
   await loadHaciendasOrigen(false);
   form.value.origen_hacienda = v.hacienda || "";
@@ -1603,7 +1660,7 @@ const loadAllViveros = async () => {
 
 const getIngenioName = (cd: string) => {
   const ing = ingenios.value.find((i) => i.cd_ingnio === cd);
-  return ing ? ing.nm_ingnio : cd;
+  return ing ? decodeHTMLEntities(ing.nm_ingnio) : cd;
 };
 
 // Drawer de variedades
@@ -1637,6 +1694,7 @@ const editingPlotForm = ref({
 });
 const showEditingVariedades = ref(false);
 const searchParcela = ref("");
+const showEmptyPlots = ref(false);
 const parcelaForm = ref({
   numero_parcela: 1,
   variedad_id: "",
@@ -1646,21 +1704,32 @@ const parcelaForm = ref({
 });
 
 const filteredParcelas = computed(() => {
-  if (!searchParcela.value) return parcelas.value;
-  const q = searchParcela.value.toLowerCase();
-  return parcelas.value.filter((p) => {
-    const inheritedCaracter = form.value.caracter_id ? getCaracterGlobalNombre() : "";
-    const activeCaracter = p.caracter?.nombre || inheritedCaracter || "N/A";
+  let filtered = parcelas.value;
+  
+  if (!showEmptyPlots.value) {
+    filtered = filtered.filter((p) => p.variedad_id || p.variedad);
+  }
 
-    return (
-      p.numero_parcela?.toString().includes(q) ||
-      p.variedad?.nm_vrdad?.toLowerCase().includes(q) ||
-      p.variedad?.pdgree?.toLowerCase().includes(q) ||
-      p.numero_parcela_origen?.toString().includes(q) ||
-      p.id_plot_origen?.toLowerCase().includes(q) ||
-      activeCaracter.toLowerCase().includes(q)
-    );
-  });
+  if (searchParcela.value) {
+    const q = searchParcela.value.toLowerCase();
+    filtered = filtered.filter((p) => {
+      const inheritedCaracter = getCaracterGlobalNombre();
+      const activeCaracter = p.caracter?.nombre || inheritedCaracter || "N/A";
+      const currentPlotId = form.value.identificador_unico ? `${form.value.identificador_unico}-${p.numero_parcela}` : "";
+
+      return (
+        p.numero_parcela?.toString().includes(q) ||
+        currentPlotId.toLowerCase().includes(q) ||
+        p.variedad?.nm_vrdad?.toLowerCase().includes(q) ||
+        p.variedad?.pdgree?.toLowerCase().includes(q) ||
+        p.numero_parcela_origen?.toString().includes(q) ||
+        p.id_plot_origen?.toLowerCase().includes(q) ||
+        activeCaracter.toLowerCase().includes(q)
+      );
+    });
+  }
+  
+  return filtered;
 });
 
 const currentPage = ref(1);
@@ -1691,8 +1760,13 @@ const filteredVariedades = computed(() => {
 });
 
 const getCaracterGlobalNombre = () => {
-  if (!form.value.caracter_id) return "";
-  const c = caracteres.value.find((car) => car.id == form.value.caracter_id);
+  if (!form.value.caracteres_ids || form.value.caracteres_ids.length === 0) return "";
+  const nombres = form.value.caracteres_ids.map((id) => getCaracterName(id)).filter(n => n !== "");
+  return nombres.join(", ");
+};
+
+const getCaracterName = (id: number | string) => {
+  const c = caracteres.value.find((car) => car.id == id);
   return c ? c.nombre : "";
 };
 
@@ -1708,19 +1782,77 @@ const clearVariedad = () => {
   showVariedades.value = true;
 };
 
+const openImportWizard = async () => {
+  await loadVariedadesIfNeeded();
+  showImportWizard.value = true;
+};
+
 const hideVariedadesDelay = () => {
   setTimeout(() => {
     showVariedades.value = false;
   }, 200);
 };
 
+const getBaseOrigen = () => {
+  if (form.value.origen_vivero_id && allViverosList.value && allViverosList.value.length > 0) {
+    const parent = allViverosList.value.find((v: any) => v.id == form.value.origen_vivero_id);
+    if (parent && parent.identificador_unico) {
+      return parent.identificador_unico;
+    }
+  }
+
+  if (form.value.origen_parcela && form.value.origen_parcela.trim() !== '') {
+    const orig = form.value.origen_parcela.trim();
+    const parts = orig.split('-');
+    if (parts.length >= 4) {
+      return parts.slice(0, 4).join('-');
+    }
+    return orig;
+  }
+
+  return form.value.identificador_unico || "";
+};
+
+const getParcIdPlotOrigen = (p: any) => {
+  const baseOrigen = getBaseOrigen();
+
+  if (p.id_plot_origen && p.id_plot_origen.trim() !== '') {
+    let raw = p.id_plot_origen.trim();
+
+    if (form.value.identificador_unico && raw.startsWith(form.value.identificador_unico) && baseOrigen && baseOrigen !== form.value.identificador_unico) {
+      raw = baseOrigen + raw.substring(form.value.identificador_unico.length);
+    }
+
+    if (!p.numero_parcela_origen) {
+      const parts = raw.split('-');
+      if (parts.length === 5 && parts[4] === String(p.numero_parcela)) {
+        return parts.slice(0, 4).join('-');
+      }
+    }
+    return raw;
+  }
+
+  if (baseOrigen) {
+    if (p.numero_parcela_origen) {
+      return `${baseOrigen}-${p.numero_parcela_origen}`;
+    }
+    return baseOrigen;
+  }
+
+  return "N/A";
+};
+
 const updateIdPlotOrigen = () => {
-  if (parcelaForm.value.numero_parcela_origen) {
-    const parts = (form.value.identificador_unico || "").split("-");
-    const baseId = parts.slice(0, 4).join("-");
-    parcelaForm.value.id_plot_origen = `${baseId}-${parcelaForm.value.numero_parcela_origen}`;
-  } else {
+  const baseOrigen = getBaseOrigen();
+  if (!baseOrigen) {
     parcelaForm.value.id_plot_origen = "";
+    return;
+  }
+
+  if (parcelaForm.value.numero_parcela_origen) {
+    parcelaForm.value.id_plot_origen = `${baseOrigen}-${parcelaForm.value.numero_parcela_origen}`;
+  } else {
+    parcelaForm.value.id_plot_origen = baseOrigen;
   }
 };
 const ingenios = ref<any[]>([]);
@@ -1757,7 +1889,7 @@ const selectProyecto = (pry: any) => {
   searchProyecto.value = formatProjectName(pry);
   showProyectos.value = false;
   // Reset caracter and load new ones
-  form.value.caracter_id = "";
+  form.value.caracteres_ids = [];
   searchCaracter.value = "";
   loadCaracteres(pry.id_prycto);
 };
@@ -1766,7 +1898,7 @@ const clearProyecto = () => {
   form.value.proyecto_id = "";
   searchProyecto.value = "";
   showProyectos.value = true;
-  form.value.caracter_id = "";
+  form.value.caracteres_ids = [];
   searchCaracter.value = "";
   caracteres.value = [];
 };
@@ -1805,9 +1937,20 @@ const loadCaracteres = async (proyecto_id: string | number) => {
 };
 
 const selectCaracter = (car: any) => {
-  form.value.caracter_id = car.id;
-  searchCaracter.value = car.nombre;
-  showCaracteres.value = false;
+  if (!Array.isArray(form.value.caracteres_ids)) {
+    form.value.caracteres_ids = [];
+  }
+  if (!form.value.caracteres_ids.includes(car.id)) {
+    form.value.caracteres_ids = [...form.value.caracteres_ids, car.id];
+  }
+  searchCaracter.value = "";
+};
+
+const removeCaracter = (id: number) => {
+  if (!Array.isArray(form.value.caracteres_ids)) {
+    return;
+  }
+  form.value.caracteres_ids = form.value.caracteres_ids.filter((c) => c !== id);
 };
 
 const selectNewCaracter = async () => {
@@ -1826,7 +1969,7 @@ const selectNewCaracter = async () => {
 };
 
 const clearCaracter = () => {
-  form.value.caracter_id = "";
+  form.value.caracteres_ids = [];
   searchCaracter.value = "";
   showCaracteres.value = true;
 };
@@ -2027,10 +2170,6 @@ const submitForm = async () => {
 
   isSubmitting.value = true;
   try {
-    // Sincronizar el input manual si está activo
-    if (origenViveroManual.value) {
-      form.value.origen_parcela = origenViveroInput.value;
-    }
 
     if (isEditing.value) {
       await viverosServices.updateVivero(route.params.id as string, form.value);
@@ -2088,12 +2227,12 @@ const startEditingPlot = (p: any) => {
     id: p.id,
     numero_parcela: p.numero_parcela,
     variedad_id: p.variedad_id || "",
-    variedad_name: p.variedad?.nm_vrdad || "",
+    variedad_name: p.variedad?.nm_vrdad || p.variedad_id || "",
     numero_parcela_origen: p.numero_parcela_origen || "",
-    id_plot_origen: p.id_plot_origen || "",
+    id_plot_origen: getParcIdPlotOrigen(p),
     caracter_id: p.caracter_id || ""
   };
-  updateEditingPlotIdOrigen();
+  showEditPlotOrigenDropdown.value = false;
 };
 
 const cancelEditingPlot = () => {
@@ -2101,20 +2240,108 @@ const cancelEditingPlot = () => {
 };
 
 const updateEditingPlotIdOrigen = () => {
-  if (editingPlotForm.value.numero_parcela_origen) {
-    const parts = (form.value.identificador_unico || "").split("-");
-    const baseId = parts.slice(0, 4).join("-");
-    editingPlotForm.value.id_plot_origen = `${baseId}-${editingPlotForm.value.numero_parcela_origen}`;
-  } else {
+  const baseOrigen = getBaseOrigen();
+  if (!baseOrigen) {
     editingPlotForm.value.id_plot_origen = "";
+    return;
+  }
+
+  if (editingPlotForm.value.numero_parcela_origen) {
+    editingPlotForm.value.id_plot_origen = `${baseOrigen}-${editingPlotForm.value.numero_parcela_origen}`;
+  } else {
+    editingPlotForm.value.id_plot_origen = baseOrigen;
   }
 };
+
+const showEditPlotOrigenDropdown = ref(false);
+
+const hideEditPlotOrigenDelay = () => {
+  setTimeout(() => {
+    showEditPlotOrigenDropdown.value = false;
+  }, 200);
+};
+
+const selectEditPlotOrigenOption = (optionValue: string, numParcelaOrigen?: number) => {
+  editingPlotForm.value.id_plot_origen = optionValue;
+  if (numParcelaOrigen !== undefined && numParcelaOrigen !== null) {
+    editingPlotForm.value.numero_parcela_origen = numParcelaOrigen;
+  } else {
+    const parts = optionValue.split('-');
+    if (parts.length === 5 && !isNaN(Number(parts[4]))) {
+      editingPlotForm.value.numero_parcela_origen = Number(parts[4]);
+    } else {
+      editingPlotForm.value.numero_parcela_origen = "";
+    }
+  }
+  showEditPlotOrigenDropdown.value = false;
+};
+
+const allPlotOrigenOptions = computed(() => {
+  const options: Array<{ id: string; label: string; sublabel: string; type: string; numParcela?: number }> = [];
+  if (!allViverosList.value || allViverosList.value.length === 0) return options;
+
+  for (const v of allViverosList.value) {
+    if (!v.identificador_unico) continue;
+
+    const statusText = v.estado ? `(${v.estado})` : '';
+    const locText = [getIngenioName(v.ingenio), v.hacienda, v.suerte].filter(Boolean).join(' - ');
+    options.push({
+      id: v.identificador_unico,
+      label: v.identificador_unico,
+      sublabel: `Vivero ${statusText} ${locText ? '• ' + locText : ''}`,
+      type: 'vivero'
+    });
+
+    if (v.parcelas && Array.isArray(v.parcelas)) {
+      for (const p of v.parcelas) {
+        if (p.numero_parcela !== undefined && p.numero_parcela !== null) {
+          const parcPlotId = `${v.identificador_unico}-${p.numero_parcela}`;
+          options.push({
+            id: parcPlotId,
+            label: parcPlotId,
+            sublabel: `Parcela ${p.numero_parcela} del vivero ${v.identificador_unico}`,
+            type: 'parcela',
+            numParcela: p.numero_parcela
+          });
+        }
+      }
+    }
+  }
+
+  return options;
+});
+
+const filteredEditPlotOrigenOptions = computed(() => {
+  const query = (editingPlotForm.value.id_plot_origen || '').trim().toLowerCase();
+  if (!query) {
+    return allPlotOrigenOptions.value.slice(0, 50);
+  }
+  return allPlotOrigenOptions.value
+    .filter((opt) => opt.label.toLowerCase().includes(query) || opt.sublabel.toLowerCase().includes(query))
+    .slice(0, 100);
+});
 
 const isSubmittingEditingPlot = ref(false);
 const saveEditingPlot = async () => {
   if (!editingPlotForm.value.variedad_id) {
-    toast.error("Debe seleccionar una variedad");
-    return;
+    if (editingPlotForm.value.variedad_name && editingPlotForm.value.variedad_name.trim() !== "") {
+      const varietyName = editingPlotForm.value.variedad_name.trim().toUpperCase();
+      if (confirm(`La variedad "${varietyName}" no está registrada en la base de datos maestra. ¿Deseas registrarla ahora mismo para que quede disponible en el sistema?`)) {
+        try {
+          const res = await varietysServices.createVariety(varietyName);
+          editingPlotForm.value.variedad_id = res.data.id_nm_vrdad;
+          toast.success(`Variedad "${varietyName}" registrada exitosamente en la BD.`);
+          await loadVariedades();
+        } catch (error: any) {
+          toast.error("Error al registrar la variedad maestra: " + (error.response?.data?.error || error.message));
+          return;
+        }
+      } else {
+        editingPlotForm.value.variedad_id = varietyName;
+      }
+    } else {
+      editingPlotForm.value.variedad_id = "";
+    }
   }
   isSubmittingEditingPlot.value = true;
   try {
@@ -2171,8 +2398,25 @@ const loadParcelas = async () => {
 
 const submitParcela = async () => {
   if (!parcelaForm.value.variedad_id) {
-    toast.warning("Debe seleccionar una variedad");
-    return;
+    if (searchVariedad.value.trim() !== "") {
+      const varietyName = searchVariedad.value.trim().toUpperCase();
+      if (confirm(`La variedad "${varietyName}" no está registrada en la base de datos maestra. ¿Deseas registrarla ahora mismo para que quede disponible en el sistema?`)) {
+        try {
+          const res = await varietysServices.createVariety(varietyName);
+          parcelaForm.value.variedad_id = res.data.id_nm_vrdad;
+          toast.success(`Variedad "${varietyName}" registrada exitosamente en la BD.`);
+          await loadVariedades(); // Recargar el listado
+        } catch (error: any) {
+          toast.error("Error al registrar la variedad maestra: " + (error.response?.data?.error || error.message));
+          return;
+        }
+      } else {
+        // Fallback: usar el texto libre sin registrar
+        parcelaForm.value.variedad_id = varietyName;
+      }
+    } else {
+      parcelaForm.value.variedad_id = "";
+    }
   }
   isSubmittingParcela.value = true;
   try {
@@ -2353,12 +2597,12 @@ const deleteParcela = async (parcelaId: string | number) => {
   }
 };
 
-const deleteAllParcelas = async () => {
-  if (!confirm("¿Está seguro de que desea eliminar TODAS las parcelas de este vivero? Esta acción no se puede deshacer.")) return;
+const clearAllParcelas = async () => {
+  if (!confirm("¿Está seguro de que desea limpiar las variedades de TODAS las parcelas? Esto dejará las parcelas en blanco pero no eliminará su número.? Esta acción no se puede deshacer.")) return;
 
   try {
     await viverosServices.deleteAllParcelas(route.params.id as string);
-    toast.success("Todas las parcelas fueron eliminadas");
+    toast.success("Todas las parcelas fueron limpiadas");
     await loadParcelas();
   } catch (error: any) {
     console.error("Error al eliminar parcelas:", error);
@@ -2382,7 +2626,7 @@ const resetAndLoad = async () => {
     numero_corte: 1,
     temporada_floracion: "",
     condicion: "",
-    caracter_id: "",
+    caracteres_ids: [],
     origen_ingenio: "",
     origen_hacienda: "",
     origen_suerte: "",
@@ -2418,7 +2662,7 @@ const resetAndLoad = async () => {
       if (vivero.fecha_siembra) {
         vivero.fecha_siembra = vivero.fecha_siembra.substring(0, 10);
       }
-      form.value = { ...vivero };
+      form.value = { ...vivero, caracteres_ids: [] };
 
       if (form.value.ingenio && form.value.hacienda) {
         await loadLotesForLocation();
@@ -2459,9 +2703,10 @@ const resetAndLoad = async () => {
         if (pry) searchProyecto.value = formatProjectName(pry);
 
         await loadCaracteres(form.value.proyecto_id);
-        if (form.value.caracter_id) {
-          const car = caracteres.value.find((c) => c.id == form.value.caracter_id);
-          if (car) searchCaracter.value = car.nombre;
+        if (form.value.caracteres && form.value.caracteres.length > 0) {
+          form.value.caracteres_ids = form.value.caracteres.map((c: any) => c.id);
+        } else if (form.value.caracter_id) {
+          form.value.caracteres_ids = [form.value.caracter_id];
         }
       }
       if (form.value.responsable_id) {
@@ -2572,9 +2817,7 @@ const resetAndLoad = async () => {
         await loadCaracteres(form.value.proyecto_id);
       }
       if (route.query.caracter_id) {
-        form.value.caracter_id = Number(route.query.caracter_id);
-        const car = caracteres.value.find((c) => c.id == form.value.caracter_id);
-        if (car) searchCaracter.value = car.nombre;
+        form.value.caracteres_ids = [Number(route.query.caracter_id)];
       }
     }
   } catch (error) {

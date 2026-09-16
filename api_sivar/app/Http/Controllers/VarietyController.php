@@ -351,7 +351,15 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
     {
         try {
             // Retrieve all records from the 'caracterizacion_banco_germoplasma' table
-            $model = DB::connection('sivar')->table('caracterizacion_banco_germoplasma')->paginate(10);
+            $query = DB::connection('sivar')->table('caracterizacion_banco_germoplasma');
+            $search = $request->query('search');
+            if (!empty($search)) {
+                $query->where('variedad', 'ilike', '%' . $search . '%')
+                      ->orWhere('ensayo', 'ilike', '%' . $search . '%')
+                      ->orWhere('madre', 'ilike', '%' . $search . '%')
+                      ->orWhere('padre', 'ilike', '%' . $search . '%');
+            }
+            $model = $query->paginate($request->query('perPage', 50));
     
             // Check if records are found
             if ($model->isNotEmpty()) {
@@ -453,6 +461,35 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
             return response()->json(['error' => $ex->getMessage()], 500);
         }
     }    
+
+    public function store(Request $request)
+    {
+        try {
+            $request->validate([
+                'nm_vrdad' => 'required|string'
+            ]);
+
+            $name = strtoupper(trim($request->nm_vrdad));
+            
+            $existing = Variety::where('nm_vrdad', $name)->first();
+            if ($existing) {
+                return response()->json($existing, 200);
+            }
+
+            $maxId = Variety::max('id_nm_vrdad') ?? 0;
+            // Since id_nm_vrdad is not in $fillable, we insert directly using query builder or insert()
+            DB::connection('sivar')->table('maestro_V_VIC_BG')->insert([
+                'id_nm_vrdad' => $maxId + 1,
+                'nm_vrdad' => $name
+            ]);
+
+            $variety = Variety::where('id_nm_vrdad', $maxId + 1)->first();
+
+            return response()->json($variety, 201);
+        } catch (Exception $ex) {
+            return response()->json(['error' => $ex->getMessage()], 500);
+        }
+    }
 
     public function getVarietyProfile(Request $request, $var)
     {
@@ -631,6 +668,55 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
                 'traits' => $traits,
                 'globalAverages' => $globalAverages
             ]);
+        } catch (\Exception $ex) {
+            return response()->json(['success' => false, 'error' => $ex->getMessage()], 500);
+        }
+    }
+
+    public function getVarietyCrossingsHistory(Request $request, $var)
+    {
+        try {
+            $crossings = \DB::connection('sivar')->table('cruzamientos')
+                ->where(function($query) use ($var) {
+                    $query->where('vrdad_mdre', $var)
+                          ->orWhere('vrdad_pdre1', $var)
+                          ->orWhere('vrdad_pdre2', $var)
+                          ->orWhere('vrdad_pdre3', $var)
+                          ->orWhere('vrdad_pdre4', $var)
+                          ->orWhere('vrdad_pdre5', $var)
+                          ->orWhere('vrdad_pdre6', $var);
+                })
+                ->select('id_crzmnto', 'fcha_crzmnto', 'vrdad_mdre', 'vrdad_pdre1', 'vrdad_pdre2', 'vrdad_pdre3', 'vrdad_pdre4', 'vrdad_pdre5', 'vrdad_pdre6', 'proyecto')
+                ->orderBy('fcha_crzmnto', 'desc')
+                ->get();
+
+            // Formatear los datos para indicar el rol
+            $history = $crossings->map(function($c) use ($var) {
+                // Verificar si fue autofecundación
+                $isAuto = ($c->vrdad_mdre === $var && $c->vrdad_pdre1 === $var);
+                
+                if ($isAuto) {
+                    $role = 'Autofecundación';
+                    $other = '-';
+                } else if ($c->vrdad_mdre === $var) {
+                    $role = 'Madre';
+                    $padres = array_filter([$c->vrdad_pdre1, $c->vrdad_pdre2, $c->vrdad_pdre3, $c->vrdad_pdre4, $c->vrdad_pdre5, $c->vrdad_pdre6]);
+                    $other = implode(', ', $padres);
+                } else {
+                    $role = 'Padre';
+                    $other = $c->vrdad_mdre;
+                }
+
+                return [
+                    'id' => $c->id_crzmnto,
+                    'fecha' => $c->fcha_crzmnto ? date('Y-m-d', strtotime($c->fcha_crzmnto)) : 'N/A',
+                    'rol' => $role,
+                    'otro_parental' => $other,
+                    'proyecto' => $c->proyecto
+                ];
+            });
+
+            return response()->json(['success' => true, 'history' => $history]);
         } catch (\Exception $ex) {
             return response()->json(['success' => false, 'error' => $ex->getMessage()], 500);
         }

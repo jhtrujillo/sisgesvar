@@ -5,7 +5,7 @@
       <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
       <div
-        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl w-full"
+        class="inline-block align-bottom bg-white rounded-lg text-left overflow-visible shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl w-full"
       >
         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
           <div class="sm:flex sm:items-start">
@@ -64,9 +64,9 @@
                 <p class="text-sm text-slate-600 mb-6 bg-slate-50 p-3 rounded-lg border border-slate-200">
                   Por favor, relaciona las columnas requeridas por el sistema con los encabezados que hemos detectado en tu archivo Excel.
                 </p>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
                   <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Columna Plot (Número)</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Columna Parcela</label>
                     <select
                       v-model="mapping.plot"
                       class="w-full pl-3 pr-10 py-2 border-slate-300 rounded-md border text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-slate-50"
@@ -75,19 +75,6 @@
                       <option v-for="col in headers" :key="col" :value="col">{{ col }}</option>
                     </select>
                   </div>
-                  <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Columna Plot Origen</label>
-                    <select
-                      v-model="mapping.plot_origen"
-                      class="w-full pl-3 pr-10 py-2 border-slate-300 rounded-md border text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-slate-50"
-                    >
-                      <option value="">-- Opcional --</option>
-                      <option v-for="col in headers" :key="col" :value="col">{{ col }}</option>
-                    </select>
-                    <p class="text-[10px] text-slate-500 mt-2 font-mono bg-slate-100 p-1 rounded">
-                      El ID Plot se autocalculará como: {{ viveroIdentificador }}-XX
-                    </p>
-                  </div>
                   <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm border-l-4 border-l-cenicana">
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Columna Variedad</label>
                     <select
@@ -95,6 +82,16 @@
                       class="w-full pl-3 pr-10 py-2 border-slate-300 rounded-md border text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-slate-50"
                     >
                       <option value="">-- Seleccionar --</option>
+                      <option v-for="col in headers" :key="col" :value="col">{{ col }}</option>
+                    </select>
+                  </div>
+                  <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm border-l-4 border-l-blue-400">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Columna Carácter (Opcional)</label>
+                    <select
+                      v-model="mapping.caracter"
+                      class="w-full pl-3 pr-10 py-2 border-slate-300 rounded-md border text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-slate-50"
+                    >
+                      <option value="">-- No incluir --</option>
                       <option v-for="col in headers" :key="col" :value="col">{{ col }}</option>
                     </select>
                   </div>
@@ -152,12 +149,17 @@
                       <input type="checkbox" v-model="showOnlyUnresolved" class="rounded border-slate-300 text-cenicana focus:ring-cenicana w-4 h-4" />
                       <span class="text-sm font-medium text-slate-700">Mostrar solo filas sin resolver ({{ unresolvedCount }})</span>
                     </label>
-                    <div class="text-xs text-slate-500 font-medium">
-                      <span class="font-bold text-emerald-600">{{ conflicts.length - unresolvedCount }}</span> auto-resueltas
+                    <div class="flex items-center gap-4">
+                      <BaseButton v-if="unresolvedCount > 0" variant="primary" size="xs" @click="registerAllUnresolved" :loading="isRegisteringAll">
+                        Crear todas las desconocidas ({{ uniqueUnresolvedCount }})
+                      </BaseButton>
+                      <div class="text-xs text-slate-500 font-medium">
+                        <span class="font-bold text-emerald-600">{{ conflicts.length - unresolvedCount }}</span> auto-resueltas
+                      </div>
                     </div>
                   </div>
 
-                  <div class="max-h-96 overflow-y-auto border border-slate-200 rounded-lg shadow-inner bg-slate-50 relative">
+                  <div class="border border-slate-200 rounded-lg shadow-inner bg-slate-50 relative">
                     <div v-if="displayedConflicts.length === 0" class="p-8 text-center text-slate-500">¡No hay filas para mostrar con este filtro!</div>
                     <table v-else class="min-w-full divide-y divide-slate-200 text-sm">
                       <thead class="bg-slate-100 sticky top-0 z-10">
@@ -178,17 +180,27 @@
                           <td class="px-4 py-3 font-medium text-rose-600">{{ conflict.excelVariedad }}</td>
                           <td class="px-4 py-3 relative">
                             <div v-if="!conflict.resolvedId">
-                              <input
-                                type="text"
-                                v-model="conflict.searchTerm"
-                                @focus="conflict.showDropdown = true"
-                                @blur="hideConflictDropdown(conflict)"
-                                placeholder="Buscar en SIVAR..."
-                                class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-cenicana outline-none shadow-sm"
-                              />
+                              <div class="flex gap-2">
+                                <input
+                                  type="text"
+                                  v-model="conflict.searchTerm"
+                                  @focus="conflict.showDropdown = true"
+                                  @blur="hideConflictDropdown(conflict)"
+                                  placeholder="Buscar en SIVAR..."
+                                  class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-cenicana outline-none shadow-sm"
+                                />
+                                <button
+                                  @mousedown="registerNewVariety(conflict)"
+                                  type="button"
+                                  title="Registrar como nueva"
+                                  class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap"
+                                >
+                                  Crear
+                                </button>
+                              </div>
                               <div
                                 v-if="conflict.showDropdown"
-                                class="absolute z-20 w-[90%] mt-1 bg-white shadow-xl max-h-48 rounded-lg py-1 text-xs overflow-auto border border-slate-200 left-4"
+                                class="absolute z-50 w-full mt-1 bg-white shadow-2xl max-h-60 rounded-lg py-1 text-xs overflow-auto border border-slate-300 left-0"
                               >
                                 <div v-if="getFilteredVarieties(conflict.searchTerm).length === 0" class="px-3 py-2 text-slate-400">Sin resultados</div>
                                 <div
@@ -261,10 +273,12 @@ import { ref, computed, nextTick } from "vue";
 import * as XLSX from "xlsx";
 import { useToast } from "vue-toastification";
 import viverosServices from "@/services/viveros.services";
+import varietysServices from "@/services/varietys.services";
 
 const props = defineProps<{
   show: boolean;
   variedades: any[];
+  caracteres: any[];
   viveroId: string | number;
   viveroIdentificador: string;
   origenParcela?: string;
@@ -283,17 +297,14 @@ const selectedSheet = ref("");
 const headers = ref<string[]>([]);
 const rawData = ref<any[]>([]);
 
-const mapping = ref({
-  plot: "",
-  plot_origen: "",
-  variedad: ""
-});
+const mapping = ref({ plot: "", variedad: "", caracter: "" });
 
 const conflicts = ref<any[]>([]);
 const readyToImport = ref<any[]>([]);
 const isSubmitting = ref(false);
 const isAnalyzing = ref(false);
 const showOnlyUnresolved = ref(false);
+const isRegisteringAll = ref(false);
 
 const displayedConflicts = computed(() => {
   if (showOnlyUnresolved.value) {
@@ -325,7 +336,7 @@ const resetState = () => {
   selectedSheet.value = "";
   headers.value = [];
   rawData.value = [];
-  mapping.value = { plot: "", plot_origen: "", variedad: "" };
+  mapping.value = { plot: "", variedad: "" };
   conflicts.value = [];
   readyToImport.value = [];
   isSubmitting.value = false;
@@ -372,14 +383,14 @@ const processSheet = () => {
   headers.value = (data[0] as string[]).map((h) => String(h).trim()).filter((h) => h);
 
   // Auto-guess columns
-  const plotCol = headers.value.find((h) => h.toLowerCase().includes("plot") && !h.toLowerCase().includes("origen"));
+  const plotCol = headers.value.find((h) => (h.toLowerCase().includes("plot") || h.toLowerCase().includes("parcela")) && !h.toLowerCase().includes("origen") && !h.toLowerCase().includes("iorigen"));
   if (plotCol) mapping.value.plot = plotCol;
-
-  const plotOrigenCol = headers.value.find((h) => h.toLowerCase().includes("origen") || h.toLowerCase().includes("iorigen"));
-  if (plotOrigenCol) mapping.value.plot_origen = plotOrigenCol;
 
   const varCol = headers.value.find((h) => h.toLowerCase().includes("variedad"));
   if (varCol) mapping.value.variedad = varCol;
+
+  const carCol = headers.value.find((h) => h.toLowerCase().includes("caracter") || h.toLowerCase().includes("carácter"));
+  if (carCol) mapping.value.caracter = carCol;
 
   const raw = XLSX.utils.sheet_to_json(worksheet);
   rawData.value = raw.map((row: any) => {
@@ -432,10 +443,6 @@ const findBestMatch = (term: string) => {
     }
   }
 
-  // Auto-assign if distance is 3 or less (minor typo)
-  if (minDistance <= 3 && bestMatch) {
-    return bestMatch;
-  }
   return null;
 };
 
@@ -453,29 +460,39 @@ const validateData = async () => {
     varMap.set(v.nm_vrdad.toLowerCase().trim(), v);
   });
 
+  // Get unique rows based on the plot column
+  const uniqueRows = [];
+  const seenPlots = new Set();
+  
   rawData.value.forEach((row) => {
     const plotVal = row[mapping.value.plot];
     if (plotVal === undefined || plotVal === null || plotVal === "") return; // Skip empty rows
+    
+    if (seenPlots.has(plotVal)) return; // Skip duplicates
+    seenPlots.add(plotVal);
 
     const varVal = row[mapping.value.variedad] ? String(row[mapping.value.variedad]).trim() : "";
     const plotOrigenVal = mapping.value.plot_origen ? row[mapping.value.plot_origen] : null;
 
     const exactMatch = varMap.get(varVal.toLowerCase());
-
-    const getIdPlotOrigen = (pOrigenVal: any) => {
-      if (props.origenParcela && props.consecutivoCorte) {
-        return `${props.origenParcela}-${props.consecutivoCorte}`;
+    
+    // Find caracter match if mapped
+    let resolvedCaracterId = props.caracterId || null;
+    if (mapping.value.caracter && row[mapping.value.caracter]) {
+      const carText = String(row[mapping.value.caracter]).trim().toLowerCase();
+      const carMatch = props.caracteres.find(c => c.nombre.toLowerCase() === carText || c.nombre.toLowerCase().includes(carText));
+      if (carMatch) {
+        resolvedCaracterId = carMatch.id;
       }
-      return pOrigenVal ? `${props.viveroIdentificador}-${pOrigenVal}` : null;
-    };
+    }
 
     if (exactMatch) {
       readyToImport.value.push({
         numero_parcela: plotVal,
         variedad_id: exactMatch.id_nm_vrdad,
-        numero_parcela_origen: plotOrigenVal,
-        id_plot_origen: getIdPlotOrigen(plotOrigenVal),
-        caracter_id: props.caracterId || null
+        numero_parcela_origen: null,
+        id_plot_origen: `${props.viveroIdentificador}-${plotVal}`,
+        caracter_id: resolvedCaracterId
       });
     } else {
       // Try to find a fuzzy best match
@@ -515,6 +532,67 @@ const resolveConflict = (conflict: any, variety: any) => {
   conflict.showDropdown = false;
 };
 
+const registerNewVariety = async (conflict: any) => {
+  const name = conflict.excelVariedad.trim().toUpperCase();
+  if (confirm(`¿Deseas registrar la variedad "${name}" en la base maestra?`)) {
+    try {
+      const res = await varietysServices.createVariety(name);
+      const newId = res.data.id_nm_vrdad || res.data.id;
+      conflict.resolvedId = String(newId);
+      conflict.resolvedName = name;
+      toast.success("Variedad registrada exitosamente");
+    } catch (e: any) {
+      toast.error("Error al registrar: " + (e.response?.data?.message || e.message));
+    }
+  }
+};
+
+const uniqueUnresolvedCount = computed(() => {
+  const uniqueNames = new Set();
+  conflicts.value.forEach((c) => {
+    if (!c.resolvedId && c.excelVariedad) {
+      uniqueNames.add(c.excelVariedad.trim().toUpperCase());
+    }
+  });
+  return uniqueNames.size;
+});
+
+const registerAllUnresolved = async () => {
+  const uniqueUnresolved = new Map();
+  conflicts.value.forEach((c) => {
+    if (!c.resolvedId && c.excelVariedad) {
+      const name = c.excelVariedad.trim().toUpperCase();
+      if (!uniqueUnresolved.has(name)) {
+        uniqueUnresolved.set(name, []);
+      }
+      uniqueUnresolved.get(name).push(c);
+    }
+  });
+
+  if (uniqueUnresolved.size === 0) return;
+  if (!confirm(`¿Estás seguro de registrar las ${uniqueUnresolved.size} variedades nuevas en la base maestra?`)) return;
+
+  isRegisteringAll.value = true;
+  let successCount = 0;
+  for (const [name, rows] of uniqueUnresolved.entries()) {
+    try {
+      const res = await varietysServices.createVariety(name);
+      const newId = String(res.data.id_nm_vrdad || res.data.id);
+      rows.forEach((c: any) => {
+        c.resolvedId = newId;
+        c.resolvedName = name;
+      });
+      successCount++;
+    } catch (e: any) {
+      console.error("Error registering variety:", name, e);
+    }
+  }
+  isRegisteringAll.value = false;
+  if (successCount > 0) {
+    toast.success(`Se registraron ${successCount} variedades nuevas exitosamente.`);
+  }
+};
+
 const resolvedCount = computed(() => {
   return conflicts.value.filter((c) => c.resolvedId !== null).length;
 });
@@ -530,19 +608,23 @@ const submitImport = async () => {
   const payload = [
     ...readyToImport.value,
     ...conflicts.value.map((c) => {
-      const plotOrigenVal = mapping.value.plot_origen ? c.row[mapping.value.plot_origen] : null;
-      const getIdPlotOrigen = (pOrigenVal: any) => {
-        if (props.origenParcela && props.consecutivoCorte) {
-          return `${props.origenParcela}-${props.consecutivoCorte}`;
+      const plotVal = c.row[mapping.value.plot];
+      
+      let resolvedCaracterId = props.caracterId || null;
+      if (mapping.value.caracter && c.row[mapping.value.caracter]) {
+        const carText = String(c.row[mapping.value.caracter]).trim().toLowerCase();
+        const carMatch = props.caracteres.find(car => car.nombre.toLowerCase() === carText || car.nombre.toLowerCase().includes(carText));
+        if (carMatch) {
+          resolvedCaracterId = carMatch.id;
         }
-        return pOrigenVal ? `${props.viveroIdentificador}-${pOrigenVal}` : null;
-      };
+      }
+
       return {
-        numero_parcela: c.row[mapping.value.plot],
+        numero_parcela: plotVal,
         variedad_id: c.resolvedId,
-        numero_parcela_origen: plotOrigenVal,
-        id_plot_origen: getIdPlotOrigen(plotOrigenVal),
-        caracter_id: props.caracterId || null
+        numero_parcela_origen: null,
+        id_plot_origen: `${props.viveroIdentificador}-${plotVal}`,
+        caracter_id: resolvedCaracterId
       };
     })
   ];

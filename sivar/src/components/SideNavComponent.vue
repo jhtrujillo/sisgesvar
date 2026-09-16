@@ -22,6 +22,13 @@
           <router-link
             class="text-lime-800 group flex items-center px-2 py-2 text-sm font-medium rounded-md"
             :to="{
+              name: 'project_management.show'
+            }"
+            >Proyectos & Permisos</router-link
+          >
+          <router-link
+            class="text-lime-800 group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+            :to="{
               name: 'sequence_server.show'
             }"
             >Sequence Server</router-link

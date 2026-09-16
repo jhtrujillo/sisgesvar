@@ -36,7 +36,8 @@ async function GetSuggestionCrossingsPerProject(proyectos: string, proyecto: str
 }
 
 async function saveWeight(proyecto: string): Promise<any> {
-  const url = `${urls.API_URL}crossing/programming/save_weight/${proyecto}`;
+  const proj = (proyecto && proyecto.trim() !== '') ? proyecto.trim() : '010105';
+  const url = `${urls.API_URL}crossing/programming/save_weight/${proj}`;
   return await api.get(url, {}, true);
 }
 
@@ -68,17 +69,47 @@ async function saveCrossingsBatch(crossings: any[]): Promise<any> {
   return await api.post(url, { crossings }, true);
 }
 
+async function getCrossingsByPonderado(idPonderado: string): Promise<any> {
+  const url = `${urls.API_URL}crossing/programming/get_by_ponderado/${idPonderado}`;
+  return await api.get(url, {}, true);
+}
+
+async function enviarFloresLibresABolsaComun(proyecto: string): Promise<any> {
+  const url = `${urls.API_URL}crossing/programming/send_free_to_common_bag`;
+  return await api.post(url, { proyecto }, true);
+}
+
+async function getFloresOtrosProyectos(proyectoActual: string): Promise<any> {
+  const url = `${urls.API_URL}crossing/programming/flores_otros_proyectos?proyecto_actual=${encodeURIComponent(proyectoActual)}`;
+  return await api.get(url, {}, true);
+}
+
+async function enviarFlorAProyecto(variedadKey: string, proyectoDestino: string, bolsa: number): Promise<any> {
+  const url = `${urls.API_URL}crossing/programming/change_proyect_flower/${encodeURIComponent(variedadKey)}/${encodeURIComponent(proyectoDestino)}/${bolsa}`;
+  return await api.get(url, {}, true);
+}
+
+async function devolverFlorABolsaComun(variedadKey: string, proyecto: string): Promise<any> {
+  const url = `${urls.API_URL}crossing/programming/devolver_flor_bolsa_comun/${encodeURIComponent(variedadKey)}/${encodeURIComponent(proyecto)}`;
+  return await api.get(url, {}, true);
+}
+
 const CrossingsService = {
   getCrossingsList,
   getCrossingInitialData,
   getParametizeWeightedCrossing,
   modifyFeatures,
   getMatrix,
+  getCrossingsByPonderado,
   GetSuggestionCrossings,
   GetSuggestionCrossingsPerProject,
   saveWeight,
   saveCrossing,
-  saveCrossingsBatch
+  saveCrossingsBatch,
+  enviarFloresLibresABolsaComun,
+  getFloresOtrosProyectos,
+  enviarFlorAProyecto,
+  devolverFlorABolsaComun
 };
 
 export default CrossingsService;

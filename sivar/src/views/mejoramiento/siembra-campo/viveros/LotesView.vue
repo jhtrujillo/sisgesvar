@@ -35,7 +35,9 @@
               class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
             >
               <option value="">Seleccione un ingenio...</option>
-              <option v-for="ing in ingenios" :key="ing.cd_ingnio" :value="ing.cd_ingnio">{{ decodeHTMLEntities(ing.nm_ingnio) }} ({{ ing.cd_ingnio }})</option>
+              <option v-for="ing in ingenios" :key="ing.cd_ingnio" :value="ing.cd_ingnio">
+                {{ decodeHTMLEntities(ing.nm_ingnio) }} ({{ ing.cd_ingnio }}) — {{ ing.lotes_count || 0 }} {{ (ing.lotes_count || 0) === 1 ? 'lote' : 'lotes' }}
+              </option>
             </select>
           </div>
 
@@ -49,6 +51,19 @@
               <option value="">Seleccione una hacienda...</option>
               <option v-for="hda in haciendas" :key="hda.cd_hcnda" :value="hda.cd_hcnda">
                 {{ decodeHTMLEntities(hda.nm_hcnda) }}
+              </option>
+            </select>
+          </div>
+
+          <div class="w-full sm:max-w-xs" v-if="selectedHacienda">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Seleccionar Año</label>
+            <select
+              v-model="selectedYear"
+              @change="loadLotes"
+              class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+            >
+              <option v-for="yr in availableYears" :key="yr" :value="yr">
+                {{ yr }}
               </option>
             </select>
           </div>
@@ -138,7 +153,7 @@
             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">
               Ingenio: {{ decodeHTMLEntities(selectedIngenioName) }} <br />
               Hacienda: {{ decodeHTMLEntities(getHaciendaName(lote.hacienda_codigo)) }} <br />
-              Parcelas/Vivero: {{ lote.total_parcelas_vivero ?? 10 }}
+              Parcelas/Vivero: {{ lote.total_parcelas_vivero ?? 0 }}
             </p>
 
             <!-- ProgressBar -->
@@ -179,7 +194,7 @@
 
     <!-- Modal Form (Crear / Editar) -->
     <div v-if="isModalOpen" class="fixed inset-0 flex items-center justify-center bg-slate-900/60 z-50 transition-opacity duration-300">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden border border-slate-100">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 overflow-hidden border border-slate-100">
         <!-- Header -->
         <div class="flex justify-between items-center border-b border-slate-100 p-5 bg-slate-50">
           <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide">
@@ -208,46 +223,88 @@
               />
             </div>
 
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Capacidad Máxima (Viveros)</label>
-              <input
-                v-model.number="form.capacidad_maxima"
-                type="number"
-                min="1"
-                required
-                class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
-              />
+            <div class="grid grid-cols-2 gap-4 items-end">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Capacidad Máxima (Viveros)</label>
+                <input
+                  v-model.number="form.capacidad_maxima"
+                  type="number"
+                  min="1"
+                  required
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+                />
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                  Fecha de Creación <span class="normal-case text-[9px] text-slate-400 font-normal tracking-normal">(Año)</span>
+                </label>
+                <input
+                  v-model.number="form.anio_creacion"
+                  type="number"
+                  min="2000"
+                  max="2100"
+                  required
+                  placeholder="Ej. 2026"
+                  class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+                />
+              </div>
             </div>
 
             <!-- Individual Vivero Parcel capacity list -->
             <div class="space-y-3">
               <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Configuración de Viveros</label>
-              <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+              
+              <!-- GRID HEADERS -->
+              <div class="grid grid-cols-3 gap-3 px-2 mb-1">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ID Vivero</div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ID Inicial</div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Parcelas</div>
+              </div>
+
+              <!-- SCROLLABLE LIST -->
+              <div class="space-y-2 max-h-56 overflow-y-auto pr-2 custom-scrollbar">
                 <div
-                  v-for="i in form.capacidad_maxima"
-                  :key="'vivero_p_' + i"
-                  class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 flex items-center gap-3"
+                  v-for="(vConfig, index) in viverosConfig"
+                  :key="index"
+                  class="grid grid-cols-3 gap-3 bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 items-center hover:bg-slate-100 transition-colors"
                 >
-                  <span class="text-[10px] font-black text-slate-400 uppercase w-12 shrink-0">Vivero {{ i }}</span>
                   <input
-                    v-model="form.nombres_por_vivero[i]"
-                    type="text"
-                    :placeholder="`Nombre (ej. V-${i})`"
-                    class="flex-1 bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
-                  />
-                  <input
-                    v-model.number="form.parcelas_por_vivero[i]"
+                    v-model.number="vConfig.id"
                     type="number"
                     min="1"
                     required
-                    title="Parcelas"
-                    class="w-16 shrink-0 bg-white border border-slate-200 text-slate-800 text-xs font-black text-center rounded-lg py-1.5 focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all outline-none"
+                    title="Consecutivo Global del Vivero"
+                    placeholder="Vivero"
+                    class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-3 py-2 focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana outline-none shadow-sm"
+                  />
+                  <input
+                    v-model.number="vConfig.inicio"
+                    type="number"
+                    min="1"
+                    required
+                    title="ID Inicial de la primera parcela"
+                    placeholder="Inicio"
+                    class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-3 py-2 focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana outline-none shadow-sm"
+                  />
+                  <input
+                    v-model.number="vConfig.parcelas"
+                    type="number"
+                    min="1"
+                    required
+                    title="Total de Parcelas"
+                    class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-black rounded-lg px-3 py-2 focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana outline-none shadow-sm text-center"
                   />
                 </div>
               </div>
-              <p class="text-[10px] text-slate-400">
-                <strong>Nombre:</strong> identificador o consecutivo del vivero (opcional). <strong>Número:</strong> total de parcelas.
-              </p>
+
+              <div class="bg-blue-50/50 p-2.5 rounded-lg border border-blue-100 mt-2">
+                <p class="text-[10px] text-slate-500 leading-tight">
+                  <strong class="text-slate-700">ID Vivero:</strong> Consecutivo del vivero. 
+                  <strong class="text-slate-700 ml-1">ID Inicial:</strong> Número de la primera parcela. 
+                  <strong class="text-slate-700 ml-1">Total:</strong> Cantidad de parcelas a generar en secuencia.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -265,6 +322,8 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
 import viverosServices from "@/services/viveros.services";
+import api from "@/services/api";
+import urls from "@/services/urls";
 import { useToast } from "vue-toastification";
 
 const toast = useToast();
@@ -274,6 +333,9 @@ const haciendas = ref<any[]>([]);
 const lotes = ref<any[]>([]);
 const selectedIngenio = ref("");
 const selectedHacienda = ref("");
+const currentYear = new Date().getFullYear();
+const selectedYear = ref(currentYear.toString());
+const availableYears = ref(Array.from({length: 11}, (_, i) => currentYear - 2 + i).map(String)); // -2 to +8 years
 const loading = ref(false);
 const saving = ref(false);
 
@@ -283,37 +345,44 @@ const editingLoteId = ref<number | null>(null);
 const form = ref({
   nombre_lote: "",
   capacidad_maxima: 5,
-  total_parcelas_vivero: 10,
+  total_parcelas_vivero: 0,
   hacienda_codigo: "",
+  anio_creacion: new Date().getFullYear(),
   parcelas_por_vivero: {} as Record<number, number>,
   nombres_por_vivero: {} as Record<number, string>
 });
 
-const syncParcelasPorVivero = () => {
+interface ViveroConfig {
+  id: number;
+  parcelas: number;
+  nombre: string;
+}
+const viverosConfig = ref<ViveroConfig[]>([]);
+
+const syncParcelasPorVivero = async () => {
   const val = parseInt(form.value.capacidad_maxima as any);
   if (isNaN(val) || val < 1) return;
-  if (!form.value.parcelas_por_vivero) {
-    form.value.parcelas_por_vivero = {};
-  }
-  if (!form.value.nombres_por_vivero) {
-    form.value.nombres_por_vivero = {};
-  }
-  for (let i = 1; i <= val; i++) {
-    if (form.value.parcelas_por_vivero[i] === undefined || form.value.parcelas_por_vivero[i] === null) {
-      form.value.parcelas_por_vivero[i] = form.value.total_parcelas_vivero || 10;
+  
+  const currentCount = viverosConfig.value.length;
+  if (val > currentCount) {
+    const diff = val - currentCount;
+    try {
+      const excludeIds = viverosConfig.value.map(v => v.id).join(',');
+      const res = await api.get(`${urls.API_VIVEROS}/next-consecutivos`, { count: diff, exclude: excludeIds });
+      const gaps = res.data?.consecutivos || [];
+      gaps.forEach((id: number) => {
+        viverosConfig.value.push({
+          id: id,
+          parcelas: form.value.total_parcelas_vivero ?? 0,
+          nombre: ""
+        });
+      });
+    } catch(e) {
+      console.error("Error fetching next ids:", e);
     }
-    // Keep existing name if already set, otherwise leave empty (user fills it)
-    if (form.value.nombres_por_vivero[i] === undefined) {
-      form.value.nombres_por_vivero[i] = "";
-    }
+  } else if (val < currentCount) {
+    viverosConfig.value.splice(val);
   }
-  Object.keys(form.value.parcelas_por_vivero).forEach((key) => {
-    const k = parseInt(key);
-    if (k > val) {
-      delete form.value.parcelas_por_vivero[k];
-      delete form.value.nombres_por_vivero[k];
-    }
-  });
 };
 
 watch(
@@ -370,6 +439,16 @@ const loadHaciendas = async () => {
   }
 };
 
+const isLoteLockedByPast = (lote: any) => {
+  if (!lote.viveros) return false;
+  return lote.viveros.some((v: any) => {
+    if (v.estado === 'Cosechado') return false;
+    if (!v.fecha_siembra) return false;
+    const vYear = v.fecha_siembra.split('-')[0];
+    return vYear !== selectedYear.value;
+  });
+};
+
 const loadLotes = async () => {
   if (!selectedIngenio.value || !selectedHacienda.value) {
     lotes.value = [];
@@ -379,7 +458,8 @@ const loadLotes = async () => {
   try {
     const res = await viverosServices.getLotes({
       ingenio_codigo: selectedIngenio.value,
-      hacienda_codigo: selectedHacienda.value
+      hacienda_codigo: selectedHacienda.value,
+      year: selectedYear.value
     });
     lotes.value = res.data;
   } catch (error) {
@@ -390,42 +470,58 @@ const loadLotes = async () => {
   }
 };
 
-const openAddModal = () => {
+const openAddModal = async () => {
   editingLoteId.value = null;
   form.value = {
     nombre_lote: "",
     capacidad_maxima: 5,
-    total_parcelas_vivero: 10,
+    total_parcelas_vivero: 0,
     hacienda_codigo: selectedHacienda.value,
+    fecha_siembra: selectedYear.value === new Date().getFullYear().toString() 
+      ? new Date().toISOString().split('T')[0] 
+      : `${selectedYear.value}-01-01`,
     parcelas_por_vivero: {},
     nombres_por_vivero: {}
   };
-  syncParcelasPorVivero();
+  viverosConfig.value = [];
+  await syncParcelasPorVivero();
   isModalOpen.value = true;
 };
 
-const openEditModal = (lote: any) => {
+const openEditModal = async (lote: any) => {
   editingLoteId.value = lote.id;
-  const pMap: Record<number, number> = {};
-  const nMap: Record<number, string> = {};
+  viverosConfig.value = [];
+  
+  let a_creacion = selectedYear.value === new Date().getFullYear().toString() 
+    ? new Date().getFullYear() 
+    : parseInt(selectedYear.value);
+
   if (lote.viveros && lote.viveros.length > 0) {
+    if (lote.viveros[0].fecha_siembra) {
+      a_creacion = parseInt(lote.viveros[0].fecha_siembra.split('-')[0]);
+    }
     lote.viveros.forEach((v: any) => {
       const pos = v.consecutivo_vivero_ingenio;
-      pMap[pos] = v.total_parcelas || 10;
-      // Load existing custom name, but skip default auto-generated names
       const defaultName = `Vivero ${pos}`;
-      nMap[pos] = v.nombre && v.nombre !== defaultName && v.nombre !== v.identificador_unico ? v.nombre : "";
+      const name = v.nombre && v.nombre !== defaultName && v.nombre !== v.identificador_unico ? v.nombre : "";
+      viverosConfig.value.push({
+        id: pos,
+        parcelas: v.total_parcelas ?? 0,
+        nombre: name,
+        inicio: v.parcela_inicio ?? 1
+      });
     });
   }
   form.value = {
     nombre_lote: lote.nombre_lote,
     capacidad_maxima: lote.capacidad_maxima,
-    total_parcelas_vivero: lote.total_parcelas_vivero || 10,
+    total_parcelas_vivero: lote.total_parcelas_vivero ?? 0,
     hacienda_codigo: lote.hacienda_codigo || selectedHacienda.value,
-    parcelas_por_vivero: pMap,
-    nombres_por_vivero: nMap
+    anio_creacion: a_creacion,
+    parcelas_por_vivero: {},
+    nombres_por_vivero: {}
   };
-  syncParcelasPorVivero();
+  await syncParcelasPorVivero();
   isModalOpen.value = true;
 };
 
@@ -435,15 +531,31 @@ const closeModal = () => {
 
 const submitForm = async () => {
   saving.value = true;
+  const parcelas_por_vivero: Record<number, number> = {};
+  const nombres_por_vivero: Record<number, string> = {};
+  const inicio_por_vivero: Record<number, number> = {};
+  
+  for(const vc of viverosConfig.value) {
+    parcelas_por_vivero[vc.id] = vc.parcelas;
+    nombres_por_vivero[vc.id] = vc.nombre;
+    inicio_por_vivero[vc.id] = vc.inicio || 1;
+  }
+  
+  const payload = { 
+    ...form.value, 
+    fecha_siembra: `${form.value.anio_creacion}-01-01`,
+    parcelas_por_vivero, 
+    nombres_por_vivero, 
+    inicio_por_vivero, 
+    ingenio_codigo: selectedIngenio.value 
+  };
+
   try {
     if (editingLoteId.value) {
-      await viverosServices.updateLote(editingLoteId.value, form.value);
+      await viverosServices.updateLote(editingLoteId.value, payload);
       toast.success("Lote actualizado correctamente");
     } else {
-      await viverosServices.createLote({
-        ...form.value,
-        ingenio_codigo: selectedIngenio.value
-      });
+      await viverosServices.createLote(payload);
       toast.success("Lote creado correctamente");
     }
     isModalOpen.value = false;

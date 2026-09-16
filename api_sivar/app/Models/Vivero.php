@@ -33,6 +33,7 @@ class Vivero extends Model
         'origen_parcela',
         'origen_lote_id',
         'origen_vivero_id',
+        'estado',
         'lote_id',
         'consecutivo_vivero_ingenio',
         'total_parcelas'
@@ -73,6 +74,11 @@ class Vivero extends Model
     public function caracter()
     {
         return $this->belongsTo(\App\Models\ProyectoCaracter::class, 'caracter_id');
+    }
+
+    public function caracteres()
+    {
+        return $this->belongsToMany(\App\Models\ProyectoCaracter::class, 'vivero_caracteres', 'vivero_id', 'caracter_id')->withTimestamps();
     }
 
     public function getNombreProyectoAttribute()

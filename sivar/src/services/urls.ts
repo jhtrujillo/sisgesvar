@@ -12,6 +12,8 @@ const API_INGENIOS = API_URL + "siembra-campo/ingenios";
 const API_HACIENDAS = API_URL + "siembra-campo/haciendas";
 const API_SUERTES = API_URL + "siembra-campo/suertes";
 const API_LOTES = API_URL + "siembra-campo/lotes";
+const API_FLORACION_VALIDATE = API_URL + "siembra-campo/floracion/validate-import";
+const API_FLORACION_EXECUTE = API_URL + "siembra-campo/floracion/execute-import";
 
 // URLS USERs
 const API_USERS = API_URL + "users";
@@ -25,6 +27,7 @@ const API_VARIETYSLIST = API_URL + "varietysList";
 const API_VARIETY = API_URL + "variety";
 const API_VARIETY_PROFILE = API_URL + "varietyProfile";
 const API_VARIETY_HISTORY = API_URL + "historyDatatable";
+const API_VARIETY_CROSSINGS_HISTORY = API_URL + "varietyCrossingsHistory";
 const API_GERMOPLASM_BANK = API_URL + "germoplasmBankList";
 const API_PARENTS_DIAGRAM = API_URL + "getParents";
 const API_PARENTS_DIAGRAM_LEVEL = API_URL + "getParentsLevel";
@@ -74,6 +77,7 @@ export default {
   API_CROSSING_LIST,
   API_VARIETYSLIST,
   API_VARIETY_HISTORY,
+  API_VARIETY_CROSSINGS_HISTORY,
   API_VARIETY,
   API_VARIETY_PROFILE,
   API_GERMOPLASM_BANK,
@@ -105,6 +109,8 @@ export default {
   API_HACIENDAS,
   API_SUERTES,
   API_LOTES,
+  API_FLORACION_VALIDATE,
+  API_FLORACION_EXECUTE,
   API_PROYECTOS: API_URL + "siembra-campo/proyectos",
   API_RESPONSABLES: API_URL + "siembra-campo/responsables",
   API_AMBIENTES: API_URL + "siembra-campo/ambientes"

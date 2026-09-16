@@ -32,7 +32,8 @@ import {
   ROUTE_SIEMBRA_CAMPO_VIVERO_NUEVO,
   ROUTE_SIEMBRA_CAMPO_VIVERO_EDITAR,
   ROUTE_SIEMBRA_CAMPO_VIVEROS_LOTES,
-  ROUTE_ABOUT
+  ROUTE_ABOUT,
+  ROUTE_PROJECT_MANAGEMENT
 } from "./routes";
 import { useUserStore } from "@/stores/user";
 
@@ -250,6 +251,12 @@ const routes = [
         path: ROUTE_ABOUT,
         name: "about.show",
         component: () => import("@/views/AboutView.vue"),
+        beforeEnter: authGuard
+      },
+      {
+        path: ROUTE_PROJECT_MANAGEMENT,
+        name: "project_management.show",
+        component: () => import("@/views/admin/ProjectManagementView.vue"),
         beforeEnter: authGuard
       }
     ]

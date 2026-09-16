@@ -197,91 +197,126 @@ class CrossingService
             ->select('ponderados_valor_merito.*', 'caracteristicas_valor_merito.equivalente', 'caracteristicas_valor_merito.equivalente_estados')
             ->get();
 
-        $flores_BG = DB::connection('sivar')->table('floracion')
-            ->join('remote_pg_sipro', function ($join) {
-                $join->on('remote_pg_sipro.id_prycto', '=', 'floracion.id_pr');
-            })
-            ->leftJoin('caracterizacion_banco_germoplasma', function ($join) {
-                $join->on('caracterizacion_banco_germoplasma.variedad', '=', 'floracion.vrdad');
-            })
-            ->whereIn('remote_pg_sipro.cd_cntble', $proyectos)
-            ->whereBetween('floracion.fcha', array($fechai, $fechaf))
-            ->where('floracion.estado', '=', 0)
-            ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.polen")
-            ->select(DB::raw('"floracion"."vrdad", 
-                        "floracion"."sxo", 
-                        "floracion"."polen",
-                        avg(CAST(REPLACE(CAST(mosaico_p AS TEXT), \',\', \'.\') AS FLOAT)) msco_r, 
-                        avg(CAST(REPLACE(CAST(roya_cafe_r AS TEXT), \',\', \'.\') AS FLOAT)) rya_cfe_r, 
-                        avg(CAST(REPLACE(CAST(roya_naranja_r AS TEXT), \',\', \'.\') AS FLOAT)) roya_naranja, 
-                        avg(CAST(REPLACE(CAST(carbon_p AS TEXT), \',\', \'.\') AS FLOAT)) carbon,
-                        avg(CAST(REPLACE(CAST(tchm AS TEXT), \',\', \'.\') AS FLOAT)) tchm, 
-                        avg(CAST(REPLACE(CAST(diametro_tallo AS TEXT), \',\', \'.\') AS FLOAT)) dmtro_tllo, 
-                        avg(CAST(REPLACE(CAST(volcamiento AS TEXT), \',\', \'.\') AS FLOAT)) volcamiento, 
-                        avg(CAST(REPLACE(CAST(altura_planta AS TEXT), \',\', \'.\') AS FLOAT)) altura_planta, 
-                        avg(CAST(REPLACE(CAST(poblacion_1m AS TEXT), \',\', \'.\') AS FLOAT)) poblacion, 
-                        avg(CAST(REPLACE(CAST(sacarosa AS TEXT), \',\', \'.\') AS FLOAT)) scrsa'))
-            ->distinct()
-            ->orderBy('floracion.vrdad')
-            ->get();
+        $hasSpecificProject = !in_array('General', $proyectos) && !empty($proyectos) && $proyectos[0] !== 'all';
 
-        $flores_PR = DB::connection('sivar')->table('floracion')
-            ->join('remote_pg_sipro', function ($join) {
-                $join->on('remote_pg_sipro.id_prycto', '=', 'floracion.id_pr');
-            })
-            ->leftJoin('datos_campo_crudos', function ($join) {
-                $join->on('datos_campo_crudos.nm_vrdad', '=', 'floracion.vrdad')
-                    ->where('datos_campo_crudos.estdo_slccion', '=', 5);
-            })
-            ->whereIn('remote_pg_sipro.cd_cntble', $proyectos)
-            ->whereBetween('floracion.fcha', array($fechai, $fechaf))
-            ->where('floracion.estado', '=', 0)
-            ->groupBy('floracion.vrdad', "floracion.sxo")
-            ->select(DB::raw('"floracion"."vrdad", 
-                        "floracion"."sxo", 
-                        avg(CAST(REPLACE(CAST(polen AS TEXT), \',\', \'.\') AS FLOAT)) polen, 
-                        avg(CAST(REPLACE(CAST(mosaico AS TEXT), \',\', \'.\') AS FLOAT)) msco_r, 
-                        avg(CAST(REPLACE(CAST(roya AS TEXT), \',\', \'.\') AS FLOAT)) rya_cfe_r, 
-                        avg(CAST(REPLACE(CAST("179" AS TEXT), \',\', \'.\') AS FLOAT)) roya_naranja, 
-                        avg(CAST(REPLACE(CAST(carbon AS TEXT), \',\', \'.\') AS FLOAT)) carbon, 
-                        avg(CAST(REPLACE(CAST("173" AS TEXT), \',\', \'.\') AS FLOAT)) tchm, 
-                        avg(CAST(REPLACE(CAST("163" AS TEXT), \',\', \'.\') AS FLOAT)) scrsa, 
-                        avg(CAST(REPLACE(CAST("Cepas afectadas Carbón" AS TEXT), \',\', \'.\') AS FLOAT)) volcamiento,
-                        avg(CAST(REPLACE(CAST("Tallo Altura (cm)" AS TEXT), \',\', \'.\') AS FLOAT)) altura_planta, 
-                        avg(CAST(REPLACE(CAST("Población (m)" AS TEXT), \',\', \'.\') AS FLOAT)) poblacion, 
-                        avg(CAST(REPLACE(CAST("DiametroTallo" AS TEXT), \',\', \'.\') AS FLOAT)) dmtro_tllo'))
-            ->distinct()
-            ->orderBy('floracion.vrdad')
-            ->get();
+        $queryFloresBG = function ($useProjectFilter = true) use ($proyectos, $fechai, $fechaf, $hasSpecificProject) {
+            $q = DB::connection('sivar')->table('floracion')
+                ->join('remote_pg_sipro', function ($join) {
+                    $join->on('remote_pg_sipro.id_prycto', '=', 'floracion.id_pr');
+                })
+                ->leftJoin('caracterizacion_banco_germoplasma', function ($join) {
+                    $join->on('caracterizacion_banco_germoplasma.variedad', '=', 'floracion.vrdad');
+                });
 
-        $flores_EIII = DB::connection('sivar')->table('floracion')
-            ->join('remote_pg_sipro', function ($join) {
-                $join->on('remote_pg_sipro.id_prycto', '=', 'floracion.id_pr');
-            })
-            ->leftJoin('datos_campo_crudos', function ($join) {
-                $join->on('datos_campo_crudos.nm_vrdad', '=', 'floracion.vrdad')
-                    ->where('datos_campo_crudos.estdo_slccion', '=', 3);
-            })
-            ->whereIn('remote_pg_sipro.cd_cntble', $proyectos)
-            ->whereBetween('floracion.fcha', array($fechai, $fechaf))
-            ->where('floracion.estado', '=', 0)
-            ->groupBy('floracion.vrdad', "floracion.sxo")
-            ->select(DB::raw('"floracion"."vrdad", 
-                        "floracion"."sxo", 
-                        avg(CAST(REPLACE(CAST(polen AS TEXT), \',\', \'.\') AS FLOAT)) polen, 
-                        avg(CAST(REPLACE(CAST(mosaico AS TEXT), \',\', \'.\') AS FLOAT)) msco_r, 
-                        avg(CAST(REPLACE(CAST(roya AS TEXT), \',\', \'.\') AS FLOAT)) rya_cfe_r, 
-                        avg(CAST(REPLACE(CAST("179" AS TEXT), \',\', \'.\') AS FLOAT)) roya_naranja, 
-                        avg(CAST(REPLACE(CAST(carbon AS TEXT), \',\', \'.\') AS FLOAT)) carbon, 
-                        avg(CAST(REPLACE(CAST("173" AS TEXT), \',\', \'.\') AS FLOAT)) tchm, 
-                        avg(CAST(REPLACE(CAST("163" AS TEXT), \',\', \'.\') AS FLOAT)) scrsa, 
-                        avg(CAST(REPLACE(CAST("Cepas afectadas Carbón" AS TEXT), \',\', \'.\') AS FLOAT)) volcamiento,
-                        avg(CAST(REPLACE(CAST("Tallo Altura (cm)" AS TEXT), \',\', \'.\') AS FLOAT)) altura_planta, 
-                        avg(CAST(REPLACE(CAST("Población (m)" AS TEXT), \',\', \'.\') AS FLOAT)) poblacion, 
-                        avg(CAST(REPLACE(CAST("DiametroTallo" AS TEXT), \',\', \'.\') AS FLOAT)) dmtro_tllo'))
-            ->distinct()
-            ->orderBy('floracion.vrdad')
-            ->get();
+            if ($useProjectFilter && $hasSpecificProject) {
+                $q->whereIn('remote_pg_sipro.cd_cntble', $proyectos);
+            }
+
+            return $q->whereBetween('floracion.fcha', array($fechai, $fechaf))
+                ->where('floracion.estado', '=', 0)
+                ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.polen")
+                ->select(DB::raw('"floracion"."vrdad", 
+                            "floracion"."sxo", 
+                            "floracion"."polen",
+                            avg(CAST(REPLACE(CAST(mosaico_p AS TEXT), \',\', \'.\') AS FLOAT)) msco_r, 
+                            avg(CAST(REPLACE(CAST(roya_cafe_r AS TEXT), \',\', \'.\') AS FLOAT)) rya_cfe_r, 
+                            avg(CAST(REPLACE(CAST(roya_naranja_r AS TEXT), \',\', \'.\') AS FLOAT)) roya_naranja, 
+                            avg(CAST(REPLACE(CAST(carbon_p AS TEXT), \',\', \'.\') AS FLOAT)) carbon,
+                            avg(CAST(REPLACE(CAST(tchm AS TEXT), \',\', \'.\') AS FLOAT)) tchm, 
+                            avg(CAST(REPLACE(CAST(diametro_tallo AS TEXT), \',\', \'.\') AS FLOAT)) dmtro_tllo, 
+                            avg(CAST(REPLACE(CAST(volcamiento AS TEXT), \',\', \'.\') AS FLOAT)) volcamiento, 
+                            avg(CAST(REPLACE(CAST(altura_planta AS TEXT), \',\', \'.\') AS FLOAT)) altura_planta, 
+                            avg(CAST(REPLACE(CAST(poblacion_1m AS TEXT), \',\', \'.\') AS FLOAT)) poblacion, 
+                            avg(CAST(REPLACE(CAST(sacarosa AS TEXT), \',\', \'.\') AS FLOAT)) scrsa'))
+                ->distinct()
+                ->orderBy('floracion.vrdad')
+                ->get();
+        };
+
+        $flores_BG = $queryFloresBG(true);
+        if ($flores_BG->isEmpty() && $hasSpecificProject) {
+            $flores_BG = $queryFloresBG(false);
+        }
+
+        $queryFloresPR = function ($useProjectFilter = true) use ($proyectos, $fechai, $fechaf, $hasSpecificProject) {
+            $q = DB::connection('sivar')->table('floracion')
+                ->join('remote_pg_sipro', function ($join) {
+                    $join->on('remote_pg_sipro.id_prycto', '=', 'floracion.id_pr');
+                })
+                ->leftJoin('datos_campo_crudos', function ($join) {
+                    $join->on('datos_campo_crudos.nm_vrdad', '=', 'floracion.vrdad')
+                        ->where('datos_campo_crudos.estdo_slccion', '=', 5);
+                });
+
+            if ($useProjectFilter && $hasSpecificProject) {
+                $q->whereIn('remote_pg_sipro.cd_cntble', $proyectos);
+            }
+
+            return $q->whereBetween('floracion.fcha', array($fechai, $fechaf))
+                ->where('floracion.estado', '=', 0)
+                ->groupBy('floracion.vrdad', "floracion.sxo")
+                ->select(DB::raw('"floracion"."vrdad", 
+                            "floracion"."sxo", 
+                            avg(CAST(REPLACE(CAST(polen AS TEXT), \',\', \'.\') AS FLOAT)) polen, 
+                            avg(CAST(REPLACE(CAST(mosaico AS TEXT), \',\', \'.\') AS FLOAT)) msco_r, 
+                            avg(CAST(REPLACE(CAST(roya AS TEXT), \',\', \'.\') AS FLOAT)) rya_cfe_r, 
+                            avg(CAST(REPLACE(CAST("179" AS TEXT), \',\', \'.\') AS FLOAT)) roya_naranja, 
+                            avg(CAST(REPLACE(CAST(carbon AS TEXT), \',\', \'.\') AS FLOAT)) carbon, 
+                            avg(CAST(REPLACE(CAST("173" AS TEXT), \',\', \'.\') AS FLOAT)) tchm, 
+                            avg(CAST(REPLACE(CAST("163" AS TEXT), \',\', \'.\') AS FLOAT)) scrsa, 
+                            avg(CAST(REPLACE(CAST("Cepas afectadas Carbón" AS TEXT), \',\', \'.\') AS FLOAT)) volcamiento,
+                            avg(CAST(REPLACE(CAST("Tallo Altura (cm)" AS TEXT), \',\', \'.\') AS FLOAT)) altura_planta, 
+                            avg(CAST(REPLACE(CAST("Población (m)" AS TEXT), \',\', \'.\') AS FLOAT)) poblacion, 
+                            avg(CAST(REPLACE(CAST("DiametroTallo" AS TEXT), \',\', \'.\') AS FLOAT)) dmtro_tllo'))
+                ->distinct()
+                ->orderBy('floracion.vrdad')
+                ->get();
+        };
+
+        $flores_PR = $queryFloresPR(true);
+        if ($flores_PR->isEmpty() && $hasSpecificProject) {
+            $flores_PR = $queryFloresPR(false);
+        }
+
+        $queryFloresEIII = function ($useProjectFilter = true) use ($proyectos, $fechai, $fechaf, $hasSpecificProject) {
+            $q = DB::connection('sivar')->table('floracion')
+                ->join('remote_pg_sipro', function ($join) {
+                    $join->on('remote_pg_sipro.id_prycto', '=', 'floracion.id_pr');
+                })
+                ->leftJoin('datos_campo_crudos', function ($join) {
+                    $join->on('datos_campo_crudos.nm_vrdad', '=', 'floracion.vrdad')
+                        ->where('datos_campo_crudos.estdo_slccion', '=', 3);
+                });
+
+            if ($useProjectFilter && $hasSpecificProject) {
+                $q->whereIn('remote_pg_sipro.cd_cntble', $proyectos);
+            }
+
+            return $q->whereBetween('floracion.fcha', array($fechai, $fechaf))
+                ->where('floracion.estado', '=', 0)
+                ->groupBy('floracion.vrdad', "floracion.sxo")
+                ->select(DB::raw('"floracion"."vrdad", 
+                            "floracion"."sxo", 
+                            avg(CAST(REPLACE(CAST(polen AS TEXT), \',\', \'.\') AS FLOAT)) polen, 
+                            avg(CAST(REPLACE(CAST(mosaico AS TEXT), \',\', \'.\') AS FLOAT)) msco_r, 
+                            avg(CAST(REPLACE(CAST(roya AS TEXT), \',\', \'.\') AS FLOAT)) rya_cfe_r, 
+                            avg(CAST(REPLACE(CAST("179" AS TEXT), \',\', \'.\') AS FLOAT)) roya_naranja, 
+                            avg(CAST(REPLACE(CAST(carbon AS TEXT), \',\', \'.\') AS FLOAT)) carbon, 
+                            avg(CAST(REPLACE(CAST("173" AS TEXT), \',\', \'.\') AS FLOAT)) tchm, 
+                            avg(CAST(REPLACE(CAST("163" AS TEXT), \',\', \'.\') AS FLOAT)) scrsa, 
+                            avg(CAST(REPLACE(CAST("Cepas afectadas Carbón" AS TEXT), \',\', \'.\') AS FLOAT)) volcamiento,
+                            avg(CAST(REPLACE(CAST("Tallo Altura (cm)" AS TEXT), \',\', \'.\') AS FLOAT)) altura_planta, 
+                            avg(CAST(REPLACE(CAST("Población (m)" AS TEXT), \',\', \'.\') AS FLOAT)) poblacion, 
+                            avg(CAST(REPLACE(CAST("DiametroTallo" AS TEXT), \',\', \'.\') AS FLOAT)) dmtro_tllo'))
+                ->distinct()
+                ->orderBy('floracion.vrdad')
+                ->get();
+        };
+
+        $flores_EIII = $queryFloresEIII(true);
+        if ($flores_EIII->isEmpty() && $hasSpecificProject) {
+            $flores_EIII = $queryFloresEIII(false);
+        }
 
         $variedad_testigo = DB::connection('sivar')->table('caracterizacion_banco_germoplasma')
             ->select(DB::raw('"variedad", 
@@ -389,23 +424,23 @@ class CrossingService
                 ->where('floracion.estado', '=', 0)
                 ->where('floracion.bolsa_comun', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.polen", "floracion.id_pr", "caracteres.id_crcter", "caracteres.nmbre_crcter", "remote_pg_sipro.nm_prycto")
-                ->select(DB::raw('"floracion"."vrdad", 
-                                        "floracion"."sxo", 
-                                        "floracion"."polen",
-                                        "floracion"."id_pr",
-                                        "caracteres"."nmbre_crcter" as id_crcter,
-                                        "caracteres"."id_crcter" as id_caracter,
-                                        "remote_pg_sipro"."nm_prycto" as nombre_proyecto,
-                                        avg(mosaico_p::float) msco_r, 
-                                        avg(roya_cafe_r::float) rya_cfe_r, 
-                                        avg(roya_naranja_r::float) roya_naranja, 
-                                        avg(carbon_p::float) carbon,
-                                        avg(tchm::float) tchm, 
-                                        avg(diametro_tallo::float) dmtro_tllo, 
-                                        avg(volcamiento::float) volcamiento, 
-                                        avg(altura_planta::float) altura_planta, 
-                                        avg(poblacion_1m::float) poblacion, 
-                                        avg(sacarosa::float) scrsa'))
+                ->select(DB::raw("\"floracion\".\"vrdad\", 
+                                        \"floracion\".\"sxo\", 
+                                        \"floracion\".\"polen\",
+                                        \"floracion\".\"id_pr\",
+                                        \"caracteres\".\"nmbre_crcter\" as id_crcter,
+                                        \"caracteres\".\"id_crcter\" as id_caracter,
+                                        \"remote_pg_sipro\".\"nm_prycto\" as nombre_proyecto,
+                                        avg(NULLIF(REPLACE(mosaico_p::text, ',', '.'), '')::numeric) msco_r, 
+                                        avg(NULLIF(REPLACE(roya_cafe_r::text, ',', '.'), '')::numeric) rya_cfe_r, 
+                                        avg(NULLIF(REPLACE(roya_naranja_r::text, ',', '.'), '')::numeric) roya_naranja, 
+                                        avg(NULLIF(REPLACE(carbon_p::text, ',', '.'), '')::numeric) carbon,
+                                        avg(NULLIF(REPLACE(tchm::text, ',', '.'), '')::numeric) tchm, 
+                                        avg(NULLIF(REPLACE(diametro_tallo::text, ',', '.'), '')::numeric) dmtro_tllo, 
+                                        avg(NULLIF(REPLACE(volcamiento::text, ',', '.'), '')::numeric) volcamiento, 
+                                        avg(NULLIF(REPLACE(altura_planta::text, ',', '.'), '')::numeric) altura_planta, 
+                                        avg(NULLIF(REPLACE(poblacion_1m::text, ',', '.'), '')::numeric) poblacion, 
+                                        avg(NULLIF(REPLACE(sacarosa::text, ',', '.'), '')::numeric) scrsa"))
                 ->distinct()
                 ->orderBy('floracion.polen')
                 ->get();
@@ -426,23 +461,23 @@ class CrossingService
                 ->where('floracion.estado', '=', 0)
                 ->where('floracion.bolsa_comun', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-                ->select(DB::raw('"floracion"."vrdad", 
-                                            "floracion"."sxo", 
-                                            "floracion"."id_pr",
-                                            "caracteres"."nmbre_crcter" as id_crcter,
-                                            "caracteres"."id_crcter" as id_caracter,
-                                            "floracion"."polen",
-                                            "remote_pg_sipro"."nm_prycto" as nombre_proyecto,
-                                            avg(mosaico::float) msco_r, 
-                                            avg(roya::float) rya_cfe_r, 
-                                            avg("179"::float) roya_naranja, 
-                                            avg(carbon::float) carbon, 
-                                            avg("173"::float) tchm, 
-                                            avg("163"::float) scrsa, 
-                                            avg("Cepas afectadas Carbón"::float) volcamiento,
-                                            avg("Tallo Altura (cm)"::float) altura_planta, 
-                                            avg("Población (m)"::float) poblacion, 
-                                            avg("DiametroTallo"::float) dmtro_tllo'))
+                ->select(DB::raw("\"floracion\".\"vrdad\", 
+                                            \"floracion\".\"sxo\", 
+                                            \"floracion\".\"id_pr\",
+                                            \"caracteres\".\"nmbre_crcter\" as id_crcter,
+                                            \"caracteres\".\"id_crcter\" as id_caracter,
+                                            \"floracion\".\"polen\",
+                                            \"remote_pg_sipro\".\"nm_prycto\" as nombre_proyecto,
+                                            avg(NULLIF(REPLACE(mosaico::text, ',', '.'), '')::numeric) msco_r, 
+                                            avg(NULLIF(REPLACE(roya::text, ',', '.'), '')::numeric) rya_cfe_r, 
+                                            avg(NULLIF(REPLACE(\"179\"::text, ',', '.'), '')::numeric) roya_naranja, 
+                                            avg(NULLIF(REPLACE(carbon::text, ',', '.'), '')::numeric) carbon, 
+                                            avg(NULLIF(REPLACE(\"173\"::text, ',', '.'), '')::numeric) tchm, 
+                                            avg(NULLIF(REPLACE(\"163\"::text, ',', '.'), '')::numeric) scrsa, 
+                                            avg(NULLIF(REPLACE(\"Cepas afectadas Carbón\"::text, ',', '.'), '')::numeric) volcamiento,
+                                            avg(NULLIF(REPLACE(\"Tallo Altura (cm)\"::text, ',', '.'), '')::numeric) altura_planta, 
+                                            avg(NULLIF(REPLACE(\"Población (m)\"::text, ',', '.'), '')::numeric) poblacion, 
+                                            avg(NULLIF(REPLACE(\"DiametroTallo\"::text, ',', '.'), '')::numeric) dmtro_tllo"))
                 ->distinct()
                 ->orderBy('floracion.polen')
                 ->get();
@@ -463,39 +498,39 @@ class CrossingService
                 ->where('floracion.estado', '=', 0)
                 ->where('floracion.bolsa_comun', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.id_crcter", "caracteres.nmbre_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-                ->select(DB::raw('"floracion"."vrdad", 
-                                            "floracion"."sxo", 
-                                            "floracion"."id_pr",
-                                            "caracteres"."nmbre_crcter" as id_crcter,
-                                            "caracteres"."id_crcter" as id_caracter,
-                                            "floracion"."polen",
-                                            "remote_pg_sipro"."nm_prycto" as nombre_proyecto,
-                                            avg(mosaico::float) msco_r, 
-                                            avg(roya::float) rya_cfe_r, 
-                                            avg("179"::float) roya_naranja, 
-                                            avg(carbon::float) carbon, 
-                                            avg("173"::float) tchm, 
-                                            avg("163"::float) scrsa, 
-                                            avg("Cepas afectadas Carbón"::float) volcamiento,
-                                            avg("Tallo Altura (cm)"::float) altura_planta, 
-                                            avg("Población (m)"::float) poblacion, 
-                                            avg("DiametroTallo"::float) dmtro_tllo'))
+                ->select(DB::raw("\"floracion\".\"vrdad\", 
+                                            \"floracion\".\"sxo\", 
+                                            \"floracion\".\"id_pr\",
+                                            \"caracteres\".\"nmbre_crcter\" as id_crcter,
+                                            \"caracteres\".\"id_crcter\" as id_caracter,
+                                            \"floracion\".\"polen\",
+                                            \"remote_pg_sipro\".\"nm_prycto\" as nombre_proyecto,
+                                            avg(NULLIF(REPLACE(mosaico::text, ',', '.'), '')::numeric) msco_r, 
+                                            avg(NULLIF(REPLACE(roya::text, ',', '.'), '')::numeric) rya_cfe_r, 
+                                            avg(NULLIF(REPLACE(\"179\"::text, ',', '.'), '')::numeric) roya_naranja, 
+                                            avg(NULLIF(REPLACE(carbon::text, ',', '.'), '')::numeric) carbon, 
+                                            avg(NULLIF(REPLACE(\"173\"::text, ',', '.'), '')::numeric) tchm, 
+                                            avg(NULLIF(REPLACE(\"163\"::text, ',', '.'), '')::numeric) scrsa, 
+                                            avg(NULLIF(REPLACE(\"Cepas afectadas Carbón\"::text, ',', '.'), '')::numeric) volcamiento,
+                                            avg(NULLIF(REPLACE(\"Tallo Altura (cm)\"::text, ',', '.'), '')::numeric) altura_planta, 
+                                            avg(NULLIF(REPLACE(\"Población (m)\"::text, ',', '.'), '')::numeric) poblacion, 
+                                            avg(NULLIF(REPLACE(\"DiametroTallo\"::text, ',', '.'), '')::numeric) dmtro_tllo"))
                 ->distinct()
                 ->orderBy('floracion.polen')
                 ->get();
 
             $variedad_testigo = DB::connection('sivar')->table('caracterizacion_banco_germoplasma')
-                ->select(DB::raw('"variedad", 
-                                            avg(mosaico_p::float) msco_r, 
-                                            avg( roya_cafe_r::float) rya_cfe_r, 
-                                            avg(roya_naranja_r::float) roya_naranja, 
-                                            avg(carbon_p::float) carbon, 
-                                            avg(tchm::float) tchm, 
-                                            avg(diametro_tallo::float) dmtro_tllo, 
-                                            avg(volcamiento::float) volcamiento,
-                                            avg(altura_planta::float) altura_planta, 
-                                            avg(poblacion_1m::float) poblacion, 
-                                            avg(sacarosa::float) scrsa'))
+                ->select(DB::raw("\"variedad\", 
+                                            avg(NULLIF(REPLACE(mosaico_p::text, ',', '.'), '')::numeric) msco_r, 
+                                            avg(NULLIF(REPLACE( roya_cafe_r::text, ',', '.'), '')::numeric) rya_cfe_r, 
+                                            avg(NULLIF(REPLACE(roya_naranja_r::text, ',', '.'), '')::numeric) roya_naranja, 
+                                            avg(NULLIF(REPLACE(carbon_p::text, ',', '.'), '')::numeric) carbon, 
+                                            avg(NULLIF(REPLACE(tchm::text, ',', '.'), '')::numeric) tchm, 
+                                            avg(NULLIF(REPLACE(diametro_tallo::text, ',', '.'), '')::numeric) dmtro_tllo, 
+                                            avg(NULLIF(REPLACE(volcamiento::text, ',', '.'), '')::numeric) volcamiento,
+                                            avg(NULLIF(REPLACE(altura_planta::text, ',', '.'), '')::numeric) altura_planta, 
+                                            avg(NULLIF(REPLACE(poblacion_1m::text, ',', '.'), '')::numeric) poblacion, 
+                                            avg(NULLIF(REPLACE(sacarosa::text, ',', '.'), '')::numeric) scrsa"))
                 ->where('variedad', '=', $testigo)
                 ->groupBy("variedad")
                 ->first();
@@ -590,23 +625,23 @@ class CrossingService
             //->where('caracterizacion_banco_germoplasma.sitio_seleccion', '=', $ambiente_sitio)
             //->where('caracterizacion_banco_germoplasma.estado_seleccion', '=', $ambiente_estados)
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.polen", "floracion.id_pr", "caracteres.id_crcter", "caracteres.nmbre_crcter", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw('"floracion"."vrdad", 
-                        "floracion"."sxo", 
-                        "floracion"."polen",
-                        "floracion"."id_pr",
-                        "caracteres"."nmbre_crcter" as id_crcter,
-                        "caracteres"."id_crcter" as id_caracter,
-                        "remote_pg_sipro"."nm_prycto" as nombre_proyecto,
-                        avg(mosaico_p::float) msco_r, 
-                        avg(roya_cafe_r::float) rya_cfe_r, 
-                        avg(roya_naranja_r::float) roya_naranja, 
-                        avg(carbon_p::float) carbon,
-                        avg(tchm::float) tchm, 
-                        avg(diametro_tallo::float) dmtro_tllo, 
-                        avg(volcamiento::float) volcamiento, 
-                        avg(altura_planta::float) altura_planta, 
-                        avg(poblacion_1m::float) poblacion, 
-                        avg(sacarosa::float) scrsa'))
+            ->select(DB::raw("\"floracion\".\"vrdad\", 
+                        \"floracion\".\"sxo\", 
+                        \"floracion\".\"polen\",
+                        \"floracion\".\"id_pr\",
+                        \"caracteres\".\"nmbre_crcter\" as id_crcter,
+                        \"caracteres\".\"id_crcter\" as id_caracter,
+                        \"remote_pg_sipro\".\"nm_prycto\" as nombre_proyecto,
+                        avg(NULLIF(REPLACE(mosaico_p::text, ',', '.'), '')::numeric) msco_r, 
+                        avg(NULLIF(REPLACE(roya_cafe_r::text, ',', '.'), '')::numeric) rya_cfe_r, 
+                        avg(NULLIF(REPLACE(roya_naranja_r::text, ',', '.'), '')::numeric) roya_naranja, 
+                        avg(NULLIF(REPLACE(carbon_p::text, ',', '.'), '')::numeric) carbon,
+                        avg(NULLIF(REPLACE(tchm::text, ',', '.'), '')::numeric) tchm, 
+                        avg(NULLIF(REPLACE(diametro_tallo::text, ',', '.'), '')::numeric) dmtro_tllo, 
+                        avg(NULLIF(REPLACE(volcamiento::text, ',', '.'), '')::numeric) volcamiento, 
+                        avg(NULLIF(REPLACE(altura_planta::text, ',', '.'), '')::numeric) altura_planta, 
+                        avg(NULLIF(REPLACE(poblacion_1m::text, ',', '.'), '')::numeric) poblacion, 
+                        avg(NULLIF(REPLACE(sacarosa::text, ',', '.'), '')::numeric) scrsa"))
             ->distinct()
             ->orderBy('floracion.polen')
             ->get();
@@ -626,23 +661,23 @@ class CrossingService
             ->where('floracion.estado', '=', 0)
             ->where('floracion.bolsa_comun', '=', 1)
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw('"floracion"."vrdad", 
-                            "floracion"."sxo", 
-                            "floracion"."id_pr",
-                            "caracteres"."nmbre_crcter" as id_crcter,
-                            "caracteres"."id_crcter" as id_caracter,
-                            "floracion"."polen",
-                            "remote_pg_sipro"."nm_prycto" as nombre_proyecto,
-                            avg(mosaico::float) msco_r, 
-                            avg(roya::float) rya_cfe_r, 
-                            avg("179"::float) roya_naranja, 
-                            avg(carbon::float) carbon, 
-                            avg("173"::float) tchm, 
-                            avg("163"::float) scrsa, 
-                            avg("Cepas afectadas Carbón"::float) volcamiento,
-                            avg("Tallo Altura (cm)"::float) altura_planta, 
-                            avg("Población (m)"::float) poblacion, 
-                            avg("DiametroTallo"::float) dmtro_tllo'))
+            ->select(DB::raw("\"floracion\".\"vrdad\", 
+                            \"floracion\".\"sxo\", 
+                            \"floracion\".\"id_pr\",
+                            \"caracteres\".\"nmbre_crcter\" as id_crcter,
+                            \"caracteres\".\"id_crcter\" as id_caracter,
+                            \"floracion\".\"polen\",
+                            \"remote_pg_sipro\".\"nm_prycto\" as nombre_proyecto,
+                            avg(NULLIF(REPLACE(mosaico::text, ',', '.'), '')::numeric) msco_r, 
+                            avg(NULLIF(REPLACE(roya::text, ',', '.'), '')::numeric) rya_cfe_r, 
+                            avg(NULLIF(REPLACE(\"179\"::text, ',', '.'), '')::numeric) roya_naranja, 
+                            avg(NULLIF(REPLACE(carbon::text, ',', '.'), '')::numeric) carbon, 
+                            avg(NULLIF(REPLACE(\"173\"::text, ',', '.'), '')::numeric) tchm, 
+                            avg(NULLIF(REPLACE(\"163\"::text, ',', '.'), '')::numeric) scrsa, 
+                            avg(NULLIF(REPLACE(\"Cepas afectadas Carbón\"::text, ',', '.'), '')::numeric) volcamiento,
+                            avg(NULLIF(REPLACE(\"Tallo Altura (cm)\"::text, ',', '.'), '')::numeric) altura_planta, 
+                            avg(NULLIF(REPLACE(\"Población (m)\"::text, ',', '.'), '')::numeric) poblacion, 
+                            avg(NULLIF(REPLACE(\"DiametroTallo\"::text, ',', '.'), '')::numeric) dmtro_tllo"))
             ->distinct()
             ->orderBy('floracion.polen')
             ->get();
@@ -662,39 +697,39 @@ class CrossingService
             ->where('floracion.estado', '=', 0)
             ->where('floracion.bolsa_comun', '=', 1)
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw('"floracion"."vrdad", 
-                            "floracion"."sxo", 
-                            "floracion"."id_pr",
-                            "caracteres"."nmbre_crcter" as id_crcter,
-                            "caracteres"."id_crcter" as id_caracter,
-                            "floracion"."polen",
-                            "remote_pg_sipro"."nm_prycto" as nombre_proyecto,
-                            avg(mosaico::float) msco_r, 
-                            avg(roya::float) rya_cfe_r, 
-                            avg("179"::float) roya_naranja, 
-                            avg(carbon::float) carbon, 
-                            avg("173"::float) tchm, 
-                            avg("163"::float) scrsa, 
-                            avg("Cepas afectadas Carbón"::float) volcamiento,
-                            avg("Tallo Altura (cm)"::float) altura_planta, 
-                            avg("Población (m)"::float) poblacion, 
-                            avg("DiametroTallo"::float) dmtro_tllo'))
+            ->select(DB::raw("\"floracion\".\"vrdad\", 
+                            \"floracion\".\"sxo\", 
+                            \"floracion\".\"id_pr\",
+                            \"caracteres\".\"nmbre_crcter\" as id_crcter,
+                            \"caracteres\".\"id_crcter\" as id_caracter,
+                            \"floracion\".\"polen\",
+                            \"remote_pg_sipro\".\"nm_prycto\" as nombre_proyecto,
+                            avg(NULLIF(REPLACE(mosaico::text, ',', '.'), '')::numeric) msco_r, 
+                            avg(NULLIF(REPLACE(roya::text, ',', '.'), '')::numeric) rya_cfe_r, 
+                            avg(NULLIF(REPLACE(\"179\"::text, ',', '.'), '')::numeric) roya_naranja, 
+                            avg(NULLIF(REPLACE(carbon::text, ',', '.'), '')::numeric) carbon, 
+                            avg(NULLIF(REPLACE(\"173\"::text, ',', '.'), '')::numeric) tchm, 
+                            avg(NULLIF(REPLACE(\"163\"::text, ',', '.'), '')::numeric) scrsa, 
+                            avg(NULLIF(REPLACE(\"Cepas afectadas Carbón\"::text, ',', '.'), '')::numeric) volcamiento,
+                            avg(NULLIF(REPLACE(\"Tallo Altura (cm)\"::text, ',', '.'), '')::numeric) altura_planta, 
+                            avg(NULLIF(REPLACE(\"Población (m)\"::text, ',', '.'), '')::numeric) poblacion, 
+                            avg(NULLIF(REPLACE(\"DiametroTallo\"::text, ',', '.'), '')::numeric) dmtro_tllo"))
             ->distinct()
             ->orderBy('floracion.polen')
             ->get();
 
         $variedad_testigo = DB::connection('sivar')->table('caracterizacion_banco_germoplasma')
-            ->select(DB::raw('"variedad", 
-                            avg(mosaico_p::float) msco_r, 
-                            avg( roya_cafe_r::float) rya_cfe_r, 
-                            avg(roya_naranja_r::float) roya_naranja, 
-                            avg(carbon_p::float) carbon, 
-                            avg(tchm::float) tchm, 
-                            avg(diametro_tallo::float) dmtro_tllo, 
-                            avg(volcamiento::float) volcamiento,
-                            avg(altura_planta::float) altura_planta, 
-                            avg(poblacion_1m::float) poblacion, 
-                            avg(sacarosa::float) scrsa'))
+            ->select(DB::raw("\"variedad\", 
+                            avg(NULLIF(REPLACE(mosaico_p::text, ',', '.'), '')::numeric) msco_r, 
+                            avg(NULLIF(REPLACE( roya_cafe_r::text, ',', '.'), '')::numeric) rya_cfe_r, 
+                            avg(NULLIF(REPLACE(roya_naranja_r::text, ',', '.'), '')::numeric) roya_naranja, 
+                            avg(NULLIF(REPLACE(carbon_p::text, ',', '.'), '')::numeric) carbon, 
+                            avg(NULLIF(REPLACE(tchm::text, ',', '.'), '')::numeric) tchm, 
+                            avg(NULLIF(REPLACE(diametro_tallo::text, ',', '.'), '')::numeric) dmtro_tllo, 
+                            avg(NULLIF(REPLACE(volcamiento::text, ',', '.'), '')::numeric) volcamiento,
+                            avg(NULLIF(REPLACE(altura_planta::text, ',', '.'), '')::numeric) altura_planta, 
+                            avg(NULLIF(REPLACE(poblacion_1m::text, ',', '.'), '')::numeric) poblacion, 
+                            avg(NULLIF(REPLACE(sacarosa::text, ',', '.'), '')::numeric) scrsa"))
             ->where('variedad', '=', $testigo)
             ->groupBy("variedad")
             ->first();
@@ -779,23 +814,23 @@ class CrossingService
             //->where('caracterizacion_banco_germoplasma.sitio_seleccion', '=', $ambiente_sitio)
             //->where('caracterizacion_banco_germoplasma.estado_seleccion', '=', $ambiente_estados)
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.polen", "floracion.id_pr", "caracteres.id_crcter", "caracteres.nmbre_crcter", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw('"floracion"."vrdad", 
-                    "floracion"."sxo", 
-                    "floracion"."polen",
-                    "floracion"."id_pr",
-                    "caracteres"."nmbre_crcter" as id_crcter,
-                    "caracteres"."id_crcter" as id_caracter,
-                    "remote_pg_sipro"."nm_prycto" as nombre_proyecto,
-                    avg(mosaico_p::float) msco_r, 
-                    avg(roya_cafe_r::float) rya_cfe_r, 
-                    avg(roya_naranja_r::float) roya_naranja, 
-                    avg(carbon_p::float) carbon,
-                    avg(tchm::float) tchm, 
-                    avg(diametro_tallo::float) dmtro_tllo, 
-                    avg(volcamiento::float) volcamiento, 
-                    avg(altura_planta::float) altura_planta, 
-                    avg(poblacion_1m::float) poblacion, 
-                    avg(sacarosa::float) scrsa'))
+            ->select(DB::raw("\"floracion\".\"vrdad\", 
+                    \"floracion\".\"sxo\", 
+                    \"floracion\".\"polen\",
+                    \"floracion\".\"id_pr\",
+                    \"caracteres\".\"nmbre_crcter\" as id_crcter,
+                    \"caracteres\".\"id_crcter\" as id_caracter,
+                    \"remote_pg_sipro\".\"nm_prycto\" as nombre_proyecto,
+                    avg(NULLIF(REPLACE(mosaico_p::text, ',', '.'), '')::numeric) msco_r, 
+                    avg(NULLIF(REPLACE(roya_cafe_r::text, ',', '.'), '')::numeric) rya_cfe_r, 
+                    avg(NULLIF(REPLACE(roya_naranja_r::text, ',', '.'), '')::numeric) roya_naranja, 
+                    avg(NULLIF(REPLACE(carbon_p::text, ',', '.'), '')::numeric) carbon,
+                    avg(NULLIF(REPLACE(tchm::text, ',', '.'), '')::numeric) tchm, 
+                    avg(NULLIF(REPLACE(diametro_tallo::text, ',', '.'), '')::numeric) dmtro_tllo, 
+                    avg(NULLIF(REPLACE(volcamiento::text, ',', '.'), '')::numeric) volcamiento, 
+                    avg(NULLIF(REPLACE(altura_planta::text, ',', '.'), '')::numeric) altura_planta, 
+                    avg(NULLIF(REPLACE(poblacion_1m::text, ',', '.'), '')::numeric) poblacion, 
+                    avg(NULLIF(REPLACE(sacarosa::text, ',', '.'), '')::numeric) scrsa"))
             ->distinct()
             ->orderBy('floracion.polen')
             ->get();
@@ -816,23 +851,23 @@ class CrossingService
             ->where('floracion.bolsa_comun', '=', 0)
             ->where('remote_pg_sipro.id_prycto', $proy)
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw('"floracion"."vrdad", 
-                        "floracion"."sxo", 
-                        "floracion"."id_pr",
-                        "caracteres"."nmbre_crcter" as id_crcter,
-                        "caracteres"."id_crcter" as id_caracter,
-                        "floracion"."polen",
-                        "remote_pg_sipro"."nm_prycto" as nombre_proyecto,
-                        avg(mosaico::float) msco_r, 
-                        avg(roya::float) rya_cfe_r, 
-                        avg("179"::float) roya_naranja, 
-                        avg(carbon::float) carbon, 
-                        avg("173"::float) tchm, 
-                        avg("163"::float) scrsa, 
-                        avg("Cepas afectadas Carbón"::float) volcamiento,
-                        avg("Tallo Altura (cm)"::float) altura_planta, 
-                        avg("Población (m)"::float) poblacion, 
-                        avg("DiametroTallo"::float) dmtro_tllo'))
+            ->select(DB::raw("\"floracion\".\"vrdad\", 
+                        \"floracion\".\"sxo\", 
+                        \"floracion\".\"id_pr\",
+                        \"caracteres\".\"nmbre_crcter\" as id_crcter,
+                        \"caracteres\".\"id_crcter\" as id_caracter,
+                        \"floracion\".\"polen\",
+                        \"remote_pg_sipro\".\"nm_prycto\" as nombre_proyecto,
+                        avg(NULLIF(REPLACE(mosaico::text, ',', '.'), '')::numeric) msco_r, 
+                        avg(NULLIF(REPLACE(roya::text, ',', '.'), '')::numeric) rya_cfe_r, 
+                        avg(NULLIF(REPLACE(\"179\"::text, ',', '.'), '')::numeric) roya_naranja, 
+                        avg(NULLIF(REPLACE(carbon::text, ',', '.'), '')::numeric) carbon, 
+                        avg(NULLIF(REPLACE(\"173\"::text, ',', '.'), '')::numeric) tchm, 
+                        avg(NULLIF(REPLACE(\"163\"::text, ',', '.'), '')::numeric) scrsa, 
+                        avg(NULLIF(REPLACE(\"Cepas afectadas Carbón\"::text, ',', '.'), '')::numeric) volcamiento,
+                        avg(NULLIF(REPLACE(\"Tallo Altura (cm)\"::text, ',', '.'), '')::numeric) altura_planta, 
+                        avg(NULLIF(REPLACE(\"Población (m)\"::text, ',', '.'), '')::numeric) poblacion, 
+                        avg(NULLIF(REPLACE(\"DiametroTallo\"::text, ',', '.'), '')::numeric) dmtro_tllo"))
             ->distinct()
             ->orderBy('floracion.polen')
             ->get();
@@ -853,39 +888,39 @@ class CrossingService
             ->where('floracion.bolsa_comun', '=', 0)
             ->where('remote_pg_sipro.id_prycto', $proy)
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw('"floracion"."vrdad", 
-                        "floracion"."sxo", 
-                        "floracion"."id_pr",
-                        "caracteres"."nmbre_crcter" as id_crcter,
-                        "caracteres"."id_crcter" as id_caracter,
-                        "floracion"."polen",
-                        "remote_pg_sipro"."nm_prycto" as nombre_proyecto,
-                        avg(mosaico::float) msco_r, 
-                        avg(roya::float) rya_cfe_r, 
-                        avg("179"::float) roya_naranja, 
-                        avg(carbon::float) carbon, 
-                        avg("173"::float) tchm, 
-                        avg("163"::float) scrsa, 
-                        avg("Cepas afectadas Carbón"::float) volcamiento,
-                        avg("Tallo Altura (cm)"::float) altura_planta, 
-                        avg("Población (m)"::float) poblacion, 
-                        avg("DiametroTallo"::float) dmtro_tllo'))
+            ->select(DB::raw("\"floracion\".\"vrdad\", 
+                        \"floracion\".\"sxo\", 
+                        \"floracion\".\"id_pr\",
+                        \"caracteres\".\"nmbre_crcter\" as id_crcter,
+                        \"caracteres\".\"id_crcter\" as id_caracter,
+                        \"floracion\".\"polen\",
+                        \"remote_pg_sipro\".\"nm_prycto\" as nombre_proyecto,
+                        avg(NULLIF(REPLACE(mosaico::text, ',', '.'), '')::numeric) msco_r, 
+                        avg(NULLIF(REPLACE(roya::text, ',', '.'), '')::numeric) rya_cfe_r, 
+                        avg(NULLIF(REPLACE(\"179\"::text, ',', '.'), '')::numeric) roya_naranja, 
+                        avg(NULLIF(REPLACE(carbon::text, ',', '.'), '')::numeric) carbon, 
+                        avg(NULLIF(REPLACE(\"173\"::text, ',', '.'), '')::numeric) tchm, 
+                        avg(NULLIF(REPLACE(\"163\"::text, ',', '.'), '')::numeric) scrsa, 
+                        avg(NULLIF(REPLACE(\"Cepas afectadas Carbón\"::text, ',', '.'), '')::numeric) volcamiento,
+                        avg(NULLIF(REPLACE(\"Tallo Altura (cm)\"::text, ',', '.'), '')::numeric) altura_planta, 
+                        avg(NULLIF(REPLACE(\"Población (m)\"::text, ',', '.'), '')::numeric) poblacion, 
+                        avg(NULLIF(REPLACE(\"DiametroTallo\"::text, ',', '.'), '')::numeric) dmtro_tllo"))
             ->distinct()
             ->orderBy('floracion.polen')
             ->get();
 
         $variedad_testigo = DB::connection('sivar')->table('caracterizacion_banco_germoplasma')
-            ->select(DB::raw('"variedad", 
-                        avg(mosaico_p::float) msco_r, 
-                        avg( roya_cafe_r::float) rya_cfe_r, 
-                        avg(roya_naranja_r::float) roya_naranja, 
-                        avg(carbon_p::float) carbon, 
-                        avg(tchm::float) tchm, 
-                        avg(diametro_tallo::float) dmtro_tllo, 
-                        avg(volcamiento::float) volcamiento,
-                        avg(altura_planta::float) altura_planta, 
-                        avg(poblacion_1m::float) poblacion, 
-                        avg(sacarosa::float) scrsa'))
+            ->select(DB::raw("\"variedad\", 
+                        avg(NULLIF(REPLACE(mosaico_p::text, ',', '.'), '')::numeric) msco_r, 
+                        avg(NULLIF(REPLACE( roya_cafe_r::text, ',', '.'), '')::numeric) rya_cfe_r, 
+                        avg(NULLIF(REPLACE(roya_naranja_r::text, ',', '.'), '')::numeric) roya_naranja, 
+                        avg(NULLIF(REPLACE(carbon_p::text, ',', '.'), '')::numeric) carbon, 
+                        avg(NULLIF(REPLACE(tchm::text, ',', '.'), '')::numeric) tchm, 
+                        avg(NULLIF(REPLACE(diametro_tallo::text, ',', '.'), '')::numeric) dmtro_tllo, 
+                        avg(NULLIF(REPLACE(volcamiento::text, ',', '.'), '')::numeric) volcamiento,
+                        avg(NULLIF(REPLACE(altura_planta::text, ',', '.'), '')::numeric) altura_planta, 
+                        avg(NULLIF(REPLACE(poblacion_1m::text, ',', '.'), '')::numeric) poblacion, 
+                        avg(NULLIF(REPLACE(sacarosa::text, ',', '.'), '')::numeric) scrsa"))
             ->where('variedad', '=', $testigo)
             ->groupBy("variedad")
             ->first();
@@ -999,6 +1034,28 @@ class CrossingService
     {
         $ponderados = [];
         $sumaPonderados = 0;
+
+        if ($proyecto === 'General' && !empty($ambiente)) {
+            $count = DB::connection('sivar')->table('ponderados_valor_merito')
+                ->where('id_proyecto', 'General')
+                ->where('ambiente', $ambiente)
+                ->count();
+            if ($count == 0) {
+                $base = DB::connection('sivar')->table('ponderados_valor_merito')
+                    ->where('id_proyecto', '010105')
+                    ->where('ambiente', $ambiente)
+                    ->get();
+                foreach ($base as $row) {
+                    DB::connection('sivar')->table('ponderados_valor_merito')->insert([
+                        'id_proyecto' => 'General',
+                        'ambiente' => $ambiente,
+                        'id_caracteristica' => $row->id_caracteristica,
+                        'nivel' => $row->nivel,
+                        'ponderado' => $row->ponderado
+                    ]);
+                }
+            }
+        }
 
         if ($proyecto != 'x') {
             $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
@@ -1129,85 +1186,212 @@ class CrossingService
     {
         $var = explode("_", $variedad);
         $fechaf = Carbon::today()->format('Y-m-d');
-        $fechai = Carbon::yesterday()->format('Y-m-d');
-        
-        $flor = DB::connection('sivar')->table('floracion')
-            ->whereBetween('floracion.fcha', array($fechai, $fechaf))
-            ->where('floracion.id_pr', '=', str_replace("9999", "", $var[1]))
-            ->where('floracion.id_crcter', '=', $var[2])
-            ->where('floracion.estado', '=', '0')
-            ->where('floracion.vrdad', '=', $var[0])
-            ->where('floracion.bolsa_comun', $bolsa)
+        $fechai = Carbon::today()->subDays(60)->format('Y-m-d');
+
+        // Resolve target project id_prycto if cd_cntble was passed
+        $targetProj = DB::connection('sivar')->table('remote_pg_sipro')
+            ->where('cd_cntble', $proyecto)
+            ->orWhere('id_prycto', $proyecto)
             ->first();
+        $targetIdPrycto = $targetProj ? $targetProj->id_prycto : $proyecto;
+
+        $idPrOrigin = str_replace("9999", "", $var[1] ?? '');
+        $idCrcter = $var[2] ?? null;
+        $vrdadName = $var[0] ?? '';
+
+        $query = DB::connection('sivar')->table('floracion')
+            ->whereBetween('floracion.fcha', array($fechai, $fechaf))
+            ->where('floracion.estado', '=', '0')
+            ->where('floracion.vrdad', '=', $vrdadName);
+
+        if ($idCrcter) {
+            $query->where('floracion.id_crcter', '=', $idCrcter);
+        }
+
+        if ((int)$bolsa === 1) {
+            $query->where('floracion.bolsa_comun', 1);
+        } else {
+            if ($idPrOrigin !== '') {
+                $query->where('floracion.id_pr', '=', $idPrOrigin);
+            }
+            $query->where('floracion.bolsa_comun', 0);
+        }
+
+        $flor = $query->first();
 
         if ($flor) {
             $id_flor = $flor->id_flrcion;
             DB::connection('sivar')->table('floracion')
                 ->where('id_flrcion', '=', $id_flor)
-                ->update(['id_pr' => $proyecto, 'bolsa_comun' => '0']);
+                ->update(['id_pr' => $targetIdPrycto, 'bolsa_comun' => 0]);
 
-            return ['status' => true, 'message' => 'Flower sent to project successfully'];
+            return ['status' => true, 'message' => 'Flor asignada al proyecto con éxito'];
         }
 
-        return ['status' => false, 'message' => 'Flower not found or already sent to the project'];
+        return ['status' => false, 'message' => 'Flor no encontrada o ya asignada'];
+    }
+
+    public function devolverFlorABolsaComun($variedad, $proyecto)
+    {
+        $var = explode("_", $variedad);
+        $fechaf = Carbon::today()->format('Y-m-d');
+        $fechai = Carbon::today()->subDays(60)->format('Y-m-d');
+
+        $targetProj = DB::connection('sivar')->table('remote_pg_sipro')
+            ->where('cd_cntble', $proyecto)
+            ->orWhere('id_prycto', $proyecto)
+            ->first();
+        $targetIdPrycto = $targetProj ? $targetProj->id_prycto : $proyecto;
+
+        $idCrcter = $var[2] ?? null;
+        $vrdadName = $var[0] ?? '';
+
+        $query = DB::connection('sivar')->table('floracion')
+            ->whereBetween('floracion.fcha', array($fechai, $fechaf))
+            ->where('floracion.estado', '=', '0')
+            ->where('floracion.vrdad', '=', $vrdadName)
+            ->where('floracion.id_pr', '=', $targetIdPrycto)
+            ->where('floracion.bolsa_comun', 0);
+
+        if ($idCrcter) {
+            $query->where('floracion.id_crcter', '=', $idCrcter);
+        }
+
+        $flor = $query->first();
+
+        if ($flor) {
+            DB::connection('sivar')->table('floracion')
+                ->where('id_flrcion', '=', $flor->id_flrcion)
+                ->update(['bolsa_comun' => 1]);
+
+            return ['status' => true, 'message' => 'Flor devuelta a la Bolsa Común con éxito'];
+        }
+
+        return ['status' => false, 'message' => 'No se encontró la flor para devolver'];
+    }
+
+    public function floresOtrosProyectos($proyectoActual)
+    {
+        $fechaf = Carbon::today()->format('Y-m-d');
+        $fechai = Carbon::today()->subDays(60)->format('Y-m-d');
+
+        $currentIdPrycto = null;
+        if (!empty($proyectoActual)) {
+            $currentProj = DB::connection('sivar')->table('remote_pg_sipro')
+                ->where('cd_cntble', $proyectoActual)
+                ->orWhere('id_prycto', $proyectoActual)
+                ->first();
+            $currentIdPrycto = $currentProj ? $currentProj->id_prycto : $proyectoActual;
+        }
+
+        $query = DB::connection('sivar')->table('floracion')
+            ->leftJoin('remote_pg_sipro', 'remote_pg_sipro.id_prycto', '=', 'floracion.id_pr')
+            ->leftJoin('caracteres', 'caracteres.id_crcter', '=', 'floracion.id_crcter')
+            ->whereBetween('floracion.fcha', [$fechai, $fechaf])
+            ->where('floracion.estado', '=', 0)
+            ->where('floracion.bolsa_comun', '=', 1);
+
+        $flores = $query->groupBy(
+                'floracion.vrdad',
+                'floracion.sxo',
+                'floracion.polen',
+                'floracion.id_pr',
+                'floracion.id_crcter',
+                'floracion.bolsa_comun',
+                'remote_pg_sipro.nm_prycto',
+                'remote_pg_sipro.cd_cntble',
+                'caracteres.nmbre_crcter'
+            )
+            ->select(DB::raw('
+                floracion.vrdad,
+                floracion.sxo,
+                floracion.polen,
+                floracion.id_pr,
+                floracion.id_crcter,
+                floracion.bolsa_comun,
+                remote_pg_sipro.nm_prycto as nombre_proyecto,
+                remote_pg_sipro.cd_cntble as codigo_proyecto,
+                caracteres.nmbre_crcter as nombre_caracter,
+                count(*) as cantidad
+            '))
+            ->orderBy('floracion.vrdad', 'asc')
+            ->get();
+
+        return $flores->map(function($f) {
+            $idPrOrigin = $f->id_pr ?? '9999';
+            $variedadKey = $f->vrdad . '_' . $idPrOrigin . '_' . $f->id_crcter;
+            return [
+                'vrdad' => $f->vrdad,
+                'sxo' => $f->sxo,
+                'polen' => $f->polen,
+                'id_pr' => $f->id_pr,
+                'codigo_proyecto' => $f->codigo_proyecto,
+                'nombre_proyecto' => $f->bolsa_comun == 1 ? 'Bolsa Común' : ($f->nombre_proyecto ?? ('Proyecto ID: ' . $f->id_pr)),
+                'bolsa_comun' => $f->bolsa_comun,
+                'cantidad' => $f->cantidad,
+                'id_crcter' => $f->id_crcter,
+                'nombre_caracter' => $f->nombre_caracter,
+                'variedad_key' => $variedadKey
+            ];
+        });
     }
 
     public function criteriosBancoGermoplasmaPorVariedad($variedad)
     {
-        $sql = "SELECT avg(mosaico_p::float) mosaico, 
-        avg(roya_cafe_r::float) roya_cafe, 
-        avg(roya_naranja_r::float) roya_naranja, 
-        avg(carbon_p::float) carbon,
-        avg(tchm::float) tchm, 
-        avg(diametro_tallo::float) diametro_tallo, 
-        avg(volcamiento::float) volcamiento, 
-        avg(altura_planta::float) altura_planta, 
-        avg(poblacion_1m::float) poblacion, 
-        avg(sacarosa::float) sacarosa,
-        avg(dds::float) dds,
-        avg(tubos::float) tubos,
-        avg(raiz_nf::float) raiz_nf,
-        avg(numero_entrenudos::float) numero_entrenudos,
-        avg(longitud_entrenudo::float) longitud_entrenudo,
-        avg(longitud_cogollo::float) longitud_cogollo,
-        avg(longitud_hoja::float) longitud_hoja,
-        avg(floracion_tllos::float) floracion_tallos,
-        avg(floracion_p::float) floracion_p,
-        avg(aspecto_planta::float) aspecto_planta,
-        avg(aspecto_seleccion::float) aspecto_seleccion,
-        avg(pelusa::float) pelusa,
-        avg(deshoje::float) deshoje,
-        avg(materia_seca::float) materia_seca,
-        avg(humedad::float) humedad,
-        avg(brix::float) brix,
-        avg(fibra::float) fibra,
-        avg(pureza::float) pureza,
-        avg(are::float) are,
-        avg(reductores::float) reductores,
-        avg(atr::float) atr,
-        avg(peso::float) peso,
-        avg(tch::float) tch,
-        avg(tah::float) tah,
-        avg(tsh::float) tsh,
-        avg(tahm::float) tahm,
-        avg(tshm::float) tshm,
-        avg(lsdte::float) lsdte,
-        avg(lsdtt::float) lsdtt,
-        avg(lsdtv::float) lsdtv,
-        avg(lsdt::float) lsdt,
-        avg(rsd::float) rsd,
-        avg(sclyv::float) sclyv,
-        avg(rajadura_inc::float) rajadura_inc,
-        avg(entrenudos_tallo::float) entrenudos_tallo,
-        avg(entrenudos_rajados::float) entrenudos_rajados,
-        avg(hojas_erectas::float) hojas_erectas,
-        avg(raices_tallos::float) raices_tallos,
-        avg(yemas_protuberantes::float) yemas_protuberantes,
-        avg(medula::float) medula,
-        avg(habito_de_crecimiento::float) habito_de_crecimiento,
-        avg(germinacion::float) germinacion,
-        avg(tolerancia_herbicida::float) tolerancia_herbicida,
-        avg(raices_adventicias::float) raices_adventicias
+        $sql = "SELECT avg(NULLIF(REPLACE(mosaico_p::text, ',', '.'), '')::numeric) mosaico, 
+        avg(NULLIF(REPLACE(roya_cafe_r::text, ',', '.'), '')::numeric) roya_cafe, 
+        avg(NULLIF(REPLACE(roya_naranja_r::text, ',', '.'), '')::numeric) roya_naranja, 
+        avg(NULLIF(REPLACE(carbon_p::text, ',', '.'), '')::numeric) carbon,
+        avg(NULLIF(REPLACE(tchm::text, ',', '.'), '')::numeric) tchm, 
+        avg(NULLIF(REPLACE(diametro_tallo::text, ',', '.'), '')::numeric) diametro_tallo, 
+        avg(NULLIF(REPLACE(volcamiento::text, ',', '.'), '')::numeric) volcamiento, 
+        avg(NULLIF(REPLACE(altura_planta::text, ',', '.'), '')::numeric) altura_planta, 
+        avg(NULLIF(REPLACE(poblacion_1m::text, ',', '.'), '')::numeric) poblacion, 
+        avg(NULLIF(REPLACE(sacarosa::text, ',', '.'), '')::numeric) sacarosa,
+        avg(NULLIF(REPLACE(dds::text, ',', '.'), '')::numeric) dds,
+        avg(NULLIF(REPLACE(tubos::text, ',', '.'), '')::numeric) tubos,
+        avg(NULLIF(REPLACE(raiz_nf::text, ',', '.'), '')::numeric) raiz_nf,
+        avg(NULLIF(REPLACE(numero_entrenudos::text, ',', '.'), '')::numeric) numero_entrenudos,
+        avg(NULLIF(REPLACE(longitud_entrenudo::text, ',', '.'), '')::numeric) longitud_entrenudo,
+        avg(NULLIF(REPLACE(longitud_cogollo::text, ',', '.'), '')::numeric) longitud_cogollo,
+        avg(NULLIF(REPLACE(longitud_hoja::text, ',', '.'), '')::numeric) longitud_hoja,
+        avg(NULLIF(REPLACE(floracion_tllos::text, ',', '.'), '')::numeric) floracion_tallos,
+        avg(NULLIF(REPLACE(floracion_p::text, ',', '.'), '')::numeric) floracion_p,
+        avg(NULLIF(REPLACE(aspecto_planta::text, ',', '.'), '')::numeric) aspecto_planta,
+        avg(NULLIF(REPLACE(aspecto_seleccion::text, ',', '.'), '')::numeric) aspecto_seleccion,
+        avg(NULLIF(REPLACE(pelusa::text, ',', '.'), '')::numeric) pelusa,
+        avg(NULLIF(REPLACE(deshoje::text, ',', '.'), '')::numeric) deshoje,
+        avg(NULLIF(REPLACE(materia_seca::text, ',', '.'), '')::numeric) materia_seca,
+        avg(NULLIF(REPLACE(humedad::text, ',', '.'), '')::numeric) humedad,
+        avg(NULLIF(REPLACE(brix::text, ',', '.'), '')::numeric) brix,
+        avg(NULLIF(REPLACE(fibra::text, ',', '.'), '')::numeric) fibra,
+        avg(NULLIF(REPLACE(pureza::text, ',', '.'), '')::numeric) pureza,
+        avg(NULLIF(REPLACE(are::text, ',', '.'), '')::numeric) are,
+        avg(NULLIF(REPLACE(reductores::text, ',', '.'), '')::numeric) reductores,
+        avg(NULLIF(REPLACE(atr::text, ',', '.'), '')::numeric) atr,
+        avg(NULLIF(REPLACE(peso::text, ',', '.'), '')::numeric) peso,
+        avg(NULLIF(REPLACE(tch::text, ',', '.'), '')::numeric) tch,
+        avg(NULLIF(REPLACE(tah::text, ',', '.'), '')::numeric) tah,
+        avg(NULLIF(REPLACE(tsh::text, ',', '.'), '')::numeric) tsh,
+        avg(NULLIF(REPLACE(tahm::text, ',', '.'), '')::numeric) tahm,
+        avg(NULLIF(REPLACE(tshm::text, ',', '.'), '')::numeric) tshm,
+        avg(NULLIF(REPLACE(lsdte::text, ',', '.'), '')::numeric) lsdte,
+        avg(NULLIF(REPLACE(lsdtt::text, ',', '.'), '')::numeric) lsdtt,
+        avg(NULLIF(REPLACE(lsdtv::text, ',', '.'), '')::numeric) lsdtv,
+        avg(NULLIF(REPLACE(lsdt::text, ',', '.'), '')::numeric) lsdt,
+        avg(NULLIF(REPLACE(rsd::text, ',', '.'), '')::numeric) rsd,
+        avg(NULLIF(REPLACE(sclyv::text, ',', '.'), '')::numeric) sclyv,
+        avg(NULLIF(REPLACE(rajadura_inc::text, ',', '.'), '')::numeric) rajadura_inc,
+        avg(NULLIF(REPLACE(entrenudos_tallo::text, ',', '.'), '')::numeric) entrenudos_tallo,
+        avg(NULLIF(REPLACE(entrenudos_rajados::text, ',', '.'), '')::numeric) entrenudos_rajados,
+        avg(NULLIF(REPLACE(hojas_erectas::text, ',', '.'), '')::numeric) hojas_erectas,
+        avg(NULLIF(REPLACE(raices_tallos::text, ',', '.'), '')::numeric) raices_tallos,
+        avg(NULLIF(REPLACE(yemas_protuberantes::text, ',', '.'), '')::numeric) yemas_protuberantes,
+        avg(NULLIF(REPLACE(medula::text, ',', '.'), '')::numeric) medula,
+        avg(NULLIF(REPLACE(habito_de_crecimiento::text, ',', '.'), '')::numeric) habito_de_crecimiento,
+        avg(NULLIF(REPLACE(germinacion::text, ',', '.'), '')::numeric) germinacion,
+        avg(NULLIF(REPLACE(tolerancia_herbicida::text, ',', '.'), '')::numeric) tolerancia_herbicida,
+        avg(NULLIF(REPLACE(raices_adventicias::text, ',', '.'), '')::numeric) raices_adventicias
     FROM public.\"caracterizacion_banco_germoplasma\"";
 
         $bg = DB::select($sql . " WHERE true");

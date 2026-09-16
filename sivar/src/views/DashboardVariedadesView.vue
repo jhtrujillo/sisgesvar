@@ -22,7 +22,7 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Siembra Campo Card -->
+      <!-- Viveros Card -->
       <router-link
         class="group relative flex flex-col bg-white border border-slate-100 hover:border-emerald-100 rounded-2xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
         :to="{ name: 'siembra_campo_viveros.show' }"
@@ -35,7 +35,7 @@
               <path fill="currentColor" d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3zm0 2.83l7 7V18h-4v-6H9v6H5v-5.17l7-7z" />
             </svg>
           </div>
-          <h3 class="text-lg font-bold text-slate-800 mb-2 group-hover:text-cenicana transition-colors">Siembra Campo</h3>
+          <h3 class="text-lg font-bold text-slate-800 mb-2 group-hover:text-cenicana transition-colors">Viveros</h3>
           <p class="text-slate-500 text-xs leading-relaxed mb-4">Administración de viveros, siembras, parcelas, polen y floración en campo.</p>
 
           <span class="inline-flex items-center text-xs font-semibold text-emerald-600 mt-auto">
@@ -138,13 +138,30 @@
       <ModuleCardComponent
         :to="{ name: 'mejoramiento.ensayos.dashboard' }"
         title="Registro de Ensayos"
-        description="Base de datos histórica de ensayos, mapas, croquis e informes agronómicos."
+        description="Base de datos histórica de ensayos, mapas, croquis e informes agronómicos"
       >
         <template #icon>
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" class="transition-transform duration-500 group-hover:scale-105">
             <path
               fill="currentColor"
-              d="M12 22q-2.075 0-3.538-1.463T7 17V8q-.825 0-1.413-.588T5 6V4q0-.825.588-1.413T7 2h10q.825 0 1.413.588T19 4v2q0 .825-.588 1.413T17 8v9q0 2.075-1.463 3.538T12 22Zm0-2q.975 0 1.75-.563T14.825 18H13q-.425 0-.713-.288T12 17q0-.425.288-.713T13 16h2v-1h-2q-.425 0-.713-.288T12 14q0-.425.288-.713T13 13h2v-1h-2q-.425 0-.713-.288T12 11q0-.425.288-.713T13 10h2V8H9v9q0 1.25.875 2.125T12 20Z"
+              d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 16H5v-4h7v4zm0-6H5V7h7v6zm7 6h-5v-4h5v4zm0-6h-5V7h5v6z"
+            />
+          </svg>
+        </template>
+      </ModuleCardComponent>
+
+      <!-- Proyectos & Permisos Card -->
+
+      <ModuleCardComponent
+        :to="{ name: 'project_management.show' }"
+        title="Proyectos & Permisos"
+        description="Administración centralizada de proyectos, control de acceso y asiganción de dueños por usuario."
+      >
+        <template #icon>
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" class="transition-transform duration-500 group-hover:scale-105">
+            <path
+              fill="currentColor"
+              d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12c5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"
             />
           </svg>
         </template>

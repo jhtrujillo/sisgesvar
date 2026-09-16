@@ -1,6 +1,13 @@
 <template>
   <div class="flex justify-start">
-    <BaseButton variant="secondary" size="sm" rounded="full" :to="to" class="group hover:bg-emerald-50 hover:text-cenicana-800 hover:border-emerald-200">
+    <BaseButton
+      variant="secondary"
+      size="sm"
+      rounded="full"
+      :to="to"
+      @click="handleClick"
+      class="group hover:bg-emerald-50 hover:text-cenicana-800 hover:border-emerald-200"
+    >
       <template #icon-left>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -19,15 +26,23 @@
 </template>
 
 <script setup lang="ts">
-import type { RouteLocationRaw } from "vue-router";
+import { useRouter, type RouteLocationRaw } from "vue-router";
 
-withDefaults(
+const router = useRouter();
+
+const props = withDefaults(
   defineProps<{
-    to: RouteLocationRaw;
+    to?: RouteLocationRaw;
     label?: string;
   }>(),
   {
     label: "Volver"
   }
 );
+
+const handleClick = () => {
+  if (!props.to) {
+    router.back();
+  }
+};
 </script>

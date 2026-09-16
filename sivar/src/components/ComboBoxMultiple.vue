@@ -120,12 +120,20 @@ watch(selectedDataBuffer, () => {
 });
 const initSelectedDataBuffer = (selectedData: BasicType | AnyObject) => {
   if (isEqual(selectedData, selectedDataBuffer.value)) return;
-  if (!columnValue.value) {
+  if (!columnValue?.value) {
     selectedDataBuffer.value = selectedData;
     return;
   }
-  selectedDataBuffer.value = dataList.value.filter((record: any) => selectedData == record[columnValue.value!]);
+  const filtered = dataList.value.filter((record: any) => selectedData == record[columnValue.value!]);
+  selectedDataBuffer.value = filtered.length > 0 ? filtered[0] : {};
 };
+
+watch(
+  () => selectedData.value,
+  (newVal) => {
+    initSelectedDataBuffer(newVal);
+  }
+);
 
 onMounted(() => {
   initSelectedDataBuffer(selectedData.value);

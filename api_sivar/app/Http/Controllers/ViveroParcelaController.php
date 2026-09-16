@@ -31,7 +31,7 @@ class ViveroParcelaController extends Controller
 
         $validator = Validator::make($data, [
             'numero_parcela' => 'required|numeric',
-            'variedad_id' => 'required',
+            'variedad_id' => 'nullable',
             'numero_parcela_origen' => 'nullable|numeric',
             'id_plot_origen' => 'nullable',
             'caracter_id' => 'nullable|numeric',
@@ -47,9 +47,11 @@ class ViveroParcelaController extends Controller
             return response()->json(['message' => 'El número de parcela ya existe para este vivero.'], 422);
         }
 
-        $existsVariedad = $vivero->parcelas()->where('variedad_id', $data['variedad_id'])->exists();
-        if ($existsVariedad) {
-            return response()->json(['message' => 'Esta variedad ya fue agregada a este vivero.'], 422);
+        if ($data['variedad_id'] !== null && $data['variedad_id'] !== '') {
+            $existsVariedad = $vivero->parcelas()->where('variedad_id', $data['variedad_id'])->exists();
+            if ($existsVariedad) {
+                return response()->json(['message' => 'Esta variedad ya fue agregada a este vivero.'], 422);
+            }
         }
 
         $parcela = $vivero->parcelas()->create([
@@ -74,7 +76,7 @@ class ViveroParcelaController extends Controller
         $request->validate([
             'parcelas' => 'required|array',
             'parcelas.*.numero_parcela' => 'required|numeric',
-            'parcelas.*.variedad_id' => 'required',
+            'parcelas.*.variedad_id' => 'nullable',
             'parcelas.*.numero_parcela_origen' => 'nullable|numeric',
             'parcelas.*.id_plot_origen' => 'nullable',
             'parcelas.*.caracter_id' => 'nullable|numeric',
@@ -91,20 +93,26 @@ class ViveroParcelaController extends Controller
                 $id_plot_origen = (isset($data['id_plot_origen']) && $data['id_plot_origen'] !== '') ? $data['id_plot_origen'] : null;
                 $caracter_id = (isset($data['caracter_id']) && $data['caracter_id'] !== '') ? $data['caracter_id'] : null;
 
-                // Check if exists (either plot or variedad)
-                $existsPlot = $vivero->parcelas()->where('numero_parcela', $data['numero_parcela'])->exists();
-                if ($existsPlot) continue;
+                if ($data['variedad_id'] !== null && $data['variedad_id'] !== '') {
+                    \Log::info("Checking variedad_id: " . $data['variedad_id'] . " for plot: " . $data['numero_parcela']);
+                    $existsVariedad = $vivero->parcelas()
+                        ->where('variedad_id', $data['variedad_id'])
+                        ->where('numero_parcela', '!=', $data['numero_parcela'])
+                        ->exists();
+                    if ($existsVariedad) continue;
+                }
 
-                $existsVariedad = $vivero->parcelas()->where('variedad_id', $data['variedad_id'])->exists();
-                if ($existsVariedad) continue;
+                \Log::info("Updating plot: " . $data['numero_parcela'] . " with variedad_id: " . $data['variedad_id']);
 
-                $parcela = $vivero->parcelas()->create([
-                    'numero_parcela' => $data['numero_parcela'],
-                    'variedad_id' => $data['variedad_id'],
-                    'numero_parcela_origen' => $numero_parcela_origen,
-                    'id_plot_origen' => $id_plot_origen,
-                    'caracter_id' => $caracter_id,
-                ]);
+                $parcela = $vivero->parcelas()->updateOrCreate(
+                    ['numero_parcela' => $data['numero_parcela']],
+                    [
+                        'variedad_id' => $data['variedad_id'],
+                        'numero_parcela_origen' => $numero_parcela_origen,
+                        'id_plot_origen' => $id_plot_origen,
+                        'caracter_id' => $caracter_id,
+                    ]
+                );
                 
                 $insertedIds[] = $parcela->id;
             }
@@ -136,7 +144,7 @@ class ViveroParcelaController extends Controller
         return response()->json(null, 204);
     }
 
-    public function destroyAll($vivero_id)
+    public function clearAll($vivero_id)
     {
         $vivero = Vivero::findOrFail($vivero_id);
         
@@ -148,13 +156,13 @@ class ViveroParcelaController extends Controller
             $hasCuts = Vivero::where('origen_parcela', 'like', $plotId . '%')->exists();
             if ($hasCuts) {
                 return response()->json([
-                    'message' => 'No se pueden eliminar las parcelas porque existen cortes o viveros registrados que dependen de algunas de ellas.'
+                    'message' => 'No se pueden limpiar las parcelas porque existen cortes o viveros registrados que dependen de algunas de ellas.'
                 ], 400);
             }
         }
         
-        $vivero->parcelas()->delete();
-        return response()->json(['message' => 'Todas las parcelas han sido eliminadas correctamente.']);
+        $vivero->parcelas()->update(['variedad_id' => null, 'caracter_id' => null]);
+        return response()->json(['message' => 'Todas las parcelas han sido limpiadas correctamente.']);
     }
 
     public function update(Request $request, $vivero_id, $parcela_id)
@@ -172,13 +180,14 @@ class ViveroParcelaController extends Controller
 
         $validator = Validator::make($data, [
             'numero_parcela' => 'required|numeric',
-            'variedad_id' => 'required',
+            'variedad_id' => 'nullable',
             'numero_parcela_origen' => 'nullable|numeric',
             'id_plot_origen' => 'nullable',
             'caracter_id' => 'nullable|numeric',
         ]);
 
         if ($validator->fails()) {
+            \Log::error('Validation failed for parcela update: ', $validator->errors()->toArray());
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
@@ -192,12 +201,14 @@ class ViveroParcelaController extends Controller
         }
 
         // Validar que no se duplique la variedad con otra parcela, excluyendo la actual
-        $existsVariedad = $vivero->parcelas()
-            ->where('variedad_id', $data['variedad_id'])
-            ->where('id', '!=', $parcela_id)
-            ->exists();
-        if ($existsVariedad) {
-            return response()->json(['message' => 'Esta variedad ya fue agregada a este vivero.'], 422);
+        if ($data['variedad_id'] !== null && $data['variedad_id'] !== '') {
+            $existsVariedad = $vivero->parcelas()
+                ->where('variedad_id', $data['variedad_id'])
+                ->where('id', '!=', $parcela_id)
+                ->exists();
+            if ($existsVariedad) {
+                return response()->json(['message' => 'Esta variedad ya fue agregada a este vivero.'], 422);
+            }
         }
 
         $parcela->update([

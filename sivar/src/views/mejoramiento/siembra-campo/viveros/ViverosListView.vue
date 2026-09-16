@@ -56,24 +56,20 @@
           <thead class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
             <tr>
               <th class="py-3 px-4 text-center w-12"></th>
-              <th class="py-3 px-6 text-left">ID Vivero</th>
-              <th class="py-3 px-6 text-left">Nombre de Vivero</th>
-              <th class="py-3 px-6 text-left">Ingenio</th>
-              <th class="py-3 px-6 text-left">Hacienda</th>
-              <th class="py-3 px-6 text-left">Lote</th>
-              <th class="py-3 px-6 text-left">N° Vivero</th>
-              <th class="py-3 px-6 text-left">Id Vivero Origen</th>
-              <th class="py-3 px-6 text-left">Proyecto</th>
-              <th class="py-3 px-6 text-left">Fecha Siembra</th>
-              <th class="py-3 px-6 text-center">Acciones</th>
+              <th class="py-3 px-4 text-left">Vivero</th>
+              <th class="py-3 px-4 text-left">Ubicación</th>
+              <th class="py-3 px-4 text-left">ID Plot Origen</th>
+              <th class="py-3 px-4 text-left">Proyecto y Fecha</th>
+              <th class="py-3 px-4 text-center">Estado</th>
+              <th class="py-3 px-4 text-center">Acciones</th>
             </tr>
           </thead>
           <tbody class="text-gray-600 text-sm font-light">
             <tr v-if="loading" class="border-b border-gray-200">
-              <td colspan="10" class="py-3 px-6 text-center">Cargando viveros...</td>
+              <td colspan="7" class="py-3 px-6 text-center">Cargando viveros...</td>
             </tr>
             <tr v-else-if="filteredViveros.length === 0" class="border-b border-gray-200">
-              <td colspan="10" class="py-3 px-6 text-center">No se encontraron resultados.</td>
+              <td colspan="7" class="py-3 px-6 text-center">No se encontraron viveros que coincidan con la búsqueda.</td>
             </tr>
             <template v-else>
               <template v-for="vivero in paginatedViveros" :key="vivero.id">
@@ -96,45 +92,68 @@
                       </svg>
                     </button>
                   </td>
-                  <td class="py-3 px-6 text-left whitespace-nowrap">
-                    <div class="font-bold text-slate-800">{{ vivero.identificador_unico }}</div>
+                  <td class="py-3 px-4 text-left">
+                    <div class="font-bold text-slate-800 whitespace-nowrap">{{ vivero.identificador_unico }}</div>
+                    <div class="text-[10px] text-slate-400 mt-0.5 truncate max-w-[150px]" :title="vivero.nombre">{{ vivero.nombre }}</div>
                   </td>
-                  <td class="py-3 px-6 text-left whitespace-nowrap">
-                    {{ vivero.nombre }}
+                  <td class="py-3 px-4 text-left">
+                    <div class="text-xs font-semibold text-slate-700 whitespace-nowrap">{{ vivero.ingenio }} - {{ vivero.hacienda || "N/A" }}</div>
+                    <div class="mt-1 flex items-center gap-1.5 whitespace-nowrap">
+                      <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                        Lote: {{ vivero.lote?.nombre_lote || "N/A" }}
+                      </span>
+                      <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                        N°: {{ vivero.consecutivo_vivero_ingenio || "N/A" }}
+                      </span>
+                    </div>
                   </td>
-                  <td class="py-3 px-6 text-left whitespace-nowrap">{{ vivero.ingenio }}</td>
-                  <td class="py-3 px-6 text-left whitespace-nowrap font-medium text-slate-700">
-                    {{ vivero.hacienda || "N/A" }}
-                  </td>
-                  <td class="py-3 px-6 text-left whitespace-nowrap">
-                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                      {{ vivero.lote?.nombre_lote || "N/A" }}
-                    </span>
-                  </td>
-                  <td class="py-3 px-6 text-left whitespace-nowrap font-bold font-mono text-slate-700">
-                    {{ vivero.consecutivo_vivero_ingenio || "N/A" }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900 font-mono" :title="vivero.origen_parcela || 'N/A'">
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="text-xs text-gray-900 font-mono font-bold" :title="vivero.origen_parcela || 'N/A'">
                       {{ vivero.id_vivero_origen_formateado || "N/A" }}
                     </div>
-                  </td>
-
-                  <td class="px-6 py-4">
-                    <div class="text-sm text-gray-900" v-if="vivero.proyecto_id">
-                      <span :title="vivero.proyecto?.nm_prycto || 'N/A'">{{ vivero.proyecto?.nm_prycto || "N/A" }}</span>
+                    <div class="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1" v-if="vivero.origen_parcela">
+                      <span class="px-1 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                        Prc: {{ vivero.origen_parcela.split('-').pop() }}
+                      </span>
+                      <span class="text-[9px] text-slate-400" :title="vivero.origen_parcela">({{ vivero.origen_parcela }})</span>
                     </div>
-                    <div class="text-sm text-gray-900" v-else>
+                  </td>
+                  <td class="py-3 px-4">
+                    <div class="text-xs font-semibold text-gray-900 truncate max-w-[150px]" v-if="vivero.proyecto_id" :title="vivero.proyecto?.nm_prycto">
+                      {{ vivero.proyecto?.nm_prycto || "N/A" }}
+                    </div>
+                    <div class="text-xs" v-else>
                       <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 uppercase"
                         >Sin Sembrar / Vacío</span
                       >
                     </div>
+                    <div class="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
+                      <svg v-if="vivero.proyecto_id" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      <span v-if="vivero.proyecto_id">{{ formatDate(vivero.fecha_siembra) }}</span>
+                      <span v-else class="text-slate-400 font-mono italic">N/A</span>
+                    </div>
                   </td>
-                  <td class="py-3 px-6 text-left">
-                    <span v-if="vivero.proyecto_id">{{ formatDate(vivero.fecha_siembra) }}</span>
-                    <span v-else class="text-slate-400 font-mono italic">N/A</span>
+                  <td class="py-3 px-4 text-center whitespace-nowrap">
+                    <span
+                      v-if="vivero.estado === 'Cosechado'"
+                      class="px-2 py-1 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 uppercase tracking-wider"
+                    >
+                      Cosechado
+                    </span>
+                    <span
+                      v-else-if="vivero.proyecto_id"
+                      class="px-2 py-1 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200 uppercase tracking-wider"
+                    >
+                      Activo
+                    </span>
+                    <span
+                      v-else
+                      class="px-2 py-1 rounded text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200 uppercase tracking-wider"
+                    >
+                      Pendiente
+                    </span>
                   </td>
-                  <td class="py-3 px-6 text-center">
+                  <td class="py-3 px-4 text-center">
                     <div class="flex item-center justify-center">
                       <button
                         v-if="vivero.proyecto_id"
@@ -159,6 +178,16 @@
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </button>
+                      <button
+                        v-if="vivero.proyecto_id && vivero.estado !== 'Cosechado'"
+                        @click="confirmarCosecha(vivero)"
+                        class="w-4 mr-2 transform hover:text-amber-600 hover:scale-110 cursor-pointer text-slate-400"
+                        title="Marcar como Cosechado (Finalizar Ciclo)"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
                       </button>
                       <button
@@ -203,7 +232,7 @@
                 </tr>
                 <!-- Detalle de Parcelas Colapsable -->
                 <tr v-if="expandedViveros[vivero.id]">
-                  <td colspan="10" class="bg-slate-50 border-b border-gray-200 p-4">
+                  <td colspan="7" class="bg-slate-50 border-b border-gray-200 p-4">
                     <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
                       <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cenicana" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -221,11 +250,10 @@
                         <table class="w-full text-left border-collapse text-xs">
                           <thead>
                             <tr class="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold">
-                              <th class="px-4 py-2.5 border-b border-slate-200">Plot</th>
+                              <th class="px-4 py-2.5 border-b border-slate-200">Parcela</th>
                               <th class="px-4 py-2.5 border-b border-slate-200">Variedad</th>
                               <th class="px-4 py-2.5 border-b border-slate-200">Pedigree</th>
                               <th class="px-4 py-2.5 border-b border-slate-200">Carácter</th>
-                              <th class="px-4 py-2.5 border-b border-slate-200">Parcela Orig.</th>
                               <th class="px-4 py-2.5 border-b border-slate-200">ID Plot Orig.</th>
                             </tr>
                           </thead>
@@ -236,7 +264,7 @@
                               class="border-b border-slate-100 hover:bg-slate-50 transition-colors"
                             >
                               <td class="px-4 py-2.5 font-bold text-slate-800">{{ p.numero_parcela }}</td>
-                              <td class="px-4 py-2.5 font-bold text-cenicana">{{ p.variedad?.nm_vrdad || "N/A" }}</td>
+                              <td class="px-4 py-2.5 font-bold text-cenicana">{{ p.variedad?.nm_vrdad || p.variedad_id || "N/A" }}</td>
                               <td class="px-4 py-2.5 text-slate-500">{{ p.variedad?.pdgree || "N/A" }}</td>
                               <td class="px-4 py-2.5 text-slate-600">
                                 <span v-if="p.caracter?.nombre">{{ p.caracter.nombre }}</span>
@@ -245,7 +273,6 @@
                                 }}</span>
                                 <span v-else>N/A</span>
                               </td>
-                              <td class="px-4 py-2.5 text-slate-600 font-bold">{{ p.numero_parcela_origen || "N/A" }}</td>
                               <td class="px-4 py-2.5 text-slate-600 font-mono">{{ p.id_plot_origen || "N/A" }}</td>
                             </tr>
                           </tbody>
@@ -493,6 +520,39 @@
         </div>
       </div>
     </div>
+    <!-- Confirm Dialog -->
+    <div v-if="confirmDialog.isOpen" class="fixed inset-0 flex items-center justify-center bg-slate-900/60 z-[100] transition-opacity duration-300">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 overflow-hidden border border-slate-100 transform transition-all">
+        <div class="p-6 text-center">
+          <div :class="['mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4', confirmDialog.isDanger ? 'bg-red-100' : 'bg-amber-100']">
+            <svg v-if="confirmDialog.isDanger" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <svg v-else class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-lg leading-6 font-bold text-slate-900 mb-2">{{ confirmDialog.title }}</h3>
+          <p class="text-sm text-slate-500 whitespace-pre-line">{{ confirmDialog.message }}</p>
+        </div>
+        <div class="bg-slate-50 px-4 py-3 sm:px-6 flex flex-row-reverse gap-2">
+          <button 
+            type="button" 
+            @click="handleConfirm"
+            :class="['w-full inline-flex justify-center rounded-lg border border-transparent px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm focus:outline-none sm:w-auto', confirmDialog.isDanger ? 'bg-red-600 hover:bg-red-700' : 'bg-cenicana hover:bg-cenicana-800']"
+          >
+            {{ confirmDialog.confirmText }}
+          </button>
+          <button 
+            type="button" 
+            @click="confirmDialog.isOpen = false"
+            class="mt-3 w-full inline-flex justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none sm:mt-0 sm:w-auto"
+          >
+            {{ confirmDialog.cancelText }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -505,6 +565,35 @@ import { useToast } from "vue-toastification";
 import ViveroTreeComponent from "@/components/viveros/ViveroTreeComponent.vue";
 
 const toast = useToast();
+
+const confirmDialog = ref({
+  isOpen: false,
+  title: "",
+  message: "",
+  confirmText: "Confirmar",
+  cancelText: "Cancelar",
+  isDanger: false,
+  onConfirm: () => {}
+});
+
+const showConfirm = (options) => {
+  confirmDialog.value = {
+    isOpen: true,
+    title: options.title || "Confirmar acción",
+    message: options.message || "¿Está seguro?",
+    confirmText: options.confirmText || "Confirmar",
+    cancelText: options.cancelText || "Cancelar",
+    isDanger: options.isDanger || false,
+    onConfirm: options.onConfirm
+  };
+};
+
+const handleConfirm = () => {
+  if (confirmDialog.value.onConfirm) {
+    confirmDialog.value.onConfirm();
+  }
+  confirmDialog.value.isOpen = false;
+};
 const router = useRouter();
 const viveros = ref<any[]>([]);
 const loading = ref(true);
@@ -660,17 +749,24 @@ const loadViveros = async () => {
 };
 
 const deleteVivero = async (id: number) => {
-  if (confirm("¿Está seguro de que desea eliminar este vivero?")) {
-    try {
-      await viverosServices.deleteVivero(id);
-      toast.success("Vivero eliminado correctamente");
-      loadViveros();
-    } catch (error: any) {
-      console.error("Error deleting vivero:", error);
-      const msg = error.response?.data?.message || "Error al eliminar el vivero";
-      toast.error(msg);
+  showConfirm({
+    title: "Eliminar Vivero",
+    message: "¿Está seguro de que desea eliminar este vivero? Esta acción no se puede deshacer.",
+    confirmText: "Eliminar",
+    cancelText: "Cancelar",
+    isDanger: true,
+    onConfirm: async () => {
+      try {
+        await viverosServices.deleteVivero(id);
+        toast.success("Vivero eliminado correctamente");
+        loadViveros();
+      } catch (error: any) {
+        console.error("Error deleting vivero:", error);
+        const msg = error.response?.data?.message || "Error al eliminar el vivero";
+        toast.error(msg);
+      }
     }
-  }
+  });
 };
 
 const formatDate = (dateString: string) => {
@@ -739,6 +835,26 @@ const closeHistorialModal = () => {
   isHistorialModalOpen.value = false;
   viveroSeleccionado.value = null;
   historial.value = [];
+};
+
+const confirmarCosecha = async (vivero: any) => {
+  showConfirm({
+    title: "Marcar como Cosechado",
+    message: `¿Está seguro de que desea marcar el vivero ${vivero.identificador_unico} como COSECHADO?\n\nEsto finalizará su ciclo y liberará su ID (${vivero.consecutivo_vivero_ingenio}) para que pueda ser reutilizado.`,
+    confirmText: "Cosechar Vivero",
+    cancelText: "Cancelar",
+    isDanger: true,
+    onConfirm: async () => {
+      try {
+        await api.post(`/siembra-campo/viveros/${vivero.id}/marcar-cosechado`, {});
+        toast.success("Vivero marcado como cosechado correctamente.");
+        await loadViveros();
+      } catch (error) {
+        console.error("Error marcando como cosechado:", error);
+        toast.error("Error al marcar el vivero como cosechado.");
+      }
+    }
+  });
 };
 
 onMounted(() => {

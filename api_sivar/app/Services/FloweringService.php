@@ -14,6 +14,9 @@ class FloweringService
      */
     public function getFloweringList(bool $historico)
     {
+        // Aumentar temporalmente el límite de memoria para permitir cargar miles de flores del vivero
+        ini_set('memory_limit', '512M');
+        
         $query = Flowering::leftJoin('remote_pg_sipro', 'remote_pg_sipro.id_prycto', '=', 'floracion.id_pr')
             ->leftJoin('caracteres', 'caracteres.id_crcter', '=', 'floracion.id_crcter')
             ->leftJoin('usuario', 'usuario.id_usrio', '=', 'floracion.usrio_edto');

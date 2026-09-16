@@ -151,6 +151,9 @@ watch(
   () => model.cd_cntble,
   (newCdCntble) => {
     localStorage.setItem("selectedCdCntble", newCdCntble || "");
+    if (newCdCntble) {
+      localStorage.setItem("lastSelectedCdCntble", newCdCntble);
+    }
   }
 );
 </script>
