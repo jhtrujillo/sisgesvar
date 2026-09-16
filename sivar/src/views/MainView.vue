@@ -109,6 +109,7 @@
                   </div>
                 </a>
 
+
                 <!-- Especificaciones Module Card -->
                 <router-link
                   v-if="false"

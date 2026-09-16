@@ -41,6 +41,7 @@ export const ROUTE_ENSAYOS_CATALOGOS = "mejoramiento/ensayos/catalogos/";
 export const ROUTE_ENSAYOS_ACTIVIDADES = "mejoramiento/ensayos/actividades/";
 
 export const ROUTE_ABOUT = "about/";
+export const ROUTE_PROJECT_MANAGEMENT = "admin/proyectos/";
 
 export const ERROR_404 = "";
 
@@ -85,5 +86,6 @@ export const NON_SIGNIFICANT_ROUTES = [
   ROUTE_SIEMBRA_CAMPO_VIVERO_EDITAR,
   ROUTE_SIEMBRA_CAMPO_VIVEROS_LOTES,
   ROUTE_ABOUT,
+  ROUTE_PROJECT_MANAGEMENT,
   ERROR_404
 ];

@@ -275,6 +275,38 @@
           </span>
         </div>
       </router-link>
+
+      <!-- Proyectos & Permisos Card -->
+      <router-link
+        class="group relative flex flex-col bg-white border border-slate-100 hover:border-emerald-100 rounded-2xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
+        :to="{ name: 'project_management.show' }"
+      >
+        <div class="absolute top-0 left-0 w-full h-1 bg-emerald-400 group-hover:bg-cenicana transition-colors duration-300"></div>
+
+        <div class="flex flex-col h-full items-center text-center">
+          <div class="p-3.5 bg-emerald-50 rounded-xl text-cenicana group-hover:bg-cenicana group-hover:text-white transition-all duration-300 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" class="transition-transform duration-500 group-hover:scale-105">
+              <path fill="currentColor" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12c5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800 mb-2 group-hover:text-cenicana transition-colors">Proyectos & Permisos</h3>
+          <p class="text-slate-500 text-xs leading-relaxed mb-4">Administración centralizada de proyectos, control de acceso y asignación de dueños por usuario.</p>
+
+          <span class="inline-flex items-center text-xs font-semibold text-emerald-600 mt-auto">
+            Gestionar Proyectos
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-3.5 w-3.5 ml-1 transform transition-transform group-hover:translate-x-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </div>
+      </router-link>
     </div>
   </div>
 </template>

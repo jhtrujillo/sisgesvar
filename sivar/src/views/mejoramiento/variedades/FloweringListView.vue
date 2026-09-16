@@ -192,8 +192,8 @@
             class="w-full sm:w-auto px-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50/50"
           >
             <option value="all">Todos los Sexos</option>
-            <option value="Femenino">Femenino (Hembra ♀)</option>
-            <option value="Masculino">Masculino (Macho ♂)</option>
+            <option value="Hembra">Hembra ♀</option>
+            <option value="Macho">Macho ♂</option>
           </select>
         </div>
 
@@ -229,7 +229,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
           </svg>
-          <span class="text-sm font-semibold text-slate-600">No hay flores disponibles en la Bolsa Común actualmente.</span>
+          <span class="text-sm font-semibold text-slate-600">No hay flores disponibles en la Bolsa Común con los criterios seleccionados.</span>
           <p class="text-xs text-slate-400 max-w-sm">
             Las flores libres de proyectos finalizados o ingresadas sin proyecto aparecerán automáticamente aquí.
           </p>
@@ -260,10 +260,10 @@
                 <td class="px-5 py-3.5">
                   <div class="flex items-center gap-2">
                     <span
-                      :class="item.sxo === 'Femenino' ? 'bg-pink-100 text-pink-700 border-pink-200' : 'bg-blue-100 text-blue-700 border-blue-200'"
+                      :class="isHembra(item.sxo) ? 'bg-pink-100 text-pink-700 border-pink-200' : 'bg-sky-100 text-sky-700 border-sky-200'"
                       class="px-2.5 py-0.5 rounded text-[10px] font-bold border"
                     >
-                      {{ item.sxo === 'Femenino' ? '♀ Hembra' : '♂ Macho' }}
+                      {{ isHembra(item.sxo) ? '♀ Hembra' : '♂ Macho' }}
                     </span>
                     <span v-if="item.polen" class="text-[10px] text-slate-400 font-semibold">Polen: {{ item.polen }}%</span>
                   </div>
@@ -347,6 +347,18 @@ const openVarietyProfile = (name: string) => {
   }
 };
 
+const isHembra = (sxo?: string) => {
+  if (!sxo) return false;
+  const s = sxo.toLowerCase().trim();
+  return s.includes("hembra") || s.includes("femenino") || s === "hd" || s === "hf" || s.startsWith("h");
+};
+
+const isMacho = (sxo?: string) => {
+  if (!sxo) return false;
+  const s = sxo.toLowerCase().trim();
+  return s.includes("macho") || s.includes("masculino") || s === "md" || s === "mf" || s.startsWith("m");
+};
+
 const loadBolsaComunFlores = async () => {
   isLoadingBolsa.value = true;
   try {
@@ -375,8 +387,10 @@ const filteredBolsaFlores = computed(() => {
       (item.nombre_caracter && item.nombre_caracter.toLowerCase().includes(query));
 
     let matchSex = true;
-    if (sexBolsaFilter.value !== "all") {
-      matchSex = item.sxo === sexBolsaFilter.value;
+    if (sexBolsaFilter.value === "Hembra") {
+      matchSex = isHembra(item.sxo);
+    } else if (sexBolsaFilter.value === "Macho") {
+      matchSex = isMacho(item.sxo);
     }
 
     return matchText && matchSex;
@@ -388,11 +402,11 @@ const totalFloresBolsa = computed(() => {
 });
 
 const countHembrasBolsa = computed(() => {
-  return bolsaFlores.value.filter((f) => f.sxo === "Femenino").reduce((acc, f) => acc + (parseInt(f.cantidad) || 0), 0);
+  return bolsaFlores.value.filter((f) => isHembra(f.sxo)).reduce((acc, f) => acc + (parseInt(f.cantidad) || 0), 0);
 });
 
 const countMachosBolsa = computed(() => {
-  return bolsaFlores.value.filter((f) => f.sxo === "Masculino").reduce((acc, f) => acc + (parseInt(f.cantidad) || 0), 0);
+  return bolsaFlores.value.filter((f) => isMacho(f.sxo)).reduce((acc, f) => acc + (parseInt(f.cantidad) || 0), 0);
 });
 
 const onImportSuccess = async () => {
