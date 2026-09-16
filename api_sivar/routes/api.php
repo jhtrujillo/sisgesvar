@@ -176,6 +176,7 @@ Route::group([
     // Módulo de Administración de Proyectos y Permisos
     Route::get('admin/proyectos', [\App\Http\Controllers\ProjectManagementController::class, 'index']);
     Route::get('admin/proyectos/{id}/detalles', [\App\Http\Controllers\ProjectManagementController::class, 'getDetalleProyecto']);
+    Route::get('admin/proyectos/{id}/estabilidad-agronomica', [\App\Http\Controllers\ProjectManagementController::class, 'getEstabilidadAgronomica']);
     Route::get('admin/proyectos/{id}/usuarios', [\App\Http\Controllers\ProjectManagementController::class, 'getUsuariosProyecto']);
     Route::post('admin/proyectos/{id}/usuarios', [\App\Http\Controllers\ProjectManagementController::class, 'assignUsuarioProyecto']);
     Route::delete('admin/proyectos/{id}/usuarios/{usuarioId}', [\App\Http\Controllers\ProjectManagementController::class, 'removeUsuarioProyecto']);

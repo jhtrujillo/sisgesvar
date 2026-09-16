@@ -1,7 +1,7 @@
 <template>
   <Transition name="fade">
     <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-      <div class="bg-white rounded-3xl max-w-4xl w-full shadow-2xl overflow-hidden border border-slate-100 transform transition-all flex flex-col max-h-[92vh]">
+      <div class="bg-white rounded-3xl max-w-6xl w-full shadow-2xl overflow-hidden border border-slate-100 transform transition-all flex flex-col max-h-[92vh]">
         <!-- Header -->
         <div class="p-6 bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 text-white flex items-center justify-between">
           <div class="space-y-1">
@@ -43,6 +43,13 @@
             :class="activeTab === 'isoproductivity' ? 'border-emerald-600 text-emerald-800 bg-white rounded-t-xl' : 'border-transparent text-slate-500 hover:text-slate-800'"
           >
             📈 Isoproductividad & Rendimiento
+          </button>
+          <button
+            @click="activeTab = 'stability'"
+            class="px-4 py-2.5 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-1.5"
+            :class="activeTab === 'stability' ? 'border-emerald-600 text-emerald-800 bg-white rounded-t-xl' : 'border-transparent text-slate-500 hover:text-slate-800'"
+          >
+            🎯 Estabilidad Agronómica (AMMI & GGE)
           </button>
         </div>
 
@@ -212,6 +219,11 @@
           <template v-else-if="activeTab === 'isoproductivity'">
             <ProjectIsoproductivityChart :data="detalle?.isoproductividad || null" />
           </template>
+
+          <!-- Tab 3: Estabilidad Agronómica (AMMI & GGE Biplot) -->
+          <template v-else-if="activeTab === 'stability'">
+            <ProjectStabilityAnalysis v-if="proyectoId" :project-id="proyectoId" />
+          </template>
         </div>
 
         <!-- Footer -->
@@ -232,6 +244,7 @@
 import { ref, watch } from "vue";
 import projectManagementService from "@/services/projectManagement.services";
 import ProjectIsoproductivityChart from "@/components/admin/ProjectIsoproductivityChart.vue";
+import ProjectStabilityAnalysis from "@/components/admin/ProjectStabilityAnalysis.vue";
 import { useToast } from "vue-toastification";
 
 const props = defineProps<{
@@ -242,7 +255,7 @@ const props = defineProps<{
 const emit = defineEmits(["close"]);
 const toast = useToast();
 
-const activeTab = ref<"summary" | "isoproductivity">("summary");
+const activeTab = ref<"summary" | "isoproductivity" | "stability">("summary");
 const detalle = ref<any>(null);
 const isLoading = ref(false);
 
