@@ -120,7 +120,7 @@
         </div>
       </div>
 
-      <!-- Card 3: Navigation & Export -->
+      <!-- Card 3: Navigation & Multi-Format Export -->
       <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/90 space-y-3 shadow-2xs">
         <div class="text-xs font-extrabold text-slate-800 flex items-center justify-between">
           <span>🔍 3. Navegación & Reportes</span>
@@ -156,19 +156,63 @@
             </button>
           </div>
 
-          <div class="grid grid-cols-2 gap-1.5">
+          <!-- Multi-Format Export Dropdown -->
+          <div class="relative">
             <button
-              @click="exportarSVG"
-              class="py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1"
+              @click="showExportMenu = !showExportMenu"
+              class="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-extrabold transition-all shadow-xs cursor-pointer flex items-center justify-between"
             >
-              📥 SVG / Image
+              <span class="flex items-center gap-1.5">
+                📥 Descargar Resultados (5 Formatos)
+              </span>
+              <span class="text-[10px]">▼</span>
             </button>
-            <button
-              @click="exportarCSV"
-              class="py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1"
+
+            <!-- Dropdown Options Popup -->
+            <div
+              v-if="showExportMenu"
+              class="absolute left-0 right-0 mt-1 bg-white rounded-2xl border border-slate-200 shadow-2xl z-30 p-1.5 space-y-1 text-xs font-bold text-slate-700"
             >
-              📊 Export CSV
-            </button>
+              <button
+                @click="exportarPNG(); showExportMenu = false"
+                class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 text-slate-800 rounded-xl transition-all flex items-center justify-between cursor-pointer"
+              >
+                <span>🖼️ Imagen PNG</span>
+                <span class="text-[10px] text-slate-400 font-normal">.png</span>
+              </button>
+
+              <button
+                @click="exportarSVG(); showExportMenu = false"
+                class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 text-slate-800 rounded-xl transition-all flex items-center justify-between cursor-pointer"
+              >
+                <span>📐 Gráfico Vectorial SVG</span>
+                <span class="text-[10px] text-slate-400 font-normal">.svg</span>
+              </button>
+
+              <button
+                @click="exportarExcel(); showExportMenu = false"
+                class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 text-slate-800 rounded-xl transition-all flex items-center justify-between cursor-pointer"
+              >
+                <span>📊 Libro Excel Multi-Hoja</span>
+                <span class="text-[10px] text-emerald-700 font-bold">.xlsx</span>
+              </button>
+
+              <button
+                @click="exportarCSV(); showExportMenu = false"
+                class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 text-slate-800 rounded-xl transition-all flex items-center justify-between cursor-pointer"
+              >
+                <span>📄 Tabla de Datos CSV</span>
+                <span class="text-[10px] text-slate-400 font-normal">.csv</span>
+              </button>
+
+              <button
+                @click="exportarJSON(); showExportMenu = false"
+                class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 text-slate-800 rounded-xl transition-all flex items-center justify-between cursor-pointer"
+              >
+                <span>🗂️ Dataset JSON Estructurado</span>
+                <span class="text-[10px] text-slate-400 font-normal">.json</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -587,6 +631,57 @@
             <button @click="zoomOut" class="px-2 py-0.5 text-xs font-bold text-slate-700 hover:bg-slate-200 rounded cursor-pointer">🔍 -</button>
             <button @click="resetZoom" class="px-2 py-0.5 text-xs font-bold text-slate-700 hover:bg-slate-200 rounded cursor-pointer">↺ Reset</button>
           </div>
+
+          <!-- Fullscreen Export Menu Dropdown -->
+          <div class="relative">
+            <button
+              @click="showExportMenuFS = !showExportMenuFS"
+              class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer flex items-center gap-1"
+            >
+              📥 Exportar ▾
+            </button>
+
+            <div
+              v-if="showExportMenuFS"
+              class="absolute right-0 mt-1.5 w-56 bg-white rounded-2xl border border-slate-200 shadow-2xl z-40 p-1.5 space-y-1 text-xs font-bold text-slate-700"
+            >
+              <button
+                @click="exportarPNG(); showExportMenuFS = false"
+                class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 text-slate-800 rounded-xl transition-all flex items-center justify-between cursor-pointer"
+              >
+                <span>🖼️ Imagen PNG</span>
+                <span class="text-[10px] text-slate-400">.png</span>
+              </button>
+              <button
+                @click="exportarSVG(); showExportMenuFS = false"
+                class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 text-slate-800 rounded-xl transition-all flex items-center justify-between cursor-pointer"
+              >
+                <span>📐 Gráfico SVG</span>
+                <span class="text-[10px] text-slate-400">.svg</span>
+              </button>
+              <button
+                @click="exportarExcel(); showExportMenuFS = false"
+                class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 text-slate-800 rounded-xl transition-all flex items-center justify-between cursor-pointer"
+              >
+                <span>📊 Libro Excel</span>
+                <span class="text-[10px] text-emerald-700 font-bold">.xlsx</span>
+              </button>
+              <button
+                @click="exportarCSV(); showExportMenuFS = false"
+                class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 text-slate-800 rounded-xl transition-all flex items-center justify-between cursor-pointer"
+              >
+                <span>📄 Tabla CSV</span>
+                <span class="text-[10px] text-slate-400">.csv</span>
+              </button>
+              <button
+                @click="exportarJSON(); showExportMenuFS = false"
+                class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 text-slate-800 rounded-xl transition-all flex items-center justify-between cursor-pointer"
+              >
+                <span>🗂️ Dataset JSON</span>
+                <span class="text-[10px] text-slate-400">.json</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <button
@@ -805,6 +900,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import * as XLSX from 'xlsx';
 import projectManagementService from '@/services/projectManagement.services';
 
 const props = defineProps({
@@ -906,6 +1002,9 @@ const mostrarVectores = ref(true);
 const mostrarConvexHull = ref(true);
 const mostrarEtiquetas = ref(true);
 const isFullscreen = ref(false);
+
+const showExportMenu = ref(false);
+const showExportMenuFS = ref(false);
 
 const isLoading = ref(false);
 const rawData = ref(defaultData);
@@ -1161,7 +1260,43 @@ const resetZoom = () => {
   zoomScale.value = 1;
 };
 
-// Export functions
+// MULTI-FORMAT EXPORT FUNCTIONS
+
+// 1. Export as High-Resolution PNG Image
+const exportarPNG = () => {
+  const svgEl = document.querySelector('svg');
+  if (!svgEl) return;
+  const serializer = new XMLSerializer();
+  let source = serializer.serializeToString(svgEl);
+
+  if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+    source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+  }
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 1800;
+  canvas.height = 1200;
+
+  const img = new Image();
+  const svgBlob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(svgBlob);
+
+  img.onload = () => {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = `Estabilidad_Biplot_Proyecto_${props.projectId}_${variableActual.value}.png`;
+    a.click();
+  };
+  img.src = url;
+};
+
+// 2. Export as SVG Vector Graphic
 const exportarSVG = () => {
   const svgEl = document.querySelector('svg');
   if (!svgEl) return;
@@ -1171,11 +1306,87 @@ const exportarSVG = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `Estabilidad_Agronomica_${props.projectId}_${variableActual.value}.svg`;
+  a.download = `Estabilidad_Biplot_Proyecto_${props.projectId}_${variableActual.value}.svg`;
   a.click();
   URL.revokeObjectURL(url);
 };
 
+// 3. Export as Multi-Sheet Excel Workbook (.xlsx)
+const exportarExcel = () => {
+  try {
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: Eberhart & Russell (1966)
+    const erData = eberhartRussellData.value.map(r => ({
+      'Variedad': r.variedad,
+      'Es Testigo': r.es_testigo ? 'SÍ' : 'NO',
+      'Media Agronómica': r.media,
+      'Coef. b_i (Adaptabilidad)': r.bi,
+      'Desvío S²di (Estabilidad)': r.s2di,
+      'Diagnóstico / Interpretación': r.adaptabilidad_label
+    }));
+    const wsER = XLSX.utils.json_to_sheet(erData);
+    XLSX.utils.book_append_sheet(wb, wsER, 'Eberhart & Russell');
+
+    // Sheet 2: Lin & Binns (1988)
+    const lbData = linBinnsData.value.map(r => ({
+      'Ranking': r.ranking,
+      'Variedad': r.variedad,
+      'Es Testigo': r.es_testigo ? 'SÍ' : 'NO',
+      'Media Agronómica': r.media,
+      'Índice P_i (Superioridad)': r.pi_index,
+      'Nivel Superioridad': r.ranking <= 3 ? 'Alta Superioridad' : 'Estándar'
+    }));
+    const wsLB = XLSX.utils.json_to_sheet(lbData);
+    XLSX.utils.book_append_sheet(wb, wsLB, 'Lin & Binns');
+
+    // Sheet 3: Coordenadas GGE Biplot
+    const ggeGenData = (ggeBiplot.value?.genotipos || []).map(g => ({
+      'Elemento': 'Genotipo (Variedad)',
+      'Nombre': g.variedad,
+      'Es Testigo': g.es_testigo ? 'SÍ' : 'NO',
+      'Media': g.media,
+      'Eje PC1 (Adaptabilidad)': g.pc1,
+      'Eje PC2 (Estabilidad)': g.pc2
+    }));
+    const ggeEnvData = (ggeBiplot.value?.ambientes || []).map(e => ({
+      'Elemento': 'Ambiente (Ensayo)',
+      'Nombre': e.nombre,
+      'Es Testigo': 'N/A',
+      'Media': e.media,
+      'Eje PC1 (Adaptabilidad)': e.pc1,
+      'Eje PC2 (Estabilidad)': e.pc2
+    }));
+    const wsGGE = XLSX.utils.json_to_sheet([...ggeGenData, ...ggeEnvData]);
+    XLSX.utils.book_append_sheet(wb, wsGGE, 'Coordenadas GGE Biplot');
+
+    // Sheet 4: Coordenadas AMMI Biplot
+    const ammiGenData = (ammiBiplot.value?.genotipos || []).map(g => ({
+      'Elemento': 'Genotipo (Variedad)',
+      'Nombre': g.variedad,
+      'Es Testigo': g.es_testigo ? 'SÍ' : 'NO',
+      'Media': g.media,
+      'Eje PC1 (Interacción 1)': g.pc1,
+      'Eje PC2 (Interacción 2)': g.pc2
+    }));
+    const ammiEnvData = (ammiBiplot.value?.ambientes || []).map(e => ({
+      'Elemento': 'Ambiente (Ensayo)',
+      'Nombre': e.nombre,
+      'Es Testigo': 'N/A',
+      'Media': e.media,
+      'Eje PC1 (Interacción 1)': e.pc1,
+      'Eje PC2 (Interacción 2)': e.pc2
+    }));
+    const wsAMMI = XLSX.utils.json_to_sheet([...ammiGenData, ...ammiEnvData]);
+    XLSX.utils.book_append_sheet(wb, wsAMMI, 'Coordenadas AMMI Biplot');
+
+    XLSX.writeFile(wb, `Estabilidad_Agronomica_Proyecto_${props.projectId}_${variableActual.value}.xlsx`);
+  } catch (err) {
+    console.error('Error al exportar Excel:', err);
+  }
+};
+
+// 4. Export as Plain CSV Data File (.csv)
 const exportarCSV = () => {
   let csv = 'Variedad,EsTestigo,Media,Bi_Eberhart,S2di_Eberhart,Diagnostico,Pi_LinBinns,Ranking\n';
   const erMap = {};
@@ -1191,6 +1402,29 @@ const exportarCSV = () => {
   const a = document.createElement('a');
   a.href = url;
   a.download = `Indices_Estabilidad_${props.projectId}_${variableActual.value}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+// 5. Export as Structured JSON Dataset (.json)
+const exportarJSON = () => {
+  const exportPayload = {
+    proyecto_id: props.projectId,
+    variable_analizada: variableActual.value,
+    fecha_generacion: new Date().toISOString(),
+    media_general: grandMean.value,
+    gge_biplot: ggeBiplot.value,
+    ammi_biplot: ammiBiplot.value,
+    eberhart_russell: eberhartRussellData.value,
+    lin_binns: linBinnsData.value
+  };
+
+  const jsonStr = JSON.stringify(exportPayload, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Estabilidad_Agronomica_Proyecto_${props.projectId}_${variableActual.value}.json`;
   a.click();
   URL.revokeObjectURL(url);
 };
