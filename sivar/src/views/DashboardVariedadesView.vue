@@ -120,7 +120,7 @@
 
       <!-- Libros de campo Card -->
       <ModuleCardComponent
-        :to="{ name: 'mejoramiento.show' }"
+        :to="{ name: 'libro_campo.show' }"
         title="Libros de campo"
         description="Anotaciones de campo, alineamientos y bitácoras detalladas por zonas de muestreo."
       >

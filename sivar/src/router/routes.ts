@@ -15,7 +15,6 @@ export const ROUTE_BLAST_NATIVO = "biojava/blast-nativo/";
 
 // Laboratorio
 
-
 export const ROUTE_MEJORAMIENTO = "mejoramiento/";
 export const ROUTE_VARIEDADES = "mejoramiento/variedades/";
 export const ROUTE_CRUZAMIENTOS = "mejoramiento/cruzamientos/";
@@ -33,6 +32,7 @@ export const ROUTE_CROSSING_MATRIX = "mejoramiento/crossing_matrix/";
 
 //EXperimentos
 export const ROUTE_EXPERIMENTS = "mejoramiento/experimentos/";
+export const ROUTE_LIBRO_CAMPO = "mejoramiento/libro-campo/";
 
 // Registro Ensayos
 export const ROUTE_ENSAYOS_INDEX = "mejoramiento/ensayos/";
