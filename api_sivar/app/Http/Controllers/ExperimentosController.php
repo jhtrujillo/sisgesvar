@@ -119,11 +119,13 @@ class ExperimentosController extends Controller
                 "listAreas" => $areas,
                 "listProyectos" => $proyectos,
                 "listSeries" => [],
-                "listEstados" => [ ["id" => 1, "text" => "E1 en prueba"],
-                ["id" => 2, "text" => "E1 probado"],
-                ["id" => 3, "text" => "E2"],
-                ["id" => 4, "text" => "E3"],
-                ["id" => 5, "text" => "P Regionales"],],
+                "listEstados" => [
+                    ["id" => 1, "text" => "E1 en prueba"],
+                    ["id" => 2, "text" => "E1 probado"],
+                    ["id" => 3, "text" => "E2"],
+                    ["id" => 4, "text" => "E3"],
+                    ["id" => 5, "text" => "P Regionales"],
+                ],
                 "listTemporadas" => $temporadasCruzamiento,
                 "listCruzamientoMadre" => [
                     ["id" => 1, "text" => "EZH"],
@@ -291,7 +293,6 @@ class ExperimentosController extends Controller
             ], 400);
         }
 
-        // Verificar si ya existen diseños para esta combinación
         $existentes = DisenoEncabezado::where([
             ['id_pr', '=', $id_pr],
             ['srie', '=', $srie],
@@ -377,7 +378,7 @@ class ExperimentosController extends Controller
     public function getTreatmentsSeason($ano, $id_dsno_enc, $min_plantulas, $plantulas_ttles)
     {
         try {
-            $min_plantulas   = ($min_plantulas   == NULL || $min_plantulas   == '') ? 0 : $min_plantulas;
+            $min_plantulas = ($min_plantulas == NULL || $min_plantulas == '') ? 0 : $min_plantulas;
             $plantulas_ttles = ($plantulas_ttles == NULL || $plantulas_ttles == '') ? 0 : $plantulas_ttles;
 
             // Realizar la consulta a la base de datos
@@ -1457,16 +1458,16 @@ class ExperimentosController extends Controller
                 $numTrt = $plot[4] - 1;
 
                 $infoentrada[$index]['id_dsno_enc'] = $registros[$numTrt]->id_dsno_enc;
-                $infoentrada[$index]['lcldad']      = $localidad;
-                $infoentrada[$index]['rptcion']     = $plot[2];
-                $infoentrada[$index]['block']       = $plot[3];
-                $infoentrada[$index]['entrda']      = $plot[4];
-                $infoentrada[$index]['trtmnto']     = $registros[$numTrt]->trtmnto;
-                $infoentrada[$index]['tstgo']       = $registros[$numTrt]->tstgo;
-                $infoentrada[$index]['nmro_clnes']  = $registros[$numTrt]->nmro_clnes;
-                $infoentrada[$index]['row']         = null;
-                $infoentrada[$index]['cols']        = null;
-                $infoentrada[$index]['checks']      = null;
+                $infoentrada[$index]['lcldad'] = $localidad;
+                $infoentrada[$index]['rptcion'] = $plot[2];
+                $infoentrada[$index]['block'] = $plot[3];
+                $infoentrada[$index]['entrda'] = $plot[4];
+                $infoentrada[$index]['trtmnto'] = $registros[$numTrt]->trtmnto;
+                $infoentrada[$index]['tstgo'] = $registros[$numTrt]->tstgo;
+                $infoentrada[$index]['nmro_clnes'] = $registros[$numTrt]->nmro_clnes;
+                $infoentrada[$index]['row'] = null;
+                $infoentrada[$index]['cols'] = null;
+                $infoentrada[$index]['checks'] = null;
                 // $infoentrada[$numTrt]['tpo_prcla'] = ($registros[$numTrt]->tpo_prcla == '') ? null : $registros[$numTrt]->tpo_prcla;
 
                 $index++;
@@ -1509,16 +1510,16 @@ class ExperimentosController extends Controller
                 $numTrt = $plot[3];
 
                 $infoentrada[$index]['id_dsno_enc'] = $tratamientos[$numTrt]->id_dsno_enc; //
-                $infoentrada[$index]['lcldad']      = $localidad; //
-                $infoentrada[$index]['rptcion']     = $plot[2]; //
-                $infoentrada[$index]['block']       = $plot[2]; //
-                $infoentrada[$index]['entrda']      = $plot[3]; //
-                $infoentrada[$index]['trtmnto']     = $tratamientos[$numTrt]->trtmnto; //
-                $infoentrada[$index]['tstgo']       = $tratamientos[$numTrt]->tstgo; //
-                $infoentrada[$index]['nmro_clnes']  = $tratamientos[$numTrt]->nmro_clnes; //
-                $infoentrada[$index]['row']         = null; //
-                $infoentrada[$index]['cols']        = null; //
-                $infoentrada[$index]['checks']      = ($tratamientos[$numTrt]->tstgo == 'No') ? "0"  : $i; //
+                $infoentrada[$index]['lcldad'] = $localidad; //
+                $infoentrada[$index]['rptcion'] = $plot[2]; //
+                $infoentrada[$index]['block'] = $plot[2]; //
+                $infoentrada[$index]['entrda'] = $plot[3]; //
+                $infoentrada[$index]['trtmnto'] = $tratamientos[$numTrt]->trtmnto; //
+                $infoentrada[$index]['tstgo'] = $tratamientos[$numTrt]->tstgo; //
+                $infoentrada[$index]['nmro_clnes'] = $tratamientos[$numTrt]->nmro_clnes; //
+                $infoentrada[$index]['row'] = null; //
+                $infoentrada[$index]['cols'] = null; //
+                $infoentrada[$index]['checks'] = ($tratamientos[$numTrt]->tstgo == 'No') ? "0" : $i; //
                 // $infoentrada[$numTrt]['tpo_prcla'] = ($tratamientos[$numTrt]->tpo_prcla == '') ? null : $tratamientos[$numTrt]->tpo_prcla;
 
                 $index++;
@@ -1556,16 +1557,16 @@ class ExperimentosController extends Controller
                 $numTrt = $plot[4] - 1;
 
                 $infoentrada[$index]['id_dsno_enc'] = $registros[$numTrt]->id_dsno_enc;
-                $infoentrada[$index]['lcldad']      = $localidad;
-                $infoentrada[$index]['rptcion']     = $plot[5];
-                $infoentrada[$index]['block']       = $plot[3];
-                $infoentrada[$index]['entrda']      = $plot[4];
-                $infoentrada[$index]['trtmnto']     = $registros[$numTrt]->trtmnto; //
-                $infoentrada[$index]['tstgo']       = $registros[$numTrt]->tstgo; //
-                $infoentrada[$index]['nmro_clnes']  = $registros[$numTrt]->nmro_clnes; //
-                $infoentrada[$index]['row']         = null;
-                $infoentrada[$index]['cols']        = $plot[2]; // es null en v1
-                $infoentrada[$index]['checks']      = null;
+                $infoentrada[$index]['lcldad'] = $localidad;
+                $infoentrada[$index]['rptcion'] = $plot[5];
+                $infoentrada[$index]['block'] = $plot[3];
+                $infoentrada[$index]['entrda'] = $plot[4];
+                $infoentrada[$index]['trtmnto'] = $registros[$numTrt]->trtmnto; //
+                $infoentrada[$index]['tstgo'] = $registros[$numTrt]->tstgo; //
+                $infoentrada[$index]['nmro_clnes'] = $registros[$numTrt]->nmro_clnes; //
+                $infoentrada[$index]['row'] = null;
+                $infoentrada[$index]['cols'] = $plot[2]; // es null en v1
+                $infoentrada[$index]['checks'] = null;
                 // $infoentrada[$numTrt]['tpo_prcla'] = ($registros[$numTrt]->tpo_prcla == '') ? null : $registros[$numTrt]->tpo_prcla;
 
                 $index++;
