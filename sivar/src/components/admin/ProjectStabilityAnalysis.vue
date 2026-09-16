@@ -1,535 +1,800 @@
 <template>
-  <Teleport to="body" :disabled="!isFullscreen">
-    <div
-      :class="isFullscreen ? 'fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-md p-3 sm:p-6 overflow-y-auto flex flex-col justify-start select-none' : 'space-y-6'"
-    >
-      <div
-        :class="isFullscreen ? 'bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 flex flex-col w-full max-w-[98vw] mx-auto my-auto space-y-6 min-h-[94vh] max-h-[98vh] overflow-y-auto' : 'space-y-6'"
-      >
-        <!-- Fullscreen Top Header Bar (Only visible when expanded) -->
-        <div v-if="isFullscreen" class="flex items-center justify-between pb-3 border-b border-slate-200">
-          <div class="flex items-center space-x-3">
-            <span class="px-3 py-1 rounded-full text-xs font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">
-              🖥️ Vista Ampliada - Estabilidad Agronómica
-            </span>
-            <h2 class="text-lg font-black text-slate-900">
-              Proyecto #{{ projectId }} — Biplots GGE/AMMI & Parámetros de Adaptabilidad
-            </h2>
-          </div>
-          <button
-            @click="toggleFullscreen"
-            class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-extrabold transition-all shadow-md cursor-pointer flex items-center gap-2"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            Salir de Pantalla Ampliada
-          </button>
+  <div class="space-y-6">
+    <!-- KPI Summary Cards (Light White Theme) -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-gradient-to-br from-emerald-50 to-teal-50/60 p-4 rounded-2xl border border-emerald-200/80 shadow-xs">
+        <div class="text-[10px] font-extrabold uppercase text-emerald-800 tracking-wider">Variable Analizada</div>
+        <div class="text-xl font-black text-emerald-950 mt-1 capitalize">
+          {{ variableActual === 'tsh' ? 'TSH (Ton Azúcar/ha)' : variableActual === 'tch' ? 'TCH (Ton Caña/ha)' : '% Sacarosa' }}
         </div>
-
-        <!-- KPI Summary Cards (Light White Theme) -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div class="bg-gradient-to-br from-emerald-50 to-teal-50/60 p-4 rounded-2xl border border-emerald-200/80 shadow-xs">
-            <div class="text-[10px] font-extrabold uppercase text-emerald-800 tracking-wider">Variable Analizada</div>
-            <div class="text-xl font-black text-emerald-950 mt-1 capitalize">
-              {{ variableActual === 'tsh' ? 'TSH (Ton Azúcar/ha)' : variableActual === 'tch' ? 'TCH (Ton Caña/ha)' : '% Sacarosa' }}
-            </div>
-            <div class="text-[11px] text-emerald-700 font-semibold mt-1">
-              Media General: <span class="font-bold text-emerald-900">{{ grandMean }}</span>
-            </div>
-          </div>
-
-          <div class="bg-gradient-to-br from-sky-50 to-blue-50/60 p-4 rounded-2xl border border-sky-200/80 shadow-xs">
-            <div class="text-[10px] font-extrabold uppercase text-sky-800 tracking-wider">Varianza GGE Biplot (PC1+PC2)</div>
-            <div class="text-xl font-black text-sky-950 mt-1">
-              {{ ggeBiplot?.var_explicada_total || 0 }}%
-            </div>
-            <div class="text-[11px] text-sky-700 font-semibold mt-1">
-              PC1: {{ ggeBiplot?.var_explicada_pc1 }}% • PC2: {{ ggeBiplot?.var_explicada_pc2 }}%
-            </div>
-          </div>
-
-          <div class="bg-gradient-to-br from-purple-50 to-fuchsia-50/60 p-4 rounded-2xl border border-purple-200/80 shadow-xs">
-            <div class="text-[10px] font-extrabold uppercase text-purple-800 tracking-wider">Varianza AMMI Biplot</div>
-            <div class="text-xl font-black text-purple-950 mt-1">
-              {{ ammiBiplot?.var_explicada_total || 0 }}%
-            </div>
-            <div class="text-[11px] text-purple-700 font-semibold mt-1">
-              PC1: {{ ammiBiplot?.var_explicada_pc1 }}% • PC2: {{ ammiBiplot?.var_explicada_pc2 }}%
-            </div>
-          </div>
-
-          <div class="bg-gradient-to-br from-amber-50 to-orange-50/60 p-4 rounded-2xl border border-amber-200/80 shadow-xs">
-            <div class="text-[10px] font-extrabold uppercase text-amber-800 tracking-wider">Ensayos / Ambientes</div>
-            <div class="text-xl font-black text-amber-950 mt-1">
-              {{ ambientes?.length || 0 }} Ambientes
-            </div>
-            <div class="text-[11px] text-amber-700 font-semibold mt-1">
-              {{ variedades?.length || 0 }} Variedades Evaluadas
-            </div>
-          </div>
+        <div class="text-[11px] text-emerald-700 font-semibold mt-1">
+          Media General: <span class="font-bold text-emerald-900">{{ grandMean }}</span>
         </div>
+      </div>
 
-        <!-- 3 Categorized Control Cards Architecture -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <!-- Card 1: Variables & Testigo -->
-          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/90 space-y-3 shadow-2xs">
-            <div class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
-              <span>⚙️ 1. Métrica & Referencia</span>
-            </div>
-            <div class="space-y-2">
-              <div>
-                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Variable Agronómica</label>
-                <div class="grid grid-cols-3 gap-1 bg-white p-1 rounded-xl border border-slate-200">
-                  <button
-                    v-for="v in [
-                      { id: 'tsh', label: 'TSH' },
-                      { id: 'tch', label: 'TCH' },
-                      { id: 'sacarosa', label: '% Sac' }
-                    ]"
-                    :key="v.id"
-                    @click="cambiarVariable(v.id)"
-                    class="py-1 px-2 text-xs font-bold rounded-lg transition-all cursor-pointer text-center"
-                    :class="variableActual === v.id ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'"
-                  >
-                    {{ v.label }}
-                  </button>
-                </div>
-              </div>
+      <div class="bg-gradient-to-br from-sky-50 to-blue-50/60 p-4 rounded-2xl border border-sky-200/80 shadow-xs">
+        <div class="text-[10px] font-extrabold uppercase text-sky-800 tracking-wider">Varianza GGE Biplot (PC1+PC2)</div>
+        <div class="text-xl font-black text-sky-950 mt-1">
+          {{ ggeBiplot?.var_explicada_total || 0 }}%
+        </div>
+        <div class="text-[11px] text-sky-700 font-semibold mt-1">
+          PC1: {{ ggeBiplot?.var_explicada_pc1 }}% • PC2: {{ ggeBiplot?.var_explicada_pc2 }}%
+        </div>
+      </div>
 
-              <div>
-                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Testigo Referencia</label>
-                <select
-                  v-model="testigoSeleccionado"
-                  class="w-full text-xs font-bold text-slate-800 bg-white border border-slate-200 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-2xs cursor-pointer"
-                >
-                  <option v-for="varName in variedades" :key="varName" :value="varName">
-                    {{ varName }} {{ esTestigo(varName) ? ' (Testigo Standard)' : '' }}
-                  </option>
-                </select>
-              </div>
-            </div>
-          </div>
+      <div class="bg-gradient-to-br from-purple-50 to-fuchsia-50/60 p-4 rounded-2xl border border-purple-200/80 shadow-xs">
+        <div class="text-[10px] font-extrabold uppercase text-purple-800 tracking-wider">Varianza AMMI Biplot</div>
+        <div class="text-xl font-black text-purple-950 mt-1">
+          {{ ammiBiplot?.var_explicada_total || 0 }}%
+        </div>
+        <div class="text-[11px] text-purple-700 font-semibold mt-1">
+          PC1: {{ ammiBiplot?.var_explicada_pc1 }}% • PC2: {{ ammiBiplot?.var_explicada_pc2 }}%
+        </div>
+      </div>
 
-          <!-- Card 2: Biplot Options -->
-          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/90 space-y-3 shadow-2xs">
-            <div class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
-              <span>📊 2. Modo & Opciones Biplot</span>
-            </div>
-            <div class="space-y-2">
-              <div>
-                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Modelo de Análisis</label>
-                <select
-                  v-model="tipoBiplot"
-                  class="w-full text-xs font-bold text-slate-800 bg-white border border-slate-200 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-2xs cursor-pointer"
-                >
-                  <option value="gge_which_won">GGE Biplot — Which-Won-Where (Sectores)</option>
-                  <option value="gge_mean_stability">GGE Biplot — Rendimiento Medio vs Estabilidad</option>
-                  <option value="ammi1">AMMI1 — Rendimiento vs CP1</option>
-                  <option value="ammi2">AMMI2 — CP1 vs CP2 Interacción</option>
-                </select>
-              </div>
+      <div class="bg-gradient-to-br from-amber-50 to-orange-50/60 p-4 rounded-2xl border border-amber-200/80 shadow-xs">
+        <div class="text-[10px] font-extrabold uppercase text-amber-800 tracking-wider">Ensayos / Ambientes</div>
+        <div class="text-xl font-black text-amber-950 mt-1">
+          {{ ambientes?.length || 0 }} Ambientes
+        </div>
+        <div class="text-[11px] text-amber-700 font-semibold mt-1">
+          {{ variedades?.length || 0 }} Variedades Evaluadas
+        </div>
+      </div>
+    </div>
 
-              <div class="flex flex-wrap gap-3 pt-1">
-                <label class="inline-flex items-center text-xs font-semibold text-slate-700 cursor-pointer">
-                  <input type="checkbox" v-model="mostrarVectores" class="rounded text-emerald-600 focus:ring-emerald-500 mr-1.5" />
-                  Vectores Ambiente
-                </label>
-                <label class="inline-flex items-center text-xs font-semibold text-slate-700 cursor-pointer">
-                  <input type="checkbox" v-model="mostrarConvexHull" class="rounded text-emerald-600 focus:ring-emerald-500 mr-1.5" />
-                  Polígono Convexo
-                </label>
-                <label class="inline-flex items-center text-xs font-semibold text-slate-700 cursor-pointer">
-                  <input type="checkbox" v-model="mostrarEtiquetas" class="rounded text-emerald-600 focus:ring-emerald-500 mr-1.5" />
-                  Etiquetas
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card 3: Navigation & Export -->
-          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/90 space-y-3 shadow-2xs">
-            <div class="text-xs font-extrabold text-slate-800 flex items-center justify-between">
-              <span>🔍 3. Navegación & Reportes</span>
+    <!-- 3 Categorized Control Cards Architecture -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <!-- Card 1: Variables & Testigo -->
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/90 space-y-3 shadow-2xs">
+        <div class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+          <span>⚙️ 1. Métrica & Referencia</span>
+        </div>
+        <div class="space-y-2">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Variable Agronómica</label>
+            <div class="grid grid-cols-3 gap-1 bg-white p-1 rounded-xl border border-slate-200">
               <button
-                @click="toggleFullscreen"
-                class="text-[10px] px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                v-for="v in [
+                  { id: 'tsh', label: 'TSH' },
+                  { id: 'tch', label: 'TCH' },
+                  { id: 'sacarosa', label: '% Sac' }
+                ]"
+                :key="v.id"
+                @click="cambiarVariable(v.id)"
+                class="py-1 px-2 text-xs font-bold rounded-lg transition-all cursor-pointer text-center"
+                :class="variableActual === v.id ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                </svg>
-                {{ isFullscreen ? 'Salir Ampliado' : 'Pantalla Ampliada' }}
+                {{ v.label }}
               </button>
             </div>
-            <div class="space-y-2">
-              <div class="flex items-center space-x-1.5">
-                <button
-                  @click="zoomIn"
-                  class="flex-1 py-1.5 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
-                >
-                  🔍 + Zoom
-                </button>
-                <button
-                  @click="zoomOut"
-                  class="flex-1 py-1.5 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
-                >
-                  🔍 - Zoom
-                </button>
-                <button
-                  @click="resetZoom"
-                  class="py-1.5 px-3 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
-                >
-                  ↺ Reset
-                </button>
-              </div>
+          </div>
 
-              <div class="grid grid-cols-2 gap-1.5">
-                <button
-                  @click="exportarSVG"
-                  class="py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1"
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Testigo Referencia</label>
+            <select
+              v-model="testigoSeleccionado"
+              class="w-full text-xs font-bold text-slate-800 bg-white border border-slate-200 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-2xs cursor-pointer"
+            >
+              <option v-for="varName in variedades" :key="varName" :value="varName">
+                {{ varName }} {{ esTestigo(varName) ? ' (Testigo Standard)' : '' }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Biplot Options -->
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/90 space-y-3 shadow-2xs">
+        <div class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+          <span>📊 2. Modo & Opciones Biplot</span>
+        </div>
+        <div class="space-y-2">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Modelo de Análisis</label>
+            <select
+              v-model="tipoBiplot"
+              class="w-full text-xs font-bold text-slate-800 bg-white border border-slate-200 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none shadow-2xs cursor-pointer"
+            >
+              <option value="gge_which_won">GGE Biplot — Which-Won-Where (Sectores)</option>
+              <option value="gge_mean_stability">GGE Biplot — Rendimiento Medio vs Estabilidad</option>
+              <option value="ammi1">AMMI1 — Rendimiento vs CP1</option>
+              <option value="ammi2">AMMI2 — CP1 vs CP2 Interacción</option>
+            </select>
+          </div>
+
+          <div class="flex flex-wrap gap-3 pt-1">
+            <label class="inline-flex items-center text-xs font-semibold text-slate-700 cursor-pointer">
+              <input type="checkbox" v-model="mostrarVectores" class="rounded text-emerald-600 focus:ring-emerald-500 mr-1.5" />
+              Vectores Ambiente
+            </label>
+            <label class="inline-flex items-center text-xs font-semibold text-slate-700 cursor-pointer">
+              <input type="checkbox" v-model="mostrarConvexHull" class="rounded text-emerald-600 focus:ring-emerald-500 mr-1.5" />
+              Polígono Convexo
+            </label>
+            <label class="inline-flex items-center text-xs font-semibold text-slate-700 cursor-pointer">
+              <input type="checkbox" v-model="mostrarEtiquetas" class="rounded text-emerald-600 focus:ring-emerald-500 mr-1.5" />
+              Etiquetas
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Navigation & Export -->
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/90 space-y-3 shadow-2xs">
+        <div class="text-xs font-extrabold text-slate-800 flex items-center justify-between">
+          <span>🔍 3. Navegación & Reportes</span>
+          <button
+            @click="toggleFullscreen"
+            class="text-[10px] px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+            </svg>
+            Pantalla Ampliada
+          </button>
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-center space-x-1.5">
+            <button
+              @click="zoomIn"
+              class="flex-1 py-1.5 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
+            >
+              🔍 + Zoom
+            </button>
+            <button
+              @click="zoomOut"
+              class="flex-1 py-1.5 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
+            >
+              🔍 - Zoom
+            </button>
+            <button
+              @click="resetZoom"
+              class="py-1.5 px-3 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
+            >
+              ↺ Reset
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-1.5">
+            <button
+              @click="exportarSVG"
+              class="py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1"
+            >
+              📥 SVG / Image
+            </button>
+            <button
+              @click="exportarCSV"
+              class="py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1"
+            >
+              📊 Export CSV
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Biplot Canvas Area (Standard Inline Canvas) -->
+    <div class="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-4 relative overflow-hidden">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-2">
+        <div class="flex items-center space-x-2">
+          <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+          <h3 class="text-sm font-black text-slate-900 tracking-tight">
+            {{ biplotTitulo }}
+          </h3>
+        </div>
+        <div class="flex items-center space-x-3">
+          <span class="text-[11px] text-slate-400 font-medium hidden sm:inline">
+            Arrastra para desplazar • Rueda para zoom
+          </span>
+          <button
+            @click="toggleFullscreen"
+            class="text-xs px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-xl font-bold transition-all flex items-center gap-1 cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+            </svg>
+            Ampliar Gráfico
+          </button>
+        </div>
+      </div>
+
+      <!-- SVG Container -->
+      <div
+        ref="svgContainer"
+        class="w-full h-[540px] bg-slate-50/90 rounded-2xl relative cursor-grab active:cursor-grabbing overflow-hidden border border-slate-200/80 shadow-inner"
+        @mousedown="startPan"
+        @mousemove="doPan"
+        @mouseup="endPan"
+        @mouseleave="endPan"
+        @wheel.prevent="handleWheel"
+      >
+        <!-- Loading overlay -->
+        <div v-if="isLoading" class="absolute inset-0 bg-white/80 backdrop-blur-xs z-20 flex flex-col items-center justify-center text-slate-700 space-y-3">
+          <div class="w-8 h-8 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin"></div>
+          <span class="text-xs font-bold text-slate-600">Generando matriz GxE y descomposición SVD...</span>
+        </div>
+
+        <svg
+          ref="svgElement"
+          width="100%"
+          height="100%"
+          viewBox="0 0 900 600"
+          preserveAspectRatio="xMidYMid meet"
+          class="w-full h-full select-none"
+        >
+          <defs>
+            <marker
+              id="env-arrow"
+              viewBox="0 0 10 10"
+              refX="7"
+              refY="5"
+              markerWidth="6"
+              markerHeight="6"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#0284c7" />
+            </marker>
+
+            <filter id="glow-gen" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+
+          <!-- Main Zoom & Pan Group -->
+          <g :transform="`translate(${panX}, ${panY}) scale(${zoomScale})`">
+            <!-- Grid Background -->
+            <g class="grid-lines" opacity="0.6">
+              <line v-for="x in gridX" :key="'gx-'+x" :x1="x" y1="-2000" :x2="x" y2="2000" stroke="#e2e8f0" stroke-dasharray="3,3" />
+              <line v-for="y in gridY" :key="'gy-'+y" :x1="-2000" :y1="y" x2="2000" :y2="y" stroke="#e2e8f0" stroke-dasharray="3,3" />
+            </g>
+
+            <!-- Origin Axes (0,0) -->
+            <line x1="-2000" y1="300" x2="2000" y2="300" stroke="#475569" stroke-width="1.5" stroke-dasharray="5,5" />
+            <line x1="450" y1="-2000" x2="450" y2="2000" stroke="#475569" stroke-width="1.5" stroke-dasharray="5,5" />
+
+            <!-- Axis Labels -->
+            <text x="870" y="290" fill="#475569" font-size="11" font-weight="extrabold" text-anchor="end">
+              {{ tipoBiplot === 'ammi1' ? 'Rendimiento Medio (Diferencia vs Media General)' : 'PC1' }}
+            </text>
+            <text x="460" y="25" fill="#475569" font-size="11" font-weight="extrabold">
+              {{ tipoBiplot === 'ammi1' ? 'PC1' : 'PC2' }}
+            </text>
+
+            <!-- Concentric Stability Rings -->
+            <g v-if="tipoBiplot === 'gge_mean_stability'" opacity="0.5">
+              <circle v-for="r in [60, 120, 180, 240, 300]" :key="'ring-'+r" cx="450" cy="300" :r="r" fill="none" stroke="#cbd5e1" stroke-dasharray="4,4" />
+            </g>
+
+            <!-- Convex Hull Polygon & Sector Lines -->
+            <g v-if="mostrarConvexHull && hullPointsSVG.length > 2">
+              <polygon
+                :points="hullPointsSVG"
+                fill="rgba(16, 185, 129, 0.07)"
+                stroke="#059669"
+                stroke-width="2"
+                stroke-dasharray="6,4"
+              />
+              <!-- Perpendicular Sector Rays -->
+              <g v-if="tipoBiplot === 'gge_which_won'">
+                <line
+                  v-for="(ray, rIdx) in sectorRays"
+                  :key="'ray-'+rIdx"
+                  :x1="ray.x1"
+                  :y1="ray.y1"
+                  :x2="ray.x2"
+                  :y2="ray.y2"
+                  stroke="#d97706"
+                  stroke-width="1.5"
+                  stroke-dasharray="4,4"
+                  opacity="0.8"
+                />
+              </g>
+            </g>
+
+            <!-- Environment Vectors -->
+            <g v-if="mostrarVectores">
+              <g v-for="env in ambientesBiplot" :key="env.id">
+                <line
+                  x1="450"
+                  y1="300"
+                  :x2="toSvgX(getEnvX(env))"
+                  :y2="toSvgY(getEnvY(env))"
+                  stroke="#0284c7"
+                  stroke-width="2"
+                  marker-end="url(#env-arrow)"
+                  opacity="0.9"
+                />
+                <!-- Environment Label -->
+                <text
+                  :x="toSvgX(getEnvX(env)) + 8"
+                  :y="toSvgY(getEnvY(env)) + 4"
+                  fill="#0369a1"
+                  font-size="11"
+                  font-weight="extrabold"
+                  class="pointer-events-none"
                 >
-                  📥 SVG / Image
-                </button>
-                <button
-                  @click="exportarCSV"
-                  class="py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1"
-                >
-                  📊 Export CSV
-                </button>
-              </div>
-            </div>
+                  {{ env.nombre }}
+                </text>
+              </g>
+            </g>
+
+            <!-- Genotype Markers -->
+            <g v-for="gen in genotiposBiplot" :key="gen.variedad">
+              <!-- Glow for Reference Check -->
+              <circle
+                v-if="gen.es_testigo || gen.variedad === testigoSeleccionado"
+                :cx="toSvgX(getGenX(gen))"
+                :cy="toSvgY(getGenY(gen))"
+                r="11"
+                fill="#f59e0b"
+                opacity="0.35"
+                filter="url(#glow-gen)"
+              />
+
+              <!-- Marker Circle / Square -->
+              <circle
+                v-if="!gen.es_testigo"
+                :cx="toSvgX(getGenX(gen))"
+                :cy="toSvgY(getGenY(gen))"
+                :r="gen.variedad === testigoSeleccionado ? 7.5 : 6"
+                :fill="gen.variedad === testigoSeleccionado ? '#f59e0b' : '#10b981'"
+                stroke="#ffffff"
+                stroke-width="1.5"
+                class="transition-all hover:scale-125 cursor-pointer shadow-xs"
+                @mouseenter="hoverGenotipo = gen"
+                @mouseleave="hoverGenotipo = null"
+              />
+              <rect
+                v-else
+                :x="toSvgX(getGenX(gen)) - 6"
+                :y="toSvgY(getGenY(gen)) - 6"
+                width="12"
+                height="12"
+                fill="#ef4444"
+                stroke="#ffffff"
+                stroke-width="1.5"
+                class="transition-all hover:scale-125 cursor-pointer shadow-xs"
+                @mouseenter="hoverGenotipo = gen"
+                @mouseleave="hoverGenotipo = null"
+              />
+
+              <!-- Label -->
+              <text
+                v-if="mostrarEtiquetas"
+                :x="toSvgX(getGenX(gen)) + 9"
+                :y="toSvgY(getGenY(gen)) + 4"
+                :fill="gen.es_testigo ? '#dc2626' : gen.variedad === testigoSeleccionado ? '#b45309' : '#0f172a'"
+                font-size="11"
+                :font-weight="gen.es_testigo || gen.variedad === testigoSeleccionado ? 'black' : 'bold'"
+                class="pointer-events-none"
+              >
+                {{ gen.variedad }}
+              </text>
+            </g>
+          </g>
+        </svg>
+
+        <!-- Tooltip Hover Card -->
+        <div
+          v-if="hoverGenotipo"
+          class="absolute bottom-4 right-4 bg-slate-900/90 text-white p-3.5 rounded-2xl border border-slate-700 backdrop-blur-md shadow-2xl text-xs space-y-1 z-10 pointer-events-none min-w-[210px]"
+        >
+          <div class="font-black text-emerald-400 text-sm flex items-center justify-between">
+            <span>{{ hoverGenotipo.variedad }}</span>
+            <span v-if="hoverGenotipo.es_testigo" class="text-[10px] bg-red-500/30 text-red-300 px-1.5 py-0.5 rounded-full border border-red-400/40">TESTIGO</span>
+          </div>
+          <div class="text-slate-300 flex justify-between">
+            <span>Rendimiento Medio:</span>
+            <span class="font-bold text-white">{{ hoverGenotipo.media }}</span>
+          </div>
+          <div class="text-slate-300 flex justify-between">
+            <span>PC1 (Adaptabilidad):</span>
+            <span class="font-bold text-sky-400">{{ hoverGenotipo.pc1 }}</span>
+          </div>
+          <div class="text-slate-300 flex justify-between">
+            <span>PC2 (Estabilidad):</span>
+            <span class="font-bold text-purple-400">{{ hoverGenotipo.pc2 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stability Statistics Tables (Light White Theme) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Eberhart & Russell Table -->
+      <div class="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="text-sm font-black text-slate-900">Modelo de Eberhart & Russell (1966)</h4>
+            <p class="text-[11px] text-slate-500">Parámetros de adaptabilidad ($b_i$) y desvío de regresión ($S^2_{di}$)</p>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">
+            Regresión Ambiental
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-slate-50 text-slate-500 font-extrabold uppercase text-[10px] border-b border-slate-100">
+              <tr>
+                <th class="py-2.5 px-3">Variedad</th>
+                <th class="py-2.5 px-3 text-right">Media</th>
+                <th class="py-2.5 px-3 text-right">Coef. b_i</th>
+                <th class="py-2.5 px-3 text-right">Desv. S2di</th>
+                <th class="py-2.5 px-3 text-center">Diagnóstico</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+              <tr
+                v-for="row in eberhartRussellData"
+                :key="row.variedad"
+                :class="row.variedad === testigoSeleccionado ? 'bg-amber-50/70 font-bold' : 'hover:bg-slate-50/60'"
+              >
+                <td class="py-2.5 px-3 flex items-center gap-1.5 font-bold text-slate-900">
+                  <span v-if="row.es_testigo" class="text-xs">⭐️</span>
+                  {{ row.variedad }}
+                </td>
+                <td class="py-2.5 px-3 text-right font-bold text-slate-900">{{ row.media }}</td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-sky-700">{{ row.bi }}</td>
+                <td class="py-2.5 px-3 text-right font-mono text-slate-500">{{ row.s2di }}</td>
+                <td class="py-2.5 px-3 text-center">
+                  <span
+                    class="px-2 py-0.5 rounded-full text-[10px] font-extrabold"
+                    :class="{
+                      'bg-emerald-100 text-emerald-800 border border-emerald-200': row.adaptabilidad_type === 'success',
+                      'bg-blue-100 text-blue-800 border border-blue-200': row.adaptabilidad_type === 'primary',
+                      'bg-amber-100 text-amber-800 border border-amber-200': row.adaptabilidad_type === 'warning'
+                    }"
+                  >
+                    {{ row.adaptabilidad_label }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Lin & Binns Superiority Table -->
+      <div class="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="text-sm font-black text-slate-900">Índice de Superioridad de Lin & Binns (1988)</h4>
+            <p class="text-[11px] text-slate-500">Mide la proximidad ($P_i$) al máximo rendimiento local</p>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-purple-100 text-purple-800 border border-purple-200">
+            Índice P_i
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-slate-50 text-slate-500 font-extrabold uppercase text-[10px] border-b border-slate-100">
+              <tr>
+                <th class="py-2.5 px-3 text-center">Rank</th>
+                <th class="py-2.5 px-3">Variedad</th>
+                <th class="py-2.5 px-3 text-right">Media</th>
+                <th class="py-2.5 px-3 text-right">Índice P_i</th>
+                <th class="py-2.5 px-3 text-center">Nivel Superioridad</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+              <tr
+                v-for="row in linBinnsData"
+                :key="row.variedad"
+                :class="row.variedad === testigoSeleccionado ? 'bg-amber-50/70 font-bold' : 'hover:bg-slate-50/60'"
+              >
+                <td class="py-2.5 px-3 text-center">
+                  <span
+                    class="w-5 h-5 rounded-full inline-flex items-center justify-center text-[10px] font-black"
+                    :class="row.ranking === 1 ? 'bg-amber-400 text-slate-900 shadow-xs' : row.ranking <= 3 ? 'bg-slate-200 text-slate-800' : 'text-slate-400'"
+                  >
+                    {{ row.ranking }}
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 flex items-center gap-1.5 font-bold text-slate-900">
+                  <span v-if="row.es_testigo" class="text-xs">⭐️</span>
+                  {{ row.variedad }}
+                </td>
+                <td class="py-2.5 px-3 text-right font-bold text-slate-900">{{ row.media }}</td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-purple-700">{{ row.pi_index }}</td>
+                <td class="py-2.5 px-3 text-center">
+                  <span
+                    class="px-2 py-0.5 rounded-full text-[10px] font-extrabold"
+                    :class="row.ranking <= 3 ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-slate-100 text-slate-600'"
+                  >
+                    {{ row.ranking <= 3 ? 'Alta Superioridad' : 'Estándar' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dedicated Fullscreen Overlay Modal (Teleported directly to Body) -->
+  <Teleport to="body">
+    <div
+      v-if="isFullscreen"
+      class="fixed inset-0 z-[99999] bg-slate-950/90 backdrop-blur-md flex flex-col p-3 sm:p-5 select-none"
+    >
+      <!-- Top Bar Controls -->
+      <div class="bg-white rounded-2xl p-3 shadow-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-3 mb-3 shrink-0">
+        <div class="flex items-center space-x-3">
+          <span class="px-3 py-1 rounded-full text-xs font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+            🖥️ Vista Ampliada
+          </span>
+          <div>
+            <h2 class="text-sm font-black text-slate-900 leading-tight">
+              {{ biplotTitulo }}
+            </h2>
+            <p class="text-[11px] text-slate-500 font-semibold">
+              Proyecto #{{ projectId }} — {{ variableActual.toUpperCase() }} (Media General: {{ grandMean }})
+            </p>
           </div>
         </div>
 
-        <!-- Biplot Canvas Area (Single Responsive Canvas) -->
-        <div class="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-4 relative overflow-hidden">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-2">
-            <div class="flex items-center space-x-2">
-              <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-              <h3 class="text-sm font-black text-slate-900 tracking-tight">
-                {{ biplotTitulo }}
-              </h3>
-            </div>
-            <span class="text-[11px] text-slate-400 font-medium">
-              Arrastra para desplazar • Rueda para zoom
-            </span>
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Variable -->
+          <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button
+              v-for="v in [
+                { id: 'tsh', label: 'TSH' },
+                { id: 'tch', label: 'TCH' },
+                { id: 'sacarosa', label: '% Sac' }
+              ]"
+              :key="v.id"
+              @click="cambiarVariable(v.id)"
+              class="px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer"
+              :class="variableActual === v.id ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'"
+            >
+              {{ v.label }}
+            </button>
           </div>
 
-          <!-- SVG Container with Dynamic Height depending on Fullscreen -->
-          <div
-            ref="svgContainer"
-            class="w-full bg-slate-50/90 rounded-2xl relative cursor-grab active:cursor-grabbing overflow-hidden border border-slate-200/80 shadow-inner transition-all duration-300"
-            :class="isFullscreen ? 'h-[640px]' : 'h-[520px]'"
-            @mousedown="startPan"
-            @mousemove="doPan"
-            @mouseup="endPan"
-            @mouseleave="endPan"
-            @wheel.prevent="handleWheel"
+          <!-- Modelo Biplot -->
+          <select
+            v-model="tipoBiplot"
+            class="text-xs font-bold text-slate-800 bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none cursor-pointer"
           >
-            <!-- Loading overlay -->
-            <div v-if="isLoading" class="absolute inset-0 bg-white/80 backdrop-blur-xs z-20 flex flex-col items-center justify-center text-slate-700 space-y-3">
-              <div class="w-8 h-8 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin"></div>
-              <span class="text-xs font-bold text-slate-600">Generando matriz GxE y descomposición SVD...</span>
-            </div>
+            <option value="gge_which_won">GGE Biplot — Which-Won-Where</option>
+            <option value="gge_mean_stability">GGE Biplot — Mean vs Stability</option>
+            <option value="ammi1">AMMI1 — Rendimiento vs PC1</option>
+            <option value="ammi2">AMMI2 — PC1 vs PC2</option>
+          </select>
 
-            <svg
-              ref="svgElement"
-              width="100%"
-              height="100%"
-              viewBox="0 0 900 600"
-              preserveAspectRatio="xMidYMid meet"
-              class="w-full h-full select-none"
-            >
-              <defs>
-                <!-- Marker for environment vectors -->
-                <marker
-                  id="env-arrow"
-                  viewBox="0 0 10 10"
-                  refX="7"
-                  refY="5"
-                  markerWidth="6"
-                  markerHeight="6"
-                  orient="auto-start-reverse"
-                >
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#0284c7" />
-                </marker>
+          <!-- Toggles -->
+          <label class="inline-flex items-center text-xs font-semibold text-slate-700 bg-slate-100 px-2.5 py-1.5 rounded-xl cursor-pointer">
+            <input type="checkbox" v-model="mostrarVectores" class="rounded text-emerald-600 focus:ring-emerald-500 mr-1.5" />
+            Vectores
+          </label>
+          <label class="inline-flex items-center text-xs font-semibold text-slate-700 bg-slate-100 px-2.5 py-1.5 rounded-xl cursor-pointer">
+            <input type="checkbox" v-model="mostrarConvexHull" class="rounded text-emerald-600 focus:ring-emerald-500 mr-1.5" />
+            Polígono
+          </label>
+          <label class="inline-flex items-center text-xs font-semibold text-slate-700 bg-slate-100 px-2.5 py-1.5 rounded-xl cursor-pointer">
+            <input type="checkbox" v-model="mostrarEtiquetas" class="rounded text-emerald-600 focus:ring-emerald-500 mr-1.5" />
+            Etiquetas
+          </label>
 
-                <!-- Glow Filters -->
-                <filter id="glow-gen" x="-30%" y="-30%" width="160%" height="160%">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
-              </defs>
+          <!-- Zoom -->
+          <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button @click="zoomIn" class="px-2 py-0.5 text-xs font-bold text-slate-700 hover:bg-slate-200 rounded cursor-pointer">🔍 +</button>
+            <button @click="zoomOut" class="px-2 py-0.5 text-xs font-bold text-slate-700 hover:bg-slate-200 rounded cursor-pointer">🔍 -</button>
+            <button @click="resetZoom" class="px-2 py-0.5 text-xs font-bold text-slate-700 hover:bg-slate-200 rounded cursor-pointer">↺ Reset</button>
+          </div>
+        </div>
 
-              <!-- Main Zoom & Pan Group -->
-              <g :transform="`translate(${panX}, ${panY}) scale(${zoomScale})`">
-                <!-- Grid Background -->
-                <g class="grid-lines" opacity="0.6">
-                  <line v-for="x in gridX" :key="'gx-'+x" :x1="x" y1="-2000" :x2="x" y2="2000" stroke="#e2e8f0" stroke-dasharray="3,3" />
-                  <line v-for="y in gridY" :key="'gy-'+y" :x1="-2000" :y1="y" x2="2000" :y2="y" stroke="#e2e8f0" stroke-dasharray="3,3" />
+        <button
+          @click="toggleFullscreen"
+          class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-extrabold transition-all shadow-md cursor-pointer flex items-center gap-1.5 shrink-0"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Salir (ESC)
+        </button>
+      </div>
+
+      <!-- MAIN FULLSCREEN CANVAS BOX -->
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl p-4 flex-1 w-full relative overflow-hidden flex flex-col min-h-0">
+        <div
+          class="w-full h-full bg-slate-50/90 rounded-2xl relative cursor-grab active:cursor-grabbing overflow-hidden border border-slate-200/80 shadow-inner"
+          @mousedown="startPan"
+          @mousemove="doPan"
+          @mouseup="endPan"
+          @mouseleave="endPan"
+          @wheel.prevent="handleWheel"
+        >
+          <div v-if="isLoading" class="absolute inset-0 bg-white/80 backdrop-blur-xs z-20 flex flex-col items-center justify-center text-slate-700 space-y-3">
+            <div class="w-10 h-10 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin"></div>
+            <span class="text-xs font-bold text-slate-600">Generando matriz GxE y descomposición SVD...</span>
+          </div>
+
+          <svg
+            width="100%"
+            height="100%"
+            viewBox="0 0 900 600"
+            preserveAspectRatio="xMidYMid meet"
+            class="w-full h-full select-none"
+          >
+            <defs>
+              <marker
+                id="env-arrow-fs"
+                viewBox="0 0 10 10"
+                refX="7"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#0284c7" />
+              </marker>
+
+              <filter id="glow-gen-fs" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+
+            <!-- Main Zoom & Pan Group -->
+            <g :transform="`translate(${panX}, ${panY}) scale(${zoomScale})`">
+              <!-- Grid Background -->
+              <g class="grid-lines" opacity="0.6">
+                <line v-for="x in gridX" :key="'gx-fs-'+x" :x1="x" y1="-2000" :x2="x" y2="2000" stroke="#e2e8f0" stroke-dasharray="3,3" />
+                <line v-for="y in gridY" :key="'gy-fs-'+y" :x1="-2000" :y1="y" x2="2000" :y2="y" stroke="#e2e8f0" stroke-dasharray="3,3" />
+              </g>
+
+              <!-- Origin Axes (0,0) -->
+              <line x1="-2000" y1="300" x2="2000" y2="300" stroke="#475569" stroke-width="1.5" stroke-dasharray="5,5" />
+              <line x1="450" y1="-2000" x2="450" y2="2000" stroke="#475569" stroke-width="1.5" stroke-dasharray="5,5" />
+
+              <!-- Axis Labels -->
+              <text x="870" y="290" fill="#475569" font-size="11" font-weight="extrabold" text-anchor="end">
+                {{ tipoBiplot === 'ammi1' ? 'Rendimiento Medio (Diferencia vs Media General)' : 'PC1' }}
+              </text>
+              <text x="460" y="25" fill="#475569" font-size="11" font-weight="extrabold">
+                {{ tipoBiplot === 'ammi1' ? 'PC1' : 'PC2' }}
+              </text>
+
+              <!-- Concentric Stability Rings -->
+              <g v-if="tipoBiplot === 'gge_mean_stability'" opacity="0.5">
+                <circle v-for="r in [60, 120, 180, 240, 300]" :key="'ring-fs-'+r" cx="450" cy="300" :r="r" fill="none" stroke="#cbd5e1" stroke-dasharray="4,4" />
+              </g>
+
+              <!-- Convex Hull Polygon & Sector Lines -->
+              <g v-if="mostrarConvexHull && hullPointsSVG.length > 2">
+                <polygon
+                  :points="hullPointsSVG"
+                  fill="rgba(16, 185, 129, 0.07)"
+                  stroke="#059669"
+                  stroke-width="2"
+                  stroke-dasharray="6,4"
+                />
+                <!-- Perpendicular Sector Rays -->
+                <g v-if="tipoBiplot === 'gge_which_won'">
+                  <line
+                    v-for="(ray, rIdx) in sectorRays"
+                    :key="'ray-fs-'+rIdx"
+                    :x1="ray.x1"
+                    :y1="ray.y1"
+                    :x2="ray.x2"
+                    :y2="ray.y2"
+                    stroke="#d97706"
+                    stroke-width="1.5"
+                    stroke-dasharray="4,4"
+                    opacity="0.8"
+                  />
                 </g>
+              </g>
 
-                <!-- Origin Axes (0,0) -->
-                <line x1="-2000" y1="300" x2="2000" y2="300" stroke="#475569" stroke-width="1.5" stroke-dasharray="5,5" />
-                <line x1="450" y1="-2000" x2="450" y2="2000" stroke="#475569" stroke-width="1.5" stroke-dasharray="5,5" />
-
-                <!-- Axis Labels -->
-                <text x="870" y="290" fill="#475569" font-size="11" font-weight="extrabold" text-anchor="end">
-                  {{ tipoBiplot === 'ammi1' ? 'Rendimiento Medio (Diferencia vs Media General)' : 'PC1' }}
-                </text>
-                <text x="460" y="25" fill="#475569" font-size="11" font-weight="extrabold">
-                  {{ tipoBiplot === 'ammi1' ? 'PC1' : 'PC2' }}
-                </text>
-
-                <!-- Concentric Stability Rings -->
-                <g v-if="tipoBiplot === 'gge_mean_stability'" opacity="0.5">
-                  <circle v-for="r in [60, 120, 180, 240, 300]" :key="'ring-'+r" cx="450" cy="300" :r="r" fill="none" stroke="#cbd5e1" stroke-dasharray="4,4" />
-                </g>
-
-                <!-- Convex Hull Polygon & Sector Lines -->
-                <g v-if="mostrarConvexHull && hullPointsSVG.length > 2">
-                  <polygon
-                    :points="hullPointsSVG"
-                    fill="rgba(16, 185, 129, 0.07)"
-                    stroke="#059669"
+              <!-- Environment Vectors -->
+              <g v-if="mostrarVectores">
+                <g v-for="env in ambientesBiplot" :key="'env-fs-'+env.id">
+                  <line
+                    x1="450"
+                    y1="300"
+                    :x2="toSvgX(getEnvX(env))"
+                    :y2="toSvgY(getEnvY(env))"
+                    stroke="#0284c7"
                     stroke-width="2"
-                    stroke-dasharray="6,4"
+                    marker-end="url(#env-arrow-fs)"
+                    opacity="0.9"
                   />
-                  <!-- Perpendicular Sector Rays -->
-                  <g v-if="tipoBiplot === 'gge_which_won'">
-                    <line
-                      v-for="(ray, rIdx) in sectorRays"
-                      :key="'ray-'+rIdx"
-                      :x1="ray.x1"
-                      :y1="ray.y1"
-                      :x2="ray.x2"
-                      :y2="ray.y2"
-                      stroke="#d97706"
-                      stroke-width="1.5"
-                      stroke-dasharray="4,4"
-                      opacity="0.8"
-                    />
-                  </g>
-                </g>
-
-                <!-- Environment Vectors -->
-                <g v-if="mostrarVectores">
-                  <g v-for="env in ambientesBiplot" :key="env.id">
-                    <line
-                      x1="450"
-                      y1="300"
-                      :x2="toSvgX(getEnvX(env))"
-                      :y2="toSvgY(getEnvY(env))"
-                      stroke="#0284c7"
-                      stroke-width="2"
-                      marker-end="url(#env-arrow)"
-                      opacity="0.9"
-                    />
-                    <!-- Environment Label -->
-                    <text
-                      :x="toSvgX(getEnvX(env)) + 8"
-                      :y="toSvgY(getEnvY(env)) + 4"
-                      fill="#0369a1"
-                      font-size="11"
-                      font-weight="extrabold"
-                      class="pointer-events-none"
-                    >
-                      {{ env.nombre }}
-                    </text>
-                  </g>
-                </g>
-
-                <!-- Genotype Markers -->
-                <g v-for="gen in genotiposBiplot" :key="gen.variedad">
-                  <!-- Glow for Reference Check -->
-                  <circle
-                    v-if="gen.es_testigo || gen.variedad === testigoSeleccionado"
-                    :cx="toSvgX(getGenX(gen))"
-                    :cy="toSvgY(getGenY(gen))"
-                    r="11"
-                    fill="#f59e0b"
-                    opacity="0.35"
-                    filter="url(#glow-gen)"
-                  />
-
-                  <!-- Marker Circle / Square -->
-                  <circle
-                    v-if="!gen.es_testigo"
-                    :cx="toSvgX(getGenX(gen))"
-                    :cy="toSvgY(getGenY(gen))"
-                    :r="gen.variedad === testigoSeleccionado ? 7.5 : 6"
-                    :fill="gen.variedad === testigoSeleccionado ? '#f59e0b' : '#10b981'"
-                    stroke="#ffffff"
-                    stroke-width="1.5"
-                    class="transition-all hover:scale-125 cursor-pointer shadow-xs"
-                    @mouseenter="hoverGenotipo = gen"
-                    @mouseleave="hoverGenotipo = null"
-                  />
-                  <rect
-                    v-else
-                    :x="toSvgX(getGenX(gen)) - 6"
-                    :y="toSvgY(getGenY(gen)) - 6"
-                    width="12"
-                    height="12"
-                    fill="#ef4444"
-                    stroke="#ffffff"
-                    stroke-width="1.5"
-                    class="transition-all hover:scale-125 cursor-pointer shadow-xs"
-                    @mouseenter="hoverGenotipo = gen"
-                    @mouseleave="hoverGenotipo = null"
-                  />
-
-                  <!-- Label -->
+                  <!-- Environment Label -->
                   <text
-                    v-if="mostrarEtiquetas"
-                    :x="toSvgX(getGenX(gen)) + 9"
-                    :y="toSvgY(getGenY(gen)) + 4"
-                    :fill="gen.es_testigo ? '#dc2626' : gen.variedad === testigoSeleccionado ? '#b45309' : '#0f172a'"
+                    :x="toSvgX(getEnvX(env)) + 8"
+                    :y="toSvgY(getEnvY(env)) + 4"
+                    fill="#0369a1"
                     font-size="11"
-                    :font-weight="gen.es_testigo || gen.variedad === testigoSeleccionado ? 'black' : 'bold'"
+                    font-weight="extrabold"
                     class="pointer-events-none"
                   >
-                    {{ gen.variedad }}
+                    {{ env.nombre }}
                   </text>
                 </g>
               </g>
-            </svg>
 
-            <!-- Tooltip Hover Card -->
-            <div
-              v-if="hoverGenotipo"
-              class="absolute bottom-4 right-4 bg-slate-900/90 text-white p-3.5 rounded-2xl border border-slate-700 backdrop-blur-md shadow-2xl text-xs space-y-1 z-10 pointer-events-none min-w-[210px]"
-            >
-              <div class="font-black text-emerald-400 text-sm flex items-center justify-between">
-                <span>{{ hoverGenotipo.variedad }}</span>
-                <span v-if="hoverGenotipo.es_testigo" class="text-[10px] bg-red-500/30 text-red-300 px-1.5 py-0.5 rounded-full border border-red-400/40">TESTIGO</span>
-              </div>
-              <div class="text-slate-300 flex justify-between">
-                <span>Rendimiento Medio:</span>
-                <span class="font-bold text-white">{{ hoverGenotipo.media }}</span>
-              </div>
-              <div class="text-slate-300 flex justify-between">
-                <span>PC1 (Adaptabilidad):</span>
-                <span class="font-bold text-sky-400">{{ hoverGenotipo.pc1 }}</span>
-              </div>
-              <div class="text-slate-300 flex justify-between">
-                <span>PC2 (Estabilidad):</span>
-                <span class="font-bold text-purple-400">{{ hoverGenotipo.pc2 }}</span>
-              </div>
+              <!-- Genotype Markers -->
+              <g v-for="gen in genotiposBiplot" :key="'gen-fs-'+gen.variedad">
+                <!-- Glow for Reference Check -->
+                <circle
+                  v-if="gen.es_testigo || gen.variedad === testigoSeleccionado"
+                  :cx="toSvgX(getGenX(gen))"
+                  :cy="toSvgY(getGenY(gen))"
+                  r="11"
+                  fill="#f59e0b"
+                  opacity="0.35"
+                  filter="url(#glow-gen-fs)"
+                />
+
+                <!-- Marker Circle / Square -->
+                <circle
+                  v-if="!gen.es_testigo"
+                  :cx="toSvgX(getGenX(gen))"
+                  :cy="toSvgY(getGenY(gen))"
+                  :r="gen.variedad === testigoSeleccionado ? 7.5 : 6"
+                  :fill="gen.variedad === testigoSeleccionado ? '#f59e0b' : '#10b981'"
+                  stroke="#ffffff"
+                  stroke-width="1.5"
+                  class="transition-all hover:scale-125 cursor-pointer shadow-xs"
+                  @mouseenter="hoverGenotipo = gen"
+                  @mouseleave="hoverGenotipo = null"
+                />
+                <rect
+                  v-else
+                  :x="toSvgX(getGenX(gen)) - 6"
+                  :y="toSvgY(getGenY(gen)) - 6"
+                  width="12"
+                  height="12"
+                  fill="#ef4444"
+                  stroke="#ffffff"
+                  stroke-width="1.5"
+                  class="transition-all hover:scale-125 cursor-pointer shadow-xs"
+                  @mouseenter="hoverGenotipo = gen"
+                  @mouseleave="hoverGenotipo = null"
+                />
+
+                <!-- Label -->
+                <text
+                  v-if="mostrarEtiquetas"
+                  :x="toSvgX(getGenX(gen)) + 9"
+                  :y="toSvgY(getGenY(gen)) + 4"
+                  :fill="gen.es_testigo ? '#dc2626' : gen.variedad === testigoSeleccionado ? '#b45309' : '#0f172a'"
+                  font-size="11"
+                  :font-weight="gen.es_testigo || gen.variedad === testigoSeleccionado ? 'black' : 'bold'"
+                  class="pointer-events-none"
+                >
+                  {{ gen.variedad }}
+                </text>
+              </g>
+            </g>
+          </svg>
+
+          <!-- Tooltip Hover Card inside fullscreen -->
+          <div
+            v-if="hoverGenotipo"
+            class="absolute bottom-6 right-6 bg-slate-900/90 text-white p-4 rounded-2xl border border-slate-700 backdrop-blur-md shadow-2xl text-xs space-y-1.5 z-30 pointer-events-none min-w-[220px]"
+          >
+            <div class="font-black text-emerald-400 text-sm flex items-center justify-between">
+              <span>{{ hoverGenotipo.variedad }}</span>
+              <span v-if="hoverGenotipo.es_testigo" class="text-[10px] bg-red-500/30 text-red-300 px-2 py-0.5 rounded-full border border-red-400/40 font-bold">TESTIGO</span>
             </div>
-          </div>
-        </div>
-
-        <!-- Stability Statistics Tables (Light White Theme) -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Eberhart & Russell Table -->
-          <div class="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-5 space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <h4 class="text-sm font-black text-slate-900">Modelo de Eberhart & Russell (1966)</h4>
-                <p class="text-[11px] text-slate-500">Parámetros de adaptabilidad ($b_i$) y desvío de regresión ($S^2_{di}$)</p>
-              </div>
-              <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">
-                Regresión Ambiental
-              </span>
+            <div class="text-slate-300 flex justify-between">
+              <span>Rendimiento Medio:</span>
+              <span class="font-bold text-white">{{ hoverGenotipo.media }}</span>
             </div>
-
-            <div class="overflow-x-auto">
-              <table class="w-full text-xs text-left">
-                <thead class="bg-slate-50 text-slate-500 font-extrabold uppercase text-[10px] border-b border-slate-100">
-                  <tr>
-                    <th class="py-2.5 px-3">Variedad</th>
-                    <th class="py-2.5 px-3 text-right">Media</th>
-                    <th class="py-2.5 px-3 text-right">Coef. b_i</th>
-                    <th class="py-2.5 px-3 text-right">Desv. S2di</th>
-                    <th class="py-2.5 px-3 text-center">Diagnóstico</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
-                  <tr
-                    v-for="row in eberhartRussellData"
-                    :key="row.variedad"
-                    :class="row.variedad === testigoSeleccionado ? 'bg-amber-50/70 font-bold' : 'hover:bg-slate-50/60'"
-                  >
-                    <td class="py-2.5 px-3 flex items-center gap-1.5 font-bold text-slate-900">
-                      <span v-if="row.es_testigo" class="text-xs">⭐️</span>
-                      {{ row.variedad }}
-                    </td>
-                    <td class="py-2.5 px-3 text-right font-bold text-slate-900">{{ row.media }}</td>
-                    <td class="py-2.5 px-3 text-right font-mono font-bold text-sky-700">{{ row.bi }}</td>
-                    <td class="py-2.5 px-3 text-right font-mono text-slate-500">{{ row.s2di }}</td>
-                    <td class="py-2.5 px-3 text-center">
-                      <span
-                        class="px-2 py-0.5 rounded-full text-[10px] font-extrabold"
-                        :class="{
-                          'bg-emerald-100 text-emerald-800 border border-emerald-200': row.adaptabilidad_type === 'success',
-                          'bg-blue-100 text-blue-800 border border-blue-200': row.adaptabilidad_type === 'primary',
-                          'bg-amber-100 text-amber-800 border border-amber-200': row.adaptabilidad_type === 'warning'
-                        }"
-                      >
-                        {{ row.adaptabilidad_label }}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="text-slate-300 flex justify-between">
+              <span>PC1 (Adaptabilidad):</span>
+              <span class="font-bold text-sky-400">{{ hoverGenotipo.pc1 }}</span>
             </div>
-          </div>
-
-          <!-- Lin & Binns Superiority Table -->
-          <div class="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-5 space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <h4 class="text-sm font-black text-slate-900">Índice de Superioridad de Lin & Binns (1988)</h4>
-                <p class="text-[11px] text-slate-500">Mide la proximidad ($P_i$) al máximo rendimiento local</p>
-              </div>
-              <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-purple-100 text-purple-800 border border-purple-200">
-                Índice P_i
-              </span>
-            </div>
-
-            <div class="overflow-x-auto">
-              <table class="w-full text-xs text-left">
-                <thead class="bg-slate-50 text-slate-500 font-extrabold uppercase text-[10px] border-b border-slate-100">
-                  <tr>
-                    <th class="py-2.5 px-3 text-center">Rank</th>
-                    <th class="py-2.5 px-3">Variedad</th>
-                    <th class="py-2.5 px-3 text-right">Media</th>
-                    <th class="py-2.5 px-3 text-right">Índice P_i</th>
-                    <th class="py-2.5 px-3 text-center">Nivel Superioridad</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
-                  <tr
-                    v-for="row in linBinnsData"
-                    :key="row.variedad"
-                    :class="row.variedad === testigoSeleccionado ? 'bg-amber-50/70 font-bold' : 'hover:bg-slate-50/60'"
-                  >
-                    <td class="py-2.5 px-3 text-center">
-                      <span
-                        class="w-5 h-5 rounded-full inline-flex items-center justify-center text-[10px] font-black"
-                        :class="row.ranking === 1 ? 'bg-amber-400 text-slate-900 shadow-xs' : row.ranking <= 3 ? 'bg-slate-200 text-slate-800' : 'text-slate-400'"
-                      >
-                        {{ row.ranking }}
-                      </span>
-                    </td>
-                    <td class="py-2.5 px-3 flex items-center gap-1.5 font-bold text-slate-900">
-                      <span v-if="row.es_testigo" class="text-xs">⭐️</span>
-                      {{ row.variedad }}
-                    </td>
-                    <td class="py-2.5 px-3 text-right font-bold text-slate-900">{{ row.media }}</td>
-                    <td class="py-2.5 px-3 text-right font-mono font-bold text-purple-700">{{ row.pi_index }}</td>
-                    <td class="py-2.5 px-3 text-center">
-                      <span
-                        class="px-2 py-0.5 rounded-full text-[10px] font-extrabold"
-                        :class="row.ranking <= 3 ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-slate-100 text-slate-600'"
-                      >
-                        {{ row.ranking <= 3 ? 'Alta Superioridad' : 'Estándar' }}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="text-slate-300 flex justify-between">
+              <span>PC2 (Estabilidad):</span>
+              <span class="font-bold text-purple-400">{{ hoverGenotipo.pc2 }}</span>
             </div>
           </div>
         </div>
@@ -539,7 +804,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import projectManagementService from '@/services/projectManagement.services';
 
 const props = defineProps({
@@ -658,6 +923,12 @@ const toggleFullscreen = () => {
   isFullscreen.value = !isFullscreen.value;
 };
 
+const handleKeyDown = (e) => {
+  if (e.key === 'Escape' && isFullscreen.value) {
+    isFullscreen.value = false;
+  }
+};
+
 // API fetch method using standard projectManagementService
 const fetchEstabilidadData = async () => {
   if (!props.projectId) return;
@@ -677,6 +948,11 @@ const fetchEstabilidadData = async () => {
 
 onMounted(() => {
   fetchEstabilidadData();
+  window.addEventListener('keydown', handleKeyDown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown);
 });
 
 const cambiarVariable = (v) => {
@@ -723,69 +999,81 @@ const ambientesBiplot = computed(() => {
   return ggeBiplot.value?.ambientes || defaultData.gge_biplot.ambientes;
 });
 
-// Dynamic Numerical Parsing & Coordinate Mappings
+// Dynamic Numerical Parsing & Coordinate Mappings with NaN Guards
 const getGenX = (gen) => {
   if (!gen) return 0;
   if (tipoBiplot.value === 'ammi1') {
-    return parseFloat(gen.media || 0) - grandMean.value;
+    const m = parseFloat(gen.media ?? 0);
+    return isNaN(m) ? 0 : m - grandMean.value;
   }
-  return parseFloat(gen.pc1 || 0);
+  const pc1 = parseFloat(gen.pc1 ?? 0);
+  return isNaN(pc1) ? 0 : pc1;
 };
 
 const getGenY = (gen) => {
   if (!gen) return 0;
   if (tipoBiplot.value === 'ammi1') {
-    return parseFloat(gen.pc1 || 0);
+    const pc1 = parseFloat(gen.pc1 ?? 0);
+    return isNaN(pc1) ? 0 : pc1;
   }
-  return parseFloat(gen.pc2 || 0);
+  const pc2 = parseFloat(gen.pc2 ?? 0);
+  return isNaN(pc2) ? 0 : pc2;
 };
 
 const getEnvX = (env) => {
   if (!env) return 0;
   if (tipoBiplot.value === 'ammi1') {
-    return parseFloat(env.media || 0) - grandMean.value;
+    const m = parseFloat(env.media ?? 0);
+    return isNaN(m) ? 0 : m - grandMean.value;
   }
-  return parseFloat(env.pc1 || 0);
+  const pc1 = parseFloat(env.pc1 ?? 0);
+  return isNaN(pc1) ? 0 : pc1;
 };
 
 const getEnvY = (env) => {
   if (!env) return 0;
   if (tipoBiplot.value === 'ammi1') {
-    return parseFloat(env.pc1 || 0);
+    const pc1 = parseFloat(env.pc1 ?? 0);
+    return isNaN(pc1) ? 0 : pc1;
   }
-  return parseFloat(env.pc2 || 0);
+  const pc2 = parseFloat(env.pc2 ?? 0);
+  return isNaN(pc2) ? 0 : pc2;
 };
 
 const scaleFactor = computed(() => {
-  const gens = genotiposBiplot.value;
-  const envs = ambientesBiplot.value;
+  const gens = genotiposBiplot.value || [];
+  const envs = ambientesBiplot.value || [];
   let maxVal = 0.5;
 
   gens.forEach(g => {
     const x = Math.abs(getGenX(g));
     const y = Math.abs(getGenY(g));
-    if (x > maxVal) maxVal = x;
-    if (y > maxVal) maxVal = y;
+    if (!isNaN(x) && x > maxVal) maxVal = x;
+    if (!isNaN(y) && y > maxVal) maxVal = y;
   });
 
   envs.forEach(e => {
     const x = Math.abs(getEnvX(e));
     const y = Math.abs(getEnvY(e));
-    if (x > maxVal) maxVal = x;
-    if (y > maxVal) maxVal = y;
+    if (!isNaN(x) && x > maxVal) maxVal = x;
+    if (!isNaN(y) && y > maxVal) maxVal = y;
   });
 
   return 240 / maxVal;
 });
 
 const toSvgX = (val) => {
-  const num = parseFloat(val || 0);
-  return 450 + (num * scaleFactor.value);
+  const num = parseFloat(val ?? 0);
+  const sf = scaleFactor.value || 100;
+  const res = 450 + ((isNaN(num) ? 0 : num) * sf);
+  return isNaN(res) ? 450 : res;
 };
 
 const toSvgY = (val) => {
-  const num = parseFloat(val || 0);
-  return 300 - (num * scaleFactor.value);
+  const num = parseFloat(val ?? 0);
+  const sf = scaleFactor.value || 100;
+  const res = 300 - ((isNaN(num) ? 0 : num) * sf);
+  return isNaN(res) ? 300 : res;
 };
 
 const gridX = [-300, -150, 0, 150, 300, 450, 600, 750, 900, 1050, 1200];
