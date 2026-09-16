@@ -1,35 +1,30 @@
 <template>
-  <div class="space-y-6" @click="handleOuterClick">
-    <!-- Top Interactive Toolbar -->
-    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3" @click.stop>
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+  <div class="space-y-5" @click="handleOuterClick">
+    <!-- Top Interactive Toolbar Card -->
+    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-4" @click.stop>
+      <!-- Header Row -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-200/80">
         <div>
-          <h4 class="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-            </svg>
-            Evaluación Interactivas de Isoproductividad
-          </h4>
-          <p class="text-[11px] text-slate-500 font-medium">
-            Usa la rueda del ratón para zoom, arrastra para moverte, o haz clic en cualquier variedad o por fuera para deseleccionar.
-          </p>
-          <div class="flex flex-wrap items-center gap-2 mt-2">
-            <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-slate-200 text-slate-800 border border-slate-300">
-              TCH (Toneladas Caña/ha)
-            </span>
-            <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-200">
-              % SAC (% Rendimiento Sacarosa)
-            </span>
-            <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-slate-100 text-slate-700 border border-slate-300 shadow-xs">
-              TSH (Toneladas Azúcar/ha)
+          <div class="flex items-center gap-2">
+            <h4 class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+              </svg>
+              Evaluación Interactiva de Isoproductividad
+            </h4>
+            <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">
+              IDEAR
             </span>
           </div>
+          <p class="text-[11px] text-slate-500 font-medium mt-0.5">
+            Usa la rueda del ratón para zoom, arrastra para moverte, o selecciona variedades para comparar rendimiento.
+          </p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
           <!-- Selector de Testigo de Referencia -->
-          <div class="flex items-center space-x-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
-            <span class="text-[10px] font-extrabold uppercase text-slate-500">⭐ Testigo Ref:</span>
+          <div class="flex items-center space-x-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
+            <span class="text-[10px] font-extrabold uppercase text-slate-500 flex items-center gap-1">⭐ Testigo Ref:</span>
             <select
               v-model="selectedTestigoRef"
               class="text-xs font-black text-slate-800 bg-transparent border-none focus:outline-none cursor-pointer"
@@ -40,33 +35,33 @@
             </select>
           </div>
 
-          <!-- Botones Directos de Descargar Imagen / Datos (PNG, JPG, SVG, CSV) -->
-          <div class="flex items-center gap-1.5 bg-slate-200/60 p-1 rounded-xl border border-slate-200/80">
+          <!-- Botones de Exportar -->
+          <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
             <button
               @click="exportChartImage('png')"
-              class="px-2.5 py-1 text-[11px] font-black text-slate-800 bg-white hover:bg-emerald-50 hover:text-emerald-700 rounded-lg shadow-xs transition-all flex items-center gap-1 cursor-pointer border border-slate-200"
-              title="Descargar Imagen PNG"
+              class="px-2 py-1 text-[10px] font-bold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all flex items-center gap-1 cursor-pointer"
+              title="Descargar PNG"
             >
               🖼️ PNG
             </button>
             <button
               @click="exportChartImage('jpeg')"
-              class="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-lg shadow-xs transition-all flex items-center gap-1 cursor-pointer border border-slate-200"
-              title="Descargar Imagen JPG"
+              class="px-2 py-1 text-[10px] font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all flex items-center gap-1 cursor-pointer"
+              title="Descargar JPG"
             >
               📷 JPG
             </button>
             <button
               @click="exportChartImage('svg')"
-              class="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-lg shadow-xs transition-all flex items-center gap-1 cursor-pointer border border-slate-200"
-              title="Descargar Vector SVG"
+              class="px-2 py-1 text-[10px] font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all flex items-center gap-1 cursor-pointer"
+              title="Descargar SVG"
             >
               📐 SVG
             </button>
             <button
               @click="exportCsv"
-              class="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-lg shadow-xs transition-all flex items-center gap-1 cursor-pointer border border-slate-200"
-              title="Descargar Datos CSV"
+              class="px-2 py-1 text-[10px] font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all flex items-center gap-1 cursor-pointer"
+              title="Descargar CSV"
             >
               📊 CSV
             </button>
@@ -75,10 +70,10 @@
           <!-- Botón Pantalla Completa -->
           <button
             @click="toggleFullscreen"
-            class="px-3 py-1.5 text-xs font-black text-white bg-slate-900 hover:bg-slate-800 active:scale-95 rounded-xl shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+            class="px-3 py-1.5 text-xs font-black text-white bg-slate-900 hover:bg-slate-800 active:scale-95 rounded-xl shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
             title="Abrir gráfico en pantalla completa"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
             </svg>
             Pantalla Completa
@@ -86,152 +81,165 @@
         </div>
       </div>
 
-      <!-- Filters & Zoom Toolbar -->
-      <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-200/80 text-xs">
-        <!-- Filter Buttons & Filtro Rápido (Mejores Variedades) -->
-        <div class="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-xs">
-          <!-- Standard Pills -->
-          <button
-            @click="filterType = 'all'"
-            class="px-2.5 py-1 rounded-xl font-bold transition-all text-[11px] cursor-pointer"
-            :class="filterType === 'all' ? 'bg-white text-slate-900 shadow-xs border border-slate-200' : 'text-slate-600 hover:text-slate-900'"
-          >
-            Todas ({{ variedadesList.length }})
-          </button>
-          <button
-            @click="filterType = 'candidates'"
-            class="px-2.5 py-1 rounded-xl font-bold transition-all text-[11px] cursor-pointer"
-            :class="filterType === 'candidates' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
-          >
-            Candidatas ({{ candidateCount }})
-          </button>
-          <button
-            @click="filterType = 'testigos'"
-            class="px-2.5 py-1 rounded-xl font-bold transition-all text-[11px] cursor-pointer"
-            :class="filterType === 'testigos' ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
-          >
-            Testigos ({{ testigoCount }})
-          </button>
+      <!-- Controls Sections Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+        <!-- Col 1: Filtros y Búsqueda -->
+        <div class="bg-white p-2.5 rounded-xl border border-slate-200/90 shadow-2xs space-y-2">
+          <div class="text-[9px] font-black uppercase tracking-wider text-slate-400 flex items-center justify-between">
+            <span>Filtros y Búsqueda</span>
+            <span class="text-slate-500 font-bold">Variedades: {{ filteredVariedades.length }}/{{ variedadesList.length }}</span>
+          </div>
 
-          <div class="h-4 w-px bg-slate-300 mx-0.5"></div>
+          <div class="space-y-1.5">
+            <!-- Filter Pills -->
+            <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-[10px]">
+              <button
+                @click="filterType = 'all'"
+                class="flex-1 py-1 rounded-md font-bold transition-all text-center cursor-pointer"
+                :class="filterType === 'all' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
+              >
+                Todas ({{ variedadesList.length }})
+              </button>
+              <button
+                @click="filterType = 'candidates'"
+                class="flex-1 py-1 rounded-md font-bold transition-all text-center cursor-pointer"
+                :class="filterType === 'candidates' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
+              >
+                Candidatas ({{ candidateCount }})
+              </button>
+              <button
+                @click="filterType = 'testigos'"
+                class="flex-1 py-1 rounded-md font-bold transition-all text-center cursor-pointer"
+                :class="filterType === 'testigos' ? 'bg-amber-500 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
+              >
+                Testigos ({{ testigoCount }})
+              </button>
+            </div>
 
-          <!-- Filtro Rápido de Criterios Agroindustriales -->
-          <div class="flex items-center space-x-1.5 bg-slate-200/60 px-2 py-0.5 rounded-xl border border-slate-300/80 shadow-2xs">
-            <span class="text-[10px] font-black uppercase text-slate-700 flex items-center gap-1 whitespace-nowrap">
-              Filtro Rápido:
-            </span>
-            <select
-              v-model="filterType"
-              class="text-xs font-black text-slate-800 bg-white border border-slate-300 rounded-lg px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-2xs"
+            <!-- Filtro Rápido Select & Search input -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              <select
+                v-model="filterType"
+                class="w-full text-[11px] font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
+              >
+                <option value="all">Ver Todas ({{ variedadesList.length }})</option>
+                <option value="candidates">Candidatas ({{ candidateCount }})</option>
+                <option value="testigos">Testigos ({{ testigoCount }})</option>
+                <option value="top_quadrant">Cuadrante Superior ({{ topQuadrantCount }})</option>
+                <option value="top_testigo">Superan Testigo Ref {{ selectedTestigoRef }} ({{ topTestigoCount }})</option>
+                <option value="top_all_3_vs_ref">Superan Testigo Ref en TCH, %Sac y TSH ({{ topAll3VsRefCount }})</option>
+                <option value="top_5">Top 5 en Azúcar (TSH)</option>
+                <option value="top_5_tch">Top 5 en Campo (TCH)</option>
+                <option value="top_5_sac">Top 5 en Rendimiento (%Sacarosa)</option>
+              </select>
+
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="🔍 Buscar..."
+                class="w-full px-2.5 py-1 text-[11px] rounded-lg bg-slate-50 border border-slate-200 focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Col 2: Apariencia del Gráfico -->
+        <div class="bg-white p-2.5 rounded-xl border border-slate-200/90 shadow-2xs space-y-2">
+          <div class="text-[9px] font-black uppercase tracking-wider text-slate-400">
+            Apariencia de Puntos y Etiquetas
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-[10px]">
+            <div class="space-y-1">
+              <div class="flex justify-between font-bold text-slate-600">
+                <span>🔵 Tamaño:</span>
+                <span class="font-mono text-emerald-700">{{ Math.round(pointRadiusScale * 100) }}%</span>
+              </div>
+              <input
+                type="range"
+                min="0.5"
+                max="2.2"
+                step="0.1"
+                v-model.number="pointRadiusScale"
+                class="w-full accent-emerald-600 cursor-pointer h-1 bg-slate-200 rounded-lg"
+              />
+            </div>
+
+            <div class="space-y-1">
+              <div class="flex justify-between font-bold text-slate-600">
+                <span>⭕ Borde:</span>
+                <span class="font-mono text-emerald-700">{{ pointStrokeWidth }}px</span>
+              </div>
+              <input
+                type="range"
+                min="0.5"
+                max="6"
+                step="0.5"
+                v-model.number="pointStrokeWidth"
+                class="w-full accent-emerald-600 cursor-pointer h-1 bg-slate-200 rounded-lg"
+              />
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-[10px]">
+            <button
+              @click="showVarietyLabels = !showVarietyLabels"
+              class="px-2 py-0.5 rounded-md font-bold uppercase transition-all cursor-pointer border text-[9px]"
+              :class="showVarietyLabels ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-400 border-slate-200 line-through'"
             >
-              <option value="all">Ver Todas ({{ variedadesList.length }})</option>
-              <option value="candidates">Candidatas ({{ candidateCount }})</option>
-              <option value="testigos">Testigos ({{ testigoCount }})</option>
-              <option value="top_quadrant">Cuadrante Superior Excelencia ({{ topQuadrantCount }})</option>
-              <option value="top_testigo">Superan Testigo Ref {{ selectedTestigoRef }} ({{ topTestigoCount }})</option>
-              <option value="top_all_3_vs_ref">Superan al Testigo Ref en TCH, %Sac y TSH ({{ topAll3VsRefCount }})</option>
-              <option value="top_5">Top 5 en Azúcar (TSH)</option>
-              <option value="top_5_tch">Top 5 en Campo (TCH)</option>
-              <option value="top_5_sac">Top 5 en Rendimiento (%Sacarosa)</option>
-            </select>
+              {{ showVarietyLabels ? '👁️ Nombres Visibles' : '🙈 Nombres Ocultos' }}
+            </button>
+
+            <div v-if="showVarietyLabels" class="flex items-center space-x-1">
+              <span class="font-bold text-slate-500">Texto:</span>
+              <input
+                type="range"
+                min="6"
+                max="18"
+                step="1"
+                v-model.number="varietyLabelSize"
+                class="w-14 accent-emerald-600 cursor-pointer h-1 bg-slate-200 rounded-lg"
+              />
+              <span class="font-mono font-bold text-emerald-700 text-[9px] w-5 text-right">{{ varietyLabelSize }}px</span>
+            </div>
           </div>
         </div>
 
-        <!-- Real-time Search Box -->
-        <div class="relative w-48">
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="🔍 Buscar variedad..."
-            class="w-full px-3 py-1 rounded-xl text-xs bg-white border border-slate-200 focus:outline-none focus:border-emerald-500"
-          />
-        </div>
-
-        <!-- Controles de Tamaño y Borde de Puntos -->
-        <div class="flex items-center gap-3 bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-sm text-xs">
-          <div class="flex items-center space-x-1.5" title="Ajustar tamaño de las bolitas de las variedades">
-            <span class="text-[10px] font-extrabold uppercase text-slate-500">🔵 Puntos:</span>
-            <input
-              type="range"
-              min="0.5"
-              max="2.2"
-              step="0.1"
-              v-model.number="pointRadiusScale"
-              class="w-16 accent-emerald-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg"
-            />
-            <span class="text-[10px] font-extrabold text-emerald-700 font-mono w-8 text-right">{{ Math.round(pointRadiusScale * 100) }}%</span>
+        <!-- Col 3: Navegación y Zoom -->
+        <div class="bg-white p-2.5 rounded-xl border border-slate-200/90 shadow-2xs space-y-2 flex flex-col justify-between">
+          <div class="text-[9px] font-black uppercase tracking-wider text-slate-400 flex items-center justify-between">
+            <span>Navegación del Lienzo</span>
+            <span class="font-mono font-bold text-emerald-700">Zoom: {{ Math.round(zoomLevel * 100) }}%</span>
           </div>
 
-          <div class="h-3 w-px bg-slate-200"></div>
-
-          <div class="flex items-center space-x-1.5" title="Ajustar grosor de los bordes de los puntos">
-            <span class="text-[10px] font-extrabold uppercase text-slate-500">⭕ Borde:</span>
-            <input
-              type="range"
-              min="0.5"
-              max="6"
-              step="0.5"
-              v-model.number="pointStrokeWidth"
-              class="w-16 accent-emerald-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg"
-            />
-            <span class="text-[10px] font-extrabold text-emerald-700 font-mono w-6 text-right">{{ pointStrokeWidth }}px</span>
+          <div class="flex items-center gap-1.5">
+            <button
+              @click="zoomIn"
+              class="flex-1 py-1 font-black text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs cursor-pointer text-center transition-all border border-slate-200"
+              title="Acercar (+)"
+            >
+              + Acercar
+            </button>
+            <button
+              @click="zoomOut"
+              class="flex-1 py-1 font-black text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs cursor-pointer text-center transition-all border border-slate-200"
+              title="Alejar (-)"
+            >
+              - Alejar
+            </button>
+            <button
+              @click="resetZoom"
+              class="px-2.5 py-1 font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg text-[10px] cursor-pointer transition-all border border-slate-200"
+              title="Restablecer vista"
+            >
+              ↺ Reset
+            </button>
           </div>
-        </div>
 
-        <!-- Controles de Nombres de Variedades (Visibilidad y Tamaño) -->
-        <div class="flex items-center gap-2.5 bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-sm text-xs">
-          <button
-            @click="showVarietyLabels = !showVarietyLabels"
-            class="flex items-center space-x-1 px-2 py-0.5 rounded-lg text-[10px] font-extrabold uppercase transition-all cursor-pointer border"
-            :class="showVarietyLabels ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-slate-100 text-slate-400 border-slate-200 line-through'"
-            :title="showVarietyLabels ? 'Ocultar nombres de las variedades' : 'Mostrar nombres de las variedades'"
-          >
-            <span>{{ showVarietyLabels ? '👁️' : '🙈' }} Nombres</span>
-          </button>
-
-          <div v-if="showVarietyLabels" class="h-3 w-px bg-slate-200"></div>
-
-          <div v-if="showVarietyLabels" class="flex items-center space-x-1.5" title="Ajustar tamaño de la letra de los nombres">
-            <span class="text-[10px] font-extrabold uppercase text-slate-500">📏 Texto:</span>
-            <input
-              type="range"
-              min="6"
-              max="18"
-              step="1"
-              v-model.number="varietyLabelSize"
-              class="w-16 accent-emerald-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg"
-            />
-            <span class="text-[10px] font-extrabold text-emerald-700 font-mono w-6 text-right">{{ varietyLabelSize }}px</span>
+          <div class="text-[10px] text-slate-400 font-medium flex items-center justify-between">
+            <span>💡 Rueda ratón = Zoom</span>
+            <span>Arrastrar = Mover</span>
           </div>
-        </div>
-
-        <!-- Zoom Controls with Indicator -->
-        <div class="flex items-center space-x-1.5 bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-sm">
-          <span class="text-[10px] font-extrabold text-slate-400 uppercase">Zoom:</span>
-          <button
-            @click="zoomIn"
-            class="px-2 py-0.5 font-black text-slate-700 hover:bg-slate-100 rounded text-xs cursor-pointer"
-            title="Acercar (+)"
-          >
-            +
-          </button>
-          <span class="text-[10px] font-extrabold text-emerald-700 px-1 font-mono">
-            {{ Math.round(zoomLevel * 100) }}%
-          </span>
-          <button
-            @click="zoomOut"
-            class="px-2 py-0.5 font-black text-slate-700 hover:bg-slate-100 rounded text-xs cursor-pointer"
-            title="Alejar (-)"
-          >
-            -
-          </button>
-          <button
-            @click="resetZoom"
-            class="px-2 py-0.5 font-bold text-slate-500 hover:bg-slate-100 rounded text-[10px] cursor-pointer"
-            title="Restablecer vista"
-          >
-            ↺ Reset
-          </button>
         </div>
       </div>
     </div>
@@ -702,190 +710,106 @@
           @click="handleOuterClick"
         >
           <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full h-full p-6 flex flex-col justify-between overflow-hidden relative">
-            <!-- Fullscreen Header -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200" @click.stop>
-              <div>
-                <h3 class="text-sm font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                  </svg>
-                  Evaluación de Isoproductividad (Modo Pantalla Completa)
-                </h3>
-                <p class="text-xs text-slate-500 font-medium">
-                  Usa la rueda del ratón para zoom de alta precisión, arrastra para desplazarte en 360°, o haz clic en cualquier variedad.
-                </p>
+            <!-- Fullscreen Header & Controls Container -->
+            <div class="space-y-3 pb-3 border-b border-slate-200/90" @click.stop>
+              <!-- Row 1: Title & Main Action Buttons -->
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                  <div class="p-1.5 bg-emerald-100 rounded-xl border border-emerald-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                      Evaluación de Isoproductividad
+                      <span class="text-emerald-700 font-mono text-[10px] font-extrabold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        Pantalla Completa
+                      </span>
+                    </h3>
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                  <!-- Selector de Testigo Ref -->
+                  <div class="flex items-center space-x-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-xs shadow-2xs">
+                    <span class="text-[10px] font-extrabold uppercase text-slate-500">⭐ Testigo Ref:</span>
+                    <select
+                      v-model="selectedTestigoRef"
+                      class="text-xs font-black text-slate-800 bg-transparent border-none focus:outline-none cursor-pointer"
+                    >
+                      <option v-for="v in sortedVariedades" :key="'fs-opt-' + v.variedad" :value="v.variedad">
+                        {{ v.variedad }} (TSH: {{ v.tsh }})
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Export Buttons -->
+                  <div class="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-200 text-xs shadow-2xs">
+                    <button @click="exportChartImage('png')" class="px-2 py-1 text-[10px] font-bold text-slate-700 hover:text-emerald-700 hover:bg-white rounded-lg transition-all cursor-pointer">🖼️ PNG</button>
+                    <button @click="exportChartImage('jpeg')" class="px-2 py-1 text-[10px] font-bold text-slate-700 hover:text-slate-900 hover:bg-white rounded-lg transition-all cursor-pointer">📷 JPG</button>
+                    <button @click="exportChartImage('svg')" class="px-2 py-1 text-[10px] font-bold text-slate-700 hover:text-slate-900 hover:bg-white rounded-lg transition-all cursor-pointer">📐 SVG</button>
+                    <button @click="exportCsv" class="px-2 py-1 text-[10px] font-bold text-slate-700 hover:text-slate-900 hover:bg-white rounded-lg transition-all cursor-pointer">📊 CSV</button>
+                  </div>
+
+                  <!-- Exit Button -->
+                  <button
+                    @click="isFullscreen = false"
+                    class="px-3.5 py-1.5 text-xs font-black bg-slate-900 hover:bg-slate-800 active:scale-95 text-white rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    ✕ Salir (ESC)
+                  </button>
+                </div>
               </div>
 
-              <div class="flex flex-wrap items-center gap-3">
-                <!-- Selector de Testigo Ref en Pantalla Completa -->
-                <div class="flex items-center space-x-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs">
-                  <span class="text-[10px] font-extrabold uppercase text-slate-500">⭐ Testigo Ref:</span>
-                  <select
-                    v-model="selectedTestigoRef"
-                    class="text-xs font-black text-slate-800 bg-transparent border-none focus:outline-none cursor-pointer"
-                  >
-                    <option v-for="v in sortedVariedades" :key="'fs-opt-' + v.variedad" :value="v.variedad">
-                      {{ v.variedad }} (TSH: {{ v.tsh }})
-                    </option>
+              <!-- Row 2: Categorized Controls Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs">
+                <!-- Col 1: Filter Pills & Filtro Rápido -->
+                <div class="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-xl border border-slate-200/90 shadow-2xs">
+                  <div class="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-slate-200 text-[10px]">
+                    <button @click="filterType = 'all'" class="px-2 py-0.5 rounded-md font-bold transition-all" :class="filterType === 'all' ? 'bg-slate-900 text-white' : 'text-slate-600'">Todas</button>
+                    <button @click="filterType = 'candidates'" class="px-2 py-0.5 rounded-md font-bold transition-all" :class="filterType === 'candidates' ? 'bg-emerald-600 text-white' : 'text-slate-600'">Candidatas</button>
+                    <button @click="filterType = 'testigos'" class="px-2 py-0.5 rounded-md font-bold transition-all" :class="filterType === 'testigos' ? 'bg-amber-500 text-white' : 'text-slate-600'">Testigos</button>
+                  </div>
+                  <select v-model="filterType" class="flex-1 text-[11px] font-bold text-slate-800 bg-white border border-slate-200 rounded-lg px-2 py-1 focus:outline-none cursor-pointer">
+                    <option value="all">Ver Todas ({{ variedadesList.length }})</option>
+                    <option value="candidates">Candidatas ({{ candidateCount }})</option>
+                    <option value="testigos">Testigos ({{ testigoCount }})</option>
+                    <option value="top_quadrant">Cuadrante Superior ({{ topQuadrantCount }})</option>
+                    <option value="top_testigo">Superan Testigo Ref {{ selectedTestigoRef }} ({{ topTestigoCount }})</option>
+                    <option value="top_all_3_vs_ref">Superan Testigo Ref en TCH, %Sac y TSH ({{ topAll3VsRefCount }})</option>
+                    <option value="top_5">Top 5 en Azúcar (TSH)</option>
+                    <option value="top_5_tch">Top 5 en Campo (TCH)</option>
+                    <option value="top_5_sac">Top 5 en Rendimiento (%Sacarosa)</option>
                   </select>
                 </div>
 
-                <!-- Filter Buttons & Filtro Rápido en Pantalla Completa -->
-                <div class="flex flex-wrap items-center gap-1.5 bg-slate-50 p-1 rounded-2xl border border-slate-200 shadow-xs">
-                  <!-- Standard Pills -->
-                  <button
-                    @click="filterType = 'all'"
-                    class="px-2.5 py-1 rounded-xl font-bold transition-all text-[11px] cursor-pointer"
-                    :class="filterType === 'all' ? 'bg-white text-slate-900 shadow-xs border border-slate-200' : 'text-slate-600 hover:text-slate-900'"
-                  >
-                    Todas ({{ variedadesList.length }})
+                <!-- Col 2: Appearance Sliders & Labels -->
+                <div class="flex items-center gap-3 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/90 shadow-2xs text-[10px]">
+                  <div class="flex items-center space-x-1" title="Tamaño puntos">
+                    <span class="font-extrabold text-slate-500">🔵</span>
+                    <input type="range" min="0.5" max="2.2" step="0.1" v-model.number="pointRadiusScale" class="w-14 accent-emerald-600 h-1 bg-slate-200 rounded cursor-pointer" />
+                  </div>
+                  <div class="flex items-center space-x-1" title="Grosor borde">
+                    <span class="font-extrabold text-slate-500">⭕</span>
+                    <input type="range" min="0.5" max="6" step="0.5" v-model.number="pointStrokeWidth" class="w-14 accent-emerald-600 h-1 bg-slate-200 rounded cursor-pointer" />
+                  </div>
+                  <button @click="showVarietyLabels = !showVarietyLabels" class="px-2 py-0.5 rounded-md font-bold uppercase border text-[9px] cursor-pointer" :class="showVarietyLabels ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-white text-slate-400 border-slate-200 line-through'">
+                    Nombres
                   </button>
-                  <button
-                    @click="filterType = 'candidates'"
-                    class="px-2.5 py-1 rounded-xl font-bold transition-all text-[11px] cursor-pointer"
-                    :class="filterType === 'candidates' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
-                  >
-                    Candidatas ({{ candidateCount }})
-                  </button>
-                  <button
-                    @click="filterType = 'testigos'"
-                    class="px-2.5 py-1 rounded-xl font-bold transition-all text-[11px] cursor-pointer"
-                    :class="filterType === 'testigos' ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
-                  >
-                    Testigos ({{ testigoCount }})
-                  </button>
+                  <input v-if="showVarietyLabels" type="range" min="6" max="18" step="1" v-model.number="varietyLabelSize" class="w-12 accent-emerald-600 h-1 bg-slate-200 rounded cursor-pointer" />
+                </div>
 
-                  <div class="h-4 w-px bg-slate-300 mx-0.5"></div>
-
-                  <!-- Filtro Rápido de Criterios Agroindustriales -->
-                  <div class="flex items-center space-x-1.5 bg-slate-200/60 px-2 py-0.5 rounded-xl border border-slate-300/80 shadow-2xs">
-                    <span class="text-[10px] font-black uppercase text-slate-700 flex items-center gap-1 whitespace-nowrap">
-                      Filtro Rápido:
-                    </span>
-                    <select
-                      v-model="filterType"
-                      class="text-xs font-black text-slate-800 bg-white border border-slate-300 rounded-lg px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-2xs"
-                    >
-                      <option value="all">Ver Todas ({{ variedadesList.length }})</option>
-                      <option value="candidates">Candidatas ({{ candidateCount }})</option>
-                      <option value="testigos">Testigos ({{ testigoCount }})</option>
-                      <option value="top_quadrant">Cuadrante Superior Excelencia ({{ topQuadrantCount }})</option>
-                      <option value="top_testigo">Superan Testigo Ref {{ selectedTestigoRef }} ({{ topTestigoCount }})</option>
-                      <option value="top_all_3_vs_ref">Superan al Testigo Ref en TCH, %Sac y TSH ({{ topAll3VsRefCount }})</option>
-                      <option value="top_5">Top 5 en Azúcar (TSH)</option>
-                      <option value="top_5_tch">Top 5 en Campo (TCH)</option>
-                      <option value="top_5_sac">Top 5 en Rendimiento (%Sacarosa)</option>
-                    </select>
+                <!-- Col 3: Zoom Controls -->
+                <div class="flex items-center justify-between bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/90 shadow-2xs text-xs">
+                  <span class="text-[10px] font-extrabold uppercase text-slate-400">Zoom:</span>
+                  <div class="flex items-center gap-1.5">
+                    <button @click="zoomIn" class="px-2.5 py-0.5 font-bold hover:bg-slate-200 rounded-lg bg-white border border-slate-200 text-slate-800 cursor-pointer">+</button>
+                    <span class="text-xs font-mono font-bold text-emerald-700 px-1">{{ Math.round(zoomLevel * 100) }}%</span>
+                    <button @click="zoomOut" class="px-2.5 py-0.5 font-bold hover:bg-slate-200 rounded-lg bg-white border border-slate-200 text-slate-800 cursor-pointer">-</button>
+                    <button @click="resetZoom" class="px-2.5 py-0.5 font-bold text-slate-500 hover:text-slate-900 bg-white border border-slate-200 text-[10px] cursor-pointer">↺ Reset</button>
                   </div>
                 </div>
-
-                <!-- Controles de Tamaño y Borde de Puntos en Pantalla Completa -->
-                <div class="flex items-center gap-3 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs text-xs">
-                  <div class="flex items-center space-x-1.5" title="Ajustar tamaño de las bolitas de las variedades">
-                    <span class="text-[10px] font-extrabold uppercase text-slate-500">🔵 Puntos:</span>
-                    <input
-                      type="range"
-                      min="0.5"
-                      max="2.2"
-                      step="0.1"
-                      v-model.number="pointRadiusScale"
-                      class="w-16 accent-emerald-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg"
-                    />
-                    <span class="text-[10px] font-extrabold text-emerald-700 font-mono w-8 text-right">{{ Math.round(pointRadiusScale * 100) }}%</span>
-                  </div>
-
-                  <div class="h-3 w-px bg-slate-200"></div>
-
-                  <div class="flex items-center space-x-1.5" title="Ajustar grosor de los bordes de los puntos">
-                    <span class="text-[10px] font-extrabold uppercase text-slate-500">⭕ Borde:</span>
-                    <input
-                      type="range"
-                      min="0.5"
-                      max="6"
-                      step="0.5"
-                      v-model.number="pointStrokeWidth"
-                      class="w-16 accent-emerald-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg"
-                    />
-                    <span class="text-[10px] font-extrabold text-emerald-700 font-mono w-6 text-right">{{ pointStrokeWidth }}px</span>
-                  </div>
-                </div>
-
-                <!-- Controles de Nombres de Variedades en Pantalla Completa -->
-                <div class="flex items-center gap-2.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs text-xs">
-                  <button
-                    @click="showVarietyLabels = !showVarietyLabels"
-                    class="flex items-center space-x-1 px-2 py-0.5 rounded-lg text-[10px] font-extrabold uppercase transition-all cursor-pointer border"
-                    :class="showVarietyLabels ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-slate-100 text-slate-400 border-slate-200 line-through'"
-                    :title="showVarietyLabels ? 'Ocultar nombres de las variedades' : 'Mostrar nombres de las variedades'"
-                  >
-                    <span>{{ showVarietyLabels ? '👁️' : '🙈' }} Nombres</span>
-                  </button>
-
-                  <div v-if="showVarietyLabels" class="h-3 w-px bg-slate-200"></div>
-
-                  <div v-if="showVarietyLabels" class="flex items-center space-x-1.5" title="Ajustar tamaño de la letra de los nombres">
-                    <span class="text-[10px] font-extrabold uppercase text-slate-500">📏 Texto:</span>
-                    <input
-                      type="range"
-                      min="6"
-                      max="18"
-                      step="1"
-                      v-model.number="varietyLabelSize"
-                      class="w-16 accent-emerald-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg"
-                    />
-                    <span class="text-[10px] font-extrabold text-emerald-700 font-mono w-6 text-right">{{ varietyLabelSize }}px</span>
-                  </div>
-                </div>
-
-                <!-- Zoom controls -->
-                <div class="flex items-center space-x-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs">
-                  <span class="text-xs font-bold text-slate-500">Zoom:</span>
-                  <button @click="zoomIn" class="px-2 py-0.5 font-bold hover:bg-slate-200 rounded text-sm text-slate-800 cursor-pointer">+</button>
-                  <span class="text-xs font-mono font-bold text-emerald-700 px-1">{{ Math.round(zoomLevel * 100) }}%</span>
-                  <button @click="zoomOut" class="px-2 py-0.5 font-bold hover:bg-slate-200 rounded text-sm text-slate-800 cursor-pointer">-</button>
-                  <button @click="resetZoom" class="px-2 py-0.5 font-bold text-slate-500 hover:text-slate-900 text-xs cursor-pointer">↺ Reset</button>
-                </div>
-
-                <!-- Group de Botones Directos de Descarga en Pantalla Completa -->
-                <div class="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200 shadow-xs">
-                  <span class="text-[10px] font-extrabold uppercase text-slate-500">Descargar:</span>
-                  <button
-                    @click="exportChartImage('png')"
-                    class="px-2.5 py-0.5 text-[11px] font-black text-slate-800 bg-white hover:bg-emerald-50 hover:text-emerald-700 rounded-lg shadow-xs transition-all flex items-center gap-1 cursor-pointer border border-slate-200"
-                    title="Descargar PNG"
-                  >
-                    🖼️ PNG
-                  </button>
-                  <button
-                    @click="exportChartImage('jpeg')"
-                    class="px-2.5 py-0.5 text-[11px] font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-lg shadow-xs transition-all cursor-pointer border border-slate-200"
-                    title="Descargar JPG"
-                  >
-                    📷 JPG
-                  </button>
-                  <button
-                    @click="exportChartImage('svg')"
-                    class="px-2.5 py-0.5 text-[11px] font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-lg shadow-xs transition-all cursor-pointer border border-slate-200"
-                    title="Descargar SVG"
-                  >
-                    📐 SVG
-                  </button>
-                  <button
-                    @click="exportCsv"
-                    class="px-2.5 py-0.5 text-[11px] font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-lg shadow-xs transition-all cursor-pointer border border-slate-200"
-                    title="Descargar CSV"
-                  >
-                    📊 CSV
-                  </button>
-                </div>
-
-                <!-- Botón de Cierre -->
-                <button
-                  @click="isFullscreen = false"
-                  class="px-4 py-2 text-xs font-black bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
-                >
-                  ✕ Salir de Pantalla Completa (ESC)
-                </button>
               </div>
             </div>
 
