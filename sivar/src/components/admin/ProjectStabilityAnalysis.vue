@@ -182,13 +182,19 @@
       <!-- SVG Container -->
       <div
         ref="svgContainer"
-        class="w-full h-[520px] bg-slate-950/95 rounded-2xl relative cursor-grab active:cursor-grabbing overflow-hidden border border-slate-900"
+        class="w-full h-[540px] bg-slate-950/95 rounded-2xl relative cursor-grab active:cursor-grabbing overflow-hidden border border-slate-900"
         @mousedown="startPan"
         @mousemove="doPan"
         @mouseup="endPan"
         @mouseleave="endPan"
         @wheel.prevent="handleWheel"
       >
+        <!-- Loading overlay -->
+        <div v-if="isLoading" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center text-white space-y-3">
+          <div class="w-8 h-8 rounded-full border-4 border-emerald-400 border-t-transparent animate-spin"></div>
+          <span class="text-xs font-bold text-slate-300">Generando matriz GxE y descomposición SVD...</span>
+        </div>
+
         <svg
           ref="svgElement"
           width="100%"
@@ -230,6 +236,14 @@
             <line x1="-2000" y1="300" x2="2000" y2="300" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6,6" />
             <line x1="450" y1="-2000" x2="450" y2="2000" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6,6" />
 
+            <!-- Axis Labels -->
+            <text x="870" y="290" fill="#94a3b8" font-size="11" font-weight="bold" text-anchor="end">
+              {{ tipoBiplot === 'ammi1' ? 'Rendimiento Medio (Diferencia vs Media)' : 'PC1' }}
+            </text>
+            <text x="460" y="25" fill="#94a3b8" font-size="11" font-weight="bold">
+              {{ tipoBiplot === 'ammi1' ? 'PC1' : 'PC2' }}
+            </text>
+
             <!-- Concentric Stability Rings -->
             <g v-if="tipoBiplot === 'gge_mean_stability'" opacity="0.25">
               <circle v-for="r in [60, 120, 180, 240, 300]" :key="'ring-'+r" cx="450" cy="300" :r="r" fill="none" stroke="#38bdf8" stroke-dasharray="4,4" />
@@ -267,8 +281,8 @@
                 <line
                   x1="450"
                   y1="300"
-                  :x2="toSvgX(env.pc1)"
-                  :y2="toSvgY(env.pc2)"
+                  :x2="toSvgX(getEnvX(env))"
+                  :y2="toSvgY(getEnvY(env))"
                   stroke="#38bdf8"
                   stroke-width="2"
                   marker-end="url(#env-arrow)"
@@ -276,8 +290,8 @@
                 />
                 <!-- Environment Label -->
                 <text
-                  :x="toSvgX(env.pc1) + 8"
-                  :y="toSvgY(env.pc2) + 4"
+                  :x="toSvgX(getEnvX(env)) + 8"
+                  :y="toSvgY(getEnvY(env)) + 4"
                   fill="#7dd3fc"
                   font-size="11"
                   font-weight="bold"
@@ -293,8 +307,8 @@
               <!-- Glow for Reference Check -->
               <circle
                 v-if="gen.es_testigo || gen.variedad === testigoSeleccionado"
-                :cx="toSvgX(gen.pc1)"
-                :cy="toSvgY(gen.pc2)"
+                :cx="toSvgX(getGenX(gen))"
+                :cy="toSvgY(getGenY(gen))"
                 r="10"
                 fill="#f59e0b"
                 opacity="0.3"
@@ -304,9 +318,9 @@
               <!-- Marker Circle / Square -->
               <circle
                 v-if="!gen.es_testigo"
-                :cx="toSvgX(gen.pc1)"
-                :cy="toSvgY(gen.pc2)"
-                :r="gen.variedad === testigoSeleccionado ? 7 : 5.5"
+                :cx="toSvgX(getGenX(gen))"
+                :cy="toSvgY(getGenY(gen))"
+                :r="gen.variedad === testigoSeleccionado ? 7.5 : 6"
                 :fill="gen.variedad === testigoSeleccionado ? '#f59e0b' : '#10b981'"
                 stroke="#ffffff"
                 stroke-width="1.5"
@@ -316,8 +330,8 @@
               />
               <rect
                 v-else
-                :x="toSvgX(gen.pc1) - 6"
-                :y="toSvgY(gen.pc2) - 6"
+                :x="toSvgX(getGenX(gen)) - 6"
+                :y="toSvgY(getGenY(gen)) - 6"
                 width="12"
                 height="12"
                 fill="#ef4444"
@@ -331,8 +345,8 @@
               <!-- Label -->
               <text
                 v-if="mostrarEtiquetas"
-                :x="toSvgX(gen.pc1) + 9"
-                :y="toSvgY(gen.pc2) + 4"
+                :x="toSvgX(getGenX(gen)) + 9"
+                :y="toSvgY(getGenY(gen)) + 4"
                 :fill="gen.es_testigo ? '#fca5a5' : gen.variedad === testigoSeleccionado ? '#fcd34d' : '#e2e8f0'"
                 font-size="11"
                 :font-weight="gen.es_testigo || gen.variedad === testigoSeleccionado ? 'bold' : 'normal'"
@@ -487,6 +501,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
+import projectManagementService from '@/services/projectManagement.services';
 
 const props = defineProps({
   projectId: {
@@ -515,21 +530,13 @@ const isPanning = ref(false);
 const startMouseX = ref(0);
 const startMouseY = ref(0);
 
-// API fetch method
+// API fetch method using standard projectManagementService
 const fetchEstabilidadData = async () => {
   if (!props.projectId) return;
   isLoading.value = true;
   try {
-    const token = localStorage.getItem('token') || '';
-    const res = await fetch(`http://127.0.0.1:8000/api/admin/proyectos/${props.projectId}/estabilidad-agronomica?variable=${variableActual.value}`, {
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : ''
-      }
-    });
-    if (res.ok) {
-      rawData.value = await res.json();
-    }
+    const res = await projectManagementService.getEstabilidadAgronomica(props.projectId, variableActual.value);
+    rawData.value = res.data || res;
   } catch (err) {
     console.error('Error al obtener datos de estabilidad:', err);
   } finally {
@@ -585,9 +592,59 @@ const ambientesBiplot = computed(() => {
   return ggeBiplot.value.ambientes || [];
 });
 
-// Coordinate mappings (center at 450, 300)
-const toSvgX = (pc1) => 450 + (pc1 * 85);
-const toSvgY = (pc2) => 300 - (pc2 * 85);
+// Dynamic Coordinate Mappings & Scaling
+const getGenX = (gen) => {
+  if (tipoBiplot.value === 'ammi1') {
+    return (gen.media || 0) - grandMean.value;
+  }
+  return gen.pc1 || 0;
+};
+
+const getGenY = (gen) => {
+  if (tipoBiplot.value === 'ammi1') {
+    return gen.pc1 || 0;
+  }
+  return gen.pc2 || 0;
+};
+
+const getEnvX = (env) => {
+  if (tipoBiplot.value === 'ammi1') {
+    return (env.media || 0) - grandMean.value;
+  }
+  return env.pc1 || 0;
+};
+
+const getEnvY = (env) => {
+  if (tipoBiplot.value === 'ammi1') {
+    return env.pc1 || 0;
+  }
+  return env.pc2 || 0;
+};
+
+const scaleFactor = computed(() => {
+  const gens = genotiposBiplot.value;
+  const envs = ambientesBiplot.value;
+  let maxVal = 0.5;
+
+  gens.forEach(g => {
+    const x = Math.abs(getGenX(g));
+    const y = Math.abs(getGenY(g));
+    if (x > maxVal) maxVal = x;
+    if (y > maxVal) maxVal = y;
+  });
+
+  envs.forEach(e => {
+    const x = Math.abs(getEnvX(e));
+    const y = Math.abs(getEnvY(e));
+    if (x > maxVal) maxVal = x;
+    if (y > maxVal) maxVal = y;
+  });
+
+  return 240 / maxVal;
+});
+
+const toSvgX = (val) => 450 + (val * scaleFactor.value);
+const toSvgY = (val) => 300 - (val * scaleFactor.value);
 
 const gridX = [-300, -150, 0, 150, 300, 450, 600, 750, 900, 1050, 1200];
 const gridY = [-300, -150, 0, 150, 300, 450, 600, 750, 900, 1050, 1200];
@@ -601,7 +658,7 @@ const hullPointsSVG = computed(() => {
   return indices.map(idx => {
     const g = gens[idx];
     if (!g) return '';
-    return `${toSvgX(g.pc1)},${toSvgY(g.pc2)}`;
+    return `${toSvgX(getGenX(g))},${toSvgY(getGenY(g))}`;
   }).filter(Boolean).join(' ');
 });
 
@@ -618,8 +675,8 @@ const sectorRays = computed(() => {
     const g2 = gens[indices[(k + 1) % count]];
     if (!g1 || !g2) continue;
 
-    const dx = g2.pc1 - g1.pc1;
-    const dy = g2.pc2 - g1.pc2;
+    const dx = getGenX(g2) - getGenX(g1);
+    const dy = getGenY(g2) - getGenY(g1);
     // Perpendicular vector (-dy, dx)
     const perpX = -dy;
     const perpY = dx;

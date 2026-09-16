@@ -31,13 +31,19 @@ export async function getUsuariosDisponibles(query: string = ""): Promise<any> {
   return await api.get(url, {}, true);
 }
 
+export async function getEstabilidadAgronomica(proyectoId: number, variable: string = "tsh"): Promise<any> {
+  const url = `${urls.API_URL}admin/proyectos/${proyectoId}/estabilidad-agronomica?variable=${variable}`;
+  return await api.get(url, {}, true);
+}
+
 const projectManagementService = {
   getProyectosAdmin,
   getDetalleProyecto,
   getUsuariosProyecto,
   assignUsuarioProyecto,
   removeUsuarioProyecto,
-  getUsuariosDisponibles
+  getUsuariosDisponibles,
+  getEstabilidadAgronomica
 };
 
 export default projectManagementService;
