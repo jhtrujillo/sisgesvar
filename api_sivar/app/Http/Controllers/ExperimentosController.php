@@ -976,9 +976,20 @@ class ExperimentosController extends Controller
     }
 
 
-    public function grabarDiseno($id_dsno_enc, $id_dsno_exprmntal, $lclddes, $rptcnes, $blques, $entrdas, $prcla_prncpal, $sub_prclas, $tstgos, $tstgos_mvil, $dscrpcion)
+    public function grabarDiseno(Request $request, $id_dsno_enc = null)
     {
         try {
+            $id_dsno_enc = $request->input('nIdDiseno', $request->input('id_dsno_enc', $id_dsno_enc));
+            $id_dsno_exprmntal = $request->input('nDisenoExp', $request->input('id_dsno_exprmntal'));
+            $lclddes = $request->input('nLocalidades', $request->input('lclddes', 1));
+            $rptcnes = $request->input('nRepeticiones', $request->input('rptcnes', 1));
+            $blques = $request->input('nBloques', $request->input('blques', 1));
+            $entrdas = $request->input('nTratamientos', $request->input('entrdas', 0));
+            $prcla_prncpal = $request->input('nParcelaPrincipal', $request->input('prcla_prncpal'));
+            $sub_prclas = $request->input('nSubparcelas', $request->input('sub_prclas'));
+            $tstgos = $request->input('nTestigos', $request->input('tstgos', 0));
+            $tstgos_mvil = $request->input('nTestigosMovil', $request->input('tstgos_mvil', 0));
+            $dscrpcion = $request->input('cDescripcion', $request->input('dscrpcion'));
 
             // Iniciar transacción
             DB::beginTransaction();
@@ -987,7 +998,6 @@ class ExperimentosController extends Controller
             $disenoEnc = DisenoEncabezado::find($id_dsno_enc);
 
             if (!$disenoEnc) {
-                // Si no se encuentra el encabezado, devolver error
                 return response()->json([
                     'success' => false,
                     'message' => 'Encabezado de diseño no encontrado.',
@@ -995,20 +1005,18 @@ class ExperimentosController extends Controller
             }
 
             // Actualizar los valores del encabezado
-            $disenoEnc->id_dsno_exprmntal = $id_dsno_exprmntal;
-            $disenoEnc->lclddes = $lclddes;
-            $disenoEnc->rptcnes = $rptcnes;
-            $disenoEnc->blques = $blques;
-            $disenoEnc->entrdas = $entrdas;
-            $disenoEnc->prcla_prncpal = $prcla_prncpal;
-            $disenoEnc->sub_prclas = $sub_prclas;
-            $disenoEnc->tstgos = $tstgos;
-            $disenoEnc->tstgos_mvil = $tstgos_mvil;
-            $disenoEnc->dscrpcion = $dscrpcion;
+            if ($id_dsno_exprmntal !== null) $disenoEnc->id_dsno_exprmntal = $id_dsno_exprmntal;
+            if ($lclddes !== null) $disenoEnc->lclddes = $lclddes;
+            if ($rptcnes !== null) $disenoEnc->rptcnes = $rptcnes;
+            if ($blques !== null) $disenoEnc->blques = $blques;
+            if ($entrdas !== null) $disenoEnc->entrdas = $entrdas;
+            if ($prcla_prncpal !== null) $disenoEnc->prcla_prncpal = $prcla_prncpal;
+            if ($sub_prclas !== null) $disenoEnc->sub_prclas = $sub_prclas;
+            if ($tstgos !== null) $disenoEnc->tstgos = $tstgos;
+            if ($tstgos_mvil !== null) $disenoEnc->tstgos_mvil = $tstgos_mvil;
+            if ($dscrpcion !== null) $disenoEnc->dscrpcion = $dscrpcion;
 
-            // Guardar los cambios en el encabezado
             if ($disenoEnc->save()) {
-                // Si la operación fue exitosa, confirmar la transacción
                 DB::commit();
                 return response()->json([
                     'success' => true,
@@ -1017,7 +1025,6 @@ class ExperimentosController extends Controller
                     'actualizado' => true
                 ], 200);
             } else {
-                // Si falla la operación, revertir la transacción
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
@@ -1025,8 +1032,7 @@ class ExperimentosController extends Controller
                     'actualizado' => false
                 ], 400);
             }
-        } catch (Throwable $th) {
-            // En caso de error, revertir la transacción y devolver un mensaje de error
+        } catch (\Throwable $th) {
             DB::rollBack();
             return response()->json([
                 'success' => false,

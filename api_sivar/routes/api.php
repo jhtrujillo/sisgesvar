@@ -96,7 +96,8 @@ Route::group([
     Route::post('addDisenoDetalles', [\App\Http\Controllers\ExperimentosController::class, 'addDisenosDetalles']);  
     Route::post('removeDetalle/{id_dsno_enc}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'removeDetalle']);  
     Route::get('getRegistros/{tipo}/{tipo_registro}/{search}/{id_dsno_enc}', [\App\Http\Controllers\ExperimentosController::class, 'getRegistros']);
-    Route::post('grabarDiseno/{id_dsno_enc}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'grabarDiseno']);  
+    Route::post('grabarDiseno', [\App\Http\Controllers\ExperimentosController::class, 'grabarDiseno']);  
+    Route::post('grabarDiseno/{id_dsno_enc}/{arrIds?}', [\App\Http\Controllers\ExperimentosController::class, 'grabarDiseno']);  
     Route::post('saveGenericDesign/{id_dsno_enc}', [\App\Http\Controllers\ExperimentosController::class, 'saveGenericDesign']);
     Route::post('generateDesign/{id_dsno_enc}', [\App\Http\Controllers\ExperimentosController::class, 'generateDesign']);
 

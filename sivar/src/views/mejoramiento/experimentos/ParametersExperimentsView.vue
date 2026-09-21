@@ -830,6 +830,7 @@
 
           <button
             type="button"
+            @click="actualizarDiseno('F')"
             class="w-full py-2 bg-cenicana hover:bg-cenicana-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
           >
             Actualizar Diseño Familias
@@ -896,6 +897,7 @@
 
           <button
             type="button"
+            @click="actualizarDiseno('I')"
             class="w-full py-2 bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
           >
             Actualizar Diseño Individual
@@ -1748,6 +1750,49 @@ const addSelectedTestigos = async () => {
   await addTratamientosTemporada(arrayIds, currentTestigoType.value);
   isModalTestigosOpen.value = false;
   await refreshTreatmentsTables();
+};
+
+const actualizarDiseno = async (tipo: 'F' | 'I') => {
+  try {
+    const isFamilias = tipo === 'F';
+    const nIdDiseno = isFamilias ? dataListIdDisenoF.value : dataListIdDisenoI.value;
+    const nDisenoExp = isFamilias ? model.nDisenoExpF : model.nDisenoExpI;
+    const nLocalidades = isFamilias ? model.nLocalidadesF : model.nLocalidadesI;
+    const nRepeticiones = isFamilias ? model.nRepeticionesF : model.nRepeticionesI;
+    const nTratamientos = isFamilias ? model.nTratamientoF : model.nTratamientoI;
+    const nTestigos = isFamilias ? model.nTestigosF : model.nTestigosI;
+    const cDescripcion = isFamilias ? model.cDescripcionF : model.cDescripcionI;
+
+    if (!nIdDiseno) {
+      toast.error(`No existe diseño para ${isFamilias ? 'Familias' : 'Individual'}. Verifique que el experimento esté creado.`);
+      return;
+    }
+
+    if (!nDisenoExp) {
+      toast.error("Por favor seleccione el 'Diseño Experimental'.");
+      return;
+    }
+
+    const payload = {
+      nIdDiseno,
+      nDisenoExp,
+      nLocalidades: Number(nLocalidades) || 1,
+      nRepeticiones: Number(nRepeticiones) || 1,
+      nTratamientos: Number(nTratamientos) || 0,
+      nTestigos: Number(nTestigos) || 0,
+      cDescripcion: cDescripcion || ''
+    };
+
+    const response: any = await api.post(`${urls.API_URL}grabarDiseno`, payload, true);
+    if (response && (response.success || response.actualizado)) {
+      toast.success(`Diseño ${isFamilias ? 'Familias' : 'Individual'} actualizado correctamente.`);
+    } else {
+      toast.error(response?.message || "Error al actualizar el diseño.");
+    }
+  } catch (error) {
+    console.error("Error al actualizar diseño:", error);
+    toast.error("Ocurrió un error al actualizar el diseño.");
+  }
 };
 </script>
 
