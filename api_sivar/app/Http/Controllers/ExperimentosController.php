@@ -936,7 +936,7 @@ class ExperimentosController extends Controller
                         });
 
                     if (!$isSearchAll) {
-                        $query->whereRaw('upper(concat_ws(\' - \', nm_vrdad, COALESCE(pdgree, \'\'), COALESCE(procedencia.nm_prcdncia, \'\'))) like ?', ['%' . strtoupper(trim($search)) . '%']);
+                        $query->whereRaw('upper(nm_vrdad) like ?', ['%' . strtoupper(trim($search)) . '%']);
                     }
 
                     if ($id_dsno_enc && (int)$id_dsno_enc > 0) {
