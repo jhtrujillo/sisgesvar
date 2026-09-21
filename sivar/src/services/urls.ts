@@ -46,9 +46,14 @@ const API_SEARCH_PARAMETERS = API_URL + "getSearchParameters";
 const API_AREAS_PROGRAM = API_URL + "getAreasProgram";
 const API_PROJECTS_AREA = API_URL + "getProjectsArea";
 const API_EXPERIMENT = API_URL + "getExperiment";
+const API_GRABAR_ENCABEZADO = API_URL + "grabarEncabezado";
 const API_TREATMENTS_SEASON = API_URL + "getTreatmentsSeason";
 const API_TREATMENTS_EXPERIMENTS = API_URL + "getTreatmentsExperiments";
 const API_ADD_DESIGNS_DETAILS = API_URL + "addDesingsDetails";
+
+// URLS Libro de Campo
+const API_LIBRO_CAMPO = API_URL + "getLibroCampo";
+const API_CREAR_LIBRO_CAMPO = API_URL + "crearLibroCampo";
 
 // URLS Registro Ensayos
 const API_ENSAYOS = API_URL + "ensayos";
@@ -86,9 +91,12 @@ export default {
   API_AREAS_PROGRAM,
   API_PROJECTS_AREA,
   API_EXPERIMENT,
+  API_GRABAR_ENCABEZADO,
   API_TREATMENTS_SEASON,
   API_TREATMENTS_EXPERIMENTS,
   API_ADD_DESIGNS_DETAILS,
+  API_LIBRO_CAMPO,
+  API_CREAR_LIBRO_CAMPO,
   API_ENSAYOS,
   API_CATALOGOS,
   API_ACTIVIDADES,

@@ -121,6 +121,10 @@ class ExperimentosController extends Controller
                 "listSeries" => [],
                 "listEstados" => [
                     ["id" => 1, "text" => "E1 en prueba"],
+                    ["id" => 2, "text" => "E1 probado"],
+                    ["id" => 3, "text" => "E2"],
+                    ["id" => 4, "text" => "E3"],
+                    ["id" => 5, "text" => "P Regionales"],
                 ],
                 "listTemporadas" => $temporadasCruzamiento,
                 "listCruzamientoMadre" => [
@@ -275,8 +279,36 @@ class ExperimentosController extends Controller
         }
     }
 
-    public function grabarEncabezado($estdo, $srie, $id_pr, $id_ambnte)
+    public function grabarEncabezado(Request $request, $estdo = null, $srie = null, $id_pr = null, $id_ambnte = null)
     {
+        $estdo = $request->input('estdo', $estdo);
+        $srie = $request->input('srie', $srie);
+        $id_pr = $request->input('id_pr', $id_pr);
+        $id_ambnte = $request->input('id_ambnte', $id_ambnte) ?? 1;
+
+        if (empty($estdo) || empty($srie) || empty($id_pr)) {
+            return response()->json([
+                'code' => 400,
+                'message' => 'Faltan parámetros requeridos (estdo, srie, id_pr)'
+            ], 400);
+        }
+
+        $existentes = DisenoEncabezado::where([
+            ['id_pr', '=', $id_pr],
+            ['srie', '=', $srie],
+            ['estdo', '=', $estdo],
+        ])->get();
+
+        if ($existentes->isNotEmpty()) {
+            return response()->json([
+                'code' => 200,
+                'message' => 'El experimento ya se encontraba registrado',
+                'IdsDisenosCreados' => [
+                    'idDisenoF' => $existentes->where('tpo_ensyo', 'F')->first()?->id_dsno_enc,
+                    'idDisenoI' => $existentes->where('tpo_ensyo', 'I')->first()?->id_dsno_enc,
+                ]
+            ], 200);
+        }
 
         // Iniciar la transacción
         DB::beginTransaction();
@@ -289,7 +321,6 @@ class ExperimentosController extends Controller
             $newDisenoEncabezadoF->id_pr = $id_pr;
             $newDisenoEncabezadoF->id_ambnte = $id_ambnte;
             $newDisenoEncabezadoF->tpo_ensyo = 'F';
-            $newDisenoEncabezadoF->prgrso = 1;
             $newDisenoEncabezadoF->save();
 
             // Verificar si se guardó correctamente el primer encabezado
@@ -308,7 +339,6 @@ class ExperimentosController extends Controller
             $newDisenoEncabezadoI->id_pr = $id_pr;
             $newDisenoEncabezadoI->id_ambnte = $id_ambnte;
             $newDisenoEncabezadoI->tpo_ensyo = 'I';
-            $newDisenoEncabezadoI->prgrso = 1;
             $newDisenoEncabezadoI->save();
 
             // Verificar si se guardó correctamente el segundo encabezado
@@ -348,7 +378,7 @@ class ExperimentosController extends Controller
     public function getTreatmentsSeason($ano, $id_dsno_enc, $min_plantulas, $plantulas_ttles)
     {
         try {
-            $min_plantulas   = ($min_plantulas   == NULL || $min_plantulas   == '') ? 0 : $min_plantulas;
+            $min_plantulas = ($min_plantulas == NULL || $min_plantulas == '') ? 0 : $min_plantulas;
             $plantulas_ttles = ($plantulas_ttles == NULL || $plantulas_ttles == '') ? 0 : $plantulas_ttles;
 
             // Realizar la consulta a la base de datos
@@ -453,10 +483,16 @@ class ExperimentosController extends Controller
         }
     }
 
-    public function addDisenosDetalles($id_dsno_enc, $nTipoParcela, $cTestigo, $nTotalPlantas, $arrIds)
+    public function addDisenosDetalles(Request $request, $id_dsno_enc = null, $nTipoParcela = null, $cTestigo = null, $nTotalPlantas = null, $arrIds = null)
     {
 
         try {
+            $id_dsno_enc = $request->input('nIdDiseno', $request->input('id_dsno_enc', $id_dsno_enc));
+            $nTipoParcela = $request->input('nTipoParcela', $nTipoParcela);
+            $cTestigo = $request->input('cTestigo', $cTestigo);
+            $nTotalPlantas = $request->input('nTotalPlantas', $nTotalPlantas);
+            $arrIds = $request->input('arrayIds', $request->input('arrIds', $arrIds));
+
 
             // Verificar si se van a usar todas las plantas
             $allPlantulas = false;
@@ -1422,16 +1458,16 @@ class ExperimentosController extends Controller
                 $numTrt = $plot[4] - 1;
 
                 $infoentrada[$index]['id_dsno_enc'] = $registros[$numTrt]->id_dsno_enc;
-                $infoentrada[$index]['lcldad']      = $localidad;
-                $infoentrada[$index]['rptcion']     = $plot[2];
-                $infoentrada[$index]['block']       = $plot[3];
-                $infoentrada[$index]['entrda']      = $plot[4];
-                $infoentrada[$index]['trtmnto']     = $registros[$numTrt]->trtmnto;
-                $infoentrada[$index]['tstgo']       = $registros[$numTrt]->tstgo;
-                $infoentrada[$index]['nmro_clnes']  = $registros[$numTrt]->nmro_clnes;
-                $infoentrada[$index]['row']         = null;
-                $infoentrada[$index]['cols']        = null;
-                $infoentrada[$index]['checks']      = null;
+                $infoentrada[$index]['lcldad'] = $localidad;
+                $infoentrada[$index]['rptcion'] = $plot[2];
+                $infoentrada[$index]['block'] = $plot[3];
+                $infoentrada[$index]['entrda'] = $plot[4];
+                $infoentrada[$index]['trtmnto'] = $registros[$numTrt]->trtmnto;
+                $infoentrada[$index]['tstgo'] = $registros[$numTrt]->tstgo;
+                $infoentrada[$index]['nmro_clnes'] = $registros[$numTrt]->nmro_clnes;
+                $infoentrada[$index]['row'] = null;
+                $infoentrada[$index]['cols'] = null;
+                $infoentrada[$index]['checks'] = null;
                 // $infoentrada[$numTrt]['tpo_prcla'] = ($registros[$numTrt]->tpo_prcla == '') ? null : $registros[$numTrt]->tpo_prcla;
 
                 $index++;
@@ -1474,16 +1510,16 @@ class ExperimentosController extends Controller
                 $numTrt = $plot[3];
 
                 $infoentrada[$index]['id_dsno_enc'] = $tratamientos[$numTrt]->id_dsno_enc; //
-                $infoentrada[$index]['lcldad']      = $localidad; //
-                $infoentrada[$index]['rptcion']     = $plot[2]; //
-                $infoentrada[$index]['block']       = $plot[2]; //
-                $infoentrada[$index]['entrda']      = $plot[3]; //
-                $infoentrada[$index]['trtmnto']     = $tratamientos[$numTrt]->trtmnto; //
-                $infoentrada[$index]['tstgo']       = $tratamientos[$numTrt]->tstgo; //
-                $infoentrada[$index]['nmro_clnes']  = $tratamientos[$numTrt]->nmro_clnes; //
-                $infoentrada[$index]['row']         = null; //
-                $infoentrada[$index]['cols']        = null; //
-                $infoentrada[$index]['checks']      = ($tratamientos[$numTrt]->tstgo == 'No') ? "0"  : $i; //
+                $infoentrada[$index]['lcldad'] = $localidad; //
+                $infoentrada[$index]['rptcion'] = $plot[2]; //
+                $infoentrada[$index]['block'] = $plot[2]; //
+                $infoentrada[$index]['entrda'] = $plot[3]; //
+                $infoentrada[$index]['trtmnto'] = $tratamientos[$numTrt]->trtmnto; //
+                $infoentrada[$index]['tstgo'] = $tratamientos[$numTrt]->tstgo; //
+                $infoentrada[$index]['nmro_clnes'] = $tratamientos[$numTrt]->nmro_clnes; //
+                $infoentrada[$index]['row'] = null; //
+                $infoentrada[$index]['cols'] = null; //
+                $infoentrada[$index]['checks'] = ($tratamientos[$numTrt]->tstgo == 'No') ? "0" : $i; //
                 // $infoentrada[$numTrt]['tpo_prcla'] = ($tratamientos[$numTrt]->tpo_prcla == '') ? null : $tratamientos[$numTrt]->tpo_prcla;
 
                 $index++;
@@ -1521,16 +1557,16 @@ class ExperimentosController extends Controller
                 $numTrt = $plot[4] - 1;
 
                 $infoentrada[$index]['id_dsno_enc'] = $registros[$numTrt]->id_dsno_enc;
-                $infoentrada[$index]['lcldad']      = $localidad;
-                $infoentrada[$index]['rptcion']     = $plot[5];
-                $infoentrada[$index]['block']       = $plot[3];
-                $infoentrada[$index]['entrda']      = $plot[4];
-                $infoentrada[$index]['trtmnto']     = $registros[$numTrt]->trtmnto; //
-                $infoentrada[$index]['tstgo']       = $registros[$numTrt]->tstgo; //
-                $infoentrada[$index]['nmro_clnes']  = $registros[$numTrt]->nmro_clnes; //
-                $infoentrada[$index]['row']         = null;
-                $infoentrada[$index]['cols']        = $plot[2]; // es null en v1
-                $infoentrada[$index]['checks']      = null;
+                $infoentrada[$index]['lcldad'] = $localidad;
+                $infoentrada[$index]['rptcion'] = $plot[5];
+                $infoentrada[$index]['block'] = $plot[3];
+                $infoentrada[$index]['entrda'] = $plot[4];
+                $infoentrada[$index]['trtmnto'] = $registros[$numTrt]->trtmnto; //
+                $infoentrada[$index]['tstgo'] = $registros[$numTrt]->tstgo; //
+                $infoentrada[$index]['nmro_clnes'] = $registros[$numTrt]->nmro_clnes; //
+                $infoentrada[$index]['row'] = null;
+                $infoentrada[$index]['cols'] = $plot[2]; // es null en v1
+                $infoentrada[$index]['checks'] = null;
                 // $infoentrada[$numTrt]['tpo_prcla'] = ($registros[$numTrt]->tpo_prcla == '') ? null : $registros[$numTrt]->tpo_prcla;
 
                 $index++;

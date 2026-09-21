@@ -19,6 +19,9 @@ async function getExperiment(idProyecto: string, Serie: string, Estado: string):
   const url = `${urls.API_EXPERIMENT}/${idProyecto}/${Serie}/${Estado}`;
   return await api.get(url, {}, true);
 }
+async function grabarEncabezado(payload: { estdo: string; srie: string | number; id_pr: string | number; id_ambnte?: number }): Promise<any> {
+  return await api.post(urls.API_GRABAR_ENCABEZADO, payload, true);
+}
 async function getTreatmentsSeason(año: string, idDiseñoEncabezado: string, minPlantulas: number, plantulasTotales: number): Promise<any> {
   const url = `${urls.API_TREATMENTS_SEASON}/${año}/${idDiseñoEncabezado}/${minPlantulas}/${plantulasTotales}`;
   return await api.get(url, {}, true);
@@ -28,7 +31,7 @@ async function getTreatmentsExperiments(idDiseñoEncabezadoInicial: string, idDi
   return await api.get(url, {}, true);
 }
 async function addDesingsDetails(model: DiseñosDetalles) {
-  return await api.post(urls.API_ADD_DESIGNS_DETAILS, model, false);
+  return await api.post(urls.API_ADD_DESIGNS_DETAILS, model, true);
 }
 
 async function GetSuggestionCrossings(proyectos: string, proyecto: string, testigo: string, megaAmbiente: string): Promise<any> {
@@ -46,6 +49,7 @@ const ExperimentsService = {
   getAreasProgram,
   getProjectsArea,
   getExperiment,
+  grabarEncabezado,
   getTreatmentsSeason,
   getTreatmentsExperiments,
   addDesingsDetails,

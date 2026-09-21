@@ -1,317 +1,735 @@
 <template>
-  <div class="w-full flex-col pt-5 grid px-4">
+  <div class="w-full max-w-[98%] mx-auto px-2 sm:px-4 space-y-6 pt-2 pb-12 animate-fade-in">
     <!-- Botón Volver -->
-    <div class="w-full max-w-7xl mx-auto mb-4">
-      <BackButton :to="{ name: 'mejoramiento.show' }" label="Volver a Mejoramiento" />
+    <BackButton :to="{ name: 'mejoramiento.show' }" label="Volver a Mejoramiento" />
+
+    <!-- Encabezado Principal -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between border-b border-slate-100 pb-4 gap-4">
+      <div>
+        <h1
+          class="text-3xl font-extrabold tracking-tight text-slate-800 bg-gradient-to-r from-cenicana-800 to-emerald-600 bg-clip-text text-transparent flex items-center"
+        >
+          <div class="p-2 bg-emerald-50 text-cenicana rounded-xl mr-3 shadow-sm border border-emerald-100/60">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="9" y="3" width="6" height="1.5" rx="0.75" />
+              <path d="M10 4.5v3.5L5.2 17.1A2.5 2.5 0 0 0 7.4 21h9.2a2.5 2.5 0 0 0 2.2-3.9L14 8V4.5" />
+              <path d="M8.5 16.5l2.5-5" />
+            </svg>
+          </div>
+          Parámetros de Experimentos
+        </h1>
+        <p class="mt-1.5 text-xs font-semibold text-slate-500 ml-12">
+          Consulte, configure tratamientos, testigos y diseñe experimentalmente los ensayos de mejoramiento.
+        </p>
+      </div>
     </div>
-    <div class="w-full max-w-7xl mx-auto">
-      <h1 class="text-center font-bold text-4xl mb-6 text-violet-800">Parámetros</h1>
+
+    <!-- Stepper de Pasos -->
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-5">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Paso 1 -->
+        <div
+          class="flex items-center gap-3 p-3 rounded-xl border transition-all"
+          :class="[hasExperimentFound ? 'bg-emerald-50/60 border-emerald-200 text-cenicana-800' : 'bg-slate-50 border-slate-200 text-slate-700']"
+        >
+          <div
+            class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 transition-all"
+            :class="[hasExperimentFound ? 'bg-cenicana text-white' : 'bg-slate-200 text-slate-600']"
+          >
+            1
+          </div>
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider">Filtros de Búsqueda</h4>
+            <p class="text-[11px] text-slate-500">Programa, Proyecto, Serie y Estado</p>
+          </div>
+        </div>
+
+        <!-- Paso 2 -->
+        <div
+          class="flex items-center gap-3 p-3 rounded-xl border transition-all"
+          :class="[hasExperimentFound ? 'bg-blue-50/60 border-blue-200 text-blue-900' : 'bg-slate-50/40 border-slate-100 text-slate-400 opacity-60']"
+        >
+          <div
+            class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 transition-all"
+            :class="[hasExperimentFound ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400']"
+          >
+            2
+          </div>
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider">Tratamientos y Testigos</h4>
+            <p class="text-[11px] text-slate-500">Familias e Individual</p>
+          </div>
+        </div>
+
+        <!-- Paso 3 -->
+        <div
+          class="flex items-center gap-3 p-3 rounded-xl border transition-all"
+          :class="[hasExperimentFound ? 'bg-purple-50/60 border-purple-200 text-purple-900' : 'bg-slate-50/40 border-slate-100 text-slate-400 opacity-60']"
+        >
+          <div
+            class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 transition-all"
+            :class="[hasExperimentFound ? 'bg-purple-600 text-white' : 'bg-slate-200 text-slate-400']"
+          >
+            3
+          </div>
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider">Diseño Estadístico</h4>
+            <p class="text-[11px] text-slate-500">Localidades, Repeticiones y Bloques</p>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="w-full max-w-10xl mx-auto bg-white shadow-lg rounded-lg p-6">
-      <!-- Grid principal -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Programa/Servicio -->
+
+    <!-- Panel de Parámetros y Filtros en Cascada -->
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-6 transition-all">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-5">
+        <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          Parámetros del Experimento
+        </h2>
+        <span class="text-xs text-slate-400">Seleccione los criterios de búsqueda</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <!-- 1. Programa / Servicio -->
         <div>
-          <label class="block uppercase tracking-wide text-violet-800 text-xs font-bold mb-2" for="nPrograma"> Programa/Servicio: </label>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="nPrograma">
+            Programa / Servicio: <span class="text-rose-500">*</span>
+          </label>
           <ComboBoxMultiple
             id="nPrograma"
             :data-list="dataListProgram"
             :column-value="columnValueProgram"
             :column-to-show="columnToShowProgram"
-            placeholder="Seleccione ..."
+            placeholder="Seleccione un programa..."
             v-model:selectedData="model.nPrograma"
             class="w-full"
           />
         </div>
 
-        <!-- Área -->
+        <!-- 2. Área -->
         <div>
-          <label class="block uppercase tracking-wide text-violet-800 text-xs font-bold mb-2" for="nArea"> Área: </label>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="nArea"> Área: <span class="text-rose-500">*</span> </label>
           <ComboBoxMultiple
+            id="nArea"
             :data-list="dataListAreas"
             :column-value="columnValueAreas"
             :column-to-show="columnToShowAreas"
-            placeholder="Seleccione ..."
+            placeholder="Seleccione un área..."
             v-model:selectedData="model.nArea"
             :disabled="!model.nPrograma"
             class="w-full"
           />
         </div>
-      </div>
 
-      <!-- Proyecto -->
-      <div class="mt-6">
-        <label class="block uppercase tracking-wide text-violet-800 text-xs font-bold mb-2" for="nProyecto"> Proyecto: </label>
-        <ComboBoxMultiple
-          :data-list="dataListProject"
-          :column-value="columnValueProject"
-          :column-to-show="columnToShowProject"
-          placeholder="Seleccione ..."
-          v-model:selectedData="model.nProyecto"
-          :disabled="!model.nArea"
-          class="w-full"
-        />
-      </div>
-
-      <!-- Grid para Serie y Estado -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <!-- Serie -->
+        <!-- 3. Proyecto -->
         <div>
-          <label class="block uppercase tracking-wide text-violet-800 text-xs font-bold mb-2" for="nSerie"> Serie: </label>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="nProyecto"> Proyecto: <span class="text-rose-500">*</span> </label>
           <ComboBoxMultiple
+            id="nProyecto"
+            :data-list="dataListProject"
+            :column-value="columnValueProject"
+            :column-to-show="columnToShowProject"
+            placeholder="Seleccione un proyecto..."
+            v-model:selectedData="model.nProyecto"
+            :disabled="!model.nArea"
+            class="w-full"
+          />
+        </div>
+
+        <!-- 4. Serie -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="nSerie"> Serie (Año): <span class="text-rose-500">*</span> </label>
+          <ComboBoxMultiple
+            id="nSerie"
             :data-list="dataListSerie"
             :column-value="columnValueSerie"
             :column-to-show="columnToShowSerie"
-            placeholder="Seleccione ..."
+            placeholder="Seleccione una serie..."
             v-model:selectedData="model.nSerie"
             :disabled="!model.nProyecto"
             class="w-full"
           />
         </div>
 
-        <!-- Estado -->
+        <!-- 5. Estado -->
         <div>
-          <label class="block uppercase tracking-wide text-violet-800 text-xs font-bold mb-2" for="nEstado"> Estado: </label>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="nEstado"> Estado del Ensayo: <span class="text-rose-500">*</span> </label>
           <ComboBoxMultiple
+            id="nEstado"
             :data-list="dataListEstado"
             :column-value="columnToShowEstado"
             :column-to-show="columnToShowEstado"
-            placeholder="Seleccione ..."
+            placeholder="Seleccione un estado..."
             v-model:selectedData="model.nEstado"
             :disabled="!model.nSerie"
             class="w-full"
           />
         </div>
+
+        <!-- Botones de Acción -->
+        <div class="flex items-end gap-2 pt-1">
+          <button
+            type="button"
+            @click.prevent="buscarExperimento"
+            :disabled="!model.nProyecto || !model.nSerie || !model.nEstado || isSearching"
+            class="flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-xs font-bold rounded-xl text-white bg-cenicana hover:bg-cenicana-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <svg v-if="isSearching" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            Buscar Experimento
+          </button>
+
+          <button
+            type="button"
+            @click.prevent="limpiarCampos"
+            :disabled="isSearching"
+            class="px-3.5 py-2 border border-slate-200 shadow-sm text-xs font-semibold rounded-xl text-slate-600 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 transition-all cursor-pointer"
+            title="Restablecer formulario"
+          >
+            Limpiar
+          </button>
+        </div>
       </div>
     </div>
 
+    <!-- Alerta cuando no existe el experimento con opción de crearlo -->
     <div
-      class="text-red-300 pl-2"
       v-if="experimentsStore.experimentsFilter != null && Object.keys(experimentsStore.experimentsFilter.experimento).length === 0"
+      class="bg-amber-50 border border-amber-200/80 rounded-2xl p-5 shadow-sm animate-fade-in"
     >
-      * No hay experimentos disponibles para los parámetros seleccionados.
-    </div>
-    <!-- Botones -->
-    <div class="mt-6 text-center">
-      <button
-        v-if="model.nPrograma || model.nArea || model.nProyecto"
-        type="button"
-        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring focus:ring-blue-400"
-        @click.prevent="buscarExperimento"
-      >
-        Buscar Experimento
-      </button>
-      <button
-        v-else
-        type="button"
-        class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:ring focus:ring-gray-400"
-        @click.prevent="limpiarCampos"
-      >
-        Limpiar
-      </button>
-    </div>
-    <div class="form-body" v-if="experimentsStore.experimentsFilter && Object.keys(experimentsStore.experimentsFilter.experimento).length > 0">
-      <h3 class="text-xl font-bold mb-4 text-violet-800">Paso 1: Selección de Tratamientos</h3>
-      <div class="w-full max-w-10xl mx-auto bg-white shadow-lg rounded-lg p-6 mb-6">
-        <div class="border-b pb-4 mb-6">
-          <h4 class="text-lg font-semibold text-gray-700">Configuración</h4>
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="flex items-start gap-3">
+          <div class="p-2.5 bg-amber-100 text-amber-700 rounded-xl shrink-0 mt-0.5 shadow-2xs border border-amber-200/60">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-amber-900">No existe un experimento registrado para estos parámetros</h4>
+            <p class="text-xs text-amber-800 mt-1">
+              Serie: <span class="font-bold">{{ model.nSerie }}</span> | Estado: <span class="font-bold">{{ model.nEstado }}</span>
+            </p>
+            <p class="text-xs text-slate-600 mt-1">
+              Puede inicializar el encabezado del experimento para comenzar a configurar tratamientos, testigos y posteriormente generar el libro de campo.
+            </p>
+          </div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <!-- Selección de temporada -->
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2"> Seleccione temporada de cruzamientos:</label>
-            <ComboBoxMultiple
-              :data-list="dataListTemporadas"
-              :column-value="columnValueTemporadas"
-              :column-to-show="columnToShowTemporadas"
-              placeholder="Seleccione ..."
-              v-model:selectedData="model.nTemporada"
-              :disabled="!model.nProyecto"
-            />
-          </div>
 
-          <!-- Grupo cruzamiento Madre -->
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Grupo cruzamiento Madre:</label>
-            <ComboBoxMultiple
-              :data-list="dataListCruzamientoMadre"
-              :column-value="columnValueCruzamientoMadre"
-              :column-to-show="columnToShowCruzamientoMadre"
-              placeholder="Seleccione ..."
-              v-model:selectedData="model.nCruzMadre"
-              :disabled="!model.nTemporada"
-            />
-          </div>
-          <!-- Botón tratamientos disponibles -->
-          <div class="flex items-center justify-center">
+        <button
+          type="button"
+          @click.prevent="crearNuevoExperimento"
+          :disabled="isCreatingExperiment"
+          class="inline-flex items-center px-5 py-2.5 bg-cenicana hover:bg-cenicana-700 text-white text-xs font-bold rounded-xl shadow-md transition-all whitespace-nowrap disabled:opacity-50 cursor-pointer self-start md:self-auto"
+        >
+          <svg v-if="isCreatingExperiment" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          Inicializar y Crear Experimento
+        </button>
+      </div>
+    </div>
+
+    <!-- PASO 1: SELECCIÓN DE TRATAMIENTOS -->
+    <div v-if="hasExperimentFound" class="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 space-y-6 animate-fade-in">
+      <div class="border-b border-slate-100 pb-4">
+        <h3 class="text-base font-extrabold text-slate-800 flex items-center gap-2">
+          <span class="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
+            </svg>
+          </span>
+          Paso 1: Selección de Tratamientos y Filtros
+        </h3>
+        <p class="text-xs text-slate-500 mt-1">Defina la temporada, grupos de cruzamiento y seleccione tratamientos y testigos para el experimento.</p>
+      </div>
+
+      <!-- Configuración Inicial de Tratamientos -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+        <!-- 1. Temporada cruzamientos -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"> Temporada de Cruzamientos: <span class="text-rose-500">*</span> </label>
+          <ComboBoxMultiple
+            :data-list="dataListTemporadas"
+            :column-value="columnValueTemporadas"
+            :column-to-show="columnToShowTemporadas"
+            placeholder="Seleccione temporada..."
+            v-model:selectedData="model.nTemporada"
+            :disabled="!model.nProyecto"
+            class="w-full"
+          />
+        </div>
+
+        <!-- 2. Grupo Madre -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Grupo Cruzamiento Madre:</label>
+          <ComboBoxMultiple
+            :data-list="dataListCruzamientoMadre"
+            :column-value="columnValueCruzamientoMadre"
+            :column-to-show="columnToShowCruzamientoMadre"
+            placeholder="Seleccione..."
+            v-model:selectedData="model.nCruzMadre"
+            :disabled="!model.nTemporada"
+            class="w-full"
+          />
+        </div>
+
+        <!-- 3. Grupo Padre -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Grupo Cruzamiento Padre:</label>
+          <ComboBoxMultiple
+            :data-list="dataListCruzamientoPadre"
+            :column-value="columnValueCruzamientoPadre"
+            :column-to-show="columnToShowCruzamientoPadre"
+            placeholder="Seleccione..."
+            v-model:selectedData="model.nCruzPadre"
+            :disabled="!model.nCruzMadre"
+            class="w-full"
+          />
+        </div>
+
+        <!-- 4. Tipo de Ensayo -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Tipo de Ensayo:</label>
+          <ComboBoxMultiple
+            :data-list="dataListTipoEnsayo"
+            :column-value="columnValueTipoEnsayo"
+            :column-to-show="columnToShowTipoEnsayo"
+            placeholder="Seleccione..."
+            v-model:selectedData="model.cTipoEnsayo"
+            :disabled="!model.nCruzPadre"
+            class="w-full"
+          />
+        </div>
+
+        <!-- 5. Tipo de Parcela -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Tipo de Parcela:</label>
+          <ComboBoxMultiple
+            :data-list="dataListTipoParcela"
+            :column-value="columnValueTipoParcela"
+            :column-to-show="columnToShowTipoParcela"
+            placeholder="Seleccione..."
+            v-model:selectedData="model.nTipoParcela"
+            :disabled="!model.cTipoEnsayo"
+            class="w-full"
+          />
+        </div>
+
+        <!-- 6. Mínimo Plantas -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Mínimo Número de Plantas:</label>
+          <input
+            type="number"
+            min="1"
+            class="block w-full px-3 py-2 border border-slate-200 rounded-xl text-xs text-slate-700 bg-white focus:ring-2 focus:ring-emerald-100 focus:border-cenicana transition-all disabled:bg-slate-50 disabled:cursor-not-allowed"
+            v-model="model.nMinimoPlantas"
+            :disabled="!model.nTipoParcela"
+          />
+        </div>
+
+        <!-- 7. Total Plantas Siembra -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+            <span v-if="model.cTipoEnsayo === 'F'">Total plantas siembra Familias:</span>
+            <span v-else-if="model.cTipoEnsayo === 'I'">Total plantas siembra Individual:</span>
+            <span v-else>Total plantas siembra:</span>
+          </label>
+          <input
+            type="number"
+            min="1"
+            class="block w-full px-3 py-2 border border-slate-200 rounded-xl text-xs text-slate-700 bg-white focus:ring-2 focus:ring-emerald-100 focus:border-cenicana transition-all disabled:bg-slate-50 disabled:cursor-not-allowed"
+            v-model="model.nTotalPlantas"
+            :disabled="!model.nTipoParcela"
+          />
+        </div>
+
+        <!-- Botón Ver Tratamientos Disponibles -->
+        <div class="flex items-end sm:col-span-2 lg:col-span-2">
+          <button
+            type="button"
+            @click.prevent="openModalTratamientosDisponibles"
+            :disabled="!model.nTemporada"
+            class="inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-xs font-bold rounded-xl text-white bg-cenicana hover:bg-cenicana-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer w-full sm:w-auto"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Ver y Seleccionar Tratamientos Disponibles
+          </button>
+        </div>
+      </div>
+
+      <!-- Pestañas Principales: Ensayo Familias (F) vs Ensayo Individual (I) -->
+      <div class="border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+        <div class="border-b border-slate-100 px-5 pt-4 bg-slate-50/60 flex items-center justify-between">
+          <nav class="flex space-x-4" aria-label="Trial Type Tabs">
             <button
               type="button"
-              class="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600"
-              data-toggle="modal"
-              data-target="#tablaTratamientos"
-              @click.prevent="tratamientosDisponibles"
-              @click="openModal"
+              @click="activeTrialTypeTab = 'F'"
+              class="pb-3 px-2 border-b-2 font-bold text-xs flex items-center gap-2 transition-all cursor-pointer"
+              :class="activeTrialTypeTab === 'F' ? 'border-cenicana text-cenicana font-extrabold' : 'border-transparent text-slate-500 hover:text-slate-700'"
             >
-              Tratamientos disponibles
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+              Tratamientos Ensayo Familias (F)
+              <span class="py-0.5 px-2 rounded-full text-[10px] bg-blue-100 text-blue-800 font-bold">
+                {{ tableDataTreatmentsExperimentsF.length }}
+              </span>
             </button>
-          </div>
-          <!-- Grupo cruzamiento Padre -->
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Grupo cruzamiento Padre:</label>
-            <ComboBoxMultiple
-              :data-list="dataListCruzamientoPadre"
-              :column-value="columnValueCruzamientoPadre"
-              :column-to-show="columnToShowCruzamientoPadre"
-              placeholder="Seleccione ..."
-              v-model:selectedData="model.nCruzPadre"
-              :disabled="!model.nCruzMadre"
-            />
-          </div>
-          <!-- Tipo de ensayo -->
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Tipo de ensayo:</label>
-            <ComboBoxMultiple
-              :data-list="dataListTipoEnsayo"
-              :column-value="columnValueTipoEnsayo"
-              :column-to-show="columnToShowTipoEnsayo"
-              placeholder="Seleccione ..."
-              v-model:selectedData="model.cTipoEnsayo"
-              :disabled="!model.nCruzPadre"
-            />
-          </div>
-          <!-- Tipo de parcela -->
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Tipo de parcela:</label>
-            <ComboBoxMultiple
-              :data-list="dataListTipoParcela"
-              :column-value="columnValueTipoParcela"
-              :column-to-show="columnToShowTipoParcela"
-              placeholder="Seleccione ..."
-              v-model:selectedData="model.nTipoParcela"
-              :disabled="!model.cTipoEnsayo"
-            />
-          </div>
-          <!-- Mínimo número de plantas -->
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Mínimo número de plantas:</label>
-            <input
-              type="number"
-              min="1"
-              class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              v-model="model.nMinimoPlantas"
-              :disabled="!model.nTipoParcela"
-            />
-          </div>
-          <!-- Total plantas -->
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">
-              <div v-if="model.cTipoEnsayo && model.cTipoEnsayo === 'F'">Total plantas siembra Familias:</div>
-              <div v-else-if="model.cTipoEnsayo && model.cTipoEnsayo === 'I'">Total plantas siembra Individual:</div>
-            </label>
-            <input
-              type="number"
-              min="1"
-              class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              v-model="model.nTotalPlantas"
-              :disabled="!model.nTipoParcela"
-            />
-          </div>
+
+            <button
+              type="button"
+              @click="activeTrialTypeTab = 'I'"
+              class="pb-3 px-2 border-b-2 font-bold text-xs flex items-center gap-2 transition-all cursor-pointer"
+              :class="activeTrialTypeTab === 'I' ? 'border-cenicana text-cenicana font-extrabold' : 'border-transparent text-slate-500 hover:text-slate-700'"
+            >
+              <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+              Tratamientos Ensayo Individual (I)
+              <span class="py-0.5 px-2 rounded-full text-[10px] bg-purple-100 text-purple-800 font-bold">
+                {{ tableDataTreatmentsExperimentsI.length }}
+              </span>
+            </button>
+          </nav>
         </div>
-      </div>
-    </div>
-    <!-- Tabla de tratamientos -->
-    <div
-      v-if="isModalOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
-      id="tablaTratamientos"
-      tabindex="-1"
-      role="dialog"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <!-- Modal Body -->
-          <div class="modal-body">
-            <div class="p-4 bg-white rounded-lg shadow">
-              <div class="modal-header">
+
+        <!-- CONTENIDO DE ENSAYO FAMILIAS (F) -->
+        <div v-show="activeTrialTypeTab === 'F'" class="p-5 space-y-4">
+          <!-- Sub-pestañas Familias -->
+          <div class="border-b border-slate-200/60 pb-3 flex items-center justify-between gap-3">
+            <div class="flex space-x-2">
+              <button
+                @click="setActiveTab('tratamientos')"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                :class="activeTab === 'tratamientos' ? 'bg-cenicana text-white shadow-2xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+              >
+                Tratamientos ({{ tableDataTreatmentsExperimentsF.length }})
+              </button>
+              <button
+                @click="setActiveTab('subparcelas')"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                :class="activeTab === 'subparcelas' ? 'bg-cenicana text-white shadow-2xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+              >
+                Subparcelas
+              </button>
+              <button
+                @click="setActiveTab('testigos')"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                :class="activeTab === 'testigos' ? 'bg-cenicana text-white shadow-2xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+              >
+                Testigos ({{ tableDataTestigosF.length }})
+              </button>
+              <button
+                @click="setActiveTab('testigosMoviles')"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                :class="activeTab === 'testigosMoviles' ? 'bg-cenicana text-white shadow-2xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+              >
+                Testigos Móviles ({{ tableDataTestigosM.length }})
+              </button>
+            </div>
+
+            <!-- Acciones Toolbar -->
+            <div class="flex items-center gap-2" v-if="activeTab === 'tratamientos'">
+              <button
+                @click="selectAllTreatmentsExperimentsF"
+                class="px-2.5 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold rounded-lg transition-all cursor-pointer"
+              >
+                Seleccionar Todos
+              </button>
+              <button
+                @click="deselectAllTreatmentsExperimentsF"
+                class="px-2.5 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold rounded-lg transition-all cursor-pointer"
+              >
+                Deseleccionar Todos
+              </button>
+              <button
+                @click="addSelectedTreatmentsExperimentsF"
+                class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-2xs transition-all cursor-pointer inline-flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                Añadir Selección
+              </button>
+            </div>
+          </div>
+
+          <!-- Tabla Tratamientos Familias -->
+          <div v-show="activeTab === 'tratamientos'" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-100 border border-slate-100 rounded-xl overflow-hidden">
+              <thead class="bg-slate-50/80">
+                <tr>
+                  <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">
+                    <input
+                      type="checkbox"
+                      :checked="allSelectedTreatmentsExperimentsF"
+                      @click="toggleAllSelectionTreatmentsExperimentsF"
+                      class="rounded border-slate-300 text-cenicana focus:ring-emerald-400"
+                    />
+                  </th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Familia</th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Pedigree</th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Origen</th>
+                  <th class="px-4 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">No. Plantas</th>
+                  <th class="px-4 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">Plantas Almacenadas</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-50 bg-white">
+                <tr v-for="row in paginatedDataTreatmentsExperimentsF" :key="row.id_dsno_det" class="hover:bg-slate-50/60 transition-all">
+                  <td class="px-3 py-2 text-center">
+                    <input type="checkbox" v-model="row.selected" class="rounded border-slate-300 text-cenicana focus:ring-emerald-400" />
+                  </td>
+                  <td class="px-4 py-2 text-xs font-bold text-slate-800 font-mono">{{ row.no_crzmnto }}</td>
+                  <td class="px-4 py-2 text-xs font-medium text-slate-700">{{ row.pdgree }}</td>
+                  <td class="px-4 py-2 text-xs text-slate-600">{{ row.orgen }}</td>
+                  <td class="px-4 py-2 text-xs text-center font-mono font-semibold text-slate-700">{{ row.nmro_clnes }}</td>
+                  <td class="px-4 py-2 text-xs text-center font-mono text-slate-600">{{ row.plntlas_ttles }}</td>
+                </tr>
+                <tr v-if="paginatedDataTreatmentsExperimentsF.length === 0">
+                  <td colspan="6" class="px-4 py-8 text-center text-slate-400 text-xs">No hay tratamientos asignados a Familias.</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Paginación Tratamientos F -->
+            <div class="flex items-center justify-between mt-3 text-xs text-slate-500">
+              <span>Página {{ currentPageTreatmentsExperimentsF }} de {{ totalPagesTreatmentsExperimentsF || 1 }}</span>
+              <div class="flex gap-1">
                 <button
-                  type="button"
-                  class="close bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded mr-1"
-                  data-dismiss="modal"
-                  aria-hidden="true"
-                  @click="closeModal"
-                >
-                  &times;
-                </button>
-                <h4 class="modal-title text-center p-2"><strong>Tratamientos Disponibles</strong></h4>
-              </div>
-              <!-- Toolbar -->
-              <div class="flex justify-center items-center mb-2">
-                <div>
-                  <button @click="selectAll" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-2 rounded mr-4">Seleccionar Todos</button>
-                  <button @click="deselectAll" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-2 rounded mr-4">Deseleccionar Todos</button>
-                </div>
-                <a href="javascript:;" @click="addSelected" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-2 rounded mr-4">
-                  <i class="fa fa-plus"></i> Añadir Selección
-                </a>
-              </div>
-              <!-- Table -->
-              <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                <table class="table-auto overflow-x-scroll w-min divide-y divide-gray-300">
-                  <thead class="bg-gray-50">
-                    <tr class="bg-gray-100">
-                      <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                        <input type="checkbox" :checked="allSelected" @click="toggleAllSelection" />
-                      </th>
-                      <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500 hidden">ID</th>
-                      <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Pedigree</th>
-                      <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Origen</th>
-                      <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Plántulas</th>
-                      <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Grupo cruz. madre</th>
-                      <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Grupo cruz. padre</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-200 bg-white">
-                    <tr v-for="row in paginatedData" :key="row.id" class="hover:bg-gray-50">
-                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                        <input type="checkbox" v-model="row.selected" />
-                      </td>
-                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6 hidden">
-                        {{ row.id }}
-                      </td>
-                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                        {{ row.pedigree }}
-                      </td>
-                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                        {{ row.origen }}
-                      </td>
-                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                        {{ row.plantulasTotales }}
-                      </td>
-                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                        {{ row.grupoMadre }}
-                      </td>
-                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                        {{ row.grupoPadre }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <!-- Controles de paginación -->
-              <div class="flex justify-between items-center mt-4">
-                <button
-                  @click="currentPage > 1 && currentPage--"
-                  class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                  :disabled="currentPage === 1"
+                  @click="currentPageTreatmentsExperimentsF > 1 && currentPageTreatmentsExperimentsF--"
+                  :disabled="currentPageTreatmentsExperimentsF === 1"
+                  class="px-2.5 py-1 border rounded-lg bg-white hover:bg-slate-50 disabled:opacity-40"
                 >
                   Anterior
                 </button>
-                <span>Página {{ currentPage }} de {{ totalPages }}</span>
                 <button
-                  @click="currentPage < totalPages && currentPage++"
-                  class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                  :disabled="currentPage === totalPages"
+                  @click="currentPageTreatmentsExperimentsF < totalPagesTreatmentsExperimentsF && currentPageTreatmentsExperimentsF++"
+                  :disabled="currentPageTreatmentsExperimentsF >= totalPagesTreatmentsExperimentsF"
+                  class="px-2.5 py-1 border rounded-lg bg-white hover:bg-slate-50 disabled:opacity-40"
+                >
+                  Siguiente
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabla Testigos Fijos Familias -->
+          <div v-show="activeTab === 'testigos'" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-100 border border-slate-100 rounded-xl">
+              <thead class="bg-slate-50/80">
+                <tr>
+                  <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">
+                    <input
+                      type="checkbox"
+                      :checked="allSelectedTestigosF"
+                      @click="toggleAllSelectionTestigosF"
+                      class="rounded border-slate-300 text-cenicana focus:ring-emerald-400"
+                    />
+                  </th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Variedad</th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Pedigree</th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Origen</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-50 bg-white">
+                <tr v-for="row in paginatedDataTestigosF" :key="row.id_dsno_det" class="hover:bg-slate-50/60 transition-all">
+                  <td class="px-3 py-2 text-center">
+                    <input type="checkbox" v-model="row.selected" class="rounded border-slate-300 text-cenicana focus:ring-emerald-400" />
+                  </td>
+                  <td class="px-4 py-2 text-xs font-bold text-slate-800">{{ row.nm_vrdad }}</td>
+                  <td class="px-4 py-2 text-xs text-slate-700">{{ row.pdgree }}</td>
+                  <td class="px-4 py-2 text-xs text-slate-600">{{ row.orgen }}</td>
+                </tr>
+                <tr v-if="paginatedDataTestigosF.length === 0">
+                  <td colspan="4" class="px-4 py-8 text-center text-slate-400 text-xs">No hay testigos fijos registrados.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Tabla Testigos Móviles Familias -->
+          <div v-show="activeTab === 'testigosMoviles'" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-100 border border-slate-100 rounded-xl">
+              <thead class="bg-slate-50/80">
+                <tr>
+                  <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">
+                    <input
+                      type="checkbox"
+                      :checked="allSelectedTestigosM"
+                      @click="toggleAllSelectionTestigosM"
+                      class="rounded border-slate-300 text-cenicana focus:ring-emerald-400"
+                    />
+                  </th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Variedad</th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Pedigree</th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Origen</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-50 bg-white">
+                <tr v-for="row in paginatedDataTestigosM" :key="row.id_dsno_det" class="hover:bg-slate-50/60 transition-all">
+                  <td class="px-3 py-2 text-center">
+                    <input type="checkbox" v-model="row.selected" class="rounded border-slate-300 text-cenicana focus:ring-emerald-400" />
+                  </td>
+                  <td class="px-4 py-2 text-xs font-bold text-slate-800">{{ row.nm_vrdad }}</td>
+                  <td class="px-4 py-2 text-xs text-slate-700">{{ row.pdgree }}</td>
+                  <td class="px-4 py-2 text-xs text-slate-600">{{ row.orgen }}</td>
+                </tr>
+                <tr v-if="paginatedDataTestigosM.length === 0">
+                  <td colspan="4" class="px-4 py-8 text-center text-slate-400 text-xs">No hay testigos móviles registrados.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div v-show="activeTab === 'subparcelas'" class="p-4 text-slate-400 text-xs text-center">Configuración de Subparcelas para Ensayo Familias.</div>
+        </div>
+
+        <!-- CONTENIDO DE ENSAYO INDIVIDUAL (I) -->
+        <div v-show="activeTrialTypeTab === 'I'" class="p-5 space-y-4">
+          <!-- Sub-pestañas Individual -->
+          <div class="border-b border-slate-200/60 pb-3 flex items-center justify-between gap-3">
+            <div class="flex space-x-2">
+              <button
+                @click="setActiveTabI('tratamientosI')"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                :class="activeTabI === 'tratamientosI' ? 'bg-cenicana text-white shadow-2xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+              >
+                Tratamientos ({{ tableDataTreatmentsExperimentsI.length }})
+              </button>
+              <button
+                @click="setActiveTabI('subparcelasI')"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                :class="activeTabI === 'subparcelasI' ? 'bg-cenicana text-white shadow-2xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+              >
+                Subparcelas
+              </button>
+              <button
+                @click="setActiveTabI('testigosI')"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                :class="activeTabI === 'testigosI' ? 'bg-cenicana text-white shadow-2xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+              >
+                Testigos ({{ tableDataTestigosFI.length }})
+              </button>
+              <button
+                @click="setActiveTabI('testigosMovilesI')"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                :class="activeTabI === 'testigosMovilesI' ? 'bg-cenicana text-white shadow-2xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+              >
+                Testigos Móviles ({{ tableDataTestigosMI.length }})
+              </button>
+            </div>
+
+            <!-- Acciones Toolbar Individual -->
+            <div class="flex items-center gap-2" v-if="activeTabI === 'tratamientosI'">
+              <button
+                @click="selectAllTreatmentsExperimentsI"
+                class="px-2.5 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold rounded-lg transition-all cursor-pointer"
+              >
+                Seleccionar Todos
+              </button>
+              <button
+                @click="deselectAllTreatmentsExperimentsI"
+                class="px-2.5 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold rounded-lg transition-all cursor-pointer"
+              >
+                Deseleccionar Todos
+              </button>
+              <button
+                @click="addSelectedTreatmentsExperimentsI"
+                class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-2xs transition-all cursor-pointer inline-flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                Añadir Selección
+              </button>
+            </div>
+          </div>
+
+          <!-- Tabla Tratamientos Individual -->
+          <div v-show="activeTabI === 'tratamientosI'" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-100 border border-slate-100 rounded-xl overflow-hidden">
+              <thead class="bg-slate-50/80">
+                <tr>
+                  <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">
+                    <input
+                      type="checkbox"
+                      :checked="allSelectedTreatmentsExperimentsI"
+                      @click="toggleAllSelectionTreatmentsExperimentsI"
+                      class="rounded border-slate-300 text-cenicana focus:ring-emerald-400"
+                    />
+                  </th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Familia</th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Pedigree</th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Origen</th>
+                  <th class="px-4 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">No. Plantas</th>
+                  <th class="px-4 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">Plantas Almacenadas</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-50 bg-white">
+                <tr v-for="row in paginatedDataTreatmentsExperimentsI" :key="row.id_dsno_det" class="hover:bg-slate-50/60 transition-all">
+                  <td class="px-3 py-2 text-center">
+                    <input type="checkbox" v-model="row.selected" class="rounded border-slate-300 text-cenicana focus:ring-emerald-400" />
+                  </td>
+                  <td class="px-4 py-2 text-xs font-bold text-slate-800 font-mono">{{ row.no_crzmnto }}</td>
+                  <td class="px-4 py-2 text-xs font-medium text-slate-700">{{ row.pdgree }}</td>
+                  <td class="px-4 py-2 text-xs text-slate-600">{{ row.orgen }}</td>
+                  <td class="px-4 py-2 text-xs text-center font-mono font-semibold text-slate-700">{{ row.nmro_clnes }}</td>
+                  <td class="px-4 py-2 text-xs text-center font-mono text-slate-600">{{ row.plntlas_ttles }}</td>
+                </tr>
+                <tr v-if="paginatedDataTreatmentsExperimentsI.length === 0">
+                  <td colspan="6" class="px-4 py-8 text-center text-slate-400 text-xs">No hay tratamientos asignados a Individual.</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Paginación Tratamientos I -->
+            <div class="flex items-center justify-between mt-3 text-xs text-slate-500">
+              <span>Página {{ currentPageTreatmentsExperimentsI }} de {{ totalPagesTreatmentsExperimentsI || 1 }}</span>
+              <div class="flex gap-1">
+                <button
+                  @click="currentPageTreatmentsExperimentsI > 1 && currentPageTreatmentsExperimentsI--"
+                  :disabled="currentPageTreatmentsExperimentsI === 1"
+                  class="px-2.5 py-1 border rounded-lg bg-white hover:bg-slate-50 disabled:opacity-40"
+                >
+                  Anterior
+                </button>
+                <button
+                  @click="currentPageTreatmentsExperimentsI < totalPagesTreatmentsExperimentsI && currentPageTreatmentsExperimentsI++"
+                  :disabled="currentPageTreatmentsExperimentsI >= totalPagesTreatmentsExperimentsI"
+                  class="px-2.5 py-1 border rounded-lg bg-white hover:bg-slate-50 disabled:opacity-40"
                 >
                   Siguiente
                 </button>
@@ -321,701 +739,266 @@
         </div>
       </div>
     </div>
-    <!-- Tabla de tratamientos Familias -->
-    <div
-      class="modal fade mb-6"
-      id="tablaTratamientosFamilias"
-      tabindex="-1"
-      role="dialog"
-      aria-hidden="true"
-      v-if="experimentsStore.experimentsFilter && Object.keys(experimentsStore.experimentsFilter.experimento).length > 0"
-    >
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-body">
-            <div class="p-4 bg-white rounded-lg shadow">
-              <!-- Modal Header -->
-              <div class="modal-header">
-                <h4 class="modal-title p-2 text-lg font-bold">Tratamientos Familias</h4>
-              </div>
-              <!-- Tabs -->
-              <ul class="flex border-b mb-4">
-                <li class="mr-2">
-                  <a
-                    href="javascript:;"
-                    @click="setActiveTab('tratamientos')"
-                    :class="[
-                      'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
-                      activeTab === 'tratamientos' ? 'border-blue-500' : 'border-transparent'
-                    ]"
-                  >
-                    Tratamientos
-                  </a>
-                </li>
-                <li class="mr-2">
-                  <a
-                    href="javascript:;"
-                    @click="setActiveTab('subparcelas')"
-                    :class="[
-                      'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
-                      activeTab === 'subparcelas' ? 'border-blue-500' : 'border-transparent'
-                    ]"
-                  >
-                    Subparcelas
-                  </a>
-                </li>
-                <li class="mr-2">
-                  <a
-                    href="javascript:;"
-                    @click="setActiveTab('testigos')"
-                    :class="[
-                      'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
-                      activeTab === 'testigos' ? 'border-blue-500' : 'border-transparent'
-                    ]"
-                  >
-                    Testigos
-                  </a>
-                </li>
-                <li class="mr-2">
-                  <a
-                    href="javascript:;"
-                    @click="setActiveTab('testigosMoviles')"
-                    :class="[
-                      'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
-                      activeTab === 'testigosMoviles' ? 'border-blue-500' : 'border-transparent'
-                    ]"
-                  >
-                    Testigos Móviles
-                  </a>
-                </li>
-              </ul>
-              <!-- Toolbar -->
-              <div v-show="activeTab === 'tratamientos'">
-                <div class="flex justify-between items-center mb-4">
-                  <div class="flex space-x-4">
-                    <button @click="selectAllTreatmentsExperimentsF" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-                      Seleccionar Todos
-                    </button>
-                    <button @click="deselectAllTreatmentsExperimentsF" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
-                      Deseleccionar Todos
-                    </button>
-                    <button @click="addSelectedTreatmentsExperimentsF" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
-                      <i class="fa fa-plus"></i> Añadir Selección
-                    </button>
-                  </div>
-                </div>
-                <!-- Table -->
-                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                  <table class="table-auto w-full divide-y divide-gray-300">
-                    <thead class="bg-gray-50">
-                      <tr class="bg-gray-100">
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          <input type="checkbox" :checked="allSelectedTreatmentsExperimentsF" @click="toggleAllSelectionTreatmentsExperimentsF" />
-                        </th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Familia</th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Pedigree</th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Origen</th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">No. Plantas</th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Plantas Almacenadas</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white">
-                      <tr v-for="row in paginatedDataTreatmentsExperimentsF" :key="row.id_dsno_det" class="hover:bg-gray-50">
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                          <input type="checkbox" v-model="row.selected" />
-                        </td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.no_crzmnto }}</td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.pdgree }}</td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.orgen }}</td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.nmro_clnes }}</td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.plntlas_ttles }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <!-- Pagination Controls -->
-                <div class="flex justify-between items-center mt-4">
-                  <button
-                    @click="currentPageTreatmentsExperimentsF > 1 && currentPageTreatmentsExperimentsF--"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTreatmentsExperimentsF === 1"
-                  >
-                    Anterior
-                  </button>
-                  <span>Página {{ currentPageTreatmentsExperimentsF }} de {{ totalPagesTreatmentsExperimentsF }}</span>
-                  <button
-                    @click="currentPageTreatmentsExperimentsF < totalPagesTreatmentsExperimentsF && currentPageTreatmentsExperimentsF++"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTreatmentsExperimentsF === totalPagesTreatmentsExperimentsF"
-                  >
-                    Siguiente
-                  </button>
-                </div>
-              </div>
-              <div v-show="activeTab === 'subparcelas'">
-                <div>
-                  <!-- Estructura para Subparcelas -->
-                  <p>Contenido de Subparcelas</p>
-                </div>
-              </div>
-              <div v-show="activeTab === 'testigos'">
-                <div class="flex justify-between items-center mb-4">
-                  <div class="flex space-x-4">
-                    <button @click="selectAllTestigosF" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Seleccionar Todos</button>
-                    <button @click="deselectAllTestigosF" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
-                      Deseleccionar Todos
-                    </button>
-                    <button @click="addSelectedTestigosF" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
-                      <i class="fa fa-plus"></i> Añadir Selección
-                    </button>
-                  </div>
-                </div>
-                <!-- Table -->
-                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                  <table class="table-auto w-full divide-y divide-gray-300">
-                    <thead class="bg-gray-50">
-                      <tr class="bg-gray-100">
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          <input type="checkbox" :checked="allSelectedTestigosF" @click="toggleAllSelectionTestigosF" />
-                        </th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Variedad</th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Pedigree</th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Origen</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white">
-                      <tr v-for="row in paginatedDataTestigosF" :key="row.id_dsno_det" class="hover:bg-gray-50">
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                          <input type="checkbox" v-model="row.selected" />
-                        </td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.nm_vrdad }}</td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.pdgree }}</td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.orgen }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <!-- Pagination Controls -->
-                <div class="flex justify-between items-center mt-4">
-                  <button
-                    @click="currentPageTestigosF > 1 && currentPageTestigosF--"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTestigosF === 1"
-                  >
-                    Anterior
-                  </button>
-                  <span>Página {{ currentPageTestigosF }} de {{ totalPagesTestigosF }}</span>
-                  <button
-                    @click="currentPageTestigosF < totalPagesTestigosF && currentPageTestigosF++"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTestigosF === totalPagesTestigosF"
-                  >
-                    Siguiente
-                  </button>
-                </div>
-              </div>
-              <div v-show="activeTab === 'testigosMoviles'">
-                <div class="flex justify-between items-center mb-4">
-                  <div class="flex space-x-4">
-                    <button @click="selectAllTestigosM" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Seleccionar Todos</button>
-                    <button @click="deselectAllTestigosM" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
-                      Deseleccionar Todos
-                    </button>
-                    <button @click="addSelectedTestigosM" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
-                      <i class="fa fa-plus"></i> Añadir Selección
-                    </button>
-                  </div>
-                </div>
-                <!-- Table -->
-                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                  <table class="table-auto w-full divide-y divide-gray-300">
-                    <thead class="bg-gray-50">
-                      <tr class="bg-gray-100">
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          <input type="checkbox" :checked="allSelectedTestigosM" @click="toggleAllSelectionTestigosM" />
-                        </th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Variedad</th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Pedigree</th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Origen</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white">
-                      <tr v-for="row in paginatedDataTestigosM" :key="row.id_dsno_det" class="hover:bg-gray-50">
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                          <input type="checkbox" v-model="row.selected" />
-                        </td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.nm_vrdad }}</td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.pdgree }}</td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.orgen }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <!-- Pagination Controls -->
-                <div class="flex justify-between items-center mt-4">
-                  <button
-                    @click="currentPageTestigosM > 1 && currentPageTestigosM--"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTestigosM === 1"
-                  >
-                    Anterior
-                  </button>
-                  <span>Página {{ currentPageTestigosM }} de {{ totalPagesTestigosM }}</span>
-                  <button
-                    @click="currentPageTestigosM < totalPagesTestigosM && currentPageTestigosM++"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTestigosM === totalPagesTestigosM"
-                  >
-                    Siguiente
-                  </button>
-                </div>
-              </div>
+
+    <!-- PASO 2: DEFINICIÓN DISEÑO ESTADÍSTICO -->
+    <div v-if="hasExperimentFound" class="bg-white rounded-2xl border border-slate-100 shadow-premium p-6 space-y-6 animate-fade-in">
+      <div class="border-b border-slate-100 pb-4">
+        <h3 class="text-base font-extrabold text-slate-800 flex items-center gap-2">
+          <span class="p-1.5 bg-purple-50 text-purple-600 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+          </span>
+          Paso 2: Definición del Diseño Estadístico
+        </h3>
+        <p class="text-xs text-slate-500 mt-1">Configure los parámetros de diseño experimental para Familias e Individual.</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Diseño Familias -->
+        <div class="border border-slate-100 rounded-2xl p-5 bg-slate-50/30 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-200/60 pb-2">
+            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+              Ensayo Familias
+            </h4>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Diseño Experimental:</label>
+            <ComboBoxMultiple
+              :data-list="dataListDisenoExp"
+              :column-value="columnValueDisenoExp"
+              :column-to-show="columnToShowDisenoExp"
+              placeholder="Seleccione..."
+              v-model:selectedData="model.nDisenoExpF"
+              class="w-full"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Localidades:</label>
+              <input
+                type="number"
+                min="0"
+                v-model="model.nLocalidadesF"
+                class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs bg-white focus:ring-1 focus:ring-emerald-200"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Repeticiones:</label>
+              <input
+                type="number"
+                min="0"
+                v-model="model.nRepeticionesF"
+                class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs bg-white focus:ring-1 focus:ring-emerald-200"
+              />
             </div>
           </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tratamientos:</label>
+              <input type="number" v-model="model.nTratamientoF" class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs bg-white" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Testigos:</label>
+              <input type="number" v-model="model.nTestigosF" class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs bg-white" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Descripción:</label>
+            <textarea v-model="model.cDescripcionF" rows="2" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-white"></textarea>
+          </div>
+
+          <button
+            type="button"
+            class="w-full py-2 bg-cenicana hover:bg-cenicana-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+          >
+            Actualizar Diseño Familias
+          </button>
+        </div>
+
+        <!-- Diseño Individual -->
+        <div class="border border-slate-100 rounded-2xl p-5 bg-slate-50/30 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-200/60 pb-2">
+            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+              Ensayo Individual
+            </h4>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Diseño Experimental:</label>
+            <ComboBoxMultiple
+              :data-list="dataListDisenoExp"
+              :column-value="columnValueDisenoExp"
+              :column-to-show="columnToShowDisenoExp"
+              placeholder="Seleccione..."
+              v-model:selectedData="model.nDisenoExpI"
+              class="w-full"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Localidades:</label>
+              <input
+                type="number"
+                min="0"
+                v-model="model.nLocalidadesI"
+                class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs bg-white focus:ring-1 focus:ring-emerald-200"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Repeticiones:</label>
+              <input
+                type="number"
+                min="0"
+                v-model="model.nRepeticionesI"
+                class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs bg-white focus:ring-1 focus:ring-emerald-200"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tratamientos:</label>
+              <input type="number" v-model="model.nTratamientoI" class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs bg-white" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Testigos:</label>
+              <input type="number" v-model="model.nTestigosI" class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-xs bg-white" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Descripción:</label>
+            <textarea v-model="model.cDescripcionI" rows="2" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-white"></textarea>
+          </div>
+
+          <button
+            type="button"
+            class="w-full py-2 bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+          >
+            Actualizar Diseño Individual
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Tabla de tratamientos Individual -->
-    <div
-      class="modal fade mb-6"
-      id="tablaTratamientosIndividual"
-      tabindex="-1"
-      role="dialog"
-      aria-hidden="true"
-      v-if="experimentsStore.experimentsFilter && Object.keys(experimentsStore.experimentsFilter.experimento).length > 0"
-    >
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-body">
-            <div class="p-4 bg-white rounded-lg shadow">
-              <!-- Modal Header -->
-              <div class="modal-header">
-                <h4 class="modal-title p-2 text-lg font-bold">Tratamientos Individual</h4>
-              </div>
-              <!-- Tabs -->
-              <ul class="flex border-b mb-4">
-                <li class="mr-2">
-                  <a
-                    href="javascript:;"
-                    @click="setActiveTabI('tratamientosI')"
-                    :class="[
-                      'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
-                      activeTab === 'tratamientos' ? 'border-blue-500' : 'border-transparent'
-                    ]"
-                  >
-                    Tratamientos
-                  </a>
-                </li>
-                <li class="mr-2">
-                  <a
-                    href="javascript:;"
-                    @click="setActiveTabI('subparcelasI')"
-                    :class="[
-                      'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
-                      activeTab === 'subparcelas' ? 'border-blue-500' : 'border-transparent'
-                    ]"
-                  >
-                    Subparcelas
-                  </a>
-                </li>
-                <li class="mr-2">
-                  <a
-                    href="javascript:;"
-                    @click="setActiveTabI('testigosI')"
-                    :class="[
-                      'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
-                      activeTab === 'testigos' ? 'border-blue-500' : 'border-transparent'
-                    ]"
-                  >
-                    Testigos
-                  </a>
-                </li>
-                <li class="mr-2">
-                  <a
-                    href="javascript:;"
-                    @click="setActiveTabI('testigosMovilesI')"
-                    :class="[
-                      'inline-block py-2 px-4 text-blue-500 hover:text-blue-700 border-b-2',
-                      activeTab === 'testigosMoviles' ? 'border-blue-500' : 'border-transparent'
-                    ]"
-                  >
-                    Testigos Móviles
-                  </a>
-                </li>
-              </ul>
-              <!-- Toolbar -->
-              <div v-show="activeTabI === 'tratamientosI'">
-                <div class="flex justify-between items-center mb-2">
-                  <div>
-                    <button @click="selectAllTreatmentsExperimentsI" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-2 rounded mr-4">
-                      Seleccionar Todos
-                    </button>
-                    <button @click="deselectAllTreatmentsExperimentsI" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-2 rounded mr-4">
-                      Deseleccionar Todos
-                    </button>
-                  </div>
-                  <a
-                    href="javascript:;"
-                    @click="addSelectedTreatmentsExperimentsI"
-                    class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-2 rounded mr-4"
-                  >
-                    <i class="fa fa-plus"></i> Añadir Selección
-                  </a>
-                </div>
-                <!-- Table -->
-                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                  <table class="table-auto overflow-x-scroll w-full divide-y divide-gray-300">
-                    <thead class="bg-gray-50">
-                      <tr class="bg-gray-100">
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          <input type="checkbox" :checked="allSelectedTreatmentsExperimentsI" @click="toggleAllSelectionTreatmentsExperimentsI" />
-                        </th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Familia</th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Pedigree</th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Origen</th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">No. Plantas</th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Plantas Almacenadas</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white">
-                      <tr v-for="row in paginatedDataTreatmentsExperimentsI" :key="row.id_dsno_det" class="hover:bg-gray-50">
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                          <input type="checkbox" v-model="row.selected" />
-                        </td>
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6 hidden">
-                          {{ row.id_dsno_det }}
-                        </td>
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6 hidden">
-                          {{ row.trtmnto }}
-                        </td>
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6 hidden">
-                          {{ row.id_dsno_enc }}
-                        </td>
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                          {{ row.no_crzmnto }}
-                        </td>
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                          {{ row.pdgree }}
-                        </td>
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                          {{ row.orgen }}
-                        </td>
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                          {{ row.nmro_clnes }}
-                        </td>
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                          {{ row.plntlas_ttles }}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <!-- Controles de paginación -->
-                <div class="flex justify-between items-center mt-4">
-                  <button
-                    @click="currentPageTreatmentsExperimentsI > 1 && currentPageTreatmentsExperimentsI--"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTreatmentsExperimentsI === 1"
-                  >
-                    Anterior
-                  </button>
-                  <span>Página {{ currentPageTreatmentsExperimentsI }} de {{ totalPagesTreatmentsExperimentsI }}</span>
-                  <button
-                    @click="currentPageTreatmentsExperimentsI < totalPagesTreatmentsExperimentsI && currentPageTreatmentsExperimentsI++"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTreatmentsExperimentsI === totalPagesTreatmentsExperimentsI"
-                  >
-                    Siguiente
-                  </button>
-                </div>
-              </div>
-              <div v-show="activeTabI === 'subparcelasI'">
-                <div>
-                  <!-- Estructura para Subparcelas -->
-                  <p>Contenido de Subparcelas individuales</p>
-                </div>
-              </div>
-              <div v-show="activeTabI === 'testigosI'">
-                <div class="flex justify-between items-center mb-4">
-                  <div class="flex space-x-4">
-                    <button @click="selectAllTestigosFI" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Seleccionar Todos</button>
-                    <button @click="deselectAllTestigosFI" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
-                      Deseleccionar Todos
-                    </button>
-                    <button @click="addSelectedTestigosFI" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
-                      <i class="fa fa-plus"></i> Añadir Selección
-                    </button>
-                  </div>
-                </div>
-                <!-- Table -->
-                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                  <table class="table-auto w-full divide-y divide-gray-300">
-                    <thead class="bg-gray-50">
-                      <tr class="bg-gray-100">
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          <input type="checkbox" :checked="allSelectedTestigosFI" @click="toggleAllSelectionTestigosFI" />
-                        </th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Variedad</th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Pedigree</th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Origen</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white">
-                      <tr v-for="row in paginatedDataTestigosFI" :key="row.id_dsno_det" class="hover:bg-gray-50">
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                          <input type="checkbox" v-model="row.selected" />
-                        </td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.nm_vrdad }}</td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.pdgree }}</td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.orgen }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <!-- Pagination Controls -->
-                <div class="flex justify-between items-center mt-4">
-                  <button
-                    @click="currentPageTestigosFI > 1 && currentPageTestigosFI--"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTestigosFI === 1"
-                  >
-                    Anterior
-                  </button>
-                  <span>Página {{ currentPageTestigosFI }} de {{ totalPagesTestigosFI }}</span>
-                  <button
-                    @click="currentPageTestigosFI < totalPagesTestigosFI && currentPageTestigosFI++"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTestigosFI === totalPagesTestigosFI"
-                  >
-                    Siguiente
-                  </button>
-                </div>
-              </div>
-              <div v-show="activeTabI === 'testigosMovilesI'">
-                <div class="flex justify-between items-center mb-4">
-                  <div class="flex space-x-4">
-                    <button @click="selectAllTestigosMI" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Seleccionar Todos</button>
-                    <button @click="deselectAllTestigosMI" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
-                      Deseleccionar Todos
-                    </button>
-                    <button @click="addSelectedTestigosMI" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
-                      <i class="fa fa-plus"></i> Añadir Selección
-                    </button>
-                  </div>
-                </div>
-                <!-- Table -->
-                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                  <table class="table-auto w-full divide-y divide-gray-300">
-                    <thead class="bg-gray-50">
-                      <tr class="bg-gray-100">
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          <input type="checkbox" :checked="allSelectedTestigosMI" @click="toggleAllSelectionTestigosMI" />
-                        </th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Variedad</th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Pedigree</th>
-                        <th class="cursor-pointer px-3 py-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Origen</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white">
-                      <tr v-for="row in paginatedDataTestigosMI" :key="row.id_dsno_det" class="hover:bg-gray-50">
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-800 sm:pl-6">
-                          <input type="checkbox" v-model="row.selected" />
-                        </td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.nm_vrdad }}</td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.pdgree }}</td>
-                        <td class="whitespace-nowrap py-4 px-3 text-sm text-gray-800">{{ row.orgen }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <!-- Pagination Controls -->
-                <div class="flex justify-between items-center mt-4">
-                  <button
-                    @click="currentPageTestigosMI > 1 && currentPageTestigosMI--"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTestigosMI === 1"
-                  >
-                    Anterior
-                  </button>
-                  <span>Página {{ currentPageTestigosMI }} de {{ totalPagesTestigosMI }}</span>
-                  <button
-                    @click="currentPageTestigosMI < totalPagesTestigosMI && currentPageTestigosMI++"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    :disabled="currentPageTestigosMI === totalPagesTestigosMI"
-                  >
-                    Siguiente
-                  </button>
-                </div>
-              </div>
+    <!-- MODAL: TRATAMIENTOS DISPONIBLES DE TEMPORADA DE CRUZAMIENTOS -->
+    <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-fade-in">
+      <div class="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-100">
+        <!-- Modal Header -->
+        <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+            <span class="p-1 bg-emerald-100 text-cenicana rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </span>
+            Tratamientos Disponibles (Temporada {{ model.nTemporada }})
+          </h3>
+          <button @click="closeModal" class="text-slate-400 hover:text-slate-600 rounded-lg p-1 hover:bg-slate-200/60 transition-all cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal Body & Toolbar -->
+        <div class="p-6 overflow-y-auto space-y-4">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/80 p-3 rounded-xl border border-slate-100">
+            <div class="flex items-center gap-2">
+              <button
+                @click="selectAll"
+                class="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold rounded-lg shadow-2xs transition-all cursor-pointer"
+              >
+                Seleccionar Todos
+              </button>
+              <button
+                @click="deselectAll"
+                class="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold rounded-lg shadow-2xs transition-all cursor-pointer"
+              >
+                Deseleccionar Todos
+              </button>
+            </div>
+            <button
+              @click="addSelected"
+              class="px-4 py-1.5 bg-cenicana hover:bg-cenicana-700 text-white text-xs font-bold rounded-lg shadow-xs transition-all cursor-pointer inline-flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Añadir Selección
+            </button>
+          </div>
+
+          <!-- Table -->
+          <div class="overflow-x-auto border border-slate-100 rounded-xl">
+            <table class="min-w-full divide-y divide-slate-100">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">
+                    <input
+                      type="checkbox"
+                      :checked="allSelected"
+                      @click="toggleAllSelection"
+                      class="rounded border-slate-300 text-cenicana focus:ring-emerald-400"
+                    />
+                  </th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Pedigree</th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Origen</th>
+                  <th class="px-4 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">Plántulas Totales</th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Grupo Madre</th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Grupo Padre</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-50 bg-white">
+                <tr v-for="row in paginatedData" :key="row.id" class="hover:bg-slate-50/60 transition-all">
+                  <td class="px-3 py-2 text-center">
+                    <input type="checkbox" v-model="row.selected" class="rounded border-slate-300 text-cenicana focus:ring-emerald-400" />
+                  </td>
+                  <td class="px-4 py-2 text-xs font-bold text-slate-800 font-mono">{{ row.pedigree }}</td>
+                  <td class="px-4 py-2 text-xs text-slate-700">{{ row.origen }}</td>
+                  <td class="px-4 py-2 text-xs text-center font-mono font-semibold text-slate-700">{{ row.plantulasTotales }}</td>
+                  <td class="px-4 py-2 text-xs text-slate-600">{{ row.grupoMadre }}</td>
+                  <td class="px-4 py-2 text-xs text-slate-600">{{ row.grupoPadre }}</td>
+                </tr>
+                <tr v-if="paginatedData.length === 0">
+                  <td colspan="6" class="px-4 py-8 text-center text-slate-400 text-xs">No se encontraron tratamientos disponibles para esta temporada.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Paginación Modal -->
+          <div class="flex items-center justify-between text-xs text-slate-500 pt-2">
+            <span>Página {{ currentPage }} de {{ totalPages || 1 }}</span>
+            <div class="flex gap-1">
+              <button
+                @click="currentPage > 1 && currentPage--"
+                :disabled="currentPage === 1"
+                class="px-3 py-1 border rounded-lg bg-white hover:bg-slate-50 disabled:opacity-40"
+              >
+                Anterior
+              </button>
+              <button
+                @click="currentPage < totalPages && currentPage++"
+                :disabled="currentPage >= totalPages"
+                class="px-3 py-1 border rounded-lg bg-white hover:bg-slate-50 disabled:opacity-40"
+              >
+                Siguiente
+              </button>
             </div>
           </div>
-        </div>
-      </div>
-      <div class="modal-dialog modal-lg"></div>
-    </div>
-    <div v-if="experimentsStore.experimentsFilter && Object.keys(experimentsStore.experimentsFilter.experimento).length > 0">
-      <h3 class="text-xl font-bold mb-4 text-violet-800">Paso 2: Definición Diseño Estadístico</h3>
-      <div class="w-full max-w-10xl mx-auto bg-white shadow-lg rounded-lg p-6 mb-6">
-        <div class="border-b pb-4 mb-6">
-          <h4 class="text-lg font-semibold text-gray-700">Ensayo Familias</h4>
-        </div>
-
-        <!-- Diseño Experimental -->
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-violet-800 mb-2">Diseño Experimental:</label>
-          <ComboBoxMultiple
-            :data-list="dataListDisenoExp"
-            :column-value="columnValueTemporadas"
-            :column-to-show="columnToShowTemporadas"
-            placeholder="Seleccione ..."
-            v-model:selectedData="model.nDisenoExpF"
-            :disabled="!model.nProyecto"
-            class="w-full"
-          />
-        </div>
-
-        <!-- Grid para valores numéricos -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Localidades -->
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Localidades:</label>
-            <input
-              type="number"
-              min="0"
-              v-model="model.nLocalidadesF"
-              class="w-full p-2 border rounded border-gray-300 shadow-md"
-              :disabled="!model.nDisenoExpF"
-            />
-          </div>
-          <!-- Repeticiones -->
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Repeticiones:</label>
-            <input
-              type="number"
-              min="0"
-              v-model="model.nRepeticionesF"
-              class="w-full p-2 border rounde border-gray-300 shadow-md"
-              :disabled="!model.nLocalidadesF"
-            />
-          </div>
-        </div>
-
-        <!-- Grid para otros valores -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Tratamientos:</label>
-            <input type="number" v-model="model.nTratamientoF" class="w-full p-2 border rounded border-gray-300 shadow-md" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Testigos:</label>
-            <input type="number" v-model="model.nTestigosF" class="w-full p-2 border rounded border-gray-300 shadow-md" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Testigos Móviles:</label>
-            <input type="number" v-model="model.nTestigosMovilF" class="w-full p-2 border rounded border-gray-300 shadow-md" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Parcela Principal:</label>
-            <input type="number" v-model="model.nParcelaPpalF" class="w-full p-2 border rounded border-gray-300 shadow-md" />
-          </div>
-        </div>
-
-        <!-- Descripción -->
-        <div class="mt-4">
-          <label class="block text-sm font-medium text-violet-800 mb-2">Descripción:</label>
-          <textarea
-            v-model="model.cDescripcionF"
-            class="w-full p-2 border rounded border-gray-300 shadow-md"
-            rows="3"
-            :disabled="!model.nDisenoExpF"
-          ></textarea>
-        </div>
-
-        <!-- Botón de Guardar -->
-        <div class="text-center mt-6">
-          <button class="bg-violet-800 text-white px-4 py-2 rounded">Actualizar Diseño</button>
-        </div>
-      </div>
-      <div class="w-full max-w-10xl mx-auto bg-white shadow-lg rounded-lg p-6">
-        <div class="border-b pb-4 mb-6">
-          <h4 class="text-lg font-semibold text-gray-700">Ensayo Individual</h4>
-        </div>
-
-        <!-- Diseño Experimental -->
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-violet-800 mb-2">Diseño Experimental:</label>
-          <ComboBoxMultiple
-            :data-list="dataListDisenoExp"
-            :column-value="columnValueTemporadas"
-            :column-to-show="columnToShowTemporadas"
-            placeholder="Seleccione ..."
-            v-model:selectedData="model.nDisenoExpI"
-            :disabled="!model.nProyecto"
-            class="w-full"
-          />
-        </div>
-
-        <!-- Grid para valores numéricos -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Localidades -->
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Localidades:</label>
-            <input
-              type="number"
-              min="0"
-              v-model="model.nLocalidadesI"
-              class="w-full p-2 border rounded border-gray-300 shadow-md"
-              :disabled="!model.nDisenoExpI"
-            />
-          </div>
-          <!-- Repeticiones -->
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Repeticiones:</label>
-            <input
-              type="number"
-              min="0"
-              v-model="model.nRepeticionesI"
-              class="w-full p-2 border rounded border-gray-300 shadow-md"
-              :disabled="!model.nLocalidadesI"
-            />
-          </div>
-        </div>
-
-        <!-- Grid para otros valores -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Tratamientos:</label>
-            <input type="number" v-model="model.nTratamientoI" class="w-full p-2 border rounded border-gray-300 shadow-md" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Testigos:</label>
-            <input type="number" v-model="model.nTestigosI" class="w-full p-2 border rounded border-gray-300 shadow-md" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Testigos Móviles:</label>
-            <input type="number" v-model="model.nTestigosMovilI" class="w-full p-2 border rounded border-gray-300 shadow-md" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-violet-800 mb-2">Parcela Principal:</label>
-            <input type="number" v-model="model.nParcelaPpalI" class="w-full p-2 border rounded border-gray-300 shadow-md" />
-          </div>
-        </div>
-
-        <!-- Descripción -->
-        <div class="mt-4">
-          <label class="block text-sm font-medium text-violet-800 mb-2">Descripción:</label>
-          <textarea
-            v-model="model.cDescripcionI"
-            class="w-full p-2 border rounded border-gray-300 shadow-md"
-            rows="3"
-            :disabled="!model.nDisenoExpI"
-          ></textarea>
-        </div>
-
-        <!-- Botón de Guardar -->
-        <div class="text-center mt-6">
-          <button class="bg-violet-800 text-white px-4 py-2 rounded">Actualizar Diseño</button>
         </div>
       </div>
     </div>
@@ -1025,6 +1008,7 @@
 <script setup lang="ts">
 import { reactive, onMounted, watch, computed, ref } from "vue";
 import BackButton from "@/components/BackButton.vue";
+import ComboBoxMultiple from "@/components/ComboBoxMultiple.vue";
 import { useSearchParametersStore } from "@/stores/parametersexperiments";
 import { useAreasProgramStore } from "@/stores/areasprogram";
 import { useProjectsAreaStore } from "@/stores/projectsarea";
@@ -1032,14 +1016,12 @@ import { useExperimentsStore } from "@/stores/experiments";
 import { useTreatmentsSeasonStore } from "@/stores/treatmentsseason";
 import { useTreatmentsExperimentsStore } from "@/stores/treatmentsexperiments";
 import { useAddDesingsDetailsStore } from "@/stores/adddesingsdetails";
-import ComboBoxMultiple from "@/components/ComboBoxMultiple.vue";
 import { useToast } from "vue-toastification";
 import { useMainStore } from "@/stores/main";
 import type { DiseñosDetalles } from "../../../services/types";
 
 const toast = useToast();
 const mainStore = useMainStore();
-const error = computed(() => mainStore.error);
 const searchParametersStore = useSearchParametersStore();
 const areasProgramStore = useAreasProgramStore();
 const projectsAreaStore = useProjectsAreaStore();
@@ -1048,7 +1030,8 @@ const treatmentsSeasonStore = useTreatmentsSeasonStore();
 const treatmentsExperimentsStore = useTreatmentsExperimentsStore();
 const addDesingsDetailsStore = useAddDesingsDetailsStore();
 
-// type TipoEnsayo = { id: string; text: string } | null;
+const isSearching = ref(false);
+const activeTrialTypeTab = ref<"F" | "I">("F");
 
 const model = reactive<{
   nPrograma: string | null;
@@ -1126,6 +1109,7 @@ const model = reactive<{
   cDescripcionI: null
 });
 
+// Listas de datos para las tablas reactivas
 const tableData = ref<
   {
     id: string;
@@ -1137,6 +1121,7 @@ const tableData = ref<
     selected: boolean;
   }[]
 >([]);
+
 const tableDataTreatmentsExperimentsF = ref<
   {
     id_dsno_det: string;
@@ -1150,6 +1135,7 @@ const tableDataTreatmentsExperimentsF = ref<
     selected: boolean;
   }[]
 >([]);
+
 const tableDataTreatmentsExperimentsI = ref<
   {
     id_dsno_det: string;
@@ -1163,6 +1149,7 @@ const tableDataTreatmentsExperimentsI = ref<
     selected: boolean;
   }[]
 >([]);
+
 const tableDataTestigosF = ref<
   {
     id_dsno_det: string;
@@ -1172,6 +1159,7 @@ const tableDataTestigosF = ref<
     selected: boolean;
   }[]
 >([]);
+
 const tableDataTestigosM = ref<
   {
     id_dsno_det: string;
@@ -1181,6 +1169,7 @@ const tableDataTestigosM = ref<
     selected: boolean;
   }[]
 >([]);
+
 const tableDataTestigosFI = ref<
   {
     id_dsno_det: string;
@@ -1190,6 +1179,7 @@ const tableDataTestigosFI = ref<
     selected: boolean;
   }[]
 >([]);
+
 const tableDataTestigosMI = ref<
   {
     id_dsno_det: string;
@@ -1218,10 +1208,7 @@ const columnValueSerie = "id";
 const columnToShowSerie = "text";
 
 const dataListEstado = computed(() => searchParametersStore.searchParameters?.listEstados || []);
-// const columnValueEstado = "id";
 const columnToShowEstado = "text";
-
-// const dataListExperiments = computed(() => experimentsStore.experimentsFilter?.experimento || []);
 
 const dataListTemporadas = computed(() => searchParametersStore.searchParameters?.listTemporadas || []);
 const columnValueTemporadas = "id";
@@ -1247,30 +1234,35 @@ const dataListDisenoExp = computed(() => searchParametersStore.searchParameters?
 const columnValueDisenoExp = "id";
 const columnToShowDisenoExp = "text";
 
+// Computed: ¿Se ha encontrado o creado un experimento?
+const hasExperimentFound = computed(() => {
+  return (
+    experimentsStore.experimentsFilter &&
+    experimentsStore.experimentsFilter.experimento &&
+    Object.keys(experimentsStore.experimentsFilter.experimento).length > 0
+  );
+});
+
+// Modal State
 const isModalOpen = ref(false);
-const openModal = (tableData: any) => {
-  tableData.value;
+const openModalTratamientosDisponibles = async () => {
+  await tratamientosDisponibles();
   isModalOpen.value = true;
 };
-// Cerrar modal
 const closeModal = () => {
   isModalOpen.value = false;
 };
 
-// const dataListTreamentsExperiments = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter || []);
-// const dataListTreamentsSeason = computed(() => treatmentsSeasonStore.treatmentsSeasonFilter || []);
-
+// Carga Inicial
 onMounted(async () => {
   try {
     await searchParametersStore.getSearchParametersResult();
-    console.log("Datos iniciales cargados:", searchParametersStore.searchParameters);
   } catch (error) {
-    console.error("Error al cargar los datos iniciales:", error);
+    console.error("Error al cargar datos iniciales:", error);
   }
-  tratamientosDisponibles();
 });
 
-// Watch para filtrar las áreas cuando cambia el programa seleccionado
+// Watchers de cascada
 watch(
   () => model.nPrograma,
   async (newProgram) => {
@@ -1278,36 +1270,60 @@ watch(
       model.nArea = null;
       model.nProyecto = null;
       await areasProgramStore.getAreasProgramList(newProgram);
-      console.log("Áreas actualizadas:", areasProgramStore.areasProgramFilter);
     }
   },
-  { immediate: true } // Opcional: Ejecuta el `watch` al inicio
+  { immediate: true }
 );
 
-// Watch para filtrar los proyectos cuando cambia el área seleccionada
 watch(
   () => model.nArea,
   async (newArea) => {
     if (newArea) {
       model.nProyecto = null;
       await projectsAreaStore.getProjectsAreaList(newArea);
-      console.log("Proyectos actualizados:", projectsAreaStore.projectsAreaFilter);
     }
   },
-  { immediate: true } // Opcional: Ejecuta el `watch` al inicio
+  { immediate: true }
 );
 
-// Función que se llama cuando se presiona el botón de "Buscar Experimento"
+// Buscar experimento
 const buscarExperimento = async () => {
   if (model.nProyecto && model.nSerie && model.nEstado) {
-    // Llamada a la API para actualizar los experimentos con los parámetros seleccionados
-    await experimentsStore.getExperimentsList(model.nProyecto, model.nSerie, model.nEstado);
-    console.log("Experimentos actualizados:", experimentsStore.experimentsFilter);
-  } else {
-    console.log("Faltan parámetros para realizar la búsqueda.");
+    isSearching.value = true;
+    try {
+      await experimentsStore.getExperimentsList(model.nProyecto, model.nSerie, model.nEstado);
+    } finally {
+      isSearching.value = false;
+    }
   }
 };
-// Watch para filtrar los TratamientosExperimentos cuando cambia el área seleccionada
+
+// Crear nuevo experimento
+const isCreatingExperiment = ref(false);
+const crearNuevoExperimento = async () => {
+  if (!model.nProyecto || !model.nSerie || !model.nEstado) {
+    toast.error("Debe seleccionar Proyecto, Serie y Estado para crear el experimento");
+    return;
+  }
+
+  isCreatingExperiment.value = true;
+  try {
+    const res = await experimentsStore.createExperiment(model.nProyecto, model.nSerie, model.nEstado);
+    if (res && (res.code === 200 || res.IdsDisenosCreados)) {
+      toast.success(res.message || "Experimento inicializado con éxito");
+      await buscarExperimento();
+    } else {
+      toast.error(res?.message || "No se pudo crear el experimento");
+    }
+  } catch (err: any) {
+    console.error("Error al crear experimento:", err);
+    toast.error(err.response?.data?.message || "Error al registrar el experimento en el servidor");
+  } finally {
+    isCreatingExperiment.value = false;
+  }
+};
+
+// Carga de tratamientos y detalles
 const dataListIdDisenoF = computed(() => experimentsStore.experimentsFilter?.experimento[0]?.id_dsno_enc);
 const dataListIdDisenoI = computed(() => experimentsStore.experimentsFilter?.experimento[1]?.id_dsno_enc);
 const tratamientosF = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter?.tratamientosF || []);
@@ -1316,19 +1332,13 @@ const testigosFijosF = computed(() => treatmentsExperimentsStore.treatmentsExper
 const testigosFijosI = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter?.testigosFijosI || []);
 const testigosMovilesF = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter?.testigosMovilesF || []);
 const testigosMovilesI = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter?.testigosMovilesI || []);
-// const experimentoF = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter?.experimentoF || []);
-// const experimentoI = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter?.experimentoI || []);
 
-// Watch para observar cambios en dataListIdDisenoF y dataListIdDisenoI
 watch(
   [dataListIdDisenoF, dataListIdDisenoI],
   async ([newDataListIdDisenoF, newDataListIdDisenoI]) => {
     if (newDataListIdDisenoF && newDataListIdDisenoI) {
-      // Llama al método del store para obtener los tratamientos
       await treatmentsExperimentsStore.getTreatmentsExperimentsList(newDataListIdDisenoF, newDataListIdDisenoI);
-      console.log("TratamientosExperimentos:", treatmentsExperimentsStore.treatmentsExperimentsFilter);
 
-      // Actualiza los datos para la tabla de tratamientos
       tableDataTreatmentsExperimentsF.value = tratamientosF.value.map((item: any) => ({
         id_dsno_det: item.id_dsno_det,
         trtmnto: item.trtmnto,
@@ -1353,7 +1363,6 @@ watch(
         selected: false
       }));
 
-      // Actualiza los datos para la tabla de testigos
       tableDataTestigosF.value = testigosFijosF.value.map((item: any) => ({
         id_dsno_det: item.id_dsno_det,
         nm_vrdad: item.nm_vrdad,
@@ -1387,386 +1396,128 @@ watch(
       }));
     }
   },
-  { immediate: true } // Ejecutar el watcher inmediatamente al montar
+  { immediate: true }
 );
 
-// // Métodos para seleccionar/deseleccionar tratamientos
-// // Computed para la selección global
-const currentPageTreatmentsExperimentsF = ref(1); // Página inicial
-const pageSizeTreatmentsExperimentsF = ref(6); // Tamaño de página (filas por página)
-
-// Computed para obtener los datos paginados
+// Paginación y Selección Familias (F)
+const currentPageTreatmentsExperimentsF = ref(1);
+const pageSizeTreatmentsExperimentsF = ref(6);
 const paginatedDataTreatmentsExperimentsF = computed(() => {
   const start = (currentPageTreatmentsExperimentsF.value - 1) * pageSizeTreatmentsExperimentsF.value;
-  const end = start + pageSizeTreatmentsExperimentsF.value;
-  return tableDataTreatmentsExperimentsF.value.slice(start, end);
+  return tableDataTreatmentsExperimentsF.value.slice(start, start + pageSizeTreatmentsExperimentsF.value);
 });
-
-// Total de páginas
 const totalPagesTreatmentsExperimentsF = computed(() => Math.ceil(tableDataTreatmentsExperimentsF.value.length / pageSizeTreatmentsExperimentsF.value));
-
-const allSelectedTreatmentsExperimentsF = computed(() => tableDataTreatmentsExperimentsF.value.every((row) => row.selected));
-
-// Métodos para manejo de selección
+const allSelectedTreatmentsExperimentsF = computed(
+  () => tableDataTreatmentsExperimentsF.value.length > 0 && tableDataTreatmentsExperimentsF.value.every((row) => row.selected)
+);
 const toggleAllSelectionTreatmentsExperimentsF = () => {
   const newValue = !allSelectedTreatmentsExperimentsF.value;
   tableDataTreatmentsExperimentsF.value.forEach((row) => (row.selected = newValue));
 };
-const selectAllTreatmentsExperimentsF = () => {
-  tableDataTreatmentsExperimentsF.value.forEach((row) => (row.selected = true));
-};
-const deselectAllTreatmentsExperimentsF = () => {
-  tableDataTreatmentsExperimentsF.value.forEach((row) => (row.selected = false));
-};
+const selectAllTreatmentsExperimentsF = () => tableDataTreatmentsExperimentsF.value.forEach((row) => (row.selected = true));
+const deselectAllTreatmentsExperimentsF = () => tableDataTreatmentsExperimentsF.value.forEach((row) => (row.selected = false));
 const addSelectedTreatmentsExperimentsF = async () => {
   const selectedRows = tableDataTreatmentsExperimentsF.value.filter((row) => row.selected);
   if (selectedRows.length === 0) {
-    console.log("error", "No ha seleccionado tratamientos");
+    toast.error("No ha seleccionado tratamientos");
     return;
   }
-
-  // const arrayIds = [];
-  const arrayIdsTreatmentsExperimentsF = selectedRows.map((row) => ({
-    id_detalle: row.id_dsno_det,
-    id_crzmnto: row.trtmnto,
-    nro_plntlas: row.nmro_clnes
-  }));
 };
 
-const currentPageTreatmentsExperimentsI = ref(1); // Página inicial
-const pageSizeTreatmentsExperimentsI = ref(6); // Tamaño de página (filas por página)
-
-// Computed para obtener los datos paginados
+// Paginación y Selección Individual (I)
+const currentPageTreatmentsExperimentsI = ref(1);
+const pageSizeTreatmentsExperimentsI = ref(6);
 const paginatedDataTreatmentsExperimentsI = computed(() => {
   const start = (currentPageTreatmentsExperimentsI.value - 1) * pageSizeTreatmentsExperimentsI.value;
-  const end = start + pageSizeTreatmentsExperimentsI.value;
-  return tableDataTreatmentsExperimentsI.value.slice(start, end);
+  return tableDataTreatmentsExperimentsI.value.slice(start, start + pageSizeTreatmentsExperimentsI.value);
 });
-
-// Total de páginas
 const totalPagesTreatmentsExperimentsI = computed(() => Math.ceil(tableDataTreatmentsExperimentsI.value.length / pageSizeTreatmentsExperimentsI.value));
-
-const allSelectedTreatmentsExperimentsI = computed(() => tableDataTreatmentsExperimentsI.value.every((row) => row.selected));
-
-// Métodos para manejo de selección
+const allSelectedTreatmentsExperimentsI = computed(
+  () => tableDataTreatmentsExperimentsI.value.length > 0 && tableDataTreatmentsExperimentsI.value.every((row) => row.selected)
+);
 const toggleAllSelectionTreatmentsExperimentsI = () => {
   const newValue = !allSelectedTreatmentsExperimentsI.value;
   tableDataTreatmentsExperimentsI.value.forEach((row) => (row.selected = newValue));
 };
-const selectAllTreatmentsExperimentsI = () => {
-  tableDataTreatmentsExperimentsI.value.forEach((row) => (row.selected = true));
-};
-const deselectAllTreatmentsExperimentsI = () => {
-  tableDataTreatmentsExperimentsI.value.forEach((row) => (row.selected = false));
-};
+const selectAllTreatmentsExperimentsI = () => tableDataTreatmentsExperimentsI.value.forEach((row) => (row.selected = true));
+const deselectAllTreatmentsExperimentsI = () => tableDataTreatmentsExperimentsI.value.forEach((row) => (row.selected = false));
 const addSelectedTreatmentsExperimentsI = async () => {
   const selectedRows = tableDataTreatmentsExperimentsI.value.filter((row) => row.selected);
   if (selectedRows.length === 0) {
-    console.log("error", "No ha seleccionado tratamientos");
+    toast.error("No ha seleccionado tratamientos");
     return;
   }
-
-  // const arrayIds = [];
-  const arrayIdsTreatmentsExperimentsI = selectedRows.map((row) => ({
-    id_detalle: row.id_dsno_det,
-    id_crzmnto: row.trtmnto,
-    nro_plntlas: row.nmro_clnes
-  }));
 };
 
-const activeTab = ref("");
-const activeTabI = ref("");
-const tratamientosData = ref<any[]>([]);
-const subparcelasData = ref<any[]>([]);
-const testigosData = ref<any[]>([]);
-const testigosMovilesData = ref<any[]>([]);
-const tratamientosDataI = ref<any[]>([]);
-const subparcelasDataI = ref<any[]>([]);
-const testigosDataI = ref<any[]>([]);
-const testigosMovilesDataI = ref<any[]>([]);
-// const tratamientosData = paginatedDataTreatmentsExperimentsF;
+// Sub-pestañas
+const activeTab = ref("tratamientos");
+const activeTabI = ref("tratamientosI");
+const setActiveTab = (tab: string) => (activeTab.value = tab);
+const setActiveTabI = (tab: string) => (activeTabI.value = tab);
 
-// Función para cambiar la pestaña activa
-const setActiveTab = (tab: any) => {
-  activeTab.value = tab;
-};
-const setActiveTabI = (tab: any) => {
-  activeTabI.value = tab;
-};
-// Función para seleccionar todos los elementos
-const selectAlls = (tab: any) => {
-  const data = getData(tab);
-  data.forEach((row) => (row.selected = true));
-};
-// Función para deseleccionar todos los elementos
-const deselectAlls = (tab: any) => {
-  const data = getData(tab);
-  data.forEach((row) => (row.selected = false));
-};
-const selectAllsI = (tab: any) => {
-  const data = getDataI(tab);
-  data.forEach((row) => (row.selected = true));
-};
-// Función para deseleccionar todos los elementos
-const deselectAllsI = (tab: any) => {
-  const data = getDataI(tab);
-  data.forEach((row) => (row.selected = false));
-};
-// Función para añadir selecciones
-// Función para obtener los datos basados en la pestaña
-const getData = (tab: any) => {
-  switch (tab) {
-    case "tratamientos":
-      return tratamientosData.value;
-    case "subparcelas":
-      return subparcelasData.value;
-    case "testigos":
-      return testigosData.value;
-    case "testigosMoviles":
-      return testigosMovilesData.value;
-    default:
-      return [];
-  }
-};
-const getDataI = (tab: any) => {
-  switch (tab) {
-    case "tratamientosI":
-      return tratamientosDataI.value;
-    case "subparcelasI":
-      return subparcelasDataI.value;
-    case "testigosI":
-      return testigosDataI.value;
-    case "testigosMovilesI":
-      return testigosMovilesDataI.value;
-    default:
-      return [];
-  }
-};
-const allSelectedTestigosF = computed(() => tableDataTestigosF.value.every((row) => row.selected));
-const currentPageTestigosF = ref(1); // Página inicial
-const pageSizeTestigosF = ref(6); // Tamaño de página (filas por página)
-
-// Computed para obtener los datos paginados
-const paginatedDataTestigosF = computed(() => {
-  const start = (currentPageTestigosF.value - 1) * pageSizeTestigosF.value;
-  const end = start + pageSizeTestigosF.value;
-  return tableDataTestigosF.value.slice(start, end);
-});
-
-// Total de páginas
-const totalPagesTestigosF = computed(() => Math.ceil(tableDataTestigosF.value.length / pageSizeTestigosF.value));
-// Métodos para manejo de selección
+// Testigos F
+const allSelectedTestigosF = computed(() => tableDataTestigosF.value.length > 0 && tableDataTestigosF.value.every((row) => row.selected));
+const paginatedDataTestigosF = computed(() => tableDataTestigosF.value);
 const toggleAllSelectionTestigosF = () => {
-  const newValue = !allSelectedTestigosF.value;
-  tableDataTestigosF.value.forEach((row) => (row.selected = newValue));
-};
-const selectAllTestigosF = () => {
-  tableDataTestigosF.value.forEach((row) => (row.selected = true));
-};
-const deselectAllTestigosF = () => {
-  tableDataTestigosF.value.forEach((row) => (row.selected = false));
-};
-const addSelectedTestigosF = async () => {
-  const selectedRows = tableDataTestigosF.value.filter((row) => row.selected);
-  if (selectedRows.length === 0) {
-    console.log("error", "No ha seleccionado tratamientos");
-    return;
-  }
-
-  // const arrayIds = [];
-  const arrayIdsTestigosF = selectedRows.map((row) => ({
-    id_detalle: row.id_dsno_det
-  }));
-  // Realiza las acciones correspondientes con los seleccionados
-  // await removeDetalle(nIdDisenoI, arrayIds);
-  await tratamientosExperimentos(); // Refresca los datos
+  const nv = !allSelectedTestigosF.value;
+  tableDataTestigosF.value.forEach((r) => (r.selected = nv));
 };
 
-const allSelectedTestigosM = computed(() => tableDataTestigosM.value.every((row) => row.selected));
-const currentPageTestigosM = ref(1); // Página inicial
-const pageSizeTestigosM = ref(6); // Tamaño de página (filas por página)
-
-// Computed para obtener los datos paginados
-const paginatedDataTestigosM = computed(() => {
-  const start = (currentPageTestigosM.value - 1) * pageSizeTestigosM.value;
-  const end = start + pageSizeTestigosM.value;
-  return tableDataTestigosM.value.slice(start, end);
-});
-
-// Total de páginas
-const totalPagesTestigosM = computed(() => Math.ceil(tableDataTestigosM.value.length / pageSizeTestigosM.value));
-// Métodos para manejo de selección
+// Testigos M
+const allSelectedTestigosM = computed(() => tableDataTestigosM.value.length > 0 && tableDataTestigosM.value.every((row) => row.selected));
+const paginatedDataTestigosM = computed(() => tableDataTestigosM.value);
 const toggleAllSelectionTestigosM = () => {
-  const newValue = !allSelectedTestigosM.value;
-  tableDataTestigosM.value.forEach((row) => (row.selected = newValue));
-};
-const selectAllTestigosM = () => {
-  tableDataTestigosM.value.forEach((row) => (row.selected = true));
-};
-const deselectAllTestigosM = () => {
-  tableDataTestigosM.value.forEach((row) => (row.selected = false));
-};
-const addSelectedTestigosM = async () => {
-  const selectedRows = tableDataTestigosM.value.filter((row) => row.selected);
-  if (selectedRows.length === 0) {
-    console.log("error", "No ha seleccionado tratamientos");
-    return;
-  }
-
-  // const arrayIds = [];
-  const arrayIdsTestigosF = selectedRows.map((row) => ({
-    id_detalle: row.id_dsno_det
-  }));
-  // Realiza las acciones correspondientes con los seleccionados
-  // await removeDetalle(nIdDisenoI, arrayIds);
-  await tratamientosExperimentos(); // Refresca los datos
+  const nv = !allSelectedTestigosM.value;
+  tableDataTestigosM.value.forEach((r) => (r.selected = nv));
 };
 
-const allSelectedTestigosFI = computed(() => tableDataTestigosFI.value.every((row) => row.selected));
-const currentPageTestigosFI = ref(1); // Página inicial
-const pageSizeTestigosFI = ref(6); // Tamaño de página (filas por página)
-
-// Computed para obtener los datos paginados
-const paginatedDataTestigosFI = computed(() => {
-  const start = (currentPageTestigosFI.value - 1) * pageSizeTestigosFI.value;
-  const end = start + pageSizeTestigosFI.value;
-  return tableDataTestigosFI.value.slice(start, end);
-});
-
-// Total de páginas
-const totalPagesTestigosFI = computed(() => Math.ceil(tableDataTestigosFI.value.length / pageSizeTestigosFI.value));
-// Métodos para manejo de selección
-const toggleAllSelectionTestigosFI = () => {
-  const newValue = !allSelectedTestigosFI.value;
-  tableDataTestigosFI.value.forEach((row) => (row.selected = newValue));
-};
-const selectAllTestigosFI = () => {
-  tableDataTestigosFI.value.forEach((row) => (row.selected = true));
-};
-const deselectAllTestigosFI = () => {
-  tableDataTestigosFI.value.forEach((row) => (row.selected = false));
-};
-const addSelectedTestigosFI = async () => {
-  const selectedRows = tableDataTestigosFI.value.filter((row) => row.selected);
-  if (selectedRows.length === 0) {
-    console.log("error", "No ha seleccionado tratamientos");
-    return;
-  }
-
-  // const arrayIds = [];
-  const arrayIdsTestigosFI = selectedRows.map((row) => ({
-    id_detalle: row.id_dsno_det
-  }));
-  // Realiza las acciones correspondientes con los seleccionados
-  // await removeDetalle(nIdDisenoI, arrayIds);
-  await tratamientosExperimentos(); // Refresca los datos
-};
-const allSelectedTestigosMI = computed(() => tableDataTestigosMI.value.every((row) => row.selected));
-const currentPageTestigosMI = ref(1); // Página inicial
-const pageSizeTestigosMI = ref(6); // Tamaño de página (filas por página)
-
-// Computed para obtener los datos paginados
-const paginatedDataTestigosMI = computed(() => {
-  const start = (currentPageTestigosMI.value - 1) * pageSizeTestigosMI.value;
-  const end = start + pageSizeTestigosMI.value;
-  return tableDataTestigosMI.value.slice(start, end);
-});
-
-// Total de páginas
-const totalPagesTestigosMI = computed(() => Math.ceil(tableDataTestigosMI.value.length / pageSizeTestigosMI.value));
-// Métodos para manejo de selección
-const toggleAllSelectionTestigosMI = () => {
-  const newValue = !allSelectedTestigosMI.value;
-  tableDataTestigosMI.value.forEach((row) => (row.selected = newValue));
-};
-const selectAllTestigosMI = () => {
-  tableDataTestigosMI.value.forEach((row) => (row.selected = true));
-};
-const deselectAllTestigosMI = () => {
-  tableDataTestigosMI.value.forEach((row) => (row.selected = false));
-};
-const addSelectedTestigosMI = async () => {
-  const selectedRows = tableDataTestigosMI.value.filter((row) => row.selected);
-  if (selectedRows.length === 0) {
-    console.log("error", "No ha seleccionado tratamientos");
-    return;
-  }
-
-  // const arrayIds = [];
-  const arrayIdsTestigosMI = selectedRows.map((row) => ({
-    id_detalle: row.id_dsno_det
-  }));
-  // Realiza las acciones correspondientes con los seleccionados
-  // await removeDetalle(nIdDisenoI, arrayIds);
-  await tratamientosExperimentos(); // Refresca los datos
-};
-
-// Watch para filtrar los TratamientosTemporada cuando cambia el área seleccionada
-
+// Tratamientos Disponibles de Temporada
 const tratamientosDisponibles = async () => {
   if (model.nTemporada) {
-    if (model.cTipoEnsayo && model.cTipoEnsayo === "F") {
+    if (model.cTipoEnsayo === "F") {
       model.nIdDiseno = dataListIdDisenoF.value || null;
-    } else if (model.cTipoEnsayo && model.cTipoEnsayo == "I") {
+    } else if (model.cTipoEnsayo === "I") {
       model.nIdDiseno = dataListIdDisenoI.value || null;
     }
 
-    console.log(model.nIdDiseno);
     try {
-      // Llamada a la API para actualizar los experimentos con los parámetros seleccionados
       await treatmentsSeasonStore.getTreatmentsSeasonList(model.nTemporada, model.nMinimoPlantas, model.nTotalPlantas, model.nIdDiseno);
-      console.log("TratamientosTemporada:", treatmentsSeasonStore.treatmentsSeasonFilter);
 
-      // Muestra los datos en una tabla simple utilizando Vue
-      tableData.value = treatmentsSeasonStore.treatmentsSeasonFilter?.tratamientos.map((item: any) => ({
-        id: item.id_crzmnto,
-        pedigree: item.pdgree,
-        origen: item.orgen,
-        plantulasTotales: item.plntlas_ttles,
-        grupoMadre: item.grpo_crzmnto_mdre,
-        grupoPadre: item.grpo_crzmnto_pdre,
-        selected: false
-      }));
-      console.log("Datos formateados para la tabla:", tableData.value);
+      tableData.value =
+        treatmentsSeasonStore.treatmentsSeasonFilter?.tratamientos.map((item: any) => ({
+          id: item.id_crzmnto,
+          pedigree: item.pdgree,
+          origen: item.orgen,
+          plantulasTotales: item.plntlas_ttles,
+          grupoMadre: item.grpo_crzmnto_mdre,
+          grupoPadre: item.grpo_crzmnto_pdre,
+          selected: false
+        })) || [];
     } catch (error) {
       console.error("Error al obtener tratamientos:", error);
     }
-  } else {
-    console.log("Faltan parámetros para realizar la búsqueda.");
   }
 };
-const currentPage = ref(1); // Página inicial
-const pageSize = ref(6); // Tamaño de página (filas por página)
 
-// Computed para obtener los datos paginados
+const currentPage = ref(1);
+const pageSize = ref(6);
 const paginatedData = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return tableData.value.slice(start, end);
+  return tableData.value.slice(start, start + pageSize.value);
 });
-
-// Total de páginas
 const totalPages = computed(() => Math.ceil(tableData.value.length / pageSize.value));
-
-// Métodos para seleccionar/deseleccionar tratamientos
-// Computed para la selección global
-const allSelected = computed(() => tableData.value.every((row) => row.selected));
-
-// Métodos para manejo de selección
+const allSelected = computed(() => tableData.value.length > 0 && tableData.value.every((row) => row.selected));
 const toggleAllSelection = () => {
   const newValue = !allSelected.value;
   tableData.value.forEach((row) => (row.selected = newValue));
 };
-const selectAll = () => {
-  tableData.value.forEach((row) => (row.selected = true));
-};
-const deselectAll = () => {
-  tableData.value.forEach((row) => (row.selected = false));
-};
+const selectAll = () => tableData.value.forEach((row) => (row.selected = true));
+const deselectAll = () => tableData.value.forEach((row) => (row.selected = false));
+
 const addSelected = async () => {
   const selectedRows = tableData.value.filter((row) => row.selected);
   if (selectedRows.length === 0) {
-    console.log("error", "No ha seleccionado tratamientos");
+    toast.error("No ha seleccionado tratamientos");
     return;
   }
 
@@ -1775,24 +1526,18 @@ const addSelected = async () => {
     plntlas_ttles: row.plantulasTotales
   }));
 
-  console.log("IDs seleccionados:", arrayIds);
-
-  // Realiza las acciones correspondientes con los seleccionados
   await addTratamientosTemporada(arrayIds, "No");
-  await tratamientosDisponibles(); // Refresca los datos
+  await tratamientosDisponibles();
 };
 
 const addTratamientosTemporada = async (arrayIds: Array<{ id_crzmnto: string; plntlas_ttles: number }>, testigo: string) => {
   try {
-    // Valida que los campos requeridos estén presentes
     const { nIdDiseno, nTipoParcela, nTotalPlantas } = model;
-
     if (!nIdDiseno || !nTipoParcela || !nTotalPlantas || arrayIds.length === 0 || !testigo) {
       toast.error("Todos los campos son requeridos");
       return;
     }
 
-    // Crea el payload para la API
     const data: DiseñosDetalles = {
       nIdDiseno: nIdDiseno,
       nTipoParcela: nTipoParcela,
@@ -1801,22 +1546,9 @@ const addTratamientosTemporada = async (arrayIds: Array<{ id_crzmnto: string; pl
       arrayIds: arrayIds
     };
 
-    console.log("Payload a enviar:", data);
-
-    // Llama al store para guardar
     const result = await addDesingsDetailsStore.SaveaddDesingsDetails(data);
-
     if (result) {
       toast.success("Tratamiento guardado con éxito");
-      model.tipoTabla = "temp";
-
-      if (model.tipoTabla === "disp") {
-        model.listRegistros = [];
-        model.selectedRegistro = [];
-        model.nPlantulasDisponibles = 0;
-        model.nPlantulasTratamiento = "";
-        toast.success("Registro guardado con éxito");
-      }
     }
   } catch (error) {
     console.error("Error al guardar tratamiento:", error);
@@ -1833,9 +1565,17 @@ const limpiarCampos = () => {
 </script>
 
 <style scoped>
-@media (max-width: 768px) {
-  .w-full.md\:w-auto {
-    width: 100% !important;
-  }
+.scrollbar-custom::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: #10b981;
+  border-radius: 10px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background-color: #f8fafc;
 }
 </style>

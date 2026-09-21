@@ -23,6 +23,7 @@ import {
   ROUTE_CROSSING_SUGGESTION,
   ROUTE_CROSSING_SUGGESTION_PER_PROJECT,
   ROUTE_EXPERIMENTS,
+  ROUTE_LIBRO_CAMPO,
   ROUTE_ENSAYOS_INDEX,
   ROUTE_ENSAYOS_DASHBOARD,
   ROUTE_ENSAYOS_CATALOGOS,
@@ -191,6 +192,12 @@ const routes = [
         path: ROUTE_EXPERIMENTS,
         name: "experiments.show",
         component: () => import("@/views/mejoramiento/experimentos/ParametersExperimentsView.vue"),
+        beforeEnter: authGuard
+      },
+      {
+        path: ROUTE_LIBRO_CAMPO,
+        name: "libro_campo.show",
+        component: () => import("@/views/mejoramiento/libro-campo/LibroCampoView.vue"),
         beforeEnter: authGuard
       },
       {
