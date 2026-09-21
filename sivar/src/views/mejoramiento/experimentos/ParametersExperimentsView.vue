@@ -1764,7 +1764,7 @@ const actualizarDiseno = async (tipo: 'F' | 'I') => {
     const cDescripcion = isFamilias ? model.cDescripcionF : model.cDescripcionI;
 
     if (!nIdDiseno) {
-      toast.error(`No existe diseño para ${isFamilias ? 'Familias' : 'Individual'}. Verifique que el experimento esté creado.`);
+      toast.error(`No existe diseño para ${isFamilias ? 'Familias' : 'Individual'}. Verifique que el experimento esté creado en el Paso 1.`);
       return;
     }
 
@@ -1786,14 +1786,41 @@ const actualizarDiseno = async (tipo: 'F' | 'I') => {
     const response: any = await api.post(`${urls.API_URL}grabarDiseno`, payload, true);
     if (response && (response.success || response.actualizado)) {
       toast.success(`Diseño ${isFamilias ? 'Familias' : 'Individual'} actualizado correctamente.`);
+      await buscarExperimento();
     } else {
       toast.error(response?.message || "Error al actualizar el diseño.");
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error al actualizar diseño:", error);
-    toast.error("Ocurrió un error al actualizar el diseño.");
+    const msg = error?.response?.data?.message || error?.message || "Ocurrió un error al actualizar el diseño.";
+    toast.error(msg);
   }
 };
+
+watch(
+  () => experimentsStore.experimentsFilter,
+  (filter) => {
+    if (filter && filter.experimento && filter.experimento.length > 0) {
+      const expF = filter.experimento.find((e: any) => e.tpo_ensyo === 'F') || filter.experimento[0];
+      const expI = filter.experimento.find((e: any) => e.tpo_ensyo === 'I') || filter.experimento[1];
+
+      if (expF) {
+        model.nDisenoExpF = expF.id_dsno_exprmntal ? String(expF.id_dsno_exprmntal) : model.nDisenoExpF;
+        model.nLocalidadesF = expF.lclddes ?? model.nLocalidadesF ?? 1;
+        model.nRepeticionesF = expF.rptcnes ?? model.nRepeticionesF ?? 1;
+        model.cDescripcionF = expF.dscrpcion ?? model.cDescripcionF ?? '';
+      }
+
+      if (expI) {
+        model.nDisenoExpI = expI.id_dsno_exprmntal ? String(expI.id_dsno_exprmntal) : model.nDisenoExpI;
+        model.nLocalidadesI = expI.lclddes ?? model.nLocalidadesI ?? 1;
+        model.nRepeticionesI = expI.rptcnes ?? model.nRepeticionesI ?? 1;
+        model.cDescripcionI = expI.dscrpcion ?? model.cDescripcionI ?? '';
+      }
+    }
+  },
+  { immediate: true, deep: true }
+);
 </script>
 
 <style scoped>
