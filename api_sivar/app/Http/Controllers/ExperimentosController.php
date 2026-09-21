@@ -893,10 +893,12 @@ class ExperimentosController extends Controller
             // Inicializar la variable para los registros
             $registros = [];
 
+            $isSearchAll = (empty($search) || trim($search) === '' || strtolower(trim($search)) === 'all' || strtolower(trim($search)) === 'null');
+
             // Procesar los registros según el tipo
             switch ($tipo) {
                 case 'tratamiento':
-                    $registros = Cruzamiento::select(
+                    $query = Cruzamiento::select(
                         'no_crzmnto', // Familia
                         'id_crzmnto as tratamiento',
                         DB::raw('concat_ws(\' - \', CAST(no_crzmnto AS text), pdgree, orgen) as name'), // name
@@ -904,34 +906,48 @@ class ExperimentosController extends Controller
                         'orgen', // Origen
                         DB::raw('(COALESCE(plntlas_ttles, 0) - COALESCE(plntlas_dscrtdas,0)) AS nmro_clnes') // No. Plantas
                     )
-                        ->where(DB::raw('COALESCE(plntlas_ttles, 0)'), '>', '0')
-                        ->whereRaw('upper(concat_ws(\' - \', CAST(no_crzmnto AS text), pdgree, orgen)) like ?', ['%' . strtoupper($search) . '%'])
-                        ->whereNotIn(DB::raw('CAST(id_crzmnto AS varchar)'), function ($q) use ($id_dsno_enc) {
+                        ->where(DB::raw('COALESCE(plntlas_ttles, 0)'), '>', '0');
+
+                    if (!$isSearchAll) {
+                        $query->whereRaw('upper(concat_ws(\' - \', CAST(no_crzmnto AS text), pdgree, orgen)) like ?', ['%' . strtoupper(trim($search)) . '%']);
+                    }
+
+                    if ($id_dsno_enc && (int)$id_dsno_enc > 0) {
+                        $query->whereNotIn(DB::raw('CAST(id_crzmnto AS varchar)'), function ($q) use ($id_dsno_enc) {
                             $q->select('trtmnto')
                                 ->from('diseno_det')
                                 ->where('id_dsno_enc', $id_dsno_enc);
-                        })
-                        ->limit(100)
+                        });
+                    }
+
+                    $registros = $query->limit(100)
                         ->orderBy('no_crzmnto')
                         ->get();
                     break;
 
                 case 'variedad':
-                    $registros = DB::connection('sivar')->table('maestro_V_VIC_BG')
+                    $query = DB::connection('sivar')->table('maestro_V_VIC_BG')
                         ->select(
                             'maestro_V_VIC_BG.nm_vrdad  as tratamiento',
                             DB::raw('concat_ws(\' - \', nm_vrdad, pdgree, procedencia.nm_prcdncia) as name') // name
                         )
                         ->leftJoin('procedencia', function ($join) {
                             $join->on('maestro_V_VIC_BG.id_prcdncia', '=', 'procedencia.id_prcdncia');
-                        })
-                        ->whereRaw('upper(nm_vrdad) like ?', ['%' . strtoupper($search) . '%'])
-                        ->whereNotIn('maestro_V_VIC_BG.nm_vrdad', function ($q) use ($id_dsno_enc, $where) {
+                        });
+
+                    if (!$isSearchAll) {
+                        $query->whereRaw('upper(concat_ws(\' - \', nm_vrdad, COALESCE(pdgree, \'\'), COALESCE(procedencia.nm_prcdncia, \'\'))) like ?', ['%' . strtoupper(trim($search)) . '%']);
+                    }
+
+                    if ($id_dsno_enc && (int)$id_dsno_enc > 0) {
+                        $query->whereNotIn('maestro_V_VIC_BG.nm_vrdad', function ($q) use ($id_dsno_enc, $where) {
                             $q->select('trtmnto')
                                 ->from('diseno_det')
                                 ->where([['id_dsno_enc', $id_dsno_enc], ['tstgo', $where]]);
-                        })
-                        ->limit(100)
+                        });
+                    }
+
+                    $registros = $query->limit(100)
                         ->orderBy('maestro_V_VIC_BG.nm_vrdad')
                         ->get();
                     break;

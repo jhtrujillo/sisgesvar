@@ -1717,7 +1717,7 @@ const fetchVarietiesTestigos = async (search: string) => {
   try {
     const targetDisenoId = model.cTipoEnsayo === "F" ? dataListIdDisenoF.value : dataListIdDisenoI.value;
     const tipoReg = currentTestigoType.value === 'Si' ? 'tf' : 'tm';
-    const searchQuery = search.trim() !== '' ? search.trim() : ' ';
+    const searchQuery = search.trim() !== '' ? search.trim() : 'ALL';
     const res = await fetch(`/api/getRegistros/variedad/${tipoReg}/${encodeURIComponent(searchQuery)}/${targetDisenoId || 0}`);
     if (res.ok) {
       const json = await res.json();
