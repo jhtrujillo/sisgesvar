@@ -261,6 +261,42 @@ class ExperimentosController extends Controller
         }
     }
 
+    public function listarExperimentosCreados()
+    {
+        try {
+            $experimentos = DisenoEncabezado::with('proyecto.area')
+                ->select('id_pr', 'srie', 'estdo')
+                ->distinct()
+                ->orderBy('srie', 'desc')
+                ->get()
+                ->map(function ($row) {
+                    $nmPrycto = $row->proyecto->nm_prycto ?? 'Sin proyecto';
+                    $idArea = $row->proyecto->id_area ?? null;
+                    $idAreaTrbjo = $row->proyecto->id_area_trbjo ?? null;
+                    return [
+                        'id_pr' => $row->id_pr,
+                        'srie' => $row->srie,
+                        'estdo' => $row->estdo,
+                        'id_area' => $idArea,
+                        'id_area_trbjo' => $idAreaTrbjo,
+                        'nm_prycto' => $nmPrycto,
+                        'text' => $row->srie . ' | ' . $row->estdo . ' | ' . $nmPrycto
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'experimentos_count' => count($experimentos),
+                'experimentos' => $experimentos,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener el listado de experimentos creados.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
     public function getCriteriosSeleccion()
     {

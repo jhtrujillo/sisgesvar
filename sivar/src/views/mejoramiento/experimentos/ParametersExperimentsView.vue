@@ -99,6 +99,25 @@
         <span class="text-xs text-slate-400">Seleccione los criterios de búsqueda</span>
       </div>
 
+      <!-- Buscador Rápido de Experimentos Creados -->
+      <div class="mb-6 p-4 bg-emerald-50/60 border border-emerald-100/80 rounded-2xl shadow-2xs">
+        <label class="block text-xs font-extrabold text-emerald-900 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          Seleccionar Experimento Ya Creado (Búsqueda Rápida)
+        </label>
+        <p class="text-[11px] text-slate-600 mb-2">Busque por Año/Serie, Estado o Proyecto para cargar el experimento con 1 solo clic.</p>
+        <ComboBoxMultiple
+          :data-list="listExperimentosCreados"
+          column-value="text"
+          column-to-show="text"
+          placeholder="Escriba o seleccione un experimento (ej. 2025 | E1 en prueba | Cruzamientos)..."
+          v-model:selectedData="selectedExperimentoCreado"
+          class="w-full bg-white rounded-xl"
+        />
+      </div>
+
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <!-- 1. Programa / Servicio -->
         <div>
@@ -1345,10 +1364,47 @@ const closeModal = () => {
   isModalOpen.value = false;
 };
 
+// Experimentos Creados (Búsqueda Rápida)
+const listExperimentosCreados = ref<Array<any>>([]);
+const selectedExperimentoCreado = ref<any>(null);
+
+const cargarListadoExperimentosCreados = async () => {
+  try {
+    const res: any = await api.get(`${urls.API_URL}listarExperimentosCreados`, {}, true);
+    const data = res?.data || res;
+    if (data && data.experimentos) {
+      listExperimentosCreados.value = data.experimentos;
+    }
+  } catch (err) {
+    console.error("Error al cargar experimentos creados:", err);
+  }
+};
+
+watch(selectedExperimentoCreado, async (newVal) => {
+  if (!newVal) return;
+  const match = listExperimentosCreados.value.find((e) => e.text === newVal || e.text === (newVal as any)?.text);
+  if (match) {
+    model.nPrograma = match.id_area_trbjo;
+    if (match.id_area_trbjo) {
+      await areasProgramStore.getAreasProgramList(match.id_area_trbjo);
+    }
+    model.nArea = match.id_area;
+    if (match.id_area) {
+      await projectsAreaStore.getProjectsAreaList(match.id_area);
+    }
+    model.nProyecto = match.id_pr;
+    model.nSerie = match.srie;
+    model.nEstado = match.estdo;
+
+    await buscarExperimento();
+  }
+});
+
 // Carga Inicial
 onMounted(async () => {
   try {
     await searchParametersStore.getSearchParametersResult();
+    await cargarListadoExperimentosCreados();
   } catch (error) {
     console.error("Error al cargar datos iniciales:", error);
   }

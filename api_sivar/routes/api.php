@@ -86,6 +86,7 @@ Route::group([
     Route::get('getAreasProgram/{id_area}', [\App\Http\Controllers\ExperimentosController::class, 'getAreasProgram']);
     Route::get('getProjectsArea/{id_area_trbjo}', [\App\Http\Controllers\ExperimentosController::class, 'getProjectsArea']);
     Route::get('getExperiment/{id_pr}/{srie}/{estdo}', [\App\Http\Controllers\ExperimentosController::class, 'getExperiment']);  
+    Route::get('listarExperimentosCreados', [\App\Http\Controllers\ExperimentosController::class, 'listarExperimentosCreados']);  
     Route::get('getCriteriosSeleccion', [\App\Http\Controllers\ExperimentosController::class, 'getCriteriosSeleccion']);   
     Route::post('grabarEncabezado', [\App\Http\Controllers\ExperimentosController::class, 'grabarEncabezado']);  
     Route::get('getTreatmentsSeason/{ano}/{id_dsno_enc}/{min_plantulas}/{plantulas_ttles}', [\App\Http\Controllers\ExperimentosController::class, 'getTreatmentsSeason']);
