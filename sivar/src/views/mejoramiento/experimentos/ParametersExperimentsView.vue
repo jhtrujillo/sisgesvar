@@ -1541,8 +1541,21 @@ const addSelected = async () => {
 const addTratamientosTemporada = async (arrayIds: Array<{ id_crzmnto: string; plntlas_ttles: number }>, testigo: string) => {
   try {
     const { nIdDiseno, nTipoParcela, nTotalPlantas } = model;
-    if (!nIdDiseno || !nTipoParcela || !nTotalPlantas || arrayIds.length === 0 || !testigo) {
-      toast.error("Todos los campos son requeridos");
+    
+    if (arrayIds.length === 0) {
+      toast.error("Debe marcar la casilla de al menos un tratamiento.");
+      return;
+    }
+    if (!nTipoParcela) {
+      toast.error("Por favor seleccione el 'Tipo de Parcela'.");
+      return;
+    }
+    if (!nTotalPlantas || Number(nTotalPlantas) <= 0) {
+      toast.error("Por favor ingrese un valor mayor a 0 en 'Total plantas siembra'.");
+      return;
+    }
+    if (!nIdDiseno) {
+      toast.error("Debe cargar primero el experimento usando el botón 'Buscar Experimento'.");
       return;
     }
 
