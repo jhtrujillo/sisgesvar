@@ -1097,6 +1097,7 @@
 import { reactive, onMounted, watch, computed, ref } from "vue";
 import BackButton from "@/components/BackButton.vue";
 import ComboBoxMultiple from "@/components/ComboBoxMultiple.vue";
+import urls from "@/services/urls";
 import { useSearchParametersStore } from "@/stores/parametersexperiments";
 import { useAreasProgramStore } from "@/stores/areasprogram";
 import { useProjectsAreaStore } from "@/stores/projectsarea";
@@ -1718,7 +1719,7 @@ const fetchVarietiesTestigos = async (search: string) => {
     const targetDisenoId = model.cTipoEnsayo === "F" ? dataListIdDisenoF.value : dataListIdDisenoI.value;
     const tipoReg = currentTestigoType.value === 'Si' ? 'tf' : 'tm';
     const searchQuery = search.trim() !== '' ? search.trim() : 'ALL';
-    const res = await fetch(`/api/getRegistros/variedad/${tipoReg}/${encodeURIComponent(searchQuery)}/${targetDisenoId || 0}`);
+    const res = await fetch(`${urls.API_URL}getRegistros/variedad/${tipoReg}/${encodeURIComponent(searchQuery)}/${targetDisenoId || 0}`);
     if (res.ok) {
       const json = await res.json();
       const rawList = json.registros || [];
