@@ -485,6 +485,17 @@
                 Añadir Selección
               </button>
             </div>
+            <div class="flex items-center gap-2" v-else-if="activeTab === 'testigos' || activeTab === 'testigosMoviles'">
+              <button
+                @click="openModalTestigos(activeTab === 'testigos' ? 'Si' : 'Movil')"
+                class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg shadow-2xs transition-all cursor-pointer inline-flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                + Agregar Testigo
+              </button>
+            </div>
           </div>
 
           <!-- Tabla Tratamientos Familias -->
@@ -1003,6 +1014,79 @@
               </button>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: AGREGAR VARIADEST TESTIGO -->
+    <div v-if="isModalTestigosOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-fade-in">
+      <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden border border-slate-100">
+        <!-- Modal Header -->
+        <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+            <span class="p-1 bg-purple-100 text-purple-700 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </span>
+            Agregar Variedad Testigo ({{ currentTestigoType === 'Si' ? 'Fijo' : 'Móvil' }})
+          </h3>
+          <button @click="isModalTestigosOpen = false" class="text-slate-400 hover:text-slate-600 rounded-lg p-1 hover:bg-slate-200/60 transition-all cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal Search Bar & Toolbar -->
+        <div class="p-6 overflow-y-auto space-y-4">
+          <div class="relative">
+            <input
+              type="text"
+              v-model="searchTestigosText"
+              @input="onSearchTestigosInput"
+              placeholder="Buscar variedad testigo (ej. CC 85-92, CC 93-4418)..."
+              class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-purple-100 focus:border-purple-600 bg-white"
+            />
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+
+          <!-- Table of Varieties -->
+          <div class="overflow-x-auto border border-slate-100 rounded-xl max-h-[350px]">
+            <table class="min-w-full divide-y divide-slate-100">
+              <thead class="bg-slate-50 sticky top-0">
+                <tr>
+                  <th class="px-3 py-2 text-center text-[11px] font-bold uppercase text-slate-600 w-10">#</th>
+                  <th class="px-4 py-2 text-left text-[11px] font-bold uppercase text-slate-600">Variedad</th>
+                  <th class="px-4 py-2 text-left text-[11px] font-bold uppercase text-slate-600">Pedigree / Origen</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-50 bg-white">
+                <tr v-for="row in listVarietiesTestigos" :key="row.tratamiento" class="hover:bg-slate-50/60 transition-all cursor-pointer" @click="row.selected = !row.selected">
+                  <td class="px-3 py-2 text-center">
+                    <input type="checkbox" v-model="row.selected" @click.stop class="rounded border-slate-300 text-purple-600 focus:ring-purple-400" />
+                  </td>
+                  <td class="px-4 py-2 text-xs font-bold text-slate-800">{{ row.tratamiento }}</td>
+                  <td class="px-4 py-2 text-xs text-slate-600 font-mono">{{ row.name }}</td>
+                </tr>
+                <tr v-if="listVarietiesTestigos.length === 0">
+                  <td colspan="3" class="px-4 py-8 text-center text-slate-400 text-xs">No se encontraron variedades testigo.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
+          <button @click="isModalTestigosOpen = false" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200/60 rounded-xl transition-all cursor-pointer">
+            Cancelar
+          </button>
+          <button @click="addSelectedTestigos" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer">
+            Añadir Testigo(s)
+          </button>
         </div>
       </div>
     </div>
@@ -1610,6 +1694,63 @@ const limpiarCampos = () => {
   (["nPrograma", "nArea", "nProyecto", "nSerie", "nEstado"] as Array<keyof typeof model>).forEach((key) => {
     model[key] = null;
   });
+};
+
+// Modal Testigos (Variedades Testigo)
+const isModalTestigosOpen = ref(false);
+const currentTestigoType = ref<'Si' | 'Movil'>('Si');
+const searchTestigosText = ref('');
+const listVarietiesTestigos = ref<Array<{ tratamiento: string; name: string; selected: boolean }>>([]);
+
+const openModalTestigos = async (tipo: 'Si' | 'Movil') => {
+  currentTestigoType.value = tipo;
+  isModalTestigosOpen.value = true;
+  searchTestigosText.value = '';
+  await fetchVarietiesTestigos('');
+};
+
+const onSearchTestigosInput = async () => {
+  await fetchVarietiesTestigos(searchTestigosText.value);
+};
+
+const fetchVarietiesTestigos = async (search: string) => {
+  try {
+    const targetDisenoId = model.cTipoEnsayo === "F" ? dataListIdDisenoF.value : dataListIdDisenoI.value;
+    const tipoReg = currentTestigoType.value === 'Si' ? 'tf' : 'tm';
+    const searchQuery = search.trim() !== '' ? search.trim() : ' ';
+    const res = await fetch(`/api/getRegistros/variedad/${tipoReg}/${encodeURIComponent(searchQuery)}/${targetDisenoId || 0}`);
+    if (res.ok) {
+      const json = await res.json();
+      const rawList = json.registros || [];
+      listVarietiesTestigos.value = rawList.map((item: any) => ({
+        tratamiento: item.tratamiento || item.nm_vrdad || '',
+        name: item.name || item.pdgree || 'VARIEDAD TESTIGO',
+        selected: false
+      }));
+    } else {
+      listVarietiesTestigos.value = [];
+    }
+  } catch (err) {
+    console.error("Error al obtener variedades testigos:", err);
+    listVarietiesTestigos.value = [];
+  }
+};
+
+const addSelectedTestigos = async () => {
+  const selected = listVarietiesTestigos.value.filter((r) => r.selected);
+  if (selected.length === 0) {
+    toast.error("Debe seleccionar al menos una variedad testigo");
+    return;
+  }
+
+  const arrayIds = selected.map((row) => ({
+    id_crzmnto: row.tratamiento,
+    plntlas_ttles: Number(model.nTotalPlantas) || 0
+  }));
+
+  await addTratamientosTemporada(arrayIds, currentTestigoType.value);
+  isModalTestigosOpen.value = false;
+  await refreshTreatmentsTables();
 };
 </script>
 
