@@ -1796,12 +1796,13 @@ const actualizarDiseno = async (tipo: 'F' | 'I') => {
       cDescripcion: cDescripcion || ''
     };
 
-    const response: any = await api.post(`${urls.API_URL}grabarDiseno`, payload, true);
-    if (response && (response.success || response.actualizado)) {
-      toast.success(`Diseño ${isFamilias ? 'Familias' : 'Individual'} actualizado correctamente.`);
+    const res: any = await api.post(`${urls.API_URL}grabarDiseno`, payload, true);
+    const data = res?.data || res;
+    if (data && (data.success || data.actualizado || res?.status === 200)) {
+      toast.success(data?.message || `Diseño ${isFamilias ? 'Familias' : 'Individual'} actualizado correctamente.`);
       await buscarExperimento();
     } else {
-      toast.error(response?.message || "Error al actualizar el diseño.");
+      toast.error(data?.message || "Error al actualizar el diseño.");
     }
   } catch (error: any) {
     console.error("Error al actualizar diseño:", error);
