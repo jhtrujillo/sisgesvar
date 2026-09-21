@@ -1399,6 +1399,11 @@ const refreshTreatmentsTables = async () => {
       orgen: item.orgen,
       selected: false
     }));
+
+    model.nTratamientoF = tableDataTreatmentsExperimentsF.value.length;
+    model.nTestigosF = tableDataTestigosF.value.length + tableDataTestigosM.value.length;
+    model.nTratamientoI = tableDataTreatmentsExperimentsI.value.length;
+    model.nTestigosI = tableDataTestigosFI.value.length + tableDataTestigosMI.value.length;
   }
 };
 
