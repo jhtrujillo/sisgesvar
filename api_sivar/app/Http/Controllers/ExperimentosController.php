@@ -78,10 +78,18 @@ class ExperimentosController extends Controller
 
             // Obtener temporadas de cruzamiento
             $temporadasCruzamiento = DB::connection('sivar')->table('cruzamientos')
-                ->select('ano AS id', 'ano AS text')
+                ->leftJoin('floracion', 'cruzamientos.id_flrcion_mdre', '=', 'floracion.id_flrcion')
+                ->select(
+                    DB::raw("COALESCE(CAST(cruzamientos.ano AS varchar), EXTRACT(YEAR FROM cruzamientos.fcha_crzmnto)::varchar, EXTRACT(YEAR FROM floracion.fcha)::varchar) AS id"),
+                    DB::raw("COALESCE(CAST(cruzamientos.ano AS varchar), EXTRACT(YEAR FROM cruzamientos.fcha_crzmnto)::varchar, EXTRACT(YEAR FROM floracion.fcha)::varchar) AS text")
+                )
                 ->distinct()
-                ->whereNotNull('ano')
-                ->orderBy('ano', 'desc')
+                ->where(function($q) {
+                    $q->whereNotNull('cruzamientos.ano')
+                      ->orWhereNotNull('cruzamientos.fcha_crzmnto')
+                      ->orWhereNotNull('floracion.fcha');
+                })
+                ->orderBy(DB::raw("COALESCE(CAST(cruzamientos.ano AS varchar), EXTRACT(YEAR FROM cruzamientos.fcha_crzmnto)::varchar, EXTRACT(YEAR FROM floracion.fcha)::varchar)"), 'desc')
                 ->get();
 
             // Obtener diseños experimentales
@@ -383,29 +391,34 @@ class ExperimentosController extends Controller
 
             // Realizar la consulta a la base de datos
             $tratamientosDisponibles = DB::connection('sivar')->table('cruzamientos')
+                ->leftJoin('floracion', 'cruzamientos.id_flrcion_mdre', '=', 'floracion.id_flrcion')
                 ->select(
-                    'id_crzmnto',
-                    'no_crzmnto',
-                    'pdgree',
-                    'orgen',
-                    DB::raw('(COALESCE(plntlas_ttles, 0) - COALESCE(plntlas_dscrtdas, 0)) AS plntlas_ttles'),
-                    'grpo_crzmnto',
-                    'grpo_crzmnto_mdre',
-                    'grpo_crzmnto_pdre'
+                    'cruzamientos.id_crzmnto',
+                    'cruzamientos.no_crzmnto',
+                    'cruzamientos.pdgree',
+                    'cruzamientos.orgen',
+                    DB::raw('(COALESCE(cruzamientos.plntlas_ttles, 0) - COALESCE(cruzamientos.plntlas_dscrtdas, 0)) AS plntlas_ttles'),
+                    'cruzamientos.grpo_crzmnto',
+                    'cruzamientos.grpo_crzmnto_mdre',
+                    'cruzamientos.grpo_crzmnto_pdre'
                 )
-                ->where('ano', $ano)
-                ->where(DB::raw('(COALESCE(plntlas_ttles, 0) - COALESCE(plntlas_dscrtdas, 0))'), '>', 0)
-                ->where(function ($query) use ($min_plantulas, $plantulas_ttles) {
-                    $query->where(DB::raw('(COALESCE(plntlas_ttles, 0) - COALESCE(plntlas_dscrtdas, 0))'), '>=', $min_plantulas)
-                        ->where(DB::raw('(COALESCE(plntlas_ttles, 0) - COALESCE(plntlas_dscrtdas, 0))'), '>=', $plantulas_ttles);
+                ->where(function ($query) use ($ano) {
+                    $query->where('cruzamientos.ano', $ano)
+                        ->orWhere(DB::raw("EXTRACT(YEAR FROM cruzamientos.fcha_crzmnto)::varchar"), (string)$ano)
+                        ->orWhere(DB::raw("EXTRACT(YEAR FROM floracion.fcha)::varchar"), (string)$ano);
                 })
-                ->whereNotIn(DB::raw('CAST(id_crzmnto AS varchar)'), function ($subQuery) use ($id_dsno_enc) {
+                ->where(DB::raw('(COALESCE(cruzamientos.plntlas_ttles, 0) - COALESCE(cruzamientos.plntlas_dscrtdas, 0))'), '>', 0)
+                ->where(function ($query) use ($min_plantulas, $plantulas_ttles) {
+                    $query->where(DB::raw('(COALESCE(cruzamientos.plntlas_ttles, 0) - COALESCE(cruzamientos.plntlas_dscrtdas, 0))'), '>=', $min_plantulas)
+                        ->where(DB::raw('(COALESCE(cruzamientos.plntlas_ttles, 0) - COALESCE(cruzamientos.plntlas_dscrtdas, 0))'), '>=', $plantulas_ttles);
+                })
+                ->whereNotIn(DB::raw('CAST(cruzamientos.id_crzmnto AS varchar)'), function ($subQuery) use ($id_dsno_enc) {
                     $subQuery->select('trtmnto')
                         ->from('diseno_det')
                         ->where('id_dsno_enc', $id_dsno_enc);
                 })
                 ->distinct()
-                ->orderBy('pdgree')
+                ->orderBy('cruzamientos.pdgree')
                 ->get();
 
             // Preparar respuesta
