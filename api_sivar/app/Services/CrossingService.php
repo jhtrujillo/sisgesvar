@@ -944,19 +944,36 @@ class CrossingService
 
     public function crossingList($perPage, $search, $filtersJson)
     {
-        $query = DB::connection('sivar')->table('cruzamientos');
+        $query = DB::connection('sivar')->table('cruzamientos')
+            ->leftJoin('floracion', 'cruzamientos.id_flrcion_mdre', '=', 'floracion.id_flrcion')
+            ->select(
+                'cruzamientos.*',
+                DB::raw("COALESCE(
+                    cruzamientos.ubccion_nvra, 
+                    cruzamientos.id_actual_nvra, 
+                    CASE 
+                        WHEN floracion.vivero IS NOT NULL AND floracion.prcla IS NOT NULL 
+                        THEN CONCAT(floracion.vivero, ' - P', floracion.prcla)
+                        WHEN floracion.prcla IS NOT NULL 
+                        THEN CONCAT('Plot ', floracion.prcla)
+                        ELSE NULL 
+                    END
+                ) AS vivero_plot")
+            );
 
         // Búsqueda Global
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
-                $q->where('vrdad_mdre', 'ilike', '%' . $search . '%')
-                  ->orWhere('vrdad_pdre1', 'ilike', '%' . $search . '%')
-                  ->orWhere('vrdad_pdre2', 'ilike', '%' . $search . '%')
-                  ->orWhere('vrdad_pdre3', 'ilike', '%' . $search . '%')
-                  ->orWhere('vrdad_pdre4', 'ilike', '%' . $search . '%')
-                  ->orWhere('vrdad_pdre5', 'ilike', '%' . $search . '%')
-                  ->orWhere('pdgree', 'ilike', '%' . $search . '%')
-                  ->orWhere('id_crzmnto', 'like', '%' . $search . '%');
+                $q->where('cruzamientos.vrdad_mdre', 'ilike', '%' . $search . '%')
+                  ->orWhere('cruzamientos.vrdad_pdre1', 'ilike', '%' . $search . '%')
+                  ->orWhere('cruzamientos.vrdad_pdre2', 'ilike', '%' . $search . '%')
+                  ->orWhere('cruzamientos.vrdad_pdre3', 'ilike', '%' . $search . '%')
+                  ->orWhere('cruzamientos.vrdad_pdre4', 'ilike', '%' . $search . '%')
+                  ->orWhere('cruzamientos.vrdad_pdre5', 'ilike', '%' . $search . '%')
+                  ->orWhere('cruzamientos.pdgree', 'ilike', '%' . $search . '%')
+                  ->orWhere('cruzamientos.id_crzmnto', 'like', '%' . $search . '%')
+                  ->orWhere('floracion.vivero', 'ilike', '%' . $search . '%')
+                  ->orWhere('floracion.prcla', 'ilike', '%' . $search . '%');
             });
         }
 
@@ -968,23 +985,30 @@ class CrossingService
                     if (!empty($val)) {
                         if ($col === 'padres') {
                             $query->where(function ($q) use ($val) {
-                                $q->where('vrdad_pdre1', 'ilike', '%' . $val . '%')
-                                  ->orWhere('vrdad_pdre2', 'ilike', '%' . $val . '%')
-                                  ->orWhere('vrdad_pdre3', 'ilike', '%' . $val . '%')
-                                  ->orWhere('vrdad_pdre4', 'ilike', '%' . $val . '%')
-                                  ->orWhere('vrdad_pdre5', 'ilike', '%' . $val . '%');
+                                $q->where('cruzamientos.vrdad_pdre1', 'ilike', '%' . $val . '%')
+                                  ->orWhere('cruzamientos.vrdad_pdre2', 'ilike', '%' . $val . '%')
+                                  ->orWhere('cruzamientos.vrdad_pdre3', 'ilike', '%' . $val . '%')
+                                  ->orWhere('cruzamientos.vrdad_pdre4', 'ilike', '%' . $val . '%')
+                                  ->orWhere('cruzamientos.vrdad_pdre5', 'ilike', '%' . $val . '%');
                             });
                         } else if ($col === 'id_crzmnto') {
-                            $query->where('id_crzmnto', 'like', '%' . $val . '%');
+                            $query->where('cruzamientos.id_crzmnto', 'like', '%' . $val . '%');
+                        } else if ($col === 'vivero_plot') {
+                            $query->where(function ($q) use ($val) {
+                                $q->where('cruzamientos.ubccion_nvra', 'ilike', '%' . $val . '%')
+                                  ->orWhere('cruzamientos.id_actual_nvra', 'ilike', '%' . $val . '%')
+                                  ->orWhere('floracion.vivero', 'ilike', '%' . $val . '%')
+                                  ->orWhere('floracion.prcla', 'ilike', '%' . $val . '%');
+                            });
                         } else {
-                            $query->where($col, 'ilike', '%' . $val . '%');
+                            $query->where('cruzamientos.' . $col, 'ilike', '%' . $val . '%');
                         }
                     }
                 }
             }
         }
 
-        $query->orderBy('id_crzmnto', 'desc');
+        $query->orderBy('cruzamientos.id_crzmnto', 'desc');
         
         return $query->paginate($perPage);
     }

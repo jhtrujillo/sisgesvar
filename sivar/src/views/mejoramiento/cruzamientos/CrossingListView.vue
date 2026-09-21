@@ -102,6 +102,14 @@
                     #{{ crossing[column.key as keyof typeof crossing] }}
                   </span>
 
+                  <!-- ID Plot Vivero Styling -->
+                  <span
+                    v-else-if="column.key === 'vivero_plot'"
+                    class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-50 text-purple-800 border border-purple-100 shadow-xs"
+                  >
+                    {{ crossing.vivero_plot || crossing.ubccion_nvra || crossing.id_actual_nvra || '—' }}
+                  </span>
+
                   <!-- Pedigree Styling -->
                   <span
                     v-else-if="column.key === 'pdgree'"
@@ -428,6 +436,10 @@ const tableColumns = [
     text: "ID"
   },
   {
+    key: "vivero_plot",
+    text: "ID Plot Vivero"
+  },
+  {
     key: "pdgree",
     text: "Pedigree"
   },
@@ -444,7 +456,7 @@ const tableColumns = [
     text: "Plántulas Totales"
   }
 ];
-const columnsToShow = ref(["id_crzmnto", "pdgree", "vrdad_mdre", "vrdad_pdre1", "plntlas_ttles"]);
+const columnsToShow = ref(["id_crzmnto", "vivero_plot", "pdgree", "vrdad_mdre", "vrdad_pdre1", "plntlas_ttles"]);
 onMounted(async () => {
   await CrossingsListsStore.getCrossings();
 });
