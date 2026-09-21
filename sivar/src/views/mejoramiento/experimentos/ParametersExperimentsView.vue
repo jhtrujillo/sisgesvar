@@ -1098,6 +1098,7 @@ import { reactive, onMounted, watch, computed, ref } from "vue";
 import BackButton from "@/components/BackButton.vue";
 import ComboBoxMultiple from "@/components/ComboBoxMultiple.vue";
 import urls from "@/services/urls";
+import api from "@/services/api";
 import { useSearchParametersStore } from "@/stores/parametersexperiments";
 import { useAreasProgramStore } from "@/stores/areasprogram";
 import { useProjectsAreaStore } from "@/stores/projectsarea";
@@ -1719,18 +1720,13 @@ const fetchVarietiesTestigos = async (search: string) => {
     const targetDisenoId = model.cTipoEnsayo === "F" ? dataListIdDisenoF.value : dataListIdDisenoI.value;
     const tipoReg = currentTestigoType.value === 'Si' ? 'tf' : 'tm';
     const searchQuery = search.trim() !== '' ? search.trim() : 'ALL';
-    const res = await fetch(`${urls.API_URL}getRegistros/variedad/${tipoReg}/${encodeURIComponent(searchQuery)}/${targetDisenoId || 0}`);
-    if (res.ok) {
-      const json = await res.json();
-      const rawList = json.registros || [];
-      listVarietiesTestigos.value = rawList.map((item: any) => ({
-        tratamiento: item.tratamiento || item.nm_vrdad || '',
-        name: item.name || item.pdgree || 'VARIEDAD TESTIGO',
-        selected: false
-      }));
-    } else {
-      listVarietiesTestigos.value = [];
-    }
+    const res: any = await api.get(`${urls.API_URL}getRegistros/variedad/${tipoReg}/${encodeURIComponent(searchQuery)}/${targetDisenoId || 0}`, {}, true);
+    const rawList = res?.data?.registros || res?.registros || [];
+    listVarietiesTestigos.value = rawList.map((item: any) => ({
+      tratamiento: item.tratamiento || item.nm_vrdad || '',
+      name: item.name || item.pdgree || 'VARIEDAD TESTIGO',
+      selected: false
+    }));
   } catch (err) {
     console.error("Error al obtener variedades testigos:", err);
     listVarietiesTestigos.value = [];
