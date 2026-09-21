@@ -1417,8 +1417,17 @@ const crearNuevoExperimento = async () => {
 };
 
 // Carga de tratamientos y detalles
-const dataListIdDisenoF = computed(() => experimentsStore.experimentsFilter?.experimento[0]?.id_dsno_enc);
-const dataListIdDisenoI = computed(() => experimentsStore.experimentsFilter?.experimento[1]?.id_dsno_enc);
+const dataListIdDisenoF = computed(() => {
+  const exps = experimentsStore.experimentsFilter?.experimento || [];
+  const f = exps.find((e: any) => e.tpo_ensyo === 'F');
+  return f ? f.id_dsno_enc : exps[0]?.id_dsno_enc;
+});
+
+const dataListIdDisenoI = computed(() => {
+  const exps = experimentsStore.experimentsFilter?.experimento || [];
+  const i = exps.find((e: any) => e.tpo_ensyo === 'I');
+  return i ? i.id_dsno_enc : exps[1]?.id_dsno_enc;
+});
 const tratamientosF = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter?.tratamientosF || []);
 const tratamientosI = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter?.tratamientosI || []);
 const testigosFijosF = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter?.testigosFijosF || []);
@@ -1756,7 +1765,11 @@ const actualizarDiseno = async (tipo: 'F' | 'I') => {
   try {
     const isFamilias = tipo === 'F';
     const nIdDiseno = isFamilias ? dataListIdDisenoF.value : dataListIdDisenoI.value;
-    const nDisenoExp = isFamilias ? model.nDisenoExpF : model.nDisenoExpI;
+    const rawDisenoExp = isFamilias ? model.nDisenoExpF : model.nDisenoExpI;
+    let nDisenoExp: any = rawDisenoExp;
+    if (typeof rawDisenoExp === 'object' && rawDisenoExp !== null) {
+      nDisenoExp = (rawDisenoExp as any).id || (rawDisenoExp as any).value;
+    }
     const nLocalidades = isFamilias ? model.nLocalidadesF : model.nLocalidadesI;
     const nRepeticiones = isFamilias ? model.nRepeticionesF : model.nRepeticionesI;
     const nTratamientos = isFamilias ? model.nTratamientoF : model.nTratamientoI;

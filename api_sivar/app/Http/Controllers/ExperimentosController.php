@@ -981,6 +981,9 @@ class ExperimentosController extends Controller
         try {
             $id_dsno_enc = $request->input('nIdDiseno', $request->input('id_dsno_enc', $id_dsno_enc));
             $id_dsno_exprmntal = $request->input('nDisenoExp', $request->input('id_dsno_exprmntal'));
+            if (is_array($id_dsno_exprmntal)) {
+                $id_dsno_exprmntal = $id_dsno_exprmntal['id'] ?? reset($id_dsno_exprmntal);
+            }
             $lclddes = $request->input('nLocalidades', $request->input('lclddes', 1));
             $rptcnes = $request->input('nRepeticiones', $request->input('rptcnes', 1));
             $blques = $request->input('nBloques', $request->input('blques', 1));
