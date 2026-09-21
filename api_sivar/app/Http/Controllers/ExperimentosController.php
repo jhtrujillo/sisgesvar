@@ -405,7 +405,8 @@ class ExperimentosController extends Controller
                 ->where(function ($query) use ($ano) {
                     $query->where('cruzamientos.ano', $ano)
                         ->orWhere(DB::raw("EXTRACT(YEAR FROM cruzamientos.fcha_crzmnto)::varchar"), (string)$ano)
-                        ->orWhere(DB::raw("EXTRACT(YEAR FROM floracion.fcha)::varchar"), (string)$ano);
+                        ->orWhere(DB::raw("EXTRACT(YEAR FROM floracion.fcha)::varchar"), (string)$ano)
+                        ->orWhere('floracion.vivero', 'ilike', '%' . $ano . '%');
                 })
                 ->where(DB::raw('(COALESCE(cruzamientos.plntlas_ttles, 0) - COALESCE(cruzamientos.plntlas_dscrtdas, 0))'), '>', 0)
                 ->where(function ($query) use ($min_plantulas, $plantulas_ttles) {
