@@ -92,6 +92,8 @@ Route::group([
     Route::get('getTreatmentsExperiments/{id_dsno_enc_f}/{id_dsno_enc_i}', [\App\Http\Controllers\ExperimentosController::class, 'getTreatmentsExperiments']);
     Route::post('addDisenoDetalle/{id_dsno_enc}/{cTestigo}/{nTipoParcela}/{nTotalPlantas}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'addDisenoDetalle']);  
     Route::post('addDisenoDetalles/{id_dsno_enc}/{nTipoParcela}/{cTestigo}/{nTotalPlantas}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'addDisenoDetalles']);  
+    Route::post('addDesingsDetails', [\App\Http\Controllers\ExperimentosController::class, 'addDisenosDetalles']);  
+    Route::post('addDisenoDetalles', [\App\Http\Controllers\ExperimentosController::class, 'addDisenosDetalles']);  
     Route::post('removeDetalle/{id_dsno_enc}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'removeDetalle']);  
     Route::get('getRegistros/{tipo}/{tipo_registro}/{search}/{id_dsno_enc}', [\App\Http\Controllers\ExperimentosController::class, 'getRegistros']);
     Route::post('grabarDiseno/{id_dsno_enc}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'grabarDiseno']);  
