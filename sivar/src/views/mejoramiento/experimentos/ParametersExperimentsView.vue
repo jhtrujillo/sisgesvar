@@ -1338,68 +1338,74 @@ const testigosFijosI = computed(() => treatmentsExperimentsStore.treatmentsExper
 const testigosMovilesF = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter?.testigosMovilesF || []);
 const testigosMovilesI = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter?.testigosMovilesI || []);
 
+const refreshTreatmentsTables = async () => {
+  const fId = dataListIdDisenoF.value;
+  const iId = dataListIdDisenoI.value;
+  if (fId || iId) {
+    await treatmentsExperimentsStore.getTreatmentsExperimentsList(fId || 0, iId || 0);
+
+    tableDataTreatmentsExperimentsF.value = tratamientosF.value.map((item: any) => ({
+      id_dsno_det: item.id_dsno_det,
+      trtmnto: item.trtmnto,
+      id_dsno_enc: item.id_dsno_enc,
+      no_crzmnto: item.no_crzmnto || `#${item.trtmnto}`,
+      pdgree: item.pdgree || (item.vrdad_mdre && item.vrdad_pdre1 ? `${item.vrdad_mdre} x ${item.vrdad_pdre1}` : "—"),
+      orgen: item.orgen || "—",
+      nmro_clnes: item.nmro_clnes || 0,
+      plntlas_ttles: item.plntlas_ttles || 0,
+      selected: false
+    }));
+
+    tableDataTreatmentsExperimentsI.value = tratamientosI.value.map((item: any) => ({
+      id_dsno_det: item.id_dsno_det,
+      trtmnto: item.trtmnto,
+      id_dsno_enc: item.id_dsno_enc,
+      no_crzmnto: item.no_crzmnto || `#${item.trtmnto}`,
+      pdgree: item.pdgree || (item.vrdad_mdre && item.vrdad_pdre1 ? `${item.vrdad_mdre} x ${item.vrdad_pdre1}` : "—"),
+      orgen: item.orgen || "—",
+      nmro_clnes: item.nmro_clnes || 0,
+      plntlas_ttles: item.plntlas_ttles || 0,
+      selected: false
+    }));
+
+    tableDataTestigosF.value = testigosFijosF.value.map((item: any) => ({
+      id_dsno_det: item.id_dsno_det,
+      nm_vrdad: item.nm_vrdad,
+      pdgree: item.pdgree,
+      orgen: item.orgen,
+      selected: false
+    }));
+
+    tableDataTestigosM.value = testigosMovilesF.value.map((item: any) => ({
+      id_dsno_det: item.id_dsno_det,
+      nm_vrdad: item.nm_vrdad,
+      pdgree: item.pdgree,
+      orgen: item.orgen,
+      selected: false
+    }));
+
+    tableDataTestigosFI.value = testigosFijosI.value.map((item: any) => ({
+      id_dsno_det: item.id_dsno_det,
+      nm_vrdad: item.nm_vrdad,
+      pdgree: item.pdgree,
+      orgen: item.orgen,
+      selected: false
+    }));
+
+    tableDataTestigosMI.value = testigosMovilesI.value.map((item: any) => ({
+      id_dsno_det: item.id_dsno_det,
+      nm_vrdad: item.nm_vrdad,
+      pdgree: item.pdgree,
+      orgen: item.orgen,
+      selected: false
+    }));
+  }
+};
+
 watch(
   [dataListIdDisenoF, dataListIdDisenoI],
-  async ([newDataListIdDisenoF, newDataListIdDisenoI]) => {
-    if (newDataListIdDisenoF && newDataListIdDisenoI) {
-      await treatmentsExperimentsStore.getTreatmentsExperimentsList(newDataListIdDisenoF, newDataListIdDisenoI);
-
-      tableDataTreatmentsExperimentsF.value = tratamientosF.value.map((item: any) => ({
-        id_dsno_det: item.id_dsno_det,
-        trtmnto: item.trtmnto,
-        id_dsno_enc: item.id_dsno_enc,
-        no_crzmnto: item.no_crzmnto,
-        pdgree: item.pdgree,
-        orgen: item.orgen,
-        nmro_clnes: item.nmro_clnes,
-        plntlas_ttles: item.plntlas_ttles,
-        selected: false
-      }));
-
-      tableDataTreatmentsExperimentsI.value = tratamientosI.value.map((item: any) => ({
-        id_dsno_det: item.id_dsno_det,
-        trtmnto: item.trtmnto,
-        id_dsno_enc: item.id_dsno_enc,
-        no_crzmnto: item.no_crzmnto,
-        pdgree: item.pdgree,
-        orgen: item.orgen,
-        nmro_clnes: item.nmro_clnes,
-        plntlas_ttles: item.plntlas_ttles,
-        selected: false
-      }));
-
-      tableDataTestigosF.value = testigosFijosF.value.map((item: any) => ({
-        id_dsno_det: item.id_dsno_det,
-        nm_vrdad: item.nm_vrdad,
-        pdgree: item.pdgree,
-        orgen: item.orgen,
-        selected: false
-      }));
-
-      tableDataTestigosM.value = testigosMovilesF.value.map((item: any) => ({
-        id_dsno_det: item.id_dsno_det,
-        nm_vrdad: item.nm_vrdad,
-        pdgree: item.pdgree,
-        orgen: item.orgen,
-        selected: false
-      }));
-
-      tableDataTestigosFI.value = testigosFijosI.value.map((item: any) => ({
-        id_dsno_det: item.id_dsno_det,
-        nm_vrdad: item.nm_vrdad,
-        pdgree: item.pdgree,
-        orgen: item.orgen,
-        selected: false
-      }));
-
-      tableDataTestigosMI.value = testigosMovilesI.value.map((item: any) => ({
-        id_dsno_det: item.id_dsno_det,
-        nm_vrdad: item.nm_vrdad,
-        pdgree: item.pdgree,
-        orgen: item.orgen,
-        selected: false
-      }));
-    }
+  async () => {
+    await refreshTreatmentsTables();
   },
   { immediate: true }
 );

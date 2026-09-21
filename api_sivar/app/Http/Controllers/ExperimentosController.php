@@ -620,6 +620,8 @@ class ExperimentosController extends Controller
                 'cruzamientos.no_crzmnto', // Familia
                 'cruzamientos.pdgree', // Pedegree
                 'cruzamientos.orgen', // Origen
+                'cruzamientos.vrdad_mdre',
+                'cruzamientos.vrdad_pdre1',
                 'diseno_det.nmro_clnes', // No. Plantas
                 DB::raw('(COALESCE(cruzamientos.plntlas_ttles, 0) - COALESCE(cruzamientos.plntlas_dscrtdas,0)) AS plntlas_ttles')
             )
@@ -638,6 +640,8 @@ class ExperimentosController extends Controller
                 'cruzamientos.no_crzmnto', // Familia
                 'cruzamientos.pdgree', // Pedegree
                 'cruzamientos.orgen', // Origen
+                'cruzamientos.vrdad_mdre',
+                'cruzamientos.vrdad_pdre1',
                 'diseno_det.nmro_clnes', // No. Plantas
                 DB::raw('(COALESCE(cruzamientos.plntlas_ttles, 0) - COALESCE(cruzamientos.plntlas_dscrtdas,0)) AS plntlas_ttles')
             )
