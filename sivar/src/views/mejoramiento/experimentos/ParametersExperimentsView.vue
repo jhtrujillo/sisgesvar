@@ -954,11 +954,13 @@
                       class="rounded border-slate-300 text-cenicana focus:ring-emerald-400"
                     />
                   </th>
-                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Pedigree</th>
-                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Origen</th>
-                  <th class="px-4 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">Plántulas Totales</th>
-                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Grupo Madre</th>
-                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Grupo Padre</th>
+                  <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">ID</th>
+                  <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Madre</th>
+                  <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Padre</th>
+                  <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Vivero</th>
+                  <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Pedigree / Cruza</th>
+                  <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">Plántulas Totales</th>
+                  <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Origen</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-50 bg-white">
@@ -966,14 +968,16 @@
                   <td class="px-3 py-2 text-center">
                     <input type="checkbox" v-model="row.selected" class="rounded border-slate-300 text-cenicana focus:ring-emerald-400" />
                   </td>
-                  <td class="px-4 py-2 text-xs font-bold text-slate-800 font-mono">{{ row.pedigree }}</td>
-                  <td class="px-4 py-2 text-xs text-slate-700">{{ row.origen }}</td>
-                  <td class="px-4 py-2 text-xs text-center font-mono font-semibold text-slate-700">{{ row.plantulasTotales }}</td>
-                  <td class="px-4 py-2 text-xs text-slate-600">{{ row.grupoMadre }}</td>
-                  <td class="px-4 py-2 text-xs text-slate-600">{{ row.grupoPadre }}</td>
+                  <td class="px-3 py-2 text-xs font-mono text-slate-500 font-extrabold">#{{ row.id }}</td>
+                  <td class="px-3 py-2 text-xs font-extrabold text-emerald-800">{{ row.madre }}</td>
+                  <td class="px-3 py-2 text-xs font-semibold text-sky-800">{{ row.padre }}</td>
+                  <td class="px-3 py-2 text-xs font-bold text-purple-800">{{ row.vivero }}</td>
+                  <td class="px-3 py-2 text-xs font-mono text-slate-700 font-semibold">{{ row.pedigree }}</td>
+                  <td class="px-3 py-2 text-xs text-center font-mono font-bold text-emerald-700">{{ row.plantulasTotales }}</td>
+                  <td class="px-3 py-2 text-xs text-slate-600">{{ row.origen }}</td>
                 </tr>
                 <tr v-if="paginatedData.length === 0">
-                  <td colspan="6" class="px-4 py-8 text-center text-slate-400 text-xs">No se encontraron tratamientos disponibles para esta temporada.</td>
+                  <td colspan="8" class="px-4 py-8 text-center text-slate-400 text-xs">No se encontraron tratamientos disponibles para esta temporada.</td>
                 </tr>
               </tbody>
             </table>
@@ -1487,11 +1491,14 @@ const tratamientosDisponibles = async () => {
       tableData.value =
         treatmentsSeasonStore.treatmentsSeasonFilter?.tratamientos.map((item: any) => ({
           id: item.id_crzmnto,
-          pedigree: item.pdgree,
-          origen: item.orgen,
-          plantulasTotales: item.plntlas_ttles,
-          grupoMadre: item.grpo_crzmnto_mdre,
-          grupoPadre: item.grpo_crzmnto_pdre,
+          madre: item.vrdad_mdre || "—",
+          padre: item.vrdad_pdre1 || "—",
+          vivero: item.vivero || "—",
+          pedigree: item.pdgree || `${item.vrdad_mdre || ''} x ${item.vrdad_pdre1 || ''}`,
+          origen: item.orgen || "—",
+          plantulasTotales: item.plntlas_ttles || 0,
+          grupoMadre: item.grpo_crzmnto_mdre || "—",
+          grupoPadre: item.grpo_crzmnto_pdre || "—",
           selected: false
         })) || [];
     } catch (error) {
