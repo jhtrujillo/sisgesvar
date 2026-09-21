@@ -1309,11 +1309,12 @@ const crearNuevoExperimento = async () => {
   isCreatingExperiment.value = true;
   try {
     const res = await experimentsStore.createExperiment(model.nProyecto, model.nSerie, model.nEstado);
-    if (res && (res.code === 200 || res.IdsDisenosCreados)) {
-      toast.success(res.message || "Experimento inicializado con éxito");
+    const data = res?.data || res;
+    if (data && (data.code === 200 || data.status === 200 || data.IdsDisenosCreados || res?.status === 200)) {
+      toast.success(data.message || "Experimento inicializado con éxito");
       await buscarExperimento();
     } else {
-      toast.error(res?.message || "No se pudo crear el experimento");
+      toast.error(data?.message || "No se pudo crear el experimento");
     }
   } catch (err: any) {
     console.error("Error al crear experimento:", err);

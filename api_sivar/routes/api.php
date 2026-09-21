@@ -78,6 +78,7 @@ Route::group([
     Route::get('/crossing/upload1/{proyecto}/{usuario}/{cruzamiento_id}/{madre}/{padre}/{porcentaje_germinacion}/{gramos}/{plantulas_estimadas}', [\App\Http\Controllers\CrossingController::class, 'cargarCruzamientoMexico']);
     Route::get('/crossing/modify/{id}', [\App\Http\Controllers\CrossingController::class, 'modificarCruzamiento']);
     Route::get('/crossing/modify', [\App\Http\Controllers\CrossingController::class, 'modificarCruzamientoPost']);
+    Route::post('/crossing/modify', [\App\Http\Controllers\CrossingController::class, 'modificarCruzamientoPost']);
     Route::get('/obtenerIdFlorCruzamiento/{a}/{b}/{c}', [\App\Http\Controllers\CrossingController::class, 'obtenerIdFlorCruzamiento']);
 
     //Experimentos

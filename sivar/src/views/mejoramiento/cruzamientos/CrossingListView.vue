@@ -22,7 +22,7 @@
           Historial de Cruzamientos
         </h1>
         <p class="mt-1.5 text-xs font-semibold text-slate-450 ml-10">
-          Consulte y filtre el registro completo de cruces completados en la plataforma de mejoramiento.
+          Consulte, filtre y gestione el registro completo de cruces en la plataforma de mejoramiento.
         </p>
       </div>
 
@@ -72,11 +72,15 @@
                   <input
                     type="text"
                     :placeholder="'Filtrar ' + column.text.toLowerCase() + '...'"
-                    class="block w-full min-w-[100px] px-2 py-1.5 border border-slate-200 rounded-lg text-[10px] text-slate-700 placeholder-slate-400 focus:ring-1 focus:ring-emerald-200 focus:border-cenicana transition-all bg-white shadow-inner"
+                    class="block w-full min-w-[90px] px-2 py-1.5 border border-slate-200 rounded-lg text-[10px] text-slate-700 placeholder-slate-400 focus:ring-1 focus:ring-emerald-200 focus:border-cenicana transition-all bg-white shadow-inner"
                     @input="updateColumnFilter(column.key, ($event.target as HTMLInputElement).value)"
                   />
                 </th>
               </template>
+              <!-- Acciones Column -->
+              <th scope="col" class="px-5 py-3 text-center border-b border-slate-100">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Acción</div>
+              </th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-slate-50">
@@ -106,6 +110,15 @@
                     {{ crossing[column.key as keyof typeof crossing] || "N/A" }}
                   </span>
 
+                  <!-- Plántulas Totales Styling -->
+                  <span
+                    v-else-if="column.key === 'plntlas_ttles'"
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-mono font-bold"
+                    :class="[crossing.plntlas_ttles && Number(crossing.plntlas_ttles) > 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/60' : 'bg-amber-50 text-amber-700 border border-amber-200/60']"
+                  >
+                    {{ crossing.plntlas_ttles || 0 }} plántulas
+                  </span>
+
                   <!-- Variedad Madre Style -->
                   <span
                     v-else-if="column.key === 'vrdad_mdre'"
@@ -133,6 +146,20 @@
                   </span>
                 </td>
               </template>
+
+              <!-- Action Cell -->
+              <td class="px-5 py-3 whitespace-nowrap text-center text-xs">
+                <button
+                  type="button"
+                  @click="openEditModal(crossing)"
+                  class="inline-flex items-center px-3 py-1 bg-cenicana hover:bg-cenicana-700 text-white text-[11px] font-bold rounded-lg shadow-2xs transition-all cursor-pointer"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                  Editar
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -145,7 +172,7 @@
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="1.5"
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 01-2-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
           />
         </svg>
         <h3 class="mt-3 text-sm font-bold text-slate-700">No se encontraron registros</h3>
@@ -191,19 +218,137 @@
     </div>
   </div>
 
+  <!-- Modal de Edición de Cruzamiento -->
+  <div v-if="isEditModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-fade-in">
+    <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-100">
+      <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+          <span class="p-1.5 bg-emerald-100 text-cenicana rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+          </span>
+          Modificar Cruzamiento #{{ editingCrossing?.id_crzmnto }}
+        </h3>
+        <button @click="isEditModalOpen = false" class="text-slate-400 hover:text-slate-600 rounded-lg p-1 hover:bg-slate-200/60 transition-all cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+          <p class="text-xs font-bold text-slate-800">
+            Cruza: <span class="text-cenicana-700">{{ editingCrossing?.vrdad_mdre }} x {{ editingCrossing?.vrdad_pdre1 }}</span>
+          </p>
+          <p class="text-[11px] text-slate-500 font-mono">Pedigree: {{ editingCrossing?.pdgree || 'N/A' }}</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+            Plántulas Totales Germinadas: <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="number"
+            min="0"
+            v-model="editForm.numero_plantas_sembradas"
+            class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs bg-white focus:ring-2 focus:ring-emerald-200 focus:border-cenicana transition-all font-mono font-bold"
+            placeholder="Ingrese el número de plántulas germinadas..."
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Observaciones:</label>
+          <textarea
+            v-model="editForm.observaciones"
+            rows="3"
+            class="w-full p-3 border border-slate-200 rounded-xl text-xs bg-white focus:ring-2 focus:ring-emerald-200 focus:border-cenicana transition-all"
+            placeholder="Comentarios adicionales..."
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
+        <button
+          type="button"
+          @click="isEditModalOpen = false"
+          class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-semibold rounded-xl transition-all cursor-pointer"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          @click="saveEditCruzamiento"
+          :disabled="isSaving"
+          class="px-5 py-2 bg-cenicana hover:bg-cenicana-700 text-white text-xs font-bold rounded-xl shadow-md transition-all disabled:opacity-50 cursor-pointer inline-flex items-center"
+        >
+          <svg v-if="isSaving" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Guardar Cambios
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Drawer de Hoja de Vida de la Variedad (Quick Drawer) -->
   <VarietyProfileDrawer v-model:isOpen="isDrawerOpen" :varietyName="selectedVarietyForDrawer" />
 </template>
 
 <script setup lang="ts">
 import { useCrossingsStore } from "@/stores/crossings";
+import api from "@/services/api";
+import urls from "@/services/urls";
 import * as XLSX from "xlsx";
 import { ref, computed, onMounted } from "vue";
+import { useToast } from "vue-toastification";
 import VarietyProfileDrawer from "@/components/VarietyProfileDrawer.vue";
 import BackButton from "@/components/BackButton.vue";
 
+const toast = useToast();
 const CrossingsListsStore = useCrossingsStore();
 const searchText = ref("");
+
+// Estados para Modal de Edición
+const isEditModalOpen = ref(false);
+const isSaving = ref(false);
+const editingCrossing = ref<any>(null);
+const editForm = ref({
+  id_cruzamiento: null,
+  numero_plantas_sembradas: 0,
+  numero_plantas_germinadas: 0,
+  observaciones: ""
+});
+
+const openEditModal = (crossing: any) => {
+  editingCrossing.value = crossing;
+  editForm.value = {
+    id_cruzamiento: crossing.id_crzmnto,
+    numero_plantas_sembradas: crossing.plntlas_ttles || 0,
+    numero_plantas_germinadas: crossing.plntlas_ttles || 0,
+    observaciones: crossing.obsrvcnes || ""
+  };
+  isEditModalOpen.value = true;
+};
+
+const saveEditCruzamiento = async () => {
+  if (!editForm.value.id_cruzamiento) return;
+  isSaving.value = true;
+
+  try {
+    const res: any = await api.post(urls.API_URL + "crossing/modify", editForm.value, true);
+    toast.success("Plántulas germinadas actualizadas con éxito");
+    isEditModalOpen.value = false;
+    await CrossingsListsStore.getCrossings();
+  } catch (error: any) {
+    console.error("Error al actualizar cruzamiento:", error);
+    toast.error("Error al guardar los cambios en el servidor");
+  } finally {
+    isSaving.value = false;
+  }
+};
 
 // Estados para el Drawer de variedades
 const isDrawerOpen = ref(false);
@@ -254,12 +399,9 @@ const columnTimeouts: Record<string, any> = {};
 const updateColumnFilter = (columnKey: string, value: string) => {
   if (columnTimeouts[columnKey]) clearTimeout(columnTimeouts[columnKey]);
 
-  // Agrupar todos los padres en un solo filtro si es necesario,
-  // pero el backend ya lo maneja genéricamente para padres o usa el key específico
   let backendCol = columnKey;
   if (columnKey.startsWith("vrdad_pdre")) {
     backendCol = "padres";
-    // El backend buscará en cualquiera de los padres si mandamos 'padres'
   }
 
   columnTimeouts[columnKey] = setTimeout(async () => {
@@ -268,7 +410,7 @@ const updateColumnFilter = (columnKey: string, value: string) => {
 };
 
 // Función para obtener la clave válida para el jornal en el v-for
-const getCrossingsKey = (crossing: any) => crossing.id_crzmnto.toString(); // Asegurar que la clave sea un string válido
+const getCrossingsKey = (crossing: any) => crossing.id_crzmnto.toString();
 // Función para generar el archivo Excel con todos los datos
 const downloadExcel = () => {
   const allData = CrossingsListsStore.crossing.map((crossing) =>
@@ -298,23 +440,11 @@ const tableColumns = [
     text: "Padre 1"
   },
   {
-    key: "vrdad_pdre2",
-    text: "Padre 2"
-  },
-  {
-    key: "vrdad_pdre3",
-    text: "Padre 3"
-  },
-  {
-    key: "vrdad_pdre4",
-    text: "Padre 4"
-  },
-  {
-    key: "vrdad_pdre5",
-    text: "Padre 5"
+    key: "plntlas_ttles",
+    text: "Plántulas Totales"
   }
 ];
-const columnsToShow = ref(["id_crzmnto", "pdgree", "vrdad_mdre", "vrdad_pdre1", "vrdad_pdre2", "vrdad_pdre3", "vrdad_pdre4", "vrdad_pdre5"]);
+const columnsToShow = ref(["id_crzmnto", "pdgree", "vrdad_mdre", "vrdad_pdre1", "plntlas_ttles"]);
 onMounted(async () => {
   await CrossingsListsStore.getCrossings();
 });
