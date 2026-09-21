@@ -951,13 +951,7 @@ class CrossingService
                 DB::raw("COALESCE(
                     cruzamientos.ubccion_nvra, 
                     cruzamientos.id_actual_nvra, 
-                    CASE 
-                        WHEN floracion.vivero IS NOT NULL AND floracion.prcla IS NOT NULL 
-                        THEN CONCAT(floracion.vivero, ' - P', floracion.prcla)
-                        WHEN floracion.prcla IS NOT NULL 
-                        THEN CONCAT('Plot ', floracion.prcla)
-                        ELSE NULL 
-                    END
+                    floracion.vivero
                 ) AS vivero_plot")
             );
 
@@ -972,8 +966,7 @@ class CrossingService
                   ->orWhere('cruzamientos.vrdad_pdre5', 'ilike', '%' . $search . '%')
                   ->orWhere('cruzamientos.pdgree', 'ilike', '%' . $search . '%')
                   ->orWhere('cruzamientos.id_crzmnto', 'like', '%' . $search . '%')
-                  ->orWhere('floracion.vivero', 'ilike', '%' . $search . '%')
-                  ->orWhere('floracion.prcla', 'ilike', '%' . $search . '%');
+                  ->orWhere('floracion.vivero', 'ilike', '%' . $search . '%');
             });
         }
 
@@ -997,8 +990,7 @@ class CrossingService
                             $query->where(function ($q) use ($val) {
                                 $q->where('cruzamientos.ubccion_nvra', 'ilike', '%' . $val . '%')
                                   ->orWhere('cruzamientos.id_actual_nvra', 'ilike', '%' . $val . '%')
-                                  ->orWhere('floracion.vivero', 'ilike', '%' . $val . '%')
-                                  ->orWhere('floracion.prcla', 'ilike', '%' . $val . '%');
+                                  ->orWhere('floracion.vivero', 'ilike', '%' . $val . '%');
                             });
                         } else {
                             $query->where('cruzamientos.' . $col, 'ilike', '%' . $val . '%');
