@@ -1000,27 +1000,27 @@ class ExperimentosController extends Controller
             if (!$disenoEnc) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Encabezado de diseño no encontrado.',
+                    'message' => 'Encabezado de diseño no encontrado (' . $id_dsno_enc . ').',
                 ], 404);
             }
 
-            // Actualizar los valores del encabezado
-            if ($id_dsno_exprmntal !== null) $disenoEnc->id_dsno_exprmntal = $id_dsno_exprmntal;
-            if ($lclddes !== null) $disenoEnc->lclddes = $lclddes;
-            if ($rptcnes !== null) $disenoEnc->rptcnes = $rptcnes;
-            if ($blques !== null) $disenoEnc->blques = $blques;
-            if ($entrdas !== null) $disenoEnc->entrdas = $entrdas;
-            if ($prcla_prncpal !== null) $disenoEnc->prcla_prncpal = $prcla_prncpal;
-            if ($sub_prclas !== null) $disenoEnc->sub_prclas = $sub_prclas;
-            if ($tstgos !== null) $disenoEnc->tstgos = $tstgos;
-            if ($tstgos_mvil !== null) $disenoEnc->tstgos_mvil = $tstgos_mvil;
+            // Actualizar los valores del encabezado con conversión explícita
+            if ($id_dsno_exprmntal !== null && $id_dsno_exprmntal !== '') $disenoEnc->id_dsno_exprmntal = (int)$id_dsno_exprmntal;
+            if ($lclddes !== null && $lclddes !== '') $disenoEnc->lclddes = (int)$lclddes;
+            if ($rptcnes !== null && $rptcnes !== '') $disenoEnc->rptcnes = (int)$rptcnes;
+            if ($blques !== null && $blques !== '') $disenoEnc->blques = (int)$blques;
+            if ($entrdas !== null && $entrdas !== '') $disenoEnc->entrdas = (int)$entrdas;
+            if ($prcla_prncpal !== null && $prcla_prncpal !== '') $disenoEnc->prcla_prncpal = (int)$prcla_prncpal;
+            if ($sub_prclas !== null && $sub_prclas !== '') $disenoEnc->sub_prclas = (int)$sub_prclas;
+            if ($tstgos !== null && $tstgos !== '') $disenoEnc->tstgos = (int)$tstgos;
+            if ($tstgos_mvil !== null && $tstgos_mvil !== '') $disenoEnc->tstgos_mvil = (int)$tstgos_mvil;
             if ($dscrpcion !== null) $disenoEnc->dscrpcion = $dscrpcion;
 
             if ($disenoEnc->save()) {
                 DB::commit();
                 return response()->json([
                     'success' => true,
-                    'message' => 'Se graba con éxito',
+                    'message' => 'Diseño actualizado con éxito',
                     'tipo' => $disenoEnc->tpo_ensyo,
                     'actualizado' => true
                 ], 200);
@@ -1028,7 +1028,7 @@ class ExperimentosController extends Controller
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error grabando el diseño.',
+                    'message' => 'Error al guardar el diseño.',
                     'actualizado' => false
                 ], 400);
             }
@@ -1036,7 +1036,7 @@ class ExperimentosController extends Controller
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Error inesperado al grabar el diseño.',
+                'message' => 'Error inesperado al grabar el diseño: ' . $th->getMessage(),
                 'error' => $th->getMessage(),
             ], 500);
         }
