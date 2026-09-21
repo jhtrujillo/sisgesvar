@@ -1540,7 +1540,7 @@ const addSelected = async () => {
 
 const addTratamientosTemporada = async (arrayIds: Array<{ id_crzmnto: string; plntlas_ttles: number }>, testigo: string) => {
   try {
-    const { nIdDiseno, nTipoParcela, nTotalPlantas } = model;
+    const { nTipoParcela, nTotalPlantas } = model;
     
     if (arrayIds.length === 0) {
       toast.error("Debe marcar la casilla de al menos un tratamiento.");
@@ -1554,13 +1554,26 @@ const addTratamientosTemporada = async (arrayIds: Array<{ id_crzmnto: string; pl
       toast.error("Por favor ingrese un valor mayor a 0 en 'Total plantas siembra'.");
       return;
     }
-    if (!nIdDiseno) {
-      toast.error("Debe cargar primero el experimento usando el botón 'Buscar Experimento'.");
+
+    let targetDisenoId = model.cTipoEnsayo === "F" ? dataListIdDisenoF.value : dataListIdDisenoI.value;
+
+    if (!targetDisenoId) {
+      if (model.nProyecto && model.nSerie && model.nEstado) {
+        toast.info("Inicializando encabezado del experimento...");
+        await crearNuevoExperimento();
+        targetDisenoId = model.cTipoEnsayo === "F" ? dataListIdDisenoF.value : dataListIdDisenoI.value;
+      }
+    }
+
+    if (!targetDisenoId) {
+      toast.error("No se pudo obtener o inicializar el ID del diseño. Verifique Proyecto, Serie y Estado en el encabezado.");
       return;
     }
 
+    model.nIdDiseno = targetDisenoId;
+
     const data: DiseñosDetalles = {
-      nIdDiseno: nIdDiseno,
+      nIdDiseno: targetDisenoId,
       nTipoParcela: nTipoParcela,
       cTestigo: testigo,
       nTotalPlantas,
@@ -1569,7 +1582,11 @@ const addTratamientosTemporada = async (arrayIds: Array<{ id_crzmnto: string; pl
 
     const result = await addDesingsDetailsStore.SaveaddDesingsDetails(data);
     if (result) {
-      toast.success("Tratamiento guardado con éxito");
+      toast.success("Tratamientos agregados con éxito al experimento");
+      closeModal();
+      if (dataListIdDisenoF.value && dataListIdDisenoI.value) {
+        await treatmentsExperimentsStore.getTreatmentsExperimentsList(dataListIdDisenoF.value, dataListIdDisenoI.value);
+      }
     }
   } catch (error) {
     console.error("Error al guardar tratamiento:", error);
