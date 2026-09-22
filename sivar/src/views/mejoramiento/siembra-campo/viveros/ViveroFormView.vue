@@ -1932,7 +1932,7 @@ const loadCaracteresForMultipleProyectos = async (proyectosIds: any[]) => {
   try {
     const promises = proyectosIds.map(id => viverosServices.getCaracteresPorProyecto(id));
     const results = await Promise.all(promises);
-    caracteres.value = results.flat();
+    caracteres.value = results.map(res => res.data).flat();
   } catch (error) {
     console.error("Error al cargar caracteres para multiples proyectos", error);
   }
