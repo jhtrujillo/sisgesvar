@@ -1321,7 +1321,7 @@ const form = ref({
   hacienda: "",
   suerte: "",
   fecha_siembra: "",
-  numero_corte: 1,
+  numero_corte: 0,
   temporada_floracion: "",
   proyecto_id: "",
   proyectos: [],
@@ -1610,8 +1610,8 @@ const loadAllViveros = async () => {
 
       // Si el vivero tiene cortes registrados, agregarlos como opciones adicionales
       // Iteramos hasta numero_corte - 1 para mostrar solo los cortes históricos generados
-      if (v.numero_corte && v.numero_corte > 1) {
-        for (let i = 1; i < v.numero_corte; i++) {
+      if (v.numero_corte && v.numero_corte > 0) {
+        for (let i = 0; i < v.numero_corte; i++) {
           expandedViveros.push({
             ...v,
             identificador_unico: `${v.identificador_unico}-${i}`,
@@ -2681,7 +2681,7 @@ const resetAndLoad = async () => {
     ambiente: "",
     responsable_id: "",
     fecha_siembra: "",
-    numero_corte: 1,
+    numero_corte: 0,
     temporada_floracion: "",
     condicion: "",
     caracteres_ids: [],

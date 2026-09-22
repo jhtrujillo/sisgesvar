@@ -382,7 +382,7 @@
                 <span class="font-bold block uppercase">Suerte</span> <span>{{ viveroSeleccionado?.suerte || "N/A" }}</span>
               </div>
               <div>
-                <span class="font-bold block uppercase">Corte Actual</span> <span>{{ viveroSeleccionado?.numero_corte || "N/A" }}</span>
+                <span class="font-bold block uppercase">Corte Actual</span> <span>{{ viveroSeleccionado?.numero_corte ?? "N/A" }}</span>
               </div>
 
               <div class="md:col-span-2">
