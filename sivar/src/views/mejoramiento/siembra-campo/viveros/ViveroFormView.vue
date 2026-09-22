@@ -1831,13 +1831,13 @@ const getProyectoName = (id_prycto: number) => {
 };
 
 const getCaracterNameLocal = (c_id: number) => {
-  const c = caracteres.value.find(x => x.id === c_id);
+  const c = caracteres.value.find(x => Number(x.id) === Number(c_id));
   return c ? c.nombre : c_id;
 };
 
 const getCaracteresByProyecto = (id_prycto: number) => {
   return form.value.caracteres_ids.filter(c_id => {
-    const c = caracteres.value.find(x => x.id === c_id);
+    const c = caracteres.value.find(x => Number(x.id) === Number(c_id));
     return c && c.proyecto_id == id_prycto;
   });
 };
@@ -1867,7 +1867,7 @@ const removeProyectoVinculado = (id_prycto: number) => {
   
   // Remove caracteres that belong to this project
   const caracteresToKeep = form.value.caracteres_ids.filter((c_id: number) => {
-    const c = caracteres.value.find(x => x.id === c_id);
+    const c = caracteres.value.find(x => Number(x.id) === Number(c_id));
     return c && c.proyecto_id !== id_prycto;
   });
   form.value.caracteres_ids = caracteresToKeep;
@@ -2682,8 +2682,19 @@ const resetAndLoad = async () => {
         vivero.fecha_siembra = vivero.fecha_siembra.substring(0, 10);
       }
       
-      const mappedProyectos = vivero.proyectos ? vivero.proyectos.map((p: any) => p.id_prycto || p.id) : [];
-      const mappedCaracteres = vivero.caracteres ? vivero.caracteres.map((c: any) => c.id) : [];
+      let mappedProyectos: number[] = vivero.proyectos && vivero.proyectos.length > 0 
+        ? vivero.proyectos.map((p: any) => Number(p.id_prycto || p.id)) 
+        : (vivero.proyecto_id ? [Number(vivero.proyecto_id)] : []);
+
+      if (vivero.caracteres && vivero.caracteres.length > 0) {
+        vivero.caracteres.forEach((c: any) => {
+          if (c.proyecto_id && !mappedProyectos.includes(Number(c.proyecto_id))) {
+            mappedProyectos.push(Number(c.proyecto_id));
+          }
+        });
+      }
+
+      const mappedCaracteres = vivero.caracteres ? vivero.caracteres.map((c: any) => Number(c.id)) : [];
       
       form.value = { 
         ...vivero, 
@@ -2691,7 +2702,6 @@ const resetAndLoad = async () => {
         caracteres_ids: mappedCaracteres 
       };
       
-      // Load the caracter objects so we can show their names in the summary table
       if (mappedProyectos.length > 0) {
         await loadCaracteresForMultipleProyectos(mappedProyectos);
       }
