@@ -95,6 +95,16 @@
                       <option v-for="col in headers" :key="col" :value="col">{{ col }}</option>
                     </select>
                   </div>
+                  <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm border-l-4 border-l-blue-400">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Columna Proyecto (Opcional)</label>
+                    <select
+                      v-model="mapping.proyecto"
+                      class="w-full pl-3 pr-10 py-2 border-slate-300 rounded-md border text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-slate-50"
+                    >
+                      <option value="">-- No incluir --</option>
+                      <option v-for="col in headers" :key="col" :value="col">{{ col }}</option>
+                    </select>
+                  </div>
                 </div>
                 <div class="mt-8 flex justify-between">
                   <BaseButton variant="secondary" size="md" @click="step = sheets.length > 1 ? 2 : 1">Volver</BaseButton>
@@ -297,7 +307,7 @@ const selectedSheet = ref("");
 const headers = ref<string[]>([]);
 const rawData = ref<any[]>([]);
 
-const mapping = ref({ plot: "", variedad: "", caracter: "" });
+const mapping = ref({ plot: "", variedad: "", caracter: "", proyecto: "" });
 
 const conflicts = ref<any[]>([]);
 const readyToImport = ref<any[]>([]);
@@ -392,6 +402,9 @@ const processSheet = () => {
   const carCol = headers.value.find((h) => h.toLowerCase().includes("caracter") || h.toLowerCase().includes("carácter"));
   if (carCol) mapping.value.caracter = carCol;
 
+  const proyCol = headers.value.find((h) => h.toLowerCase().includes("proyecto"));
+  if (proyCol) mapping.value.proyecto = proyCol;
+
   const raw = XLSX.utils.sheet_to_json(worksheet);
   rawData.value = raw.map((row: any) => {
     const newRow: any = {};
@@ -478,12 +491,20 @@ const validateData = async () => {
     
     // Find caracter match if mapped
     let resolvedCaracterId = props.caracterId || null;
+    let caracterNombre = null;
+    let proyectoNombre = null;
+
     if (mapping.value.caracter && row[mapping.value.caracter]) {
       const carText = String(row[mapping.value.caracter]).trim().toLowerCase();
+      caracterNombre = String(row[mapping.value.caracter]).trim();
       const carMatch = props.caracteres.find(c => c.nombre.toLowerCase() === carText || c.nombre.toLowerCase().includes(carText));
       if (carMatch) {
         resolvedCaracterId = carMatch.id;
       }
+    }
+    
+    if (mapping.value.proyecto && row[mapping.value.proyecto]) {
+      proyectoNombre = String(row[mapping.value.proyecto]).trim();
     }
 
     if (exactMatch) {
@@ -492,7 +513,9 @@ const validateData = async () => {
         variedad_id: exactMatch.id_nm_vrdad,
         numero_parcela_origen: null,
         id_plot_origen: `${props.viveroIdentificador}-${plotVal}`,
-        caracter_id: resolvedCaracterId
+        caracter_id: resolvedCaracterId,
+        caracter_nombre: caracterNombre,
+        proyecto_nombre: proyectoNombre
       });
     } else {
       // Try to find a fuzzy best match
@@ -611,12 +634,20 @@ const submitImport = async () => {
       const plotVal = c.row[mapping.value.plot];
       
       let resolvedCaracterId = props.caracterId || null;
+      let caracterNombre = null;
+      let proyectoNombre = null;
+      
       if (mapping.value.caracter && c.row[mapping.value.caracter]) {
         const carText = String(c.row[mapping.value.caracter]).trim().toLowerCase();
+        caracterNombre = String(c.row[mapping.value.caracter]).trim();
         const carMatch = props.caracteres.find(car => car.nombre.toLowerCase() === carText || car.nombre.toLowerCase().includes(carText));
         if (carMatch) {
           resolvedCaracterId = carMatch.id;
         }
+      }
+      
+      if (mapping.value.proyecto && c.row[mapping.value.proyecto]) {
+        proyectoNombre = String(c.row[mapping.value.proyecto]).trim();
       }
 
       return {
@@ -624,7 +655,9 @@ const submitImport = async () => {
         variedad_id: c.resolvedId,
         numero_parcela_origen: null,
         id_plot_origen: `${props.viveroIdentificador}-${plotVal}`,
-        caracter_id: resolvedCaracterId
+        caracter_id: resolvedCaracterId,
+        caracter_nombre: caracterNombre,
+        proyecto_nombre: proyectoNombre
       };
     })
   ];

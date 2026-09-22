@@ -80,6 +80,8 @@ class ViveroParcelaController extends Controller
             'parcelas.*.numero_parcela_origen' => 'nullable|numeric',
             'parcelas.*.id_plot_origen' => 'nullable',
             'parcelas.*.caracter_id' => 'nullable|numeric',
+            'parcelas.*.caracter_nombre' => 'nullable|string',
+            'parcelas.*.proyecto_nombre' => 'nullable|string',
         ]);
 
         $parcelasData = $request->input('parcelas');
@@ -92,6 +94,22 @@ class ViveroParcelaController extends Controller
                 $numero_parcela_origen = (isset($data['numero_parcela_origen']) && $data['numero_parcela_origen'] !== '') ? $data['numero_parcela_origen'] : null;
                 $id_plot_origen = (isset($data['id_plot_origen']) && $data['id_plot_origen'] !== '') ? $data['id_plot_origen'] : null;
                 $caracter_id = (isset($data['caracter_id']) && $data['caracter_id'] !== '') ? $data['caracter_id'] : null;
+
+                // Resolve caracter_id dynamically if names are provided
+                if (!$caracter_id && isset($data['caracter_nombre']) && $data['caracter_nombre'] !== '' && isset($data['proyecto_nombre']) && $data['proyecto_nombre'] !== '') {
+                    $proyecto_nombre = trim($data['proyecto_nombre']);
+                    $caracter_nombre = trim($data['caracter_nombre']);
+                    
+                    // Buscar proyecto por nombre
+                    $proyecto = \App\Models\Proyecto::where('nm_prycto', $proyecto_nombre)->first();
+                    if ($proyecto) {
+                        // Buscar o crear caracter
+                        $caracter = \App\Models\ProyectoCaracter::firstOrCreate(
+                            ['proyecto_id' => $proyecto->id_prycto, 'nombre' => $caracter_nombre]
+                        );
+                        $caracter_id = $caracter->id;
+                    }
+                }
 
                 if ($data['variedad_id'] !== null && $data['variedad_id'] !== '') {
                     \Log::info("Checking variedad_id: " . $data['variedad_id'] . " for plot: " . $data['numero_parcela']);
