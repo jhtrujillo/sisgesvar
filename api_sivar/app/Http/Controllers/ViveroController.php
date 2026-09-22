@@ -49,24 +49,31 @@ class ViveroController extends Controller
     {
         if ($request->query('slim') === 'true') {
             $viveros = Vivero::with(['parcelas:id,vivero_id,numero_parcela,numero_parcela_origen,id_plot_origen'])
+                ->withCount('cosechas')
                 ->whereNotNull('proyecto_id')
                 ->orderBy('created_at', 'desc')
                 ->get(['id', 'identificador_unico', 'nombre', 'lote_id', 'ingenio', 'hacienda', 'suerte', 'fecha_siembra', 'proyecto_id', 'numero_corte', 'consecutivo_vivero_ingenio']);
 
             $viveros->each(function ($v) {
                 $v->makeHidden(['nombre_proyecto', 'nombre_responsable', 'nombre_ambiente', 'consecutivo_corte']);
+                $v->corte_inicial = max(0, $v->numero_corte - $v->cosechas_count);
             });
 
             return response()->json($viveros);
         }
 
         $viveros = Vivero::with(['proyecto', 'responsable', 'caracteres', 'proyectos', 'proyectos', 'parcelas.variedad', 'parcelas.caracter', 'lote', 'origenLote', 'origenVivero'])
+            ->withCount('cosechas')
             ->whereNotNull('proyecto_id')
             ->orderBy('created_at', 'desc')
             ->get();
-        foreach ($viveros as $vivero) {
-            $vivero->id_vivero_origen_formateado = $this->viveroService->formatIdViveroOrigen($vivero);
-        }
+
+        $viveros->each(function ($v) {
+            $v->makeHidden(['consecutivo_corte']);
+            $v->corte_inicial = max(0, $v->numero_corte - $v->cosechas_count);
+            $v->id_vivero_origen_formateado = $this->viveroService->formatIdViveroOrigen($v);
+        });
+
         return response()->json($viveros);
     }
 
@@ -141,6 +148,15 @@ class ViveroController extends Controller
                 }
             }
 
+            // Lógica de herencia de cortes: si viene de otro vivero, inicia en el corte del padre + 1
+            $numeroCorteCalculado = $request->numero_corte ?? 0;
+            if ($request->origen_vivero_id) {
+                $viveroOrigen = Vivero::find($request->origen_vivero_id);
+                if ($viveroOrigen) {
+                    $numeroCorteCalculado = $viveroOrigen->numero_corte + 1;
+                }
+            }
+
             $yearRequest = date('Y', strtotime($request->fecha_siembra));
             $vivero = Vivero::withTrashed()
                 ->where('lote_id', $request->lote_id)
@@ -162,7 +178,7 @@ class ViveroController extends Controller
                     'ambiente' => $request->ambiente,
                     'responsable_id' => $request->responsable_id,
                     'fecha_siembra' => $request->fecha_siembra,
-                    'numero_corte' => $request->numero_corte ?? 0,
+                    'numero_corte' => $numeroCorteCalculado,
                     'temporada_floracion' => $request->temporada_floracion,
                     'condicion' => $request->condicion,
                     'origen_ingenio' => $request->origen_ingenio,
@@ -184,7 +200,7 @@ class ViveroController extends Controller
                     'ambiente' => $request->ambiente,
                     'responsable_id' => $request->responsable_id,
                     'fecha_siembra' => $request->fecha_siembra,
-                    'numero_corte' => $request->numero_corte ?? 0,
+                    'numero_corte' => $numeroCorteCalculado,
                     'temporada_floracion' => $request->temporada_floracion,
                     'condicion' => $request->condicion,
                     'origen_ingenio' => $request->origen_ingenio,

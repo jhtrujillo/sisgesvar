@@ -1609,9 +1609,10 @@ const loadAllViveros = async () => {
       expandedViveros.push(v);
 
       // Si el vivero tiene cortes registrados, agregarlos como opciones adicionales
-      // Iteramos hasta numero_corte - 1 para mostrar solo los cortes históricos generados
-      if (v.numero_corte && v.numero_corte > 0) {
-        for (let i = 0; i < v.numero_corte; i++) {
+      // Usamos corte_inicial para saber en qué corte empezó realmente este vivero
+      const startCorte = v.corte_inicial !== undefined ? v.corte_inicial : 0;
+      if (v.numero_corte && v.numero_corte > startCorte) {
+        for (let i = startCorte; i < v.numero_corte; i++) {
           expandedViveros.push({
             ...v,
             identificador_unico: `${v.identificador_unico}-${i}`,
