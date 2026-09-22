@@ -491,7 +491,10 @@ const validateData = async () => {
     // Filter by Vivero/ID Plot if mapped
     if (mapping.value.vivero_id) {
       const rowViveroVal = row[mapping.value.vivero_id] ? String(row[mapping.value.vivero_id]).trim() : "";
-      if (!rowViveroVal.startsWith(props.viveroIdentificador)) {
+      const normalizedRowVal = rowViveroVal.replace(/[^A-Za-z0-9]/g, "").toLowerCase();
+      const normalizedViveroId = (props.viveroIdentificador || "").replace(/[^A-Za-z0-9]/g, "").toLowerCase();
+      
+      if (!normalizedRowVal.startsWith(normalizedViveroId)) {
         return; // Skip row, belongs to another Vivero
       }
     }
