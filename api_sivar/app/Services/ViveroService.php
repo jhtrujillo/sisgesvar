@@ -132,10 +132,12 @@ class ViveroService
             return $vivero->origenVivero->identificador_unico;
         }
 
-        // Si tiene origen_parcela con formato de ID de parcela de Vivero
-        if ($vivero->origen_parcela && count(explode('-', $vivero->origen_parcela)) > 3) {
+        // Si tiene origen_parcela con formato de ID de parcela de Vivero (vivero - parcela)
+        // Los viveros tienen 4 partes (MY2024-CENICANA-2C-1), si tiene 5 es porque incluye la parcela
+        if ($vivero->origen_parcela && count(explode('-', $vivero->origen_parcela)) > 4) {
             $parts = explode('-', $vivero->origen_parcela);
             $lastPart = end($parts);
+            // Si el último fragmento es numérico, lo quitamos para mostrar solo el ID del Vivero
             if (is_numeric($lastPart)) {
                 array_pop($parts); 
                 $cleanedParts = array_map(function($p) {
@@ -143,6 +145,11 @@ class ViveroService
                 }, $parts);
                 return implode('-', $cleanedParts); 
             }
+        }
+
+        // Si origen_parcela es un texto completo (ej. MY2026-La_Aurora-2A-8), lo devolvemos
+        if ($vivero->origen_parcela && !is_numeric($vivero->origen_parcela)) {
+            return $vivero->origen_parcela;
         }
 
         // Construir usando códigos de la base de datos
@@ -157,7 +164,14 @@ class ViveroService
         if ($ingenioAnio !== '') {
             $info[] = $ingenioAnio;
         }
-        if ($vivero->origen_hacienda) $info[] = $vivero->origen_hacienda;
+        
+        $hacienda = $vivero->origen_hacienda;
+        if ($hacienda === '620') {
+            $hacienda = 'La_Aurora';
+        }
+        if ($hacienda) {
+            $info[] = $hacienda;
+        }
         
         $loteNombre = '';
         if ($vivero->origenLote) {
@@ -168,13 +182,13 @@ class ViveroService
         if ($loteNombre) {
             $info[] = trim(preg_replace('/\b(lote|vivero)\b/i', '', $loteNombre));
         }
-        
-        if ($vivero->origen_parcela) {
-            $info[] = trim(preg_replace('/\b(lote|vivero)\b/i', '', $vivero->origen_parcela));
+
+        // Si origen_parcela es solo un número (ej. el consecutivo del vivero o la parcela), lo anexamos
+        if ($vivero->origen_parcela && is_numeric($vivero->origen_parcela)) {
+            $info[] = $vivero->origen_parcela;
         }
 
         $info = array_filter(array_map('trim', $info));
-
         return count($info) > 0 ? implode('-', $info) : 'N/A';
     }
 }
