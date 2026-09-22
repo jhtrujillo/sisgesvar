@@ -226,48 +226,19 @@
 
               <!-- Proyecto -->
               <div class="relative md:col-span-2">
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="proyecto_id">Proyecto (Mejoramiento)</label>
-                <div class="relative">
-                  <textarea
-                    v-model="searchProyecto"
-                    @focus="showProyectos = true"
-                    @blur="hideProyectosDelay"
-                    placeholder="Escribe para buscar un proyecto..."
-                    rows="2"
-                    class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm resize-none"
-                  ></textarea>
-                  <button
-                    v-if="form.proyecto_id"
-                    @click="clearProyecto"
-                    type="button"
-                    class="absolute right-3.5 top-3.5 text-slate-400 hover:text-red-500 transition-colors"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path
-                        fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                  <div
-                    v-if="showProyectos"
-                    class="absolute z-20 w-full mt-1 bg-white shadow-xl max-h-60 rounded-xl py-1 text-xs ring-1 ring-black/5 overflow-auto border border-slate-100"
-                  >
-                    <div v-if="filteredProyectos.length === 0" class="cursor-default select-none py-2 px-3.5 text-slate-400 font-medium">
-                      No se encontraron proyectos
-                    </div>
-                    <div
-                      v-for="pry in filteredProyectos"
-                      :key="pry.id_prycto"
-                      @mousedown="selectProyecto(pry)"
-                      class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
-                      :class="form.proyecto_id === pry.id_prycto ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
-                    >
-                      {{ formatProjectName(pry) }}
-                    </div>
-                  </div>
-                </div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="proyectos">Proyectos (Mejoramiento)</label>
+                <ComboBoxMultiple
+                  id="proyectos"
+                  :options="proyectos.map(p => ({ keyName: p.id_prycto, text: formatProjectName(p) }))"
+                  :selected="form.proyectos"
+                  @update:selected="
+                    (val) => {
+                      form.proyectos = val;
+                      loadCaracteresForMultipleProyectos(val);
+                    }
+                  "
+                  placeholder="Seleccionar proyectos..."
+                />
               </div>
 
               <!-- Carácter -->
