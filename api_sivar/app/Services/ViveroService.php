@@ -9,11 +9,17 @@ class ViveroService
     /**
      * Generates a unique identifier for a nursery (vivero).
      */
-    public function generarIdentificadorUnico($ingenioCd, $haciendaCd, $suerteCd, $fechaSiembra, $consecutivo)
+        public function generarIdentificadorUnico($ingenioCd, $haciendaCd, $suerteCd, $fechaSiembra, $consecutivo)
     {
         $ingenio = $ingenioCd ?: '00';
         $hacienda = $haciendaCd ?: '00';
         $haciendaCleaned = ltrim($hacienda, '0');
+        
+        // Specific exception requested by the user for Hacienda 620
+        if ($haciendaCleaned === '620') {
+            $haciendaCleaned = 'La_Aurora';
+        }
+
         $suerte = $suerteCd ?: '00';
         $suerteCleaned = trim(preg_replace('/\b(lote|vivero)\b/i', '', $suerte));
         $anioSiembra = $fechaSiembra ? date('Y', strtotime($fechaSiembra)) : date('Y');
