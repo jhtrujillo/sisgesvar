@@ -1838,7 +1838,7 @@ const getCaracterNameLocal = (c_id: number) => {
 const getCaracteresByProyecto = (id_prycto: number) => {
   return form.value.caracteres_ids.filter(c_id => {
     const c = caracteres.value.find(x => x.id === c_id);
-    return c && c.proyecto_id === id_prycto;
+    return c && c.proyecto_id == id_prycto;
   });
 };
 
