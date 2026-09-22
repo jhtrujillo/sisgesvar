@@ -105,6 +105,16 @@
                       <option v-for="col in headers" :key="col" :value="col">{{ col }}</option>
                     </select>
                   </div>
+                  <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm border-l-4 border-l-amber-400">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Filtrar por ID Vivero (Opcional)</label>
+                    <select
+                      v-model="mapping.vivero_id"
+                      class="w-full pl-3 pr-10 py-2 border-slate-300 rounded-md border text-sm focus:outline-none focus:ring-1 focus:ring-cenicana bg-slate-50"
+                    >
+                      <option value="">-- Importar Todo --</option>
+                      <option v-for="col in headers" :key="col" :value="col">{{ col }}</option>
+                    </select>
+                  </div>
                 </div>
                 <div class="mt-8 flex justify-between">
                   <BaseButton variant="secondary" size="md" @click="step = sheets.length > 1 ? 2 : 1">Volver</BaseButton>
@@ -307,7 +317,7 @@ const selectedSheet = ref("");
 const headers = ref<string[]>([]);
 const rawData = ref<any[]>([]);
 
-const mapping = ref({ plot: "", variedad: "", caracter: "", proyecto: "" });
+const mapping = ref({ plot: "", variedad: "", caracter: "", proyecto: "", vivero_id: "" });
 
 const conflicts = ref<any[]>([]);
 const readyToImport = ref<any[]>([]);
@@ -478,6 +488,14 @@ const validateData = async () => {
   const seenPlots = new Set();
   
   rawData.value.forEach((row) => {
+    // Filter by Vivero/ID Plot if mapped
+    if (mapping.value.vivero_id) {
+      const rowViveroVal = row[mapping.value.vivero_id] ? String(row[mapping.value.vivero_id]).trim() : "";
+      if (!rowViveroVal.startsWith(props.viveroIdentificador)) {
+        return; // Skip row, belongs to another Vivero
+      }
+    }
+
     const plotVal = row[mapping.value.plot];
     if (plotVal === undefined || plotVal === null || plotVal === "") return; // Skip empty rows
     
