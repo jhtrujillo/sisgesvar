@@ -86,6 +86,25 @@ class ViveroController extends Controller
                         ->where('consecutivo_vivero_ingenio', $request->consecutivo_vivero_ingenio)
                         ->whereYear('fecha_siembra', $yearReq)
                         ->first();
+                    if ($request->origen_parcela && is_numeric($request->origen_parcela) && !$request->origen_vivero_id) {
+                        // Instanciar un vivero temporal para usar el servicio de formato
+                        $tempV = new \App\Models\Vivero();
+                        $tempV->origen_ingenio = $request->origen_ingenio;
+                        $tempV->origen_hacienda = $request->origen_hacienda;
+                        $tempV->origen_suerte = $request->origen_suerte;
+                        $tempV->origen_anio = $request->origen_anio;
+                        $tempV->origen_parcela = $request->origen_parcela;
+                        $tempV->origen_lote_id = $request->origen_lote_id;
+                        if ($tempV->origen_lote_id) {
+                            $tempV->origenLote = \App\Models\Lote::find($tempV->origen_lote_id);
+                        }
+                        
+                        $fullOrigen = $this->viveroService->formatIdViveroOrigen($tempV);
+                        if ($fullOrigen) {
+                            $request->merge(['origen_parcela' => $fullOrigen]);
+                        }
+                    }
+
                     if ($preCreated) {
                         $preCreatedId = $preCreated->id;
                     }
@@ -308,6 +327,10 @@ class ViveroController extends Controller
 
             $originalIdent = $vivero->getOriginal('identificador_unico');
             $vivero->fill($request->except('identificador_unico'));
+
+            if ($vivero->origen_parcela && is_numeric($vivero->origen_parcela) && !$vivero->origen_vivero_id) {
+                $vivero->origen_parcela = $this->viveroService->formatIdViveroOrigen($vivero);
+            }
 
             if (!$vivero->suerte && $vivero->lote_id) {
                 $lote = \App\Models\Lote::find($vivero->lote_id);
