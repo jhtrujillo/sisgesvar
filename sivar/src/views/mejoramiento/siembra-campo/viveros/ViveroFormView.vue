@@ -2153,9 +2153,9 @@ const submitForm = async () => {
     toast.error("La Fecha de Siembra es obligatoria.");
     return;
   }
-  if (!form.value.proyecto_id) {
+  if (!form.value.proyectos || form.value.proyectos.length === 0) {
     activeTab.value = "generales";
-    toast.error("El Proyecto es obligatorio.");
+    toast.error("Debe vincular al menos un Proyecto.");
     return;
   }
 
@@ -2681,7 +2681,21 @@ const resetAndLoad = async () => {
       if (vivero.fecha_siembra) {
         vivero.fecha_siembra = vivero.fecha_siembra.substring(0, 10);
       }
-      form.value = { ...vivero, caracteres_ids: [] };
+      
+      const mappedProyectos = vivero.proyectos ? vivero.proyectos.map((p: any) => p.id_prycto || p.id) : [];
+      const mappedCaracteres = vivero.caracteres ? vivero.caracteres.map((c: any) => c.id) : [];
+      
+      form.value = { 
+        ...vivero, 
+        proyectos: mappedProyectos,
+        caracteres_ids: mappedCaracteres 
+      };
+      
+      // Load the caracter objects so we can show their names in the summary table
+      if (mappedProyectos.length > 0) {
+        await loadCaracteresForMultipleProyectos(mappedProyectos);
+      }
+
 
       if (form.value.ingenio && form.value.hacienda) {
         await loadLotesForLocation();
