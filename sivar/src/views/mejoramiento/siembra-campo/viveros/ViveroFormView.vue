@@ -323,7 +323,7 @@
                 >
                   <option value="">Seleccione una Hacienda</option>
                   <option v-for="hda in haciendas" :key="hda.cd_hcnda" :value="hda.cd_hcnda">
-                    {{ decodeHTMLEntities(hda.nm_hcnda) }}
+                    {{ formatHaciendaName(hda.nm_hcnda) }}
                   </option>
                 </select>
               </div>
@@ -521,7 +521,7 @@
                 >
                   <option value="">Seleccione una Hacienda</option>
                   <option v-for="hda in haciendasOrigen" :key="'origen_hda_' + hda.cd_hcnda" :value="hda.cd_hcnda">
-                    {{ decodeHTMLEntities(hda.nm_hcnda) }}
+                    {{ formatHaciendaName(hda.nm_hcnda) }}
                   </option>
                 </select>
               </div>
@@ -1202,7 +1202,7 @@
                 >
                   <option value="" disabled>Seleccione la hacienda...</option>
                   <option v-for="hac in trasladoHaciendas" :key="'traslado_hac_' + hac.cd_hcnda" :value="hac.cd_hcnda">
-                    {{ decodeHTMLEntities(hac.nm_hcnda) }}
+                    {{ formatHaciendaName(hac.nm_hcnda) }}
                   </option>
                 </select>
               </div>
@@ -1283,6 +1283,12 @@ import BaseButton from "@/components/BaseButton.vue";
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
+
+const formatHaciendaName = (name: string) => {
+  if (!name) return "";
+  const decoded = decodeHTMLEntities(name);
+  return decoded.split('_')[0].trim();
+};
 
 const decodeHTMLEntities = (text: string) => {
   if (!text) return "";

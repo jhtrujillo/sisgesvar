@@ -50,7 +50,7 @@
             >
               <option value="">Seleccione una hacienda...</option>
               <option v-for="hda in haciendas" :key="hda.cd_hcnda" :value="hda.cd_hcnda">
-                {{ decodeHTMLEntities(hda.nm_hcnda) }}
+                {{ formatHaciendaName(hda.nm_hcnda) }}
               </option>
             </select>
           </div>
@@ -391,6 +391,12 @@ watch(
     syncParcelasPorVivero();
   }
 );
+
+const formatHaciendaName = (name: string) => {
+  if (!name) return "";
+  const decoded = decodeHTMLEntities(name);
+  return decoded.split('_')[0].trim();
+};
 
 const decodeHTMLEntities = (text: string) => {
   if (!text) return "";

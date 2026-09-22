@@ -97,7 +97,7 @@
                     <div class="text-[10px] text-slate-400 mt-0.5 truncate max-w-[150px]" :title="vivero.nombre">{{ vivero.nombre }}</div>
                   </td>
                   <td class="py-3 px-4 text-left">
-                    <div class="text-xs font-semibold text-slate-700 whitespace-nowrap">{{ vivero.ingenio }} - {{ vivero.hacienda || "N/A" }}</div>
+                    <div class="text-xs font-semibold text-slate-700 whitespace-nowrap">{{ vivero.ingenio }} - {{ formatHaciendaName(vivero.hacienda) }}</div>
                     <div class="mt-1 flex items-center gap-1.5 whitespace-nowrap">
                       <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
                         Lote: {{ vivero.lote?.nombre_lote || "N/A" }}
@@ -376,7 +376,7 @@
                 <span class="font-bold block uppercase">Ingenio</span> <span>{{ viveroSeleccionado?.ingenio }}</span>
               </div>
               <div>
-                <span class="font-bold block uppercase">Hacienda</span> <span>{{ viveroSeleccionado?.hacienda || "N/A" }}</span>
+                <span class="font-bold block uppercase">Hacienda</span> <span>{{ formatHaciendaName(viveroSeleccionado?.hacienda) }}</span>
               </div>
               <div>
                 <span class="font-bold block uppercase">Suerte</span> <span>{{ viveroSeleccionado?.suerte || "N/A" }}</span>
@@ -594,6 +594,11 @@ const handleConfirm = () => {
   }
   confirmDialog.value.isOpen = false;
 };
+const formatHaciendaName = (name: string) => {
+  if (!name) return "N/A";
+  return name.split('_')[0].trim();
+};
+
 const router = useRouter();
 const viveros = ref<any[]>([]);
 const loading = ref(true);
