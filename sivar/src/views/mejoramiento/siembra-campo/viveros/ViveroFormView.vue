@@ -224,123 +224,54 @@
                 </div>
               </div>
 
-              <!-- Proyecto -->
+              <!-- Proyectos y Caracteres Vinculados -->
               <div class="relative md:col-span-2">
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="proyectos">Proyectos (Mejoramiento)</label>
-                
-                <div class="flex flex-wrap gap-2 mb-2" v-if="form.proyectos && form.proyectos.length > 0">
-                  <div v-for="p_id in form.proyectos" :key="p_id" class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-blue-200">
-                    {{ (() => { const p = proyectos.find(x => x.id_prycto === p_id); return p ? formatProjectName(p) : p_id; })() }}
-                    <button type="button" @click="
-                      form.proyectos = form.proyectos.filter(id => id !== p_id);
-                      loadCaracteresForMultipleProyectos(form.proyectos);
-                    " class="text-blue-600 hover:text-blue-900 focus:outline-none">
-                      <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="relative">
-                  <input
-                    type="text"
-                    v-model="searchProyecto"
-                    @focus="showProyectos = true"
-                    @blur="hideProyectosDelay"
-                    placeholder="Buscar y agregar proyectos..."
-                    class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
-                  />
-                  <div
-                    v-if="showProyectos && filteredProyectos.length > 0"
-                    class="absolute z-20 w-full mt-1 bg-white shadow-xl max-h-60 rounded-xl py-1 text-xs ring-1 ring-black/5 overflow-auto border border-slate-100"
-                  >
-                    <div
-                      v-for="pry in filteredProyectos"
-                      :key="pry.id_prycto"
-                      @mousedown.prevent="
-                        if (!form.proyectos) form.proyectos = [];
-                        if (!form.proyectos.includes(pry.id_prycto)) {
-                          form.proyectos.push(pry.id_prycto);
-                          loadCaracteresForMultipleProyectos(form.proyectos);
-                        }
-                        searchProyecto = '';
-                        showProyectos = false;
-                      "
-                      class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
-                      :class="form.proyectos && form.proyectos.includes(pry.id_prycto) ? 'bg-blue-50 text-blue-700 font-bold' : ''"
-                    >
-                      {{ formatProjectName(pry) }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Carácter -->
-              <div class="relative md:col-span-2">
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="caracter_id">Carácter (Opcional)</label>
-                
-                <div class="flex flex-wrap gap-2 mb-2" v-if="form.caracteres_ids && form.caracteres_ids.length > 0">
-                  <div v-for="c_id in form.caracteres_ids" :key="c_id" class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-emerald-200">
-                    {{ getCaracterName(c_id) }}
-                    <button type="button" @click="removeCaracter(c_id)" class="text-emerald-600 hover:text-emerald-900 focus:outline-none">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="relative">
-                  <input
-                    type="text"
-                    v-model="searchCaracter"
-                    @focus="showCaracteres = true"
-                    @blur="hideCaracteresDelay"
-                    placeholder="Buscar o agregar..."
-                    class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
-                    :disabled="!form.proyecto_id"
-                    :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.proyecto_id }"
-                  />
-                  <button
-                    v-if="form.caracteres_ids && form.caracteres_ids.length > 0"
-                    @click="clearCaracter"
-                    type="button"
-                    class="absolute right-3.5 top-3 text-slate-400 hover:text-red-500 transition-colors"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path
-                        fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
+                <div class="flex items-center justify-between mb-3">
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Proyectos y Ambientes Asignados</label>
+                  <button type="button" @click="showProyectoModal = true" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Vincular Proyecto
                   </button>
-                  <div
-                    v-if="showCaracteres && form.proyecto_id"
-                    class="absolute z-20 w-full mt-1 bg-white shadow-xl max-h-60 rounded-xl py-1 text-xs ring-1 ring-black/5 overflow-auto border border-slate-100"
-                  >
-                    <div
-                      v-if="searchCaracter && !exactMatchCaracter"
-                      @mousedown="selectNewCaracter"
-                      class="cursor-pointer select-none py-2 px-3.5 hover:bg-emerald-50 text-cenicana font-bold border-b border-slate-100 transition-colors"
-                    >
-                      + Agregar nuevo: "{{ searchCaracter }}"
-                    </div>
-                    <div v-if="filteredCaracteres.length === 0 && !searchCaracter" class="cursor-default select-none py-2 px-3.5 text-slate-400 font-medium">
-                      No hay caracteres (escribe para crear)
-                    </div>
-                    <div
-                      v-for="car in filteredCaracteres"
-                      :key="car.id"
-                      v-show="!Array.isArray(form.caracteres_ids) || !form.caracteres_ids.includes(car.id)"
-                      @click="selectCaracter(car)"
-                      class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
-                      :class="form.caracteres_ids && form.caracteres_ids.includes(car.id) ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
-                    >
-                      {{ car.nombre }}
-                    </div>
-                  </div>
+                </div>
+
+                <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm mb-4">
+                  <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                      <tr>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Proyecto</th>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Caracteres (Ambientes)</th>
+                        <th scope="col" class="px-4 py-3 text-right text-[10px] font-bold text-slate-500 uppercase tracking-wider w-16">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 bg-white">
+                      <tr v-if="!form.proyectos || form.proyectos.length === 0">
+                        <td colspan="3" class="px-4 py-6 text-center text-xs text-slate-400 font-medium">
+                          No hay proyectos vinculados a este vivero.
+                        </td>
+                      </tr>
+                      <tr v-for="pry_id in form.proyectos" :key="pry_id" class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-4 py-3 text-xs font-semibold text-slate-700 align-top">
+                          {{ getProyectoName(pry_id) }}
+                        </td>
+                        <td class="px-4 py-3 align-top">
+                          <div class="flex flex-wrap gap-1.5">
+                            <span v-for="c_id in getCaracteresByProyecto(pry_id)" :key="c_id" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                              {{ getCaracterNameLocal(c_id) }}
+                            </span>
+                            <span v-if="getCaracteresByProyecto(pry_id).length === 0" class="text-[10px] text-slate-400 font-medium italic">Sin caracteres</span>
+                          </div>
+                        </td>
+                        <td class="px-4 py-3 text-right align-top">
+                          <button type="button" @click="removeProyectoVinculado(pry_id)" class="text-slate-400 hover:text-red-500 transition-colors" title="Desvincular Proyecto">
+                            <svg class="w-4 h-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
+            
             </div>
           </div>
 
@@ -768,6 +699,13 @@
           </div>
         </div>
       </form>
+
+    <AddProyectoCaracterModal
+      :is-open="showProyectoModal"
+      :proyectos="proyectos"
+      @close="showProyectoModal = false"
+      @confirm="handleConfirmProyecto"
+    />
 
       <!-- Administrar Parcelas (Solo visible en edición) -->
       <div v-show="isEditing && activeTab === 'parcelas'" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 border-t-4 border-cenicana">
@@ -1317,6 +1255,13 @@
               </button>
             </div>
           </form>
+
+    <AddProyectoCaracterModal
+      :is-open="showProyectoModal"
+      :proyectos="proyectos"
+      @close="showProyectoModal = false"
+      @confirm="handleConfirmProyecto"
+    />
         </div>
       </div>
     </template>
@@ -1324,7 +1269,7 @@
 </template>
 
 <script setup lang="ts">
-import ComboBoxMultiple from "@/components/ComboBoxMultiple.vue";
+import AddProyectoCaracterModal from "@/components/viveros/AddProyectoCaracterModal.vue";
 import { ref, shallowRef, onMounted, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
@@ -1872,6 +1817,56 @@ const ambientes = ref<any[]>([]);
 
 const searchProyecto = ref("");
 const showProyectos = ref(false);
+const showProyectoModal = ref(false);
+
+const getProyectoName = (id_prycto: number) => {
+  const p = proyectos.value.find(x => x.id_prycto === id_prycto);
+  return p ? formatProjectName(p) : id_prycto;
+};
+
+const getCaracterNameLocal = (c_id: number) => {
+  const c = caracteres.value.find(x => x.id === c_id);
+  return c ? c.nombre : c_id;
+};
+
+const getCaracteresByProyecto = (id_prycto: number) => {
+  return form.value.caracteres_ids.filter(c_id => {
+    const c = caracteres.value.find(x => x.id === c_id);
+    return c && c.proyecto_id === id_prycto;
+  });
+};
+
+const handleConfirmProyecto = (data: any) => {
+  const pry_id = data.proyecto.id_prycto;
+  if (!form.value.proyectos) form.value.proyectos = [];
+  if (!form.value.proyectos.includes(pry_id)) {
+    form.value.proyectos.push(pry_id);
+  }
+  
+  // Merge caracteres_ids
+  if (!form.value.caracteres_ids) form.value.caracteres_ids = [];
+  data.caracteres_ids.forEach((c_id: number) => {
+    if (!form.value.caracteres_ids.includes(c_id)) {
+      form.value.caracteres_ids.push(c_id);
+    }
+  });
+  
+  // We need to fetch the character objects so we can display their names and know their proyecto_id
+  loadCaracteresForMultipleProyectos(form.value.proyectos);
+  showProyectoModal.value = false;
+};
+
+const removeProyectoVinculado = (id_prycto: number) => {
+  form.value.proyectos = form.value.proyectos.filter((id: number) => id !== id_prycto);
+  
+  // Remove caracteres that belong to this project
+  const caracteresToKeep = form.value.caracteres_ids.filter((c_id: number) => {
+    const c = caracteres.value.find(x => x.id === c_id);
+    return c && c.proyecto_id !== id_prycto;
+  });
+  form.value.caracteres_ids = caracteresToKeep;
+};
+
 
 const formatProjectName = (pry: any) => {
   let code = pry.cd_cntble;
