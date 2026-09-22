@@ -246,6 +246,13 @@ class ViveroController extends Controller
                 $vivero->proyectos()->sync([]);
             }
 
+            if ($request->has('caracteres_ids')) {
+                $vivero->caracteres()->sync($request->caracteres_ids);
+            }
+
+            if ($request->has('proyectos') && is_array($request->proyectos)) {
+                $vivero->proyectos()->sync($request->proyectos);
+            }
 
             return response()->json($vivero, 201);
         });

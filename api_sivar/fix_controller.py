@@ -1,21 +1,46 @@
-import re
-
-with open('app/Http/Controllers/VarietyController.php', 'r', encoding='utf-8') as f:
+with open("app/Http/Controllers/ViveroController.php", "r") as f:
     content = f.read()
 
-# Replace specifically inside germoplasmBankList
-old_str = r"\$model = DB::connection\('sivar'\)->table\('caracterizacion_banco_germoplasma'\)->paginate\(10\);"
-new_str = """$query = DB::connection('sivar')->table('caracterizacion_banco_germoplasma');
-            $search = $request->query('search');
-            if (!empty($search)) {
-                $query->where('variedad', 'ilike', '%' . $search . '%')
-                      ->orWhere('ensayo', 'ilike', '%' . $search . '%')
-                      ->orWhere('madre', 'ilike', '%' . $search . '%')
-                      ->orWhere('padre', 'ilike', '%' . $search . '%');
+import re
+
+# Insert in `store` method.
+# In store:
+#             if ($request->has('caracteres_ids')) {
+#                 $vivero->caracteres()->sync($request->caracteres_ids);
+#             }
+# Wait, let's see if store has it.
+store_caracteres_match = re.search(r'if \(\$request->has\(\'caracteres_ids\'\)\) \{\s*\$vivero->caracteres\(\)->sync\(\$request->caracteres_ids\);\s*\}', content)
+if store_caracteres_match:
+    print("Found caracteres_ids sync. Adding proyectos.")
+    # Actually wait, let's check `store` first. I'll just append it right before `return response()->json($vivero);` 
+    # BUT I need to do it in BOTH store and update.
+
+def append_sync(content, method_name):
+    # Find `return response()->json($vivero);` inside the method.
+    # To do this safely, we find `public function store` and then the first `return response()->json($vivero, 201);`
+    # For update, `public function update` and first `return response()->json($vivero);`
+    pass
+
+# Easiest way: just replace all `if ($request->has('caracteres_ids')) {` block with it and the new block.
+block_to_find = """            if ($request->has('caracteres_ids')) {
+                $vivero->caracteres()->sync($request->caracteres_ids);
+            }"""
+
+block_to_replace = """            if ($request->has('caracteres_ids')) {
+                $vivero->caracteres()->sync($request->caracteres_ids);
             }
-            $model = $query->paginate($request->query('perPage', 50));"""
 
-content = re.sub(old_str, new_str, content, count=1)
+            if ($request->has('proyectos') && is_array($request->proyectos)) {
+                $vivero->proyectos()->sync($request->proyectos);
+            } else {
+                $vivero->proyectos()->sync([]);
+            }"""
 
-with open('app/Http/Controllers/VarietyController.php', 'w', encoding='utf-8') as f:
+content = content.replace(block_to_find, block_to_replace)
+
+# Also there's one with `return response()->json($vivero, 201);` in store that might not have `caracteres_ids` synced?
+# Let's check if store has `caracteres_ids` sync.
+
+with open("app/Http/Controllers/ViveroController.php", "w") as f:
     f.write(content)
+print("Replaced!")
