@@ -2702,15 +2702,6 @@ const resetAndLoad = async () => {
         caracteres_ids: mappedCaracteres 
       };
       
-      if (mappedProyectos.length > 0) {
-        await loadCaracteresForMultipleProyectos(mappedProyectos);
-      }
-
-
-      if (form.value.ingenio && form.value.hacienda) {
-        await loadLotesForLocation();
-      }
-
       if (form.value.origen_vivero_id) {
         const parentVivero = allViverosList.value.find((v) => v.id == form.value.origen_vivero_id);
         if (parentVivero) {
@@ -2732,6 +2723,8 @@ const resetAndLoad = async () => {
         origenParcelaManual.value = true;
 
         const parts = form.value.origen_parcela.split("-");
+        // Los IDs de Vivero tienen 4 partes (IngenioAño-Hacienda-Lote-Consecutivo)
+        // Todo lo que pase de 4 partes es la parcela.
         if (parts.length >= 5) {
           origenViveroInput.value = parts.slice(0, 4).join("-");
           origenParcelaText.value = parts.slice(4).join("-");
@@ -2739,6 +2732,14 @@ const resetAndLoad = async () => {
           origenViveroInput.value = form.value.origen_parcela;
           origenParcelaText.value = "";
         }
+      }
+
+      if (mappedProyectos.length > 0) {
+        await loadCaracteresForMultipleProyectos(mappedProyectos);
+      }
+
+      if (form.value.ingenio && form.value.hacienda) {
+        await loadLotesForLocation();
       }
 
 

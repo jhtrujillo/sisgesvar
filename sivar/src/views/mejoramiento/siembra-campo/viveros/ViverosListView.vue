@@ -111,7 +111,7 @@
                     <div class="text-xs text-gray-900 font-mono font-bold" :title="vivero.origen_parcela || 'N/A'">
                       {{ vivero.id_vivero_origen_formateado || "N/A" }}
                     </div>
-                    <div class="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1" v-if="vivero.origen_parcela">
+                    <div class="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1" v-if="vivero.origen_parcela && vivero.origen_parcela.split('-').length >= 5">
                       <span class="px-1 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
                         Prc: {{ vivero.origen_parcela.split('-').pop() }}
                       </span>
