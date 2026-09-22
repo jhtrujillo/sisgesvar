@@ -892,6 +892,7 @@
                 <th class="px-4 py-3 border-b border-slate-200">Parcela</th>
                 <th class="px-4 py-3 border-b border-slate-200">Variedad</th>
                 <th class="px-4 py-3 border-b border-slate-200">Pedigree</th>
+                <th class="px-4 py-3 border-b border-slate-200">Proyecto</th>
                 <th class="px-4 py-3 border-b border-slate-200">Carácter</th>
                 <th class="px-4 py-3 border-b border-slate-200">ID Plot</th>
                 <th class="px-4 py-3 border-b border-slate-200">ID Plot Origen</th>
@@ -900,7 +901,7 @@
             </thead>
             <tbody>
               <tr v-if="loadingParcelas">
-                <td colspan="7" class="text-center py-8 text-slate-500">
+                <td colspan="8" class="text-center py-8 text-slate-500">
                   <div class="flex items-center justify-center space-x-2">
                     <div class="w-4 h-4 border-2 border-cenicana border-t-transparent rounded-full animate-spin"></div>
                     <span>Cargando parcelas...</span>
@@ -908,10 +909,10 @@
                 </td>
               </tr>
               <tr v-else-if="parcelas.length === 0">
-                <td colspan="7" class="text-center py-8 text-slate-500 bg-slate-50">No hay parcelas registradas en este vivero.</td>
+                <td colspan="8" class="text-center py-8 text-slate-500 bg-slate-50">No hay parcelas registradas en este vivero.</td>
               </tr>
               <tr v-else-if="filteredParcelas.length === 0">
-                <td colspan="7" class="text-center py-8 text-slate-500 bg-slate-50">No se encontraron parcelas que coincidan con la búsqueda.</td>
+                <td colspan="8" class="text-center py-8 text-slate-500 bg-slate-50">No se encontraron parcelas que coincidan con la búsqueda.</td>
               </tr>
               <template v-else>
                 <tr
@@ -957,6 +958,9 @@
                     </td>
                     <td class="px-4 py-3 text-slate-400 text-xs italic">
                       {{ variedades.find((v) => v.id_nm_vrdad === editingPlotForm.variedad_id)?.pdgree || "N/A" }}
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 text-xs italic bg-slate-50">
+                      {{ getProyectoForPlot({ caracter_id: editingPlotForm.caracter_id }) }}
                     </td>
                     <td class="px-4 py-3 min-w-[150px]">
                       <select
@@ -1043,6 +1047,9 @@
                       {{ p.variedad?.nm_vrdad || p.variedad_id }}
                     </td>
                     <td class="px-4 py-3 text-slate-600 text-xs">{{ p.variedad?.pdgree || "N/A" }}</td>
+                    <td class="px-4 py-3 text-slate-600 text-xs">
+                      {{ getProyectoForPlot(p) }}
+                    </td>
                     <td class="px-4 py-3 text-slate-600 text-xs">
                       <span v-if="p.caracter?.nombre">{{ p.caracter.nombre }}</span>
                       <span v-else-if="form.caracteres_ids && form.caracteres_ids.length > 0 && getCaracterGlobalNombre()" class="text-slate-400 italic" title="Heredado del Vivero">{{
@@ -1725,6 +1732,28 @@ const getCaracterGlobalNombre = () => {
 const getCaracterName = (id: number | string) => {
   const c = caracteres.value.find((car) => car.id == id);
   return c ? c.nombre : "";
+};
+
+const getProyectoGlobalNombre = () => {
+  if (!form.value.proyectos || form.value.proyectos.length === 0) return "";
+  const nombres = form.value.proyectos.map((id) => {
+    const p = proyectos.value.find((pry) => (pry.id_prycto || pry.id) == id);
+    return p ? formatProjectName(p) : "";
+  }).filter(n => n !== "");
+  return nombres.join(", ");
+};
+
+const getProyectoForPlot = (p: any) => {
+  const caracterId = p.caracter_id || p.caracter?.id;
+  if (caracterId) {
+    const c = caracteres.value.find((car) => car.id == caracterId);
+    if (c && c.proyecto_id) {
+      const pry = proyectos.value.find((pry) => (pry.id_prycto || pry.id) == c.proyecto_id);
+      return pry ? formatProjectName(pry) : "N/A";
+    }
+    return "N/A";
+  }
+  return getProyectoGlobalNombre() || "N/A";
 };
 
 const selectVariedad = (v: any) => {
@@ -2616,11 +2645,12 @@ const deleteParcela = async (parcelaId: string | number) => {
 };
 
 const clearAllParcelas = async () => {
-  if (!confirm("¿Está seguro de que desea limpiar las variedades de TODAS las parcelas? Esto dejará las parcelas en blanco pero no eliminará su número.? Esta acción no se puede deshacer.")) return;
+  if (!confirm("¿Está seguro de que desea limpiar las variedades de TODAS las parcelas? Esto dejará las parcelas en blanco pero no eliminará su número. Esta acción no se puede deshacer.")) return;
 
   try {
     await viverosServices.deleteAllParcelas(route.params.id as string);
     toast.success("Todas las parcelas fueron limpiadas");
+    showEmptyPlots.value = true;
     await loadParcelas();
   } catch (error: any) {
     console.error("Error al eliminar parcelas:", error);
