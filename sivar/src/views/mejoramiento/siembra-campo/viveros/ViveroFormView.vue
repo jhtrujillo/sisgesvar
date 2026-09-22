@@ -1355,6 +1355,7 @@ const form = ref({
   numero_corte: 1,
   temporada_floracion: "",
   proyecto_id: "",
+  proyectos: [],
   ambiente: "",
   responsable_id: "",
   condicion: "",
@@ -1927,6 +1928,16 @@ const exactMatchCaracter = computed(() => {
   return caracteres.value.some((car) => car.nombre.toLowerCase() === searchCaracter.value.trim().toLowerCase());
 });
 
+const loadCaracteresForMultipleProyectos = async (proyectosIds: any[]) => {
+  try {
+    const promises = proyectosIds.map(id => viverosServices.getCaracteresPorProyecto(id));
+    const results = await Promise.all(promises);
+    caracteres.value = results.flat();
+  } catch (error) {
+    console.error("Error al cargar caracteres para multiples proyectos", error);
+  }
+};
+
 const loadCaracteres = async (proyecto_id: string | number) => {
   try {
     const res = await viverosServices.getCaracteresPorProyecto(proyecto_id);
@@ -1954,9 +1965,10 @@ const removeCaracter = (id: number) => {
 };
 
 const selectNewCaracter = async () => {
-  if (!searchCaracter.value || !form.value.proyecto_id) return;
+  if (!searchCaracter.value || form.value.proyectos.length === 0) return;
+  const targetProyecto = form.value.proyectos[0]; // create on the first one
   try {
-    const res = await viverosServices.createCaracter(form.value.proyecto_id, {
+    const res = await viverosServices.createCaracter(targetProyecto, {
       nombre: searchCaracter.value
     });
     const newCar = res.data;
@@ -2620,6 +2632,7 @@ const resetAndLoad = async () => {
     hacienda: "",
     suerte: "",
     proyecto_id: "",
+  proyectos: [],
     ambiente: "",
     responsable_id: "",
     fecha_siembra: "",

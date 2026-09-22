@@ -60,7 +60,7 @@ class ViveroController extends Controller
             return response()->json($viveros);
         }
 
-        $viveros = Vivero::with(['proyecto', 'responsable', 'caracteres', 'parcelas.variedad', 'parcelas.caracter', 'lote', 'origenLote', 'origenVivero'])
+        $viveros = Vivero::with(['proyecto', 'responsable', 'caracteres', 'proyectos', 'proyectos', 'parcelas.variedad', 'parcelas.caracter', 'lote', 'origenLote', 'origenVivero'])
             ->whereNotNull('proyecto_id')
             ->orderBy('created_at', 'desc')
             ->get();
@@ -246,7 +246,7 @@ class ViveroController extends Controller
 
     public function show($id)
     {
-        $vivero = Vivero::with(['proyecto', 'responsable', 'caracteres', 'lote', 'historialLotes.lote', 'origenLote', 'origenVivero'])->findOrFail($id);
+        $vivero = Vivero::with(['proyecto', 'responsable', 'caracteres', 'proyectos', 'proyectos', 'lote', 'historialLotes.lote', 'origenLote', 'origenVivero'])->findOrFail($id);
         $vivero->id_vivero_origen_formateado = $this->viveroService->formatIdViveroOrigen($vivero);
         return response()->json($vivero);
     }

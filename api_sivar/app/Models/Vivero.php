@@ -61,6 +61,11 @@ class Vivero extends Model
         return $this->belongsTo(Vivero::class, 'origen_vivero_id');
     }
 
+    public function proyectos()
+    {
+        return $this->belongsToMany(\App\Models\Proyecto::class, 'vivero_proyectos', 'vivero_id', 'proyecto_id', 'id', 'id_prycto')->withTimestamps();
+    }
+
     public function proyecto()
     {
         return $this->belongsTo(\App\Models\Proyecto::class, 'proyecto_id', 'id_prycto');
