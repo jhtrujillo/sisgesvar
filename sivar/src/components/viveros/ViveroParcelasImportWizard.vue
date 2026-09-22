@@ -185,8 +185,9 @@
                       <thead class="bg-slate-100 sticky top-0 z-10">
                         <tr>
                           <th class="px-4 py-3 text-left font-bold text-slate-600 uppercase text-xs">Fila / Plot</th>
-                          <th class="px-4 py-3 text-left font-bold text-slate-600 uppercase text-xs">Variedad original (Excel)</th>
-                          <th class="px-4 py-3 text-left font-bold text-slate-600 uppercase text-xs w-1/2">Asignar a variedad SIVAR</th>
+                          <th class="px-4 py-3 text-left font-bold text-slate-600 uppercase text-xs">Variedad</th>
+                          <th v-if="mapping.proyecto" class="px-4 py-3 text-left font-bold text-slate-600 uppercase text-xs min-w-[200px]">Proyecto</th>
+                          <th v-if="mapping.caracter" class="px-4 py-3 text-left font-bold text-slate-600 uppercase text-xs min-w-[200px]">Carácter</th>
                           <th class="px-4 py-3 text-center font-bold text-slate-600 uppercase text-xs w-16">Acción</th>
                         </tr>
                       </thead>
@@ -197,8 +198,10 @@
                           :class="{ 'bg-emerald-50/50': conflict.resolvedId }"
                         >
                           <td class="px-4 py-3 font-mono text-slate-500">{{ conflict.row[mapping.plot] }}</td>
-                          <td class="px-4 py-3 font-medium text-rose-600">{{ conflict.excelVariedad }}</td>
+                          
+                          <!-- Variedad Cell -->
                           <td class="px-4 py-3 relative">
+                            <div class="text-xs mb-1 font-semibold" :class="conflict.isVariedadResolved ? 'text-emerald-600' : 'text-rose-600'">Excel: {{ conflict.excelVariedad }}</div>
                             <div v-if="!conflict.resolvedId">
                               <div class="flex gap-2">
                                 <input
@@ -206,41 +209,76 @@
                                   v-model="conflict.searchTerm"
                                   @focus="conflict.showDropdown = true"
                                   @blur="hideConflictDropdown(conflict)"
-                                  placeholder="Buscar en SIVAR..."
-                                  class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-cenicana outline-none shadow-sm"
+                                  placeholder="Buscar Variedad..."
+                                  class="w-full border border-slate-300 rounded-lg px-2 py-1 text-xs focus:ring-1 focus:ring-cenicana outline-none shadow-sm"
                                 />
                                 <button
                                   @mousedown="registerNewVariety(conflict)"
                                   type="button"
-                                  title="Registrar como nueva"
-                                  class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap"
-                                >
-                                  Crear
-                                </button>
+                                  title="Registrar"
+                                  class="bg-slate-800 hover:bg-slate-700 text-white text-[10px] font-bold px-2 py-1 rounded"
+                                >Crear</button>
                               </div>
-                              <div
-                                v-if="conflict.showDropdown"
-                                class="absolute z-50 w-full mt-1 bg-white shadow-2xl max-h-60 rounded-lg py-1 text-xs overflow-auto border border-slate-300 left-0"
-                              >
+                              <div v-if="conflict.showDropdown" class="absolute z-50 w-full mt-1 bg-white shadow-2xl max-h-60 rounded-lg py-1 text-xs overflow-auto border border-slate-300 left-0">
                                 <div v-if="getFilteredVarieties(conflict.searchTerm).length === 0" class="px-3 py-2 text-slate-400">Sin resultados</div>
-                                <div
-                                  v-for="v in getFilteredVarieties(conflict.searchTerm)"
-                                  :key="v.id_nm_vrdad"
-                                  @mousedown="resolveConflict(conflict, v)"
-                                  class="cursor-pointer px-3 py-2 hover:bg-cenicana hover:text-white border-b border-slate-50 transition-colors"
-                                >
+                                <div v-for="v in getFilteredVarieties(conflict.searchTerm)" :key="v.id_nm_vrdad" @mousedown="resolveConflict(conflict, v)" class="cursor-pointer px-3 py-2 hover:bg-cenicana hover:text-white border-b border-slate-50 transition-colors">
                                   <span class="font-bold">{{ v.nm_vrdad }}</span> <span class="opacity-75 text-[10px] ml-1">{{ v.pdgree }}</span>
                                 </div>
                               </div>
                             </div>
-                            <div v-else class="flex items-center justify-between bg-white border border-emerald-200 rounded-lg px-3 py-1.5">
-                              <span class="text-sm text-emerald-700 font-bold flex items-center gap-1">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                {{ conflict.resolvedName }}
-                              </span>
-                              <BaseButton variant="link" size="xs" @click="conflict.resolvedId = null">Cambiar</BaseButton>
+                            <div v-else class="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded px-2 py-1">
+                              <span class="text-xs text-emerald-700 font-bold flex items-center gap-1">{{ conflict.resolvedName }}</span>
+                              <BaseButton v-if="!conflict.isVariedadResolved" variant="link" size="xs" class="!text-[10px]" @click="conflict.resolvedId = null">Cambiar</BaseButton>
+                            </div>
+                          </td>
+
+                          <!-- Proyecto Cell -->
+                          <td v-if="mapping.proyecto" class="px-4 py-3 relative">
+                            <div class="text-xs mb-1 font-semibold" :class="conflict.isProyectoResolved ? 'text-emerald-600' : 'text-rose-600'">Excel: {{ conflict.excelProyecto }}</div>
+                            <div v-if="!conflict.resolvedProyectoId">
+                              <input
+                                type="text"
+                                v-model="conflict.searchProyectoTerm"
+                                @focus="conflict.showProyectoDropdown = true"
+                                @blur="hideProyectoDropdown(conflict)"
+                                placeholder="Buscar Proyecto..."
+                                class="w-full border border-slate-300 rounded-lg px-2 py-1 text-xs focus:ring-1 focus:ring-cenicana outline-none shadow-sm"
+                              />
+                              <div v-if="conflict.showProyectoDropdown" class="absolute z-50 w-full mt-1 bg-white shadow-2xl max-h-60 rounded-lg py-1 text-xs overflow-auto border border-slate-300 left-0">
+                                <div v-if="getFilteredProyectos(conflict.searchProyectoTerm).length === 0" class="px-3 py-2 text-slate-400">Sin resultados</div>
+                                <div v-for="p in getFilteredProyectos(conflict.searchProyectoTerm)" :key="p.id_prycto || p.id" @mousedown="resolveProyectoConflict(conflict, p)" class="cursor-pointer px-3 py-2 hover:bg-cenicana hover:text-white border-b border-slate-50 transition-colors">
+                                  <span class="font-bold">{{ p.nm_prycto }}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div v-else class="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded px-2 py-1">
+                              <span class="text-xs text-emerald-700 font-bold flex items-center gap-1">{{ conflict.resolvedProyectoName }}</span>
+                              <BaseButton v-if="!conflict.isProyectoResolved" variant="link" size="xs" class="!text-[10px]" @click="conflict.resolvedProyectoId = null">Cambiar</BaseButton>
+                            </div>
+                          </td>
+
+                          <!-- Carácter Cell -->
+                          <td v-if="mapping.caracter" class="px-4 py-3 relative">
+                            <div class="text-xs mb-1 font-semibold" :class="conflict.isCaracterResolved ? 'text-emerald-600' : 'text-rose-600'">Excel: {{ conflict.excelCaracter }}</div>
+                            <div v-if="!conflict.resolvedCaracterId">
+                              <input
+                                type="text"
+                                v-model="conflict.searchCaracterTerm"
+                                @focus="conflict.showCaracterDropdown = true"
+                                @blur="hideCaracterDropdown(conflict)"
+                                placeholder="Buscar Carácter..."
+                                class="w-full border border-slate-300 rounded-lg px-2 py-1 text-xs focus:ring-1 focus:ring-cenicana outline-none shadow-sm"
+                              />
+                              <div v-if="conflict.showCaracterDropdown" class="absolute z-50 w-full mt-1 bg-white shadow-2xl max-h-60 rounded-lg py-1 text-xs overflow-auto border border-slate-300 left-0">
+                                <div v-if="getFilteredCaracteres(conflict.searchCaracterTerm).length === 0" class="px-3 py-2 text-slate-400">Sin resultados</div>
+                                <div v-for="c in getFilteredCaracteres(conflict.searchCaracterTerm)" :key="c.id" @mousedown="resolveCaracterConflict(conflict, c)" class="cursor-pointer px-3 py-2 hover:bg-cenicana hover:text-white border-b border-slate-50 transition-colors">
+                                  <span class="font-bold">{{ c.nombre }}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div v-else class="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded px-2 py-1">
+                              <span class="text-xs text-emerald-700 font-bold flex items-center gap-1">{{ conflict.resolvedCaracterName }}</span>
+                              <BaseButton v-if="!conflict.isCaracterResolved" variant="link" size="xs" class="!text-[10px]" @click="conflict.resolvedCaracterId = null">Cambiar</BaseButton>
                             </div>
                           </td>
                           <td class="px-2 py-3 text-center">
@@ -299,6 +337,7 @@ const props = defineProps<{
   show: boolean;
   variedades: any[];
   caracteres: any[];
+  proyectos: any[];
   viveroId: string | number;
   viveroIdentificador: string;
   origenParcela?: string;
@@ -326,15 +365,21 @@ const isAnalyzing = ref(false);
 const showOnlyUnresolved = ref(false);
 const isRegisteringAll = ref(false);
 
+const isRowResolved = (c: any) => {
+  return c.resolvedId && 
+         (!mapping.value.proyecto || c.resolvedProyectoId) && 
+         (!mapping.value.caracter || c.resolvedCaracterId);
+};
+
 const displayedConflicts = computed(() => {
   if (showOnlyUnresolved.value) {
-    return conflicts.value.filter((c) => !c.resolvedId);
+    return conflicts.value.filter((c) => !isRowResolved(c));
   }
   return conflicts.value;
 });
 
 const unresolvedCount = computed(() => {
-  return conflicts.value.filter((c) => !c.resolvedId).length;
+  return conflicts.value.filter((c) => !isRowResolved(c)).length;
 });
 
 const close = () => {
@@ -466,7 +511,53 @@ const findBestMatch = (term: string) => {
     }
   }
 
-  return null;
+  return minDistance <= 3 ? bestMatch : null;
+};
+
+const findBestProjectMatch = (term: string) => {
+  if (!term) return null;
+  const cleanTerm = term.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (!cleanTerm) return null;
+
+  let bestMatch = null;
+  let minDistance = Infinity;
+
+  for (const p of props.proyectos) {
+    const cleanP = p.nm_prycto.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (cleanP === cleanTerm) return p;
+
+    if (Math.abs(cleanP.length - cleanTerm.length) <= 4) {
+      const dist = levenshteinDistance(cleanTerm, cleanP);
+      if (dist < minDistance) {
+        minDistance = dist;
+        bestMatch = p;
+      }
+    }
+  }
+  return minDistance <= 3 ? bestMatch : null;
+};
+
+const findBestCaracterMatch = (term: string) => {
+  if (!term) return null;
+  const cleanTerm = term.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (!cleanTerm) return null;
+
+  let bestMatch = null;
+  let minDistance = Infinity;
+
+  for (const c of props.caracteres) {
+    const cleanC = c.nombre.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (cleanC === cleanTerm) return c;
+
+    if (Math.abs(cleanC.length - cleanTerm.length) <= 4) {
+      const dist = levenshteinDistance(cleanTerm, cleanC);
+      if (dist < minDistance) {
+        minDistance = dist;
+        bestMatch = c;
+      }
+    }
+  }
+  return minDistance <= 3 ? bestMatch : null;
 };
 
 const validateData = async () => {
@@ -514,6 +605,8 @@ const validateData = async () => {
     let resolvedCaracterId = props.caracterId || null;
     let caracterNombre = null;
     let proyectoNombre = null;
+    let isCaracterResolved = true;
+    let isProyectoResolved = true;
 
     if (mapping.value.caracter && row[mapping.value.caracter]) {
       const carText = String(row[mapping.value.caracter]).trim().toLowerCase();
@@ -521,14 +614,26 @@ const validateData = async () => {
       const carMatch = props.caracteres.find(c => c.nombre.toLowerCase() === carText || c.nombre.toLowerCase().includes(carText));
       if (carMatch) {
         resolvedCaracterId = carMatch.id;
+      } else {
+        isCaracterResolved = false;
       }
     }
     
+    let resolvedProyectoId = null;
     if (mapping.value.proyecto && row[mapping.value.proyecto]) {
       proyectoNombre = String(row[mapping.value.proyecto]).trim();
+      const pryText = proyectoNombre.toLowerCase();
+      const pryMatch = props.proyectos.find(p => p.nm_prycto.toLowerCase() === pryText || p.nm_prycto.toLowerCase().includes(pryText));
+      if (pryMatch) {
+        resolvedProyectoId = pryMatch.id_prycto || pryMatch.id;
+      } else {
+        isProyectoResolved = false;
+      }
     }
 
-    if (exactMatch) {
+    const isVariedadResolved = !!exactMatch;
+
+    if (isVariedadResolved && isProyectoResolved && isCaracterResolved) {
       readyToImport.value.push({
         numero_parcela: plotVal,
         variedad_id: exactMatch.id_nm_vrdad,
@@ -539,16 +644,36 @@ const validateData = async () => {
         proyecto_nombre: proyectoNombre
       });
     } else {
-      // Try to find a fuzzy best match
+      // Try to find fuzzy best matches
       const bestMatch = findBestMatch(varVal);
+      const bestProjectMatch = isProyectoResolved ? null : findBestProjectMatch(proyectoNombre || "");
+      const bestCaracterMatch = isCaracterResolved ? null : findBestCaracterMatch(caracterNombre || "");
 
       conflicts.value.push({
         row: row,
+        // Variedad
         excelVariedad: varVal || "(Vacío)",
         searchTerm: bestMatch ? bestMatch.nm_vrdad : varVal,
         showDropdown: false,
-        resolvedId: bestMatch ? bestMatch.id_nm_vrdad : null,
-        resolvedName: bestMatch ? bestMatch.nm_vrdad : ""
+        resolvedId: isVariedadResolved ? exactMatch.id_nm_vrdad : (bestMatch ? bestMatch.id_nm_vrdad : null),
+        resolvedName: isVariedadResolved ? exactMatch.nm_vrdad : (bestMatch ? bestMatch.nm_vrdad : ""),
+        isVariedadResolved: isVariedadResolved,
+        
+        // Proyecto
+        excelProyecto: proyectoNombre || "(Vacío)",
+        searchProyectoTerm: bestProjectMatch ? bestProjectMatch.nm_prycto : (proyectoNombre || ""),
+        showProyectoDropdown: false,
+        resolvedProyectoId: isProyectoResolved ? resolvedProyectoId : (bestProjectMatch ? (bestProjectMatch.id_prycto || bestProjectMatch.id) : null),
+        resolvedProyectoName: isProyectoResolved ? proyectoNombre : (bestProjectMatch ? bestProjectMatch.nm_prycto : ""),
+        isProyectoResolved: isProyectoResolved,
+
+        // Caracter
+        excelCaracter: caracterNombre || "(Vacío)",
+        searchCaracterTerm: bestCaracterMatch ? bestCaracterMatch.nombre : (caracterNombre || ""),
+        showCaracterDropdown: false,
+        resolvedCaracterId: isCaracterResolved ? resolvedCaracterId : (bestCaracterMatch ? bestCaracterMatch.id : null),
+        resolvedCaracterName: isCaracterResolved ? caracterNombre : (bestCaracterMatch ? bestCaracterMatch.nombre : ""),
+        isCaracterResolved: isCaracterResolved,
       });
     }
   });
@@ -563,9 +688,33 @@ const getFilteredVarieties = (term: string) => {
   return props.variedades.filter((v) => v.nm_vrdad.toLowerCase().includes(q) || (v.pdgree && v.pdgree.toLowerCase().includes(q))).slice(0, 50);
 };
 
+const getFilteredProyectos = (term: string) => {
+  if (!term) return props.proyectos.slice(0, 50);
+  const q = term.toLowerCase();
+  return props.proyectos.filter((p) => p.nm_prycto.toLowerCase().includes(q)).slice(0, 50);
+};
+
+const getFilteredCaracteres = (term: string) => {
+  if (!term) return props.caracteres.slice(0, 50);
+  const q = term.toLowerCase();
+  return props.caracteres.filter((c) => c.nombre.toLowerCase().includes(q)).slice(0, 50);
+};
+
 const hideConflictDropdown = (conflict: any) => {
   setTimeout(() => {
     conflict.showDropdown = false;
+  }, 200);
+};
+
+const hideProyectoDropdown = (conflict: any) => {
+  setTimeout(() => {
+    conflict.showProyectoDropdown = false;
+  }, 200);
+};
+
+const hideCaracterDropdown = (conflict: any) => {
+  setTimeout(() => {
+    conflict.showCaracterDropdown = false;
   }, 200);
 };
 
@@ -574,6 +723,20 @@ const resolveConflict = (conflict: any, variety: any) => {
   conflict.resolvedName = variety.nm_vrdad;
   conflict.searchTerm = variety.nm_vrdad;
   conflict.showDropdown = false;
+};
+
+const resolveProyectoConflict = (conflict: any, proyecto: any) => {
+  conflict.resolvedProyectoId = proyecto.id_prycto || proyecto.id;
+  conflict.resolvedProyectoName = proyecto.nm_prycto;
+  conflict.searchProyectoTerm = proyecto.nm_prycto;
+  conflict.showProyectoDropdown = false;
+};
+
+const resolveCaracterConflict = (conflict: any, caracter: any) => {
+  conflict.resolvedCaracterId = caracter.id;
+  conflict.resolvedCaracterName = caracter.nombre;
+  conflict.searchCaracterTerm = caracter.nombre;
+  conflict.showCaracterDropdown = false;
 };
 
 const registerNewVariety = async (conflict: any) => {
@@ -642,7 +805,7 @@ const resolvedCount = computed(() => {
 });
 
 const allConflictsResolved = computed(() => {
-  return conflicts.value.every((c) => c.resolvedId !== null);
+  return conflicts.value.every((c) => isRowResolved(c));
 });
 
 const submitImport = async () => {
@@ -653,32 +816,16 @@ const submitImport = async () => {
     ...readyToImport.value,
     ...conflicts.value.map((c) => {
       const plotVal = c.row[mapping.value.plot];
-      
-      let resolvedCaracterId = props.caracterId || null;
-      let caracterNombre = null;
-      let proyectoNombre = null;
-      
-      if (mapping.value.caracter && c.row[mapping.value.caracter]) {
-        const carText = String(c.row[mapping.value.caracter]).trim().toLowerCase();
-        caracterNombre = String(c.row[mapping.value.caracter]).trim();
-        const carMatch = props.caracteres.find(car => car.nombre.toLowerCase() === carText || car.nombre.toLowerCase().includes(carText));
-        if (carMatch) {
-          resolvedCaracterId = carMatch.id;
-        }
-      }
-      
-      if (mapping.value.proyecto && c.row[mapping.value.proyecto]) {
-        proyectoNombre = String(c.row[mapping.value.proyecto]).trim();
-      }
 
       return {
         numero_parcela: plotVal,
         variedad_id: c.resolvedId,
         numero_parcela_origen: null,
         id_plot_origen: `${props.viveroIdentificador}-${plotVal}`,
-        caracter_id: resolvedCaracterId,
-        caracter_nombre: caracterNombre,
-        proyecto_nombre: proyectoNombre
+        caracter_id: c.resolvedCaracterId || props.caracterId || null,
+        caracter_nombre: c.resolvedCaracterName || null,
+        proyecto_nombre: c.resolvedProyectoName || null,
+        proyecto_id: c.resolvedProyectoId || null
       };
     })
   ];

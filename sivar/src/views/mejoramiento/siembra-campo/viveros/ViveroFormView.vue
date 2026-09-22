@@ -1162,6 +1162,7 @@
         :show="showImportWizard"
         :variedades="variedades"
         :caracteres="caracteres"
+        :proyectos="proyectos"
         :viveroId="route.params.id"
         :viveroIdentificador="form.identificador_unico"
         :origenParcela="form.origen_parcela"
