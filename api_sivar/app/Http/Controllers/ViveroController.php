@@ -238,6 +238,10 @@ class ViveroController extends Controller
 
             if ($request->has('caracteres_ids')) {
                 $vivero->caracteres()->sync($request->caracteres_ids);
+                if (is_array($request->caracteres_ids) && count($request->caracteres_ids) > 0) {
+                    $vivero->caracter_id = $request->caracteres_ids[0];
+                    $vivero->save();
+                }
             }
 
             if ($request->has('proyectos') && is_array($request->proyectos)) {
@@ -346,6 +350,10 @@ class ViveroController extends Controller
 
             if ($request->has('caracteres_ids')) {
                 $vivero->caracteres()->sync($request->caracteres_ids);
+                if (is_array($request->caracteres_ids) && count($request->caracteres_ids) > 0) {
+                    $vivero->caracter_id = $request->caracteres_ids[0];
+                    $vivero->save();
+                }
             }
 
             if ($request->has('proyectos') && is_array($request->proyectos)) {
