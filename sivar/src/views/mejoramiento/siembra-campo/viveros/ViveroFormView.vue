@@ -1051,11 +1051,16 @@
                       {{ getProyectoForPlot(p) }}
                     </td>
                     <td class="px-4 py-3 text-slate-600 text-xs">
-                      <span v-if="p.caracter?.nombre">{{ p.caracter.nombre }}</span>
-                      <span v-else-if="form.caracteres_ids && form.caracteres_ids.length > 0 && getCaracterGlobalNombre()" class="text-slate-400 italic" title="Heredado del Vivero">{{
-                        getCaracterGlobalNombre()
-                      }}</span>
-                      <span v-else>N/A</span>
+                      <template v-if="!p.variedad_id && !p.variedad">
+                        <span class="text-slate-400">N/A</span>
+                      </template>
+                      <template v-else>
+                        <span v-if="p.caracter?.nombre">{{ p.caracter.nombre }}</span>
+                        <span v-else-if="form.caracteres_ids && form.caracteres_ids.length > 0 && getCaracterGlobalNombre()" class="text-slate-400 italic" title="Heredado del Vivero">{{
+                          getCaracterGlobalNombre()
+                        }}</span>
+                        <span v-else>N/A</span>
+                      </template>
                     </td>
                     <td class="px-4 py-3 text-slate-700 font-mono text-xs font-semibold">
                       {{ (form.identificador_unico ? form.identificador_unico + '-' : '') + p.numero_parcela }}
@@ -1744,6 +1749,9 @@ const getProyectoGlobalNombre = () => {
 };
 
 const getProyectoForPlot = (p: any) => {
+  // Si la parcela está vacía (sin variedad), no mostramos proyecto
+  if (!p.variedad_id && !p.variedad) return "N/A";
+
   const caracterId = p.caracter_id || p.caracter?.id;
   if (caracterId) {
     const c = caracteres.value.find((car) => car.id == caracterId);
