@@ -2741,17 +2741,7 @@ const resetAndLoad = async () => {
         }
       }
 
-      if (form.value.proyecto_id) {
-        const pry = proyectos.value.find((p) => p.id_prycto == form.value.proyecto_id);
-        if (pry) searchProyecto.value = formatProjectName(pry);
 
-        await loadCaracteres(form.value.proyecto_id);
-        if (form.value.caracteres && form.value.caracteres.length > 0) {
-          form.value.caracteres_ids = form.value.caracteres.map((c: any) => c.id);
-        } else if (form.value.caracter_id) {
-          form.value.caracteres_ids = [form.value.caracter_id];
-        }
-      }
       if (form.value.responsable_id) {
         const usr = responsables.value.find((u) => u.id_usrio == form.value.responsable_id);
         if (usr) searchResponsable.value = usr.nmbre;
