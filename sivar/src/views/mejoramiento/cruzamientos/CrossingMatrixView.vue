@@ -206,7 +206,7 @@
                     >
                       VM: {{ MatrixCrossingStore.matrixCrossingsFilter.viabilidad[0][indexCol].vm2 }}
                     </span>
-                    <span class="block text-[9px] text-slate-400 font-semibold mt-0.5 mb-0.5">Polen: {{ flor.polen }} | Flores: {{ flor.cantidad_flores || 0 }}</span>
+                    <span class="block text-[9px] text-slate-400 font-semibold mt-0.5 mb-0.5">Polen: {{ flor.polen }} ({{ flor.sxo }}) | Flores: {{ flor.cantidad_flores || 0 }}</span>
                   </th>
                 </template>
               </tr>
@@ -227,7 +227,7 @@
                     <span class="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-50 text-slate-500 border border-slate-100">
                       VM: {{ getRowVm(viabilidadRow) }}
                     </span>
-                    <span class="block text-[9px] text-slate-400 mt-0.5 font-semibold">Polen: {{ viabilidadRow[0].polen }} | Flores: {{ viabilidadRow[0].cantidad_flores || 0 }}</span>
+                    <span class="block text-[9px] text-slate-400 mt-0.5 font-semibold">Polen: {{ viabilidadRow[0].polen }} ({{ viabilidadRow[0].sxo }}) | Flores: {{ viabilidadRow[0].cantidad_flores || 0 }}</span>
                   </td>
 
                   <!-- Celdas de la matriz filtradas por columna -->
