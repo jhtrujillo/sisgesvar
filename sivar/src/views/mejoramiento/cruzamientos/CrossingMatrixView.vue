@@ -401,6 +401,14 @@ const confirmGlobalEmasculate = () => {
   const varName = emasculateTargetVar.value;
   emasculadasLocales.value.add(varName);
 
+  // Cambiar el polen visual en la cabecera
+  const flores = MatrixCrossingStore.matrixCrossingsFilter.flores || [];
+  const flor = flores.find((f: any) => f.vrdad === varName);
+  if (flor) {
+    flor.polen = 0;
+  }
+
+
   // Mutar la matriz entera
   const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
   viabilidades.forEach((row: any) => {
@@ -412,6 +420,11 @@ const confirmGlobalEmasculate = () => {
       
       const motherEmasc = emasculadasLocales.value.has(cell.varA);
       const fatherEmasc = emasculadasLocales.value.has(cell.varB);
+      
+      
+      // Ajustar polen visual a 0 si esta emasculada
+      if (motherEmasc) cell.polen = 0;
+      if (fatherEmasc) cell.polen2 = 0;
       
       const motherSex = motherEmasc ? 'Hembra' : cell.sxo;
       const fatherSex = fatherEmasc ? 'Hembra' : cell.sxo2;
