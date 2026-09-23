@@ -21,7 +21,7 @@
       <p class="text-slate-500 mt-2 ml-11 text-sm">Acceda a los registros y herramientas de floración, cruzamientos y gestión varietal.</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <!-- Viveros Card -->
       <router-link
         class="group relative flex flex-col bg-white border border-slate-100 hover:border-emerald-100 rounded-2xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
