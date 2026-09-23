@@ -550,7 +550,7 @@
                                 class="text-[9px] font-extrabold leading-tight"
                                 :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-white' : 'text-slate-900']"
                               >
-                                {{ car.varB }}
+                                {{ car.varA }} x {{ car.varB }}
                               </div>
                               <div
                                 class="text-[8px] font-semibold leading-tight"
