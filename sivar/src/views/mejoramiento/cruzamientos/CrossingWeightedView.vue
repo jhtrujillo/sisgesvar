@@ -438,7 +438,7 @@ const caracteresProyecto = ref<any[]>([]);
 
 const fetchCaracteresProyecto = async (proyectoId: string) => {
   try {
-    const res = await api.get(`${urls.API_URL}siembra-campo/proyectos/${proyectoId}/caracteres`, {}, true);
+    const res = await api.get(`${urls.API_PROYECTOS}/${proyectoId}/caracteres`, {}, true);
     caracteresProyecto.value = res.data;
   } catch (error) {
     console.error("Error al obtener los caracteres del proyecto:", error);
