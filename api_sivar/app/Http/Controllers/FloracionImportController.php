@@ -194,8 +194,11 @@ class FloracionImportController extends Controller
             
             // Re-check Vivero ID to ignore rows not belonging to this Vivero
             $plotIdComputed = $vivero->identificador_unico . '-' . $excelParcela;
-            $plotIdOrigen = DB::connection('sivar')->table('vivero_parcelas')
-                ->where('vivero_id', $viveroId)->where('numero_parcela', $excelParcela)->value('id_plot_origen');
+            
+            $parcelaRecord = DB::connection('sivar')->table('vivero_parcelas')
+                ->where('vivero_id', $viveroId)->where('numero_parcela', $excelParcela)->first();
+            $plotIdOrigen = $parcelaRecord ? $parcelaRecord->id_plot_origen : null;
+            $caracterId = $parcelaRecord ? $parcelaRecord->caracter_id : null;
             
             $viveroMatch = false;
             if (!$excelVivero) {
@@ -253,6 +256,7 @@ class FloracionImportController extends Controller
                 'id_smbra_cmpo' => $vivero->id, // Store reference
                 'estado' => '0',
                 'id_pr' => $vivero->proyecto_id,
+                'id_crcter' => $caracterId, // Inherited automatically
                 'usrio_edto' => auth()->id() ?? 1,
                 'fcha_edto' => $now
             ];
