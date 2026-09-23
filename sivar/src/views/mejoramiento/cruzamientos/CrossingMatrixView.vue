@@ -214,8 +214,9 @@
                     >
                       Emascular
                     </button>
-                    <span v-else-if="isEmasculatedLocal(flor.vrdad)" class="mt-1 text-rose-600 text-[8px] font-black uppercase block">
-                      [EMASCULADA]
+                    <span v-else-if="isEmasculatedLocal(flor.vrdad)" class="mt-1 flex flex-col items-center">
+                      <span class="text-rose-600 text-[8px] font-black uppercase block">[EMASCULADA]</span>
+                      <button @click.stop="revertEmasculate(flor.vrdad)" class="mt-0.5 text-[8px] underline text-slate-500 hover:text-slate-700">Deshacer</button>
                     </span>
                   </th>
                 </template>
@@ -245,8 +246,9 @@
                     >
                       Emascular
                     </button>
-                    <span v-else-if="isEmasculatedLocal(viabilidadRow[0].varA)" class="mt-1 text-rose-600 text-[8px] font-black uppercase block">
-                      [EMASCULADA]
+                    <span v-else-if="isEmasculatedLocal(viabilidadRow[0].varA)" class="mt-1 flex flex-col items-center">
+                      <span class="text-rose-600 text-[8px] font-black uppercase block">[EMASCULADA]</span>
+                      <button @click.stop="revertEmasculate(viabilidadRow[0].varA)" class="mt-0.5 text-[8px] underline text-slate-500 hover:text-slate-700">Deshacer</button>
                     </span>
                   </td>
 
@@ -385,6 +387,7 @@ const emasculateTargetVar = ref("");
 const emasculateTargetCar = ref<any>(null);
 
 const emasculadasLocales = ref(new Set<string>());
+const emasculadasOriginalData = ref(new Map<string, any>());
 
 const isEmasculatedLocal = (varName: string) => {
   return emasculadasLocales.value.has(varName);
@@ -397,78 +400,112 @@ const promptEmasculate = (varName: string) => {
   showEmasculateModal.value = true;
 };
 
+
 const confirmGlobalEmasculate = () => {
   const varName = emasculateTargetVar.value;
   emasculadasLocales.value.add(varName);
 
-  // Cambiar el polen visual en la cabecera
+  // Guardar datos originales
   const flores = MatrixCrossingStore.matrixCrossingsFilter.flores || [];
   const flor = flores.find((f: any) => f.vrdad === varName);
   if (flor) {
+    if (!emasculadasOriginalData.value.has(varName)) {
+      emasculadasOriginalData.value.set(varName, { polen: flor.polen, sxo: flor.sxo });
+    }
     flor.polen = 0;
+    flor.sxo = 'Hembra'; // <- Ahora dice Hembra
   }
 
-
-  // Mutar la matriz entera
-  const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
-  viabilidades.forEach((row: any) => {
-    row.forEach((cell: any) => {
-      if (!cell || !cell.varA || !cell.varB) return;
-
-      const isMother = cell.varA === varName;
-      const isFather = cell.varB === varName;
-      
-      const motherEmasc = emasculadasLocales.value.has(cell.varA);
-      const fatherEmasc = emasculadasLocales.value.has(cell.varB);
-      
-      
-      // Ajustar polen visual a 0 si esta emasculada
-      if (motherEmasc) cell.polen = 0;
-      if (fatherEmasc) cell.polen2 = 0;
-      
-      const motherSex = motherEmasc ? 'Hembra' : cell.sxo;
-      const fatherSex = fatherEmasc ? 'Hembra' : cell.sxo2;
-
-      // Evaluar la nueva viabilidad basada solo en sexo, asumiendo que los limites agronomicos ya estan en causa_veto
-      if (motherSex === 'Macho' && fatherSex === 'Macho') {
-         cell.viabilidad = false;
-         if (!cell.causa_veto?.includes('Incompatibilidad de sexo (Ambos son Macho)')) {
-            cell.causa_veto = (cell.causa_veto && cell.causa_veto !== 'Cruce viable' ? cell.causa_veto + ' | ' : '') + 'Incompatibilidad de sexo (Ambos son Macho)';
-         }
-      } else if (motherSex === 'Hembra' && fatherSex === 'Hembra') {
-         cell.viabilidad = false;
-         // Remplazar el veto de Macho por Hembra si existia
-         if (cell.causa_veto?.includes('Incompatibilidad de sexo (Ambos son Macho)')) {
-            cell.causa_veto = cell.causa_veto.replace('Incompatibilidad de sexo (Ambos son Macho)', 'Incompatibilidad de sexo (Ambas son Hembra)');
-         } else if (!cell.causa_veto?.includes('Incompatibilidad de sexo (Ambas son Hembra)')) {
-            cell.causa_veto = (cell.causa_veto && cell.causa_veto !== 'Cruce viable' ? cell.causa_veto + ' | ' : '') + 'Incompatibilidad de sexo (Ambas son Hembra)';
-         }
-      } else {
-         // Sexos compatibles (Hembra x Macho)
-         // Eliminar los vetos de sexo
-         if (cell.causa_veto) {
-           cell.causa_veto = cell.causa_veto.replace(/\s*\|?\s*Incompatibilidad de sexo \(Ambos son Macho\)/, '');
-           cell.causa_veto = cell.causa_veto.replace(/\s*\|?\s*Incompatibilidad de sexo \(Ambas son Hembra\)/, '');
-           if (cell.causa_veto === 'Incompatibilidad de sexo (Ambos son Macho)' || cell.causa_veto === 'Incompatibilidad de sexo (Ambas son Hembra)') {
-             cell.causa_veto = '';
-           }
-         }
-         
-         // Si despues de quitar el veto de sexo no quedan vetos agronomicos, es viable!
-         if (!cell.causa_veto || cell.causa_veto.trim() === '') {
-            cell.viabilidad = true;
-            if (motherEmasc) cell.emasculado = true;
-            cell.causa_veto = 'Cruce viable';
-         } else {
-            cell.viabilidad = false;
-         }
-      }
-    });
-  });
+  recalculateMatrixViability();
   
   toast.success('Variedad ' + varName + ' emasculada. Matriz recalculada.');
   showEmasculateModal.value = false;
 };
+
+const revertEmasculate = (varName: string) => {
+  emasculadasLocales.value.delete(varName);
+  
+  const flores = MatrixCrossingStore.matrixCrossingsFilter.flores || [];
+  const flor = flores.find((f: any) => f.vrdad === varName);
+  if (flor) {
+    const orig = emasculadasOriginalData.value.get(varName);
+    if (orig) {
+      flor.polen = orig.polen;
+      flor.sxo = orig.sxo;
+    }
+  }
+
+  recalculateMatrixViability();
+  toast.info('Variedad ' + varName + ' restaurada a su estado original.');
+};
+
+const recalculateMatrixViability = () => {
+  const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
+  viabilidades.forEach((row: any) => {
+    row.forEach((cell: any) => {
+      if (!cell || !cell.varA || !cell.varB) return;
+      
+      const motherEmasc = emasculadasLocales.value.has(cell.varA);
+      const fatherEmasc = emasculadasLocales.value.has(cell.varB);
+      
+      if (motherEmasc) {
+          cell.polen = 0;
+          cell.sxo = 'Hembra';
+      } else {
+          const origA = emasculadasOriginalData.value.get(cell.varA);
+          if (origA) {
+              cell.polen = origA.polen;
+              cell.sxo = origA.sxo;
+          }
+      }
+      
+      if (fatherEmasc) {
+          cell.polen2 = 0;
+          cell.sxo2 = 'Hembra';
+      } else {
+          const origB = emasculadasOriginalData.value.get(cell.varB);
+          if (origB) {
+              cell.polen2 = origB.polen;
+              cell.sxo2 = origB.sxo;
+          }
+      }
+
+      const motherSex = cell.sxo;
+      const fatherSex = cell.sxo2;
+
+      // Restablecer el veto primero, borrando vetos previos inyectados por emasculacion o desemasculacion
+      if (cell.causa_veto) {
+        cell.causa_veto = cell.causa_veto.replace(/\s*\|?\s*Incompatibilidad de sexo \(Ambos son Macho\)/, '');
+        cell.causa_veto = cell.causa_veto.replace(/\s*\|?\s*Incompatibilidad de sexo \(Ambas son Hembra\)/, '');
+        if (cell.causa_veto === 'Incompatibilidad de sexo (Ambos son Macho)' || cell.causa_veto === 'Incompatibilidad de sexo (Ambas son Hembra)' || cell.causa_veto === 'Cruce viable') {
+           cell.causa_veto = '';
+        }
+      }
+
+      // Re-aplicar vetos
+      if (motherSex === 'Macho' && fatherSex === 'Macho') {
+         cell.viabilidad = false;
+         cell.emasculado = false;
+         cell.causa_veto = (cell.causa_veto && cell.causa_veto !== '' ? cell.causa_veto + ' | ' : '') + 'Incompatibilidad de sexo (Ambos son Macho)';
+      } else if (motherSex === 'Hembra' && fatherSex === 'Hembra') {
+         cell.viabilidad = false;
+         cell.emasculado = false;
+         cell.causa_veto = (cell.causa_veto && cell.causa_veto !== '' ? cell.causa_veto + ' | ' : '') + 'Incompatibilidad de sexo (Ambas son Hembra)';
+      } else {
+         if (!cell.causa_veto || cell.causa_veto.trim() === '') {
+            cell.viabilidad = true;
+            if (motherEmasc) cell.emasculado = true;
+            else cell.emasculado = false;
+            cell.causa_veto = 'Cruce viable';
+         } else {
+            cell.viabilidad = false;
+            cell.emasculado = false;
+         }
+      }
+    });
+  });
+};
+
 
 
 
