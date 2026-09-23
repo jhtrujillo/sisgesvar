@@ -252,6 +252,7 @@ class FloracionImportController extends Controller
                 'flrcion' => $floracionTipo ?? 'Natural',
                 'sxo' => $mappedSexo,
                 'polen' => is_numeric($polen) ? (int)$polen : null,
+                'grpo' => $plotIdOrigen, // Origen/Plot Origen
                 'vivero' => $vivero->identificador_unico,
                 'id_smbra_cmpo' => $vivero->id, // Store reference
                 'estado' => '0',
