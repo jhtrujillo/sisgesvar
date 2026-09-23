@@ -180,4 +180,5 @@ Route::group([
     Route::post('admin/proyectos/{id}/usuarios', [\App\Http\Controllers\ProjectManagementController::class, 'assignUsuarioProyecto']);
     Route::delete('admin/proyectos/{id}/usuarios/{usuarioId}', [\App\Http\Controllers\ProjectManagementController::class, 'removeUsuarioProyecto']);
     Route::get('admin/usuarios-disponibles', [\App\Http\Controllers\ProjectManagementController::class, 'getUsuariosDisponibles']);
+    Route::post('tools/siembra-campo/import', [\App\Http\Controllers\SiembraCampoImportController::class, 'importar']);
 });
