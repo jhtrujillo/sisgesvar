@@ -818,6 +818,13 @@ class CrossingService
             ->where('floracion.estado', '=', 0)
             ->where('floracion.bolsa_comun', '=', 0)
             ->where('remote_pg_sipro.id_prycto', $proy)
+            ->when($caracter, function ($q) use ($caracter) {
+                if (strpos($caracter, ',') !== false) {
+                    $ids = explode(',', $caracter);
+                    return $q->whereIn('floracion.id_crcter', $ids);
+                }
+                return $q->where('floracion.id_crcter', $caracter);
+            })
             //->where('caracterizacion_banco_germoplasma.sitio_seleccion', '=', $ambiente_sitio)
             //->where('caracterizacion_banco_germoplasma.estado_seleccion', '=', $ambiente_estados)
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.polen", "floracion.id_pr", "caracteres.id_crcter", "caracteres.nmbre_crcter", "remote_pg_sipro.nm_prycto")
