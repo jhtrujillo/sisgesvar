@@ -426,6 +426,17 @@ const mainStore = useMainStore();
 // Estrategia de Selección
 const estrategia = ref<'combinacion'|'individual'>('combinacion');
 const caracterIndividual = ref<string>('');
+const caracteresProyecto = ref<any[]>([]);
+
+const fetchCaracteresProyecto = async (proyectoId: string) => {
+  try {
+    const res = await api.get(`${urls.API_URL}siembra-campo/proyectos/${proyectoId}/caracteres`, {}, true);
+    caracteresProyecto.value = res.data;
+  } catch (error) {
+    console.error("Error al obtener los caracteres del proyecto:", error);
+    caracteresProyecto.value = [];
+  }
+};
 
 // Variables para almacenar las selecciones
 const selectedVariety = ref<string | null>(null);
@@ -524,7 +535,11 @@ onMounted(async () => {
     fetchVarietyProfile(storedVariety.value);
   }
   if (storedMegaAmbiente.value) selectedMegaAmbiente.value = storedMegaAmbiente.value;
-  if (storedCdCntble.value) selectedCdCntble.value = storedCdCntble.value;
+  if (storedCdCntble.value) {
+    selectedCdCntble.value = storedCdCntble.value;
+    const proj = crossingInitialDataStore.crossingInitialDataList.find((p) => p.cd_cntble === storedCdCntble.value);
+    if (proj) fetchCaracteresProyecto(proj.id_prycto.toString());
+  }
 
   if (selectedMegaAmbiente.value || selectedCdCntble.value) {
     await fetchPonderados();
@@ -560,7 +575,11 @@ watch(
       const proj = crossingInitialDataStore.crossingInitialDataList.find((p) => p.cd_cntble === newCdCntble);
       if (proj) {
         localStorage.setItem("selectedIdProject", proj.id_prycto.toString());
+        fetchCaracteresProyecto(proj.id_prycto.toString());
       }
+    } else {
+      caracteresProyecto.value = [];
+      caracterIndividual.value = '';
     }
   }
 );
@@ -697,30 +716,9 @@ const handleSiguiente = async () => {
       toast.error("Debe seleccionar un carácter objetivo");
       return;
     }
-    
-    // Set 100% to selected character, 0% to others
-    const proyectoParam = getActiveProjectCode();
-    const ambienteParam = getActiveAmbiente();
-    isFetchingProfile.value = true;
-    try {
-      for (const car of ponderadosFiltrados.value) {
-        const peso = car.id_caracteristica === caracterIndividual.value ? 100 : 0;
-        await modifyFeaturesStore.getModifyFeaturesCrossingList(
-          car.id_caracteristica,
-          proyectoParam,
-          car.nivel?.toString() || "0",
-          peso.toString(),
-          ambienteParam,
-          car.ponderado ? 0 : 1 // if it didn't have ponderado before, it's considered 'nuevo' = 1
-        );
-      }
-    } catch (e) {
-      console.error(e);
-      toast.error("Error al configurar los pesos individuales.");
-      isFetchingProfile.value = false;
-      return;
-    }
-    isFetchingProfile.value = false;
+    localStorage.setItem('filtroCaracterIndividual', caracterIndividual.value);
+  } else {
+    localStorage.removeItem('filtroCaracterIndividual');
   }
   
   // Continuar a la siguiente vista

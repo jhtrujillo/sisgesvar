@@ -1432,11 +1432,13 @@ async function loadSuggestionCrossings() {
   if ((selectedMegaAmbiente.value || selectedCdCntble.value || activeProj) && activeVariety) {
     isLoading.value = true;
     try {
+      const caracterFiltro = localStorage.getItem("filtroCaracterIndividual");
       await SuggestionCrossingPerProjectStore.getSuggestionCrossingPerProjectList(
         activeIdProj,
         activeProj,
         activeVariety,
-        activeAmb
+        activeAmb,
+        caracterFiltro
       );
 
       if (!ParametizeWeightedStore.parametizeWeightedCrossingFilter || !ParametizeWeightedStore.parametizeWeightedCrossingFilter.ponderados) {

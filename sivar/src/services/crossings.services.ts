@@ -30,8 +30,9 @@ async function GetSuggestionCrossings(proyectos: string, proyecto: string, testi
   const url = `${urls.API_SUGGESTION_CROSSING}/${proyectos}/${proyecto}/${testigo}/${megaAmbiente}`;
   return await api.get(url, {}, true);
 }
-async function GetSuggestionCrossingsPerProject(proyectos: string, proyecto: string, testigo: string, megaAmbiente: string): Promise<any> {
-  const url = `${urls.API_SUGGESTION_CROSSING_PER_PROJECT}/${proyectos}/${proyecto}/${testigo}/${megaAmbiente}`;
+async function GetSuggestionCrossingsPerProject(proyectos: string, proyecto: string, testigo: string, megaAmbiente: string, caracter?: string | null): Promise<any> {
+  let url = `${urls.API_SUGGESTION_CROSSING_PER_PROJECT}/${proyectos}/${proyecto}/${testigo}/${megaAmbiente}`;
+  if (caracter) url += `/${caracter}`;
   return await api.get(url, {}, true);
 }
 
