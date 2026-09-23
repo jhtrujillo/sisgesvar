@@ -25,9 +25,9 @@ class CrossingController extends Controller
         $this->crossingService = $crossingService;
     }
 
-    public function generateMatrix(Request $request, $proyectos, $proyecto, $testigo, $ambiente = 'Semiseco')
+    public function generateMatrix(Request $request, $proyectos, $proyecto, $testigo, $ambiente = 'Semiseco', $caracter = null)
     {
-        return $this->crossingService->generateMatrix($proyectos, $proyecto, $testigo, $ambiente);
+        return $this->crossingService->generateMatrix($proyectos, $proyecto, $testigo, $ambiente, $caracter);
     }
 
     public function suggestionCrossings(Request $request, $proyectos, $proyecto, $testigo, $ambiente)

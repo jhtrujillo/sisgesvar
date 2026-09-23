@@ -181,7 +181,7 @@ class CrossingService
 
         return $dist;
     }
-    public function generateMatrix($proy, $proyecto, $testigo, $ambiente = 'Semiseco')
+    public function generateMatrix($proy, $proyecto, $testigo, $ambiente = 'Semiseco', $caracter = null)
     {
         $fechaf = Carbon::today()->format('Y-m-d');
         $fechai = Carbon::yesterday()->format('Y-m-d');
@@ -199,7 +199,7 @@ class CrossingService
 
         $hasSpecificProject = !in_array('General', $proyectos) && !empty($proyectos) && $proyectos[0] !== 'all';
 
-        $queryFloresBG = function ($useProjectFilter = true) use ($proyectos, $fechai, $fechaf, $hasSpecificProject) {
+        $queryFloresBG = function ($useProjectFilter = true) use ($proyectos, $fechai, $fechaf, $hasSpecificProject, $caracter) {
             $q = DB::connection('sivar')->table('floracion')
                 ->join('remote_pg_sipro', function ($join) {
                     $join->on('remote_pg_sipro.id_prycto', '=', 'floracion.id_pr');
@@ -212,6 +212,14 @@ class CrossingService
                 $q->whereIn('remote_pg_sipro.cd_cntble', $proyectos);
             }
 
+                        if ($caracter) {
+                if (strpos($caracter, ',') !== false) {
+                    $ids = explode(',', $caracter);
+                    $q->whereIn('floracion.id_crcter', $ids);
+                } else {
+                    $q->where('floracion.id_crcter', $caracter);
+                }
+            }
             return $q->whereBetween('floracion.fcha', array($fechai, $fechaf))
                 ->where('floracion.estado', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.polen")
@@ -238,7 +246,7 @@ class CrossingService
             $flores_BG = $queryFloresBG(false);
         }
 
-        $queryFloresPR = function ($useProjectFilter = true) use ($proyectos, $fechai, $fechaf, $hasSpecificProject) {
+        $queryFloresPR = function ($useProjectFilter = true) use ($proyectos, $fechai, $fechaf, $hasSpecificProject, $caracter) {
             $q = DB::connection('sivar')->table('floracion')
                 ->join('remote_pg_sipro', function ($join) {
                     $join->on('remote_pg_sipro.id_prycto', '=', 'floracion.id_pr');
@@ -252,6 +260,14 @@ class CrossingService
                 $q->whereIn('remote_pg_sipro.cd_cntble', $proyectos);
             }
 
+                        if ($caracter) {
+                if (strpos($caracter, ',') !== false) {
+                    $ids = explode(',', $caracter);
+                    $q->whereIn('floracion.id_crcter', $ids);
+                } else {
+                    $q->where('floracion.id_crcter', $caracter);
+                }
+            }
             return $q->whereBetween('floracion.fcha', array($fechai, $fechaf))
                 ->where('floracion.estado', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo")
@@ -278,7 +294,7 @@ class CrossingService
             $flores_PR = $queryFloresPR(false);
         }
 
-        $queryFloresEIII = function ($useProjectFilter = true) use ($proyectos, $fechai, $fechaf, $hasSpecificProject) {
+        $queryFloresEIII = function ($useProjectFilter = true) use ($proyectos, $fechai, $fechaf, $hasSpecificProject, $caracter) {
             $q = DB::connection('sivar')->table('floracion')
                 ->join('remote_pg_sipro', function ($join) {
                     $join->on('remote_pg_sipro.id_prycto', '=', 'floracion.id_pr');
@@ -292,6 +308,14 @@ class CrossingService
                 $q->whereIn('remote_pg_sipro.cd_cntble', $proyectos);
             }
 
+                        if ($caracter) {
+                if (strpos($caracter, ',') !== false) {
+                    $ids = explode(',', $caracter);
+                    $q->whereIn('floracion.id_crcter', $ids);
+                } else {
+                    $q->where('floracion.id_crcter', $caracter);
+                }
+            }
             return $q->whereBetween('floracion.fcha', array($fechai, $fechaf))
                 ->where('floracion.estado', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo")
