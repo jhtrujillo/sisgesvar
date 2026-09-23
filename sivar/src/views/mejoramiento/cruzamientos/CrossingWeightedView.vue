@@ -182,7 +182,7 @@
             <label class="block uppercase tracking-wider text-amber-800 text-[10px] font-bold mb-2">Seleccione el carácter objetivo</label>
             <select v-model="caracterIndividual" class="w-full md:w-1/2 rounded-lg border-amber-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm p-2 outline-none">
               <option value="" disabled>Seleccione...</option>
-              <option v-for="car in ponderadosFiltrados" :key="car.id_caracteristica" :value="car.id_caracteristica">
+              <option v-for="car in caracteresProyecto" :key="car.id" :value="car.id">
                 {{ car.nombre }}
               </option>
             </select>
