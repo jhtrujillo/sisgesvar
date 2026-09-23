@@ -787,6 +787,22 @@ class ViveroController extends Controller
             ->distinct()
             ->get();
             
+        $conteo = DB::table('floracion')
+            ->select('id_crcter', DB::raw('count(distinct vrdad) as total_variedades'), DB::raw('count(*) as total_flores'))
+            ->where('id_pr', $id)
+            ->where('estado', 0)
+            ->where('bolsa_comun', 0)
+            ->whereBetween('fcha', [$fechai, $fechaf])
+            ->groupBy('id_crcter')
+            ->get()
+            ->keyBy('id_crcter');
+
+        foreach ($caracteres as $car) {
+            $stats = $conteo->get($car->id);
+            $car->total_variedades = $stats ? $stats->total_variedades : 0;
+            $car->total_flores = $stats ? $stats->total_flores : 0;
+        }
+            
         return response()->json($caracteres);
     }
 
