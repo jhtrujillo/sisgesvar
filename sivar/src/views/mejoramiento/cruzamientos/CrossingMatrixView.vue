@@ -252,6 +252,9 @@
                           <span class="text-[9px] font-extrabold tracking-tight leading-none text-slate-700 text-center">
                             DG: {{ getDistancia(car?.varA, car?.varB) || "NA" }}
                           </span>
+                          <span v-if="car?.emasculado" class="text-[7.5px] font-black text-rose-600 block text-center uppercase mt-0.5 leading-none">
+                            [EMASCULADA]
+                          </span>
                           <!-- Botón Comparador Lado a Lado -->
                           <button
                             @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad, car?.causa_veto)"
@@ -488,6 +491,17 @@ const draftKey = computed(() => `sivarcc_draft_crossings_${selectedCdCntble.valu
 
 // Función para alternar el cruzamiento cuando se hace click
 const toggleCruzamiento = (car: any) => {
+  if (!car.viabilidad && car.causa_veto && car.causa_veto.includes("Ambos son Macho")) {
+    const confirmEmasculate = confirm("Incompatibilidad de Sexo: Ambos parentales son Macho.\n\n¿Deseas Emascular a la Madre (" + car.varA + ") para forzar y permitir este cruce?");
+    if (!confirmEmasculate) {
+      return; // Abortar
+    }
+    car.emasculado = true;
+  } else if (car.viabilidad) {
+    // Si se deselecciona, quitamos el flag por si acaso
+    car.emasculado = false;
+  }
+
   // Mutar la viabilidad localmente
   car.viabilidad = !car.viabilidad;
 
@@ -498,7 +512,7 @@ const toggleCruzamiento = (car: any) => {
   viabilidades.forEach((row: any) => {
     row.forEach((c: any) => {
       if (c && c.varA && c.varB) {
-        savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad });
+        savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
       }
     });
   });

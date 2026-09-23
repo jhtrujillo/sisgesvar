@@ -551,6 +551,7 @@
                                 :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-white' : 'text-slate-900']"
                               >
                                 {{ car.varA }} x {{ car.varB }}
+                                <span v-if="car.emasculado" class="block text-[8.5px] mt-0.5" :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-rose-200' : 'text-rose-600']">[EMASCULADA]</span>
                               </div>
                               <div
                                 class="text-[8px] font-semibold leading-tight"
@@ -1634,6 +1635,16 @@ const hasOverusedFlowers = computed(() => {
 });
 
 function toggleCruzamiento(car: any) {
+  if (!car.viabilidad && getCausaInviabilidad(car).includes("Ambos son Macho")) {
+    const confirmEmasculate = confirm("Incompatibilidad de Sexo: Ambos parentales son Macho.\n\n¿Deseas Emascular a la Madre (" + car.varA + ") para forzar y permitir este cruce?");
+    if (!confirmEmasculate) {
+      return; // Abortar
+    }
+    car.emasculado = true;
+  } else if (car.viabilidad) {
+    car.emasculado = false;
+  }
+
   if (!car.viabilidad) {
     car.viabilidad = true;
     car.flores_madre = 1;
@@ -1651,7 +1662,7 @@ function toggleCruzamiento(car: any) {
   rows.forEach((row: any) => {
     row.forEach((c: any) => {
       if (c && c.varA && c.varB) {
-        savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad });
+        savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
       }
     });
   });
