@@ -183,7 +183,15 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               <label v-for="car in caracteresProyecto" :key="car.id" class="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-amber-100/50 transition">
                 <input type="checkbox" v-model="caracteresSeleccionados" :value="car.id" class="w-4 h-4 text-amber-600 focus:ring-amber-500 rounded border-amber-300" />
-                <span class="text-sm font-medium text-amber-900">{{ car.nombre }}</span>
+                <div class="flex flex-col">
+                  <span class="text-sm font-medium text-amber-900 leading-tight">{{ car.nombre }}</span>
+                  <span class="text-[10px] text-amber-700 font-semibold mt-0.5" v-if="car.total_flores > 0">
+                    {{ car.total_variedades }} vars / {{ car.total_flores }} flores
+                  </span>
+                  <span class="text-[10px] text-amber-700/50 font-semibold mt-0.5" v-else>
+                    Sin flores hoy
+                  </span>
+                </div>
               </label>
             </div>
             <p class="text-[10px] text-amber-700 mt-4 font-medium flex items-center gap-1.5">
