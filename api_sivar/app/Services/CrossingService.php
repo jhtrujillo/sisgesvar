@@ -144,12 +144,14 @@ class CrossingService
 
                 // Otras condiciones 
                 if (($florB->sxo == "Hembra" || $florB->sxo == "HD" || $florB->sxo == "HF")) {
+                    $prev = isset($viabilidad['causa_veto']) && $viabilidad['viabilidad'] === false ? $viabilidad['causa_veto'] . " | " : "";
                     $viabilidad['viabilidad'] = false;
-                    $viabilidad['causa_veto'] = "Incompatibilidad de sexo (Ambos son Hembra)";
+                    $viabilidad['causa_veto'] = $prev . "Incompatibilidad de sexo (Ambos son Hembra)";
                 }
                 if (($florA->sxo == "Macho" || $florA->sxo == "MD" || $florA->sxo == "MF")) {
+                    $prev = isset($viabilidad['causa_veto']) && $viabilidad['viabilidad'] === false ? $viabilidad['causa_veto'] . " | " : "";
                     $viabilidad['viabilidad'] = false;
-                    $viabilidad['causa_veto'] = "Incompatibilidad de sexo (Ambos son Macho)";
+                    $viabilidad['causa_veto'] = $prev . "Incompatibilidad de sexo (Ambos son Macho)";
                 }
 
                 $viabilidad['vm'] = round($vm, 2);
