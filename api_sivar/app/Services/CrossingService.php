@@ -767,7 +767,13 @@ class CrossingService
             ->whereBetween('floracion.fcha', array($fechai, $fechaf))
             ->where('floracion.estado', '=', 0)
             ->where('floracion.bolsa_comun', '=', 0)
-            ->when($caracter, function ($q) use ($caracter) { return $q->where('floracion.id_crcter', $caracter); })
+                        ->when($caracter, function ($q) use ($caracter) {
+                if (strpos($caracter, ',') !== false) {
+                    $ids = explode(',', $caracter);
+                    return $q->whereIn('floracion.id_crcter', $ids);
+                }
+                return $q->where('floracion.id_crcter', $caracter);
+            })
             ->select(DB::raw('count(*) as numero, floracion.vrdad, floracion.id_pr, floracion.id_crcter'))
             ->groupBy('floracion.vrdad', 'floracion.id_pr', 'floracion.id_crcter')
             //->orderBy('floracion.sxo', 'asc')
@@ -851,7 +857,13 @@ class CrossingService
             ->where('floracion.estado', '=', 0)
             ->where('floracion.bolsa_comun', '=', 0)
             ->where('remote_pg_sipro.id_prycto', $proy)
-            ->when($caracter, function ($q) use ($caracter) { return $q->where('floracion.id_crcter', $caracter); })
+                        ->when($caracter, function ($q) use ($caracter) {
+                if (strpos($caracter, ',') !== false) {
+                    $ids = explode(',', $caracter);
+                    return $q->whereIn('floracion.id_crcter', $ids);
+                }
+                return $q->where('floracion.id_crcter', $caracter);
+            })
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
             ->select(DB::raw("\"floracion\".\"vrdad\", 
                         \"floracion\".\"sxo\", 
@@ -889,7 +901,13 @@ class CrossingService
             ->where('floracion.estado', '=', 0)
             ->where('floracion.bolsa_comun', '=', 0)
             ->where('remote_pg_sipro.id_prycto', $proy)
-            ->when($caracter, function ($q) use ($caracter) { return $q->where('floracion.id_crcter', $caracter); })
+                        ->when($caracter, function ($q) use ($caracter) {
+                if (strpos($caracter, ',') !== false) {
+                    $ids = explode(',', $caracter);
+                    return $q->whereIn('floracion.id_crcter', $ids);
+                }
+                return $q->where('floracion.id_crcter', $caracter);
+            })
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
             ->select(DB::raw("\"floracion\".\"vrdad\", 
                         \"floracion\".\"sxo\", 
