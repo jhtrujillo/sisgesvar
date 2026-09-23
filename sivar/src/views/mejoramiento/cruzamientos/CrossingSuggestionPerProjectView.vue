@@ -2414,6 +2414,15 @@ async function autoOptimizarFlores(silent: boolean | Event = false) {
     });
   });
 
+  // 2.5 Auto-asignar autofecundaciones (solicitado por usuario)
+  autofecundacionesSeleccionadas.value.clear();
+  floresSeleccionadas.value.forEach((padre: any) => {
+    const p = padre.variedad;
+    if (p && Number(padre.polen) > 20 && disp.padre[p] > 0) {
+      autofecundacionesSeleccionadas.value.add(p);
+    }
+  });
+
   for (const p in disp.padre) {
     if (usadas.padre[p] === undefined) usadas.padre[p] = 0;
     if (autofecundacionesSeleccionadas.value.has(p)) {
