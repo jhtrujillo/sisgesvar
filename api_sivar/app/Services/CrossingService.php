@@ -63,6 +63,8 @@ class CrossingService
                     'vm2' => '',
                     'polen' => $florA->polen ?? null,
                     'polen2' => $florB->polen ?? null,
+                    'cantidad_flores' => $florA->cantidad_flores ?? 0,
+                    'cantidad_flores2' => $florB->cantidad_flores ?? 0,
                     'proyecto' => $florA->id_pr ?? null,
                     'proyecto2' => $florB->id_pr ?? null,
                     'caracter' => $florA->id_crcter ?? null,
@@ -242,7 +244,7 @@ class CrossingService
             return $q->whereBetween('floracion.fcha', array($fechai, $fechaf))
                 ->where('floracion.estado', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.polen")
-                ->select(DB::raw('"floracion"."vrdad", count(*) as cantidad_flores, 
+                ->select(DB::raw('"floracion"."vrdad", COUNT(DISTINCT "floracion"."id_flrcion") as cantidad_flores, 
                             "floracion"."sxo", 
                             "floracion"."polen",
                             avg(CAST(REPLACE(CAST(mosaico_p AS TEXT), \',\', \'.\') AS FLOAT)) msco_r, 
@@ -290,7 +292,7 @@ class CrossingService
             return $q->whereBetween('floracion.fcha', array($fechai, $fechaf))
                 ->where('floracion.estado', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo")
-                ->select(DB::raw('"floracion"."vrdad", count(*) as cantidad_flores, 
+                ->select(DB::raw('"floracion"."vrdad", COUNT(DISTINCT "floracion"."id_flrcion") as cantidad_flores, 
                             "floracion"."sxo", 
                             avg(CAST(REPLACE(CAST(polen AS TEXT), \',\', \'.\') AS FLOAT)) polen, 
                             avg(CAST(REPLACE(CAST(mosaico AS TEXT), \',\', \'.\') AS FLOAT)) msco_r, 
@@ -338,7 +340,7 @@ class CrossingService
             return $q->whereBetween('floracion.fcha', array($fechai, $fechaf))
                 ->where('floracion.estado', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo")
-                ->select(DB::raw('"floracion"."vrdad", count(*) as cantidad_flores, 
+                ->select(DB::raw('"floracion"."vrdad", COUNT(DISTINCT "floracion"."id_flrcion") as cantidad_flores, 
                             "floracion"."sxo", 
                             avg(CAST(REPLACE(CAST(polen AS TEXT), \',\', \'.\') AS FLOAT)) polen, 
                             avg(CAST(REPLACE(CAST(mosaico AS TEXT), \',\', \'.\') AS FLOAT)) msco_r, 
@@ -467,7 +469,7 @@ class CrossingService
                 ->where('floracion.estado', '=', 0)
                 ->where('floracion.bolsa_comun', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.polen", "floracion.id_pr", "caracteres.id_crcter", "caracteres.nmbre_crcter", "remote_pg_sipro.nm_prycto")
-                ->select(DB::raw("\"floracion\".\"vrdad\", count(*) as cantidad_flores, count(*) as cantidad_flores, 
+                ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                                         \"floracion\".\"sxo\", 
                                         \"floracion\".\"polen\",
                                         \"floracion\".\"id_pr\",
@@ -504,7 +506,7 @@ class CrossingService
                 ->where('floracion.estado', '=', 0)
                 ->where('floracion.bolsa_comun', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-                ->select(DB::raw("\"floracion\".\"vrdad\", count(*) as cantidad_flores, count(*) as cantidad_flores, 
+                ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                                             \"floracion\".\"sxo\", 
                                             \"floracion\".\"id_pr\",
                                             \"caracteres\".\"nmbre_crcter\" as id_crcter,
@@ -541,7 +543,7 @@ class CrossingService
                 ->where('floracion.estado', '=', 0)
                 ->where('floracion.bolsa_comun', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.id_crcter", "caracteres.nmbre_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-                ->select(DB::raw("\"floracion\".\"vrdad\", count(*) as cantidad_flores, count(*) as cantidad_flores, 
+                ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                                             \"floracion\".\"sxo\", 
                                             \"floracion\".\"id_pr\",
                                             \"caracteres\".\"nmbre_crcter\" as id_crcter,
@@ -668,7 +670,7 @@ class CrossingService
             //->where('caracterizacion_banco_germoplasma.sitio_seleccion', '=', $ambiente_sitio)
             //->where('caracterizacion_banco_germoplasma.estado_seleccion', '=', $ambiente_estados)
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.polen", "floracion.id_pr", "caracteres.id_crcter", "caracteres.nmbre_crcter", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw("\"floracion\".\"vrdad\", count(*) as cantidad_flores, count(*) as cantidad_flores, 
+            ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                         \"floracion\".\"sxo\", 
                         \"floracion\".\"polen\",
                         \"floracion\".\"id_pr\",
@@ -704,7 +706,7 @@ class CrossingService
             ->where('floracion.estado', '=', 0)
             ->where('floracion.bolsa_comun', '=', 1)
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw("\"floracion\".\"vrdad\", count(*) as cantidad_flores, count(*) as cantidad_flores, 
+            ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                             \"floracion\".\"sxo\", 
                             \"floracion\".\"id_pr\",
                             \"caracteres\".\"nmbre_crcter\" as id_crcter,
@@ -740,7 +742,7 @@ class CrossingService
             ->where('floracion.estado', '=', 0)
             ->where('floracion.bolsa_comun', '=', 1)
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw("\"floracion\".\"vrdad\", count(*) as cantidad_flores, count(*) as cantidad_flores, 
+            ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                             \"floracion\".\"sxo\", 
                             \"floracion\".\"id_pr\",
                             \"caracteres\".\"nmbre_crcter\" as id_crcter,
@@ -872,7 +874,7 @@ class CrossingService
             //->where('caracterizacion_banco_germoplasma.sitio_seleccion', '=', $ambiente_sitio)
             //->where('caracterizacion_banco_germoplasma.estado_seleccion', '=', $ambiente_estados)
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.polen", "floracion.id_pr", "caracteres.id_crcter", "caracteres.nmbre_crcter", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw("\"floracion\".\"vrdad\", count(*) as cantidad_flores, count(*) as cantidad_flores, 
+            ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                     \"floracion\".\"sxo\", 
                     \"floracion\".\"polen\",
                     \"floracion\".\"id_pr\",
@@ -916,7 +918,7 @@ class CrossingService
                 return $q->where('floracion.id_crcter', $caracter);
             })
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw("\"floracion\".\"vrdad\", count(*) as cantidad_flores, count(*) as cantidad_flores, 
+            ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                         \"floracion\".\"sxo\", 
                         \"floracion\".\"id_pr\",
                         \"caracteres\".\"nmbre_crcter\" as id_crcter,
@@ -960,7 +962,7 @@ class CrossingService
                 return $q->where('floracion.id_crcter', $caracter);
             })
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw("\"floracion\".\"vrdad\", count(*) as cantidad_flores, count(*) as cantidad_flores, 
+            ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                         \"floracion\".\"sxo\", 
                         \"floracion\".\"id_pr\",
                         \"caracteres\".\"nmbre_crcter\" as id_crcter,
