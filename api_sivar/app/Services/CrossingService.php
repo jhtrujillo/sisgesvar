@@ -114,6 +114,7 @@ class CrossingService
 
                             if ($hasA && $hasB) {
                                 if (!$this->calcularViabilidadCaracteristica($caracteristica, $florA_eval, $florB_eval, $ponderado, $testigoVal)) {
+                                    \Log::info("VETO: $caracteristica caused viabilidad=false for {$florA_eval->variedad} x {$florB_eval->variedad} (Niveles A=" . $this->obtenerNivelEvaluacion($florA_eval, $caracteristica, $testigoVal, 'viabilidad') . " B=" . $this->obtenerNivelEvaluacion($florB_eval, $caracteristica, $testigoVal, 'viabilidad') . " Max=" . $ponderado->nivel . ")");
                                     $viabilidad['viabilidad'] = false;
                                 }
                             }
@@ -123,10 +124,16 @@ class CrossingService
 
                 // Otras condiciones 
                 if (($florB->sxo == "Hembra" || $florB->sxo == "HD" || $florB->sxo == "HF")) {
+                    \Log::info("Viabilidad false because florB {$florB->vrdad} is Hembra");
                     $viabilidad['viabilidad'] = false;
                 }
                 if (($florA->sxo == "Macho" || $florA->sxo == "MD" || $florA->sxo == "MF")) {
+                    \Log::info("Viabilidad false because florA {$florA->vrdad} is Macho");
                     $viabilidad['viabilidad'] = false;
+                }
+
+                if ($florA->vrdad == 'CC 90-1160' && $florB->vrdad == 'Cayana') {
+                    \Log::info("CC 90-1160 x Cayana: viabilidad is " . ($viabilidad['viabilidad'] ? 'true' : 'false'));
                 }
 
                 $viabilidad['vm'] = round($vm, 2);
@@ -189,7 +196,7 @@ class CrossingService
         $proyectos = explode(",", $proy);
 
         $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-            ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto, $ambiente) {
+            ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto, $ambiente) {
                 $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
                     ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto)
                     ->where('ponderados_valor_merito.ambiente', '=', $ambiente);
@@ -406,7 +413,7 @@ class CrossingService
             ->orderBy('floracion.vrdad', 'desc')
             ->get();
         $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-            ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto, $ambiente) {
+            ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto, $ambiente) {
                 $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
                     ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto)
                     ->where('ponderados_valor_merito.ambiente', '=', $ambiente);
@@ -611,7 +618,7 @@ class CrossingService
             ->get();
 
         $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-            ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto, $ambiente) {
+            ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto, $ambiente) {
                 $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
                     ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto)
                     ->where('ponderados_valor_merito.ambiente', '=', $ambiente);
@@ -776,6 +783,7 @@ class CrossingService
     }
     public function suggestionCrossingsPerProject($proy, $proyecto, $testigo, $ambiente, $caracter = null)
     {
+        \Log::info("Called suggestionCrossingsPerProject: proy=$proy, proyecto=$proyecto, ambiente=$ambiente, caracter=" . ($caracter ?? 'NULL'));
         $fechaf = Carbon::today()->format('Y-m-d');
         $fechai = Carbon::yesterday()->format('Y-m-d');
 
@@ -805,7 +813,7 @@ class CrossingService
             ->get();
 
         $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-            ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto, $ambiente) {
+            ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto, $ambiente) {
                 $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
                     ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto)
                     ->where('ponderados_valor_merito.ambiente', '=', $ambiente);
