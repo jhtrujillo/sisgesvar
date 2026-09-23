@@ -1181,8 +1181,7 @@
       :fatherName="comparatorFather"
       :initiallyViable="comparatorInitiallyViable" :causaVeto="comparatorCausa"
     />
-  </div>
-
+  
     <!-- Modal HTML de Emasculación -->
     <div v-if="showEmasculateModal" class="relative z-[9999]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
       <div class="fixed inset-0 bg-slate-900/60 transition-opacity"></div>
@@ -1219,6 +1218,7 @@
         </div>
       </div>
     </div>
+</div>
 </template>
 
 <script setup lang="ts">

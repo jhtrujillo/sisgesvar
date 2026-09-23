@@ -311,7 +311,6 @@
     :currentProject="selectedCdCntble"
     @flowerAssigned="handleFlowerAssigned"
   />
-</div>
 
     <!-- Modal HTML de Emasculación -->
     <div v-if="showEmasculateModal" class="relative z-[9999]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -349,6 +348,7 @@
         </div>
       </div>
     </div>
+</div>
 </template>
 
 <script setup lang="ts">
