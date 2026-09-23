@@ -201,7 +201,7 @@
           </div>
         </div>
 
-        <div v-show="estrategia === 'combinacion'" class="space-y-3">
+        <div class="space-y-3 mt-8">
           <div class="flex items-center space-x-2">
             <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">
               Ponderados de Características para la Matriz
@@ -438,7 +438,9 @@ const caracteresProyecto = ref<any[]>([]);
 
 const fetchCaracteresProyecto = async (proyectoId: string) => {
   try {
+    console.log("Fetching caracteres from:", `${urls.API_PROYECTOS}/${proyectoId}/caracteres`);
     const res = await api.get(`${urls.API_PROYECTOS}/${proyectoId}/caracteres`, {}, true);
+    console.log("Caracteres response:", res.data);
     caracteresProyecto.value = res.data;
   } catch (error) {
     console.error("Error al obtener los caracteres del proyecto:", error);
