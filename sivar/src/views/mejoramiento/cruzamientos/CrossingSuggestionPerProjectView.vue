@@ -1822,7 +1822,24 @@ function getCausaInviabilidad(cell: any): string {
           }
 
           if (lvlA !== 999 && lvlB !== 999 && lvlA + lvlB > Number(limiteMax)) {
-            motivos.push(`${p.equivalente.toUpperCase()} excede límite`);
+            
+            const nombresLegibles: Record<string, string> = {
+              'scrsa': 'Sacarosa',
+              'tchm': 'TCHM (Producción)',
+              'msco_r': 'Mosaico',
+              'rya_cfe_r': 'Roya',
+              'roya': 'Roya',
+              'roya_naranja': 'Roya Naranja',
+              'carbon': 'Carbón',
+              'volcamiento': 'Volcamiento',
+              'altura_planta': 'Altura de Planta',
+              'poblacion': 'Población',
+              'dmtro_tllo': 'Diámetro de Tallo'
+            };
+            const colName = p.equivalente.toLowerCase();
+            const nombreLegible = nombresLegibles[colName] || p.equivalente.toUpperCase();
+            motivos.push(`${nombreLegible} excede límite`);
+
           }
         }
       }
