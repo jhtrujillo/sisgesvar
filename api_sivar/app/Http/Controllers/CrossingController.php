@@ -40,7 +40,7 @@ class CrossingController extends Controller
         return $this->crossingService->sugerenciasCruzamientosBolsaComun($proyectos, $proyecto, $testigo, $ambiente);
     }
 
-    public function suggestionCrossingsPerProject(Request $request, $proyectos, $proyecto, $testigo, $ambiente)
+    public function suggestionCrossingsPerProject(Request $request, $proyectos, $proyecto, $testigo, $ambiente, $caracter = null)
     {
         return $this->crossingService->suggestionCrossingsPerProject($proyectos, $proyecto, $testigo, $ambiente);
     }

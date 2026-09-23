@@ -56,7 +56,7 @@ Route::group([
     Route::get('crearOrigenCruzamiento/{id_cruzamiento}', [\App\Http\Controllers\CrossingController::class, 'crearOrigenCruzamiento']);
     Route::get('generateMatrix/{proyectos}/{proyecto}/{testigo}/{ambiente}', [\App\Http\Controllers\CrossingController::class, 'generateMatrix']);
     Route::get('suggestionCrossings/{proyectos}/{proyecto}/{testigo}/{ambiente}', [\App\Http\Controllers\CrossingController::class, 'suggestionCrossings']);
-    Route::get('suggestionCrossingsPerProject/{proyectos}/{proyecto}/{testigo}/{ambiente}', [\App\Http\Controllers\CrossingController::class, 'suggestionCrossingsPerProject']);
+    Route::get('suggestionCrossingsPerProject/{proyectos}/{proyecto}/{testigo}/{ambiente}/{caracter?}', [\App\Http\Controllers\CrossingController::class, 'suggestionCrossingsPerProject']);
     Route::get('/crossing/programming/change_proyect_flower/{variedad}/{proyecto}/{bolsa}', [\App\Http\Controllers\CrossingController::class, 'enviarFlorAProyecto']);
     Route::get('/crossing/programming/flores_otros_proyectos', [\App\Http\Controllers\CrossingController::class, 'floresOtrosProyectos']);
     Route::get('/crossing/programming/devolver_flor_bolsa_comun/{variedad}/{proyecto}', [\App\Http\Controllers\CrossingController::class, 'devolverFlorABolsaComun']);
