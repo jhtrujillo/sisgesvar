@@ -115,6 +115,7 @@ class CrossingService
                             if ($hasA && $hasB) {
                                 if (!$this->calcularViabilidadCaracteristica($caracteristica, $florA_eval, $florB_eval, $ponderado, $testigoVal)) {
                                     $viabilidad['viabilidad'] = false;
+                                    $viabilidad['causa_veto'] = strtoupper($caracteristica) . " excede límite (" . $ponderado->nivel . ")";
                                 }
                             }
                         }
@@ -124,9 +125,11 @@ class CrossingService
                 // Otras condiciones 
                 if (($florB->sxo == "Hembra" || $florB->sxo == "HD" || $florB->sxo == "HF")) {
                     $viabilidad['viabilidad'] = false;
+                    $viabilidad['causa_veto'] = "Incompatibilidad de sexo (Ambos son Hembra)";
                 }
                 if (($florA->sxo == "Macho" || $florA->sxo == "MD" || $florA->sxo == "MF")) {
                     $viabilidad['viabilidad'] = false;
+                    $viabilidad['causa_veto'] = "Incompatibilidad de sexo (Ambos son Macho)";
                 }
 
                 $viabilidad['vm'] = round($vm, 2);
