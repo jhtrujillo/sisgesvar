@@ -575,7 +575,7 @@
                                 </span>
                                 <!-- Botón Comparador Lado a Lado -->
                                 <button
-                                  @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad)"
+                                  @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad, getCausaInviabilidad(car))"
                                   class="text-[8px] font-bold px-1.5 py-0.5 rounded transition-all duration-150 flex items-center justify-center space-x-0.5 border mx-auto"
                                   :class="[
                                     tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2)
@@ -1394,12 +1394,14 @@ const isComparatorOpen = ref(false);
 const comparatorMother = ref("");
 const comparatorFather = ref("");
 const comparatorInitiallyViable = ref(true);
+const comparatorCausa = ref("");
 
-const openParentComparator = (mother: string, father: string, viable: boolean) => {
+const openParentComparator = (mother: string, father: string, viable: boolean, causa: string = "") => {
   if (mother && father) {
     comparatorMother.value = mother;
     comparatorFather.value = father;
     comparatorInitiallyViable.value = viable;
+    comparatorCausa.value = causa;
     isComparatorOpen.value = true;
   }
 };

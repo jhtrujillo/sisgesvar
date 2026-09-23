@@ -254,7 +254,7 @@
                           </span>
                           <!-- Botón Comparador Lado a Lado -->
                           <button
-                            @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad)"
+                            @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad, car?.causa_veto)"
                             class="text-[8px] font-bold px-1.5 py-0.5 bg-slate-100 hover:bg-emerald-50 text-slate-650 hover:text-emerald-700 rounded border border-slate-200/60 hover:border-emerald-200 transition-all duration-150 flex items-center justify-center space-x-0.5"
                             title="Comparar Progenitores Lado a Lado"
                           >
@@ -376,12 +376,14 @@ const isComparatorOpen = ref(false);
 const comparatorMother = ref("");
 const comparatorFather = ref("");
 const comparatorInitiallyViable = ref(true);
+const comparatorCausa = ref("");
 
-const openParentComparator = (mother: string, father: string, viable: boolean) => {
+const openParentComparator = (mother: string, father: string, viable: boolean, causa: string = "") => {
   if (mother && father) {
     comparatorMother.value = mother;
     comparatorFather.value = father;
     comparatorInitiallyViable.value = viable;
+    comparatorCausa.value = causa;
     isComparatorOpen.value = true;
   }
 };
