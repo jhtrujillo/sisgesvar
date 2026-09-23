@@ -299,6 +299,7 @@
     :motherName="comparatorMother"
     :fatherName="comparatorFather"
     :initiallyViable="comparatorInitiallyViable"
+    :causaVeto="comparatorCausa"
   />
 
   <!-- Modal de Flores de Otros Proyectos / Bolsa Común -->

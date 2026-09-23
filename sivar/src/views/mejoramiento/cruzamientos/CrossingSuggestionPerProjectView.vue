@@ -1178,7 +1178,7 @@
       v-model:isOpen="isComparatorOpen"
       :motherName="comparatorMother"
       :fatherName="comparatorFather"
-      :initiallyViable="comparatorInitiallyViable"
+      :initiallyViable="comparatorInitiallyViable" :causaVeto="comparatorCausa"
     />
   </div>
 </template>
