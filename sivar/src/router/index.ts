@@ -33,7 +33,8 @@ import {
   ROUTE_SIEMBRA_CAMPO_VIVERO_EDITAR,
   ROUTE_SIEMBRA_CAMPO_VIVEROS_LOTES,
   ROUTE_ABOUT,
-  ROUTE_PROJECT_MANAGEMENT
+  ROUTE_PROJECT_MANAGEMENT,
+  ROUTE_TOOLS_SIEMBRA_CAMPO
 } from "./routes";
 import { useUserStore } from "@/stores/user";
 
@@ -251,6 +252,12 @@ const routes = [
         path: ROUTE_ABOUT,
         name: "about.show",
         component: () => import("@/views/AboutView.vue"),
+        beforeEnter: authGuard
+      },
+      {
+        path: ROUTE_TOOLS_SIEMBRA_CAMPO,
+        name: "tools.siembra_campo.show",
+        component: () => import("@/views/tools/siembra-campo/SiembraCampoGestionView.vue"),
         beforeEnter: authGuard
       },
       {

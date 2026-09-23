@@ -50,6 +50,7 @@ export const ROUTE_SIEMBRA_CAMPO_VIVEROS = "mejoramiento/siembra-campo/viveros/"
 export const ROUTE_SIEMBRA_CAMPO_VIVERO_NUEVO = "mejoramiento/siembra-campo/viveros/nuevo/";
 export const ROUTE_SIEMBRA_CAMPO_VIVERO_EDITAR = "mejoramiento/siembra-campo/viveros/editar/:id/";
 export const ROUTE_SIEMBRA_CAMPO_VIVEROS_LOTES = "mejoramiento/siembra-campo/viveros/lotes/";
+export const ROUTE_TOOLS_SIEMBRA_CAMPO = "tools/siembra-campo/";
 
 export const NON_SIGNIFICANT_ROUTES = [
   ROUTE_HOME,
@@ -87,5 +88,9 @@ export const NON_SIGNIFICANT_ROUTES = [
   ROUTE_SIEMBRA_CAMPO_VIVEROS_LOTES,
   ROUTE_ABOUT,
   ROUTE_PROJECT_MANAGEMENT,
+  ROUTE_TOOLS_SIEMBRA_CAMPO,
   ERROR_404
 ];
+
+// Tools
+export const ROUTE_TOOLS_SIEMBRA_CAMPO_IMPORT = "tools/siembra-campo/";

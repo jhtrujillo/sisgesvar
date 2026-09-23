@@ -61,6 +61,7 @@ const API_CREAR_LIBRO_CAMPO = API_URL + "crearLibroCampo";
 const API_ENSAYOS = API_URL + "ensayos";
 const API_CATALOGOS = API_URL + "catalogos";
 const API_ACTIVIDADES = API_URL + "actividades";
+const API_SIEMBRA_CAMPO_IMPORT = API_URL + "tools/siembra-campo/import";
 
 export default {
   SERVER_URL,
@@ -113,5 +114,6 @@ export default {
   API_FLORACION_EXECUTE,
   API_PROYECTOS: API_URL + "siembra-campo/proyectos",
   API_RESPONSABLES: API_URL + "siembra-campo/responsables",
-  API_AMBIENTES: API_URL + "siembra-campo/ambientes"
+  API_AMBIENTES: API_URL + "siembra-campo/ambientes",
+  API_SIEMBRA_CAMPO_IMPORT
 };

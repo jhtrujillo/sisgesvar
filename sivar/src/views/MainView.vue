@@ -124,6 +124,30 @@
                   </div>
                 </ModuleCardComponent>
 
+                <ModuleCardComponent
+                  title="Herramientas"
+                  description="Módulo de utilidades y herramientas, incluyendo la gestión e importación masiva de Siembra Campo."
+                  actionText="Ingresar Módulo"
+                  :to="{ name: 'tools.siembra_campo.show' }"
+                  variant="violet"
+                  class="flex-1 min-w-[240px] max-w-[320px]"
+                >
+                  <template #icon>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="48"
+                      height="48"
+                      viewBox="0 0 24 24"
+                      class="transition-transform duration-500 group-hover:scale-110"
+                    >
+                      <path
+                        fill="currentColor"
+                        d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.5 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.4-2.4c.4-.4.4-1 0-1.3z"
+                      />
+                    </svg>
+                  </template>
+                </ModuleCardComponent>
+
                 <!-- Especificaciones Module Card -->
                 <router-link
                   v-if="false"
