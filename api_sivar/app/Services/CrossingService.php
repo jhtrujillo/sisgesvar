@@ -115,7 +115,23 @@ class CrossingService
                             if ($hasA && $hasB) {
                                 if (!$this->calcularViabilidadCaracteristica($caracteristica, $florA_eval, $florB_eval, $ponderado, $testigoVal)) {
                                     $viabilidad['viabilidad'] = false;
-                                    $viabilidad['causa_veto'] = strtoupper($caracteristica) . " excede límite (" . $ponderado->nivel . ")";
+                                    
+                                    $nombresLegibles = [
+                                        'scrsa' => 'Sacarosa',
+                                        'tchm' => 'TCHM (Producción)',
+                                        'msco_r' => 'Mosaico',
+                                        'rya_cfe_r' => 'Roya',
+                                        'roya' => 'Roya',
+                                        'roya_naranja' => 'Roya Naranja',
+                                        'carbon' => 'Carbón',
+                                        'volcamiento' => 'Volcamiento',
+                                        'altura_planta' => 'Altura de Planta',
+                                        'poblacion' => 'Población',
+                                        'dmtro_tllo' => 'Diámetro de Tallo'
+                                    ];
+                                    $nombreLegible = $nombresLegibles[$caracteristica] ?? strtoupper($caracteristica);
+                                    
+                                    $viabilidad['causa_veto'] = $nombreLegible . " excede límite (" . $ponderado->nivel . ")";
                                 }
                             }
                         }
