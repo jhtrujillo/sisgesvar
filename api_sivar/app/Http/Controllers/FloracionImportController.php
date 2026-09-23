@@ -58,6 +58,8 @@ class FloracionImportController extends Controller
         $header = array_map('trim', $rows[0]);
         $errors = [];
         $validCount = 0;
+        $ignoredCount = 0;
+        $totalRows = count($rows) - 1;
 
         // Get column indices based on mapping
         $colIndex = [];
@@ -72,7 +74,8 @@ class FloracionImportController extends Controller
             $parcelaIdx = $colIndex['parcela'] ?? false;
             $variedadIdx = $colIndex['variedad'] ?? false;
             
-            if ($parcelaIdx === false || $variedadIdx === false || !isset($row[$parcelaIdx]) || !isset($row[$variedadIdx])) {
+            if ($parcelaIdx === false || $variedadIdx === false || !isset($row[$parcelaIdx]) || !isset($row[$variedadIdx]) || trim($row[$parcelaIdx]) === '') {
+                $totalRows--; // Don't count completely empty rows
                 continue;
             }
 
@@ -89,17 +92,21 @@ class FloracionImportController extends Controller
             if (!$excelVivero) {
                 $viveroMatch = true;
             } else {
-                $evLower = strtolower($excelVivero);
-                if ($evLower === strtolower($vivero->identificador_unico) || 
-                    $evLower === strtolower($plotIdComputed) || 
-                    ($plotIdOrigen && $evLower === strtolower($plotIdOrigen))) {
+                $evLower = preg_replace('/[^A-Za-z0-9]/', '', strtolower($excelVivero));
+                $vLower = preg_replace('/[^A-Za-z0-9]/', '', strtolower($vivero->identificador_unico));
+                $plotLower = preg_replace('/[^A-Za-z0-9]/', '', strtolower($plotIdComputed));
+                $origenLower = $plotIdOrigen ? preg_replace('/[^A-Za-z0-9]/', '', strtolower($plotIdOrigen)) : null;
+
+                if (str_starts_with($evLower, $vLower) || 
+                    str_starts_with($evLower, $plotLower) || 
+                    ($origenLower && str_starts_with($evLower, $origenLower))) {
                     $viveroMatch = true;
                 }
             }
             
             if (!$viveroMatch) {
-                $filename = $request->file('file')->getClientOriginalName();
-$errors[] = ['row' => $i + 1, 'message' => "El Origen '{$excelVivero}' en el archivo '{$filename}' no coincide con el vivero '{$vivero->identificador_unico}' ni con el ID Plot de la parcela '{$excelParcela}'."];
+                // Ignore rows that belong to a different vivero
+                $ignoredCount++;
                 continue;
             }
 
@@ -128,7 +135,11 @@ $errors[] = ['row' => $i + 1, 'message' => "El Origen '{$excelVivero}' en el arc
             return response()->json(['errors' => $errors]);
         }
 
-        return response()->json(['validCount' => $validCount]);
+        return response()->json([
+            'validCount' => $validCount,
+            'ignoredCount' => $ignoredCount,
+            'totalRows' => $totalRows
+        ]);
     }
 
     public function executeImport(Request $request)
@@ -173,13 +184,39 @@ $errors[] = ['row' => $i + 1, 'message' => "El Origen '{$excelVivero}' en el arc
             $parcelaIdx = $colIndex['parcela'] ?? false;
             $variedadIdx = $colIndex['variedad'] ?? false;
             
-            if ($parcelaIdx === false || $variedadIdx === false || !isset($row[$parcelaIdx]) || !isset($row[$variedadIdx])) {
+            if ($parcelaIdx === false || $variedadIdx === false || !isset($row[$parcelaIdx]) || !isset($row[$variedadIdx]) || trim($row[$parcelaIdx]) === '') {
                 continue;
             }
 
+            $excelVivero = $colIndex['vivero'] !== false ? trim($row[$colIndex['vivero']]) : null;
             $excelParcela = trim($row[$parcelaIdx]);
             $excelVariedad = trim($row[$variedadIdx]);
             
+            // Re-check Vivero ID to ignore rows not belonging to this Vivero
+            $plotIdComputed = $vivero->identificador_unico . '-' . $excelParcela;
+            $plotIdOrigen = DB::connection('sivar')->table('vivero_parcelas')
+                ->where('vivero_id', $viveroId)->where('numero_parcela', $excelParcela)->value('id_plot_origen');
+            
+            $viveroMatch = false;
+            if (!$excelVivero) {
+                $viveroMatch = true;
+            } else {
+                $evLower = preg_replace('/[^A-Za-z0-9]/', '', strtolower($excelVivero));
+                $vLower = preg_replace('/[^A-Za-z0-9]/', '', strtolower($vivero->identificador_unico));
+                $plotLower = preg_replace('/[^A-Za-z0-9]/', '', strtolower($plotIdComputed));
+                $origenLower = $plotIdOrigen ? preg_replace('/[^A-Za-z0-9]/', '', strtolower($plotIdOrigen)) : null;
+
+                if (str_starts_with($evLower, $vLower) || 
+                    str_starts_with($evLower, $plotLower) || 
+                    ($origenLower && str_starts_with($evLower, $origenLower))) {
+                    $viveroMatch = true;
+                }
+            }
+
+            if (!$viveroMatch) {
+                continue; // Ignore
+            }
+
             $sexo = $colIndex['sexo'] !== false ? trim($row[$colIndex['sexo']]) : null;
             $polen = $colIndex['polen'] !== false ? trim($row[$colIndex['polen']]) : null;
             $floracionTipo = $colIndex['floracion'] !== false ? trim($row[$colIndex['floracion']]) : null;

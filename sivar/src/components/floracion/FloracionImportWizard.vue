@@ -209,7 +209,10 @@
             </div>
             <h5 class="text-lg font-bold text-emerald-800 mb-2">¡Validación Exitosa!</h5>
             <p class="text-sm text-emerald-700 max-w-md">
-              Todos los datos de las flores coinciden perfectamente con el Vivero {{ selectedVivero?.identificador_unico }}, sus parcelas, variedades y proyecto.
+              Se escanearon <span class="font-bold">{{ totalRowsCount }}</span> filas en la pestaña. De estas, <span class="font-bold">{{ validRowsCount }}</span> filas pertenecen al Vivero {{ selectedVivero?.identificador_unico }} y pasaron todas las pruebas de integridad.
+            </p>
+            <p v-if="ignoredRowsCount > 0" class="text-xs text-amber-700 bg-amber-50 px-3 py-2 rounded-lg mt-3 border border-amber-100">
+              <span class="font-bold">Nota:</span> Se ignoraron silenciosamente {{ ignoredRowsCount }} filas porque pertenecen a viveros diferentes.
             </p>
             <div class="mt-6 bg-white px-6 py-3 rounded-lg border border-emerald-100 shadow-sm font-mono font-bold text-slate-700 text-sm">
               {{ validRowsCount }} registros listos para importar
@@ -403,6 +406,8 @@ const isValidating = ref(false);
 const validationErrors = ref<any[]>([]);
 const validationSuccess = ref(false);
 const validRowsCount = ref(0);
+const ignoredRowsCount = ref(0);
+const totalRowsCount = ref(0);
 
 const performValidation = async () => {
   isValidating.value = true;
@@ -425,6 +430,8 @@ const performValidation = async () => {
     } else {
       validationSuccess.value = true;
       validRowsCount.value = response.data.validCount;
+      ignoredRowsCount.value = response.data.ignoredCount || 0;
+      totalRowsCount.value = response.data.totalRows || response.data.validCount;
     }
   } catch (error: any) {
     console.error("Validation error:", error);
