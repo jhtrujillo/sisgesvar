@@ -370,7 +370,8 @@ const mappingConfig = {
   proyecto: { title: "Proyecto", required: true, auto: ['proyecto'] },
   polen: { title: "Viabilidad Polen (%)", required: true, auto: ['polen', 'viabilidad', 'porcentaje polen'] },
   sexo: { title: "Sexo", required: true, auto: ['sexo'] },
-  floracion: { title: "Tipo Floración (Nat/Ind)", required: false, auto: ['floracion', 'tipo'] },
+  flores: { title: "Cantidad de Flores", required: false, auto: ['flores', 'cantidad'] },
+  floracion: { title: "Tipo Floración (Nat/Ind)", required: false, auto: ['floracion', 'tipo', 'tipo floracion'] },
   fecha: { title: "Fecha de Evaluación", required: true, auto: ['fecha'] }
 };
 const mapping = ref<Record<string, string>>({});
