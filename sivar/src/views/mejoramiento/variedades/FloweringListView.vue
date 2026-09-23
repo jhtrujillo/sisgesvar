@@ -436,21 +436,21 @@ watch(verHistorico, async (nuevoValor) => {
 });
 
 const conlumnsInfo: Array<Column> = [
-  { keyName: "grpo", text: "Origen" },
-  { keyName: "vrdad", text: "Variedad" },
-  { keyName: "nmbre_crcter", text: "Caracter" },
   { keyName: "vivero", text: "Vivero" },
-  { keyName: "ingnio", text: "Ingenio" },
-  { keyName: "hcnda", text: "Hacienda" },
-  { keyName: "lte", text: "Lote" },
-  { keyName: "prcla", text: "Parcela" },
+  { keyName: "vrdad", text: "Variedad" },
   { keyName: "flores", text: "Flores", formatFromRow: () => '1' },
   { keyName: "polen", text: "Polen", formatFromRow: (row) => (row.polen ? `${row.polen}%` : "") },
   { keyName: "sxo", text: "Sexo", formatFromRow: (row) => (row.cmbio_sxo ? `${row.sxo} -> ${row.cmbio_sxo}` : row.sxo || "") },
   { keyName: "flrcion", text: "Floracion" },
   { keyName: "fcha", text: "Fecha" },
-  { keyName: "anio", text: "Año", formatFromRow: (row) => (row.fcha ? row.fcha.substring(0, 4) : "") },
   { keyName: "nm_prycto", text: "Proyecto" },
+  { keyName: "nmbre_crcter", text: "Caracter" },
+  { keyName: "grpo", text: "Origen" },
+  { keyName: "ingnio", text: "Ingenio" },
+  { keyName: "hcnda", text: "Hacienda" },
+  { keyName: "lte", text: "Lote" },
+  { keyName: "prcla", text: "Parcela" },
+  { keyName: "anio", text: "Año", formatFromRow: (row) => (row.fcha ? row.fcha.substring(0, 4) : "") },
   { keyName: "usuario", text: "Usuario", formatFromRow: (row) => `${row.prmer_nmbre || ""} ${row.aplldo || ""}`.trim() },
   { keyName: "obsrvcn", text: "Observaciones" }
 ];

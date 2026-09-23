@@ -244,6 +244,7 @@ class FloracionImportController extends Controller
             }
 
             $inserts[] = [
+                'ingnio' => $vivero->ingenio,
                 'hcnda' => $vivero->hacienda,
                 'fcha' => $fechaParsed,
                 'lte' => $vivero->suerte,
