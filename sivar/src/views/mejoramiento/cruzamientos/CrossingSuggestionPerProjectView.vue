@@ -1639,11 +1639,26 @@ async function loadSuggestionCrossings() {
 }
 
 const cantidadesMap = computed(() => {
-  const rawFlores = SuggestionCrossingPerProjectStore.suggestionCrossingsPerProjectFilter?.flores || [];
+  const filterData = SuggestionCrossingPerProjectStore.suggestionCrossingsPerProjectFilter || {};
+  const rawFlores = filterData.flores || [];
+  const floresBG = filterData.flores_bg || [];
+  const floresPR = filterData.flores_pr || [];
+  const floresEIII = filterData.flores_eiii || [];
+  
   const map: Record<string, number> = {};
-  rawFlores.forEach((f: any) => {
-    map[f.vrdad] = f.numero;
-  });
+  
+  const addFlores = (arr: any[]) => {
+    arr.forEach((f: any) => {
+      if (!map[f.vrdad]) map[f.vrdad] = 0;
+      map[f.vrdad] += (f.numero || f.cantidad_flores || 0);
+    });
+  };
+  
+  addFlores(rawFlores);
+  addFlores(floresBG);
+  addFlores(floresPR);
+  addFlores(floresEIII);
+  
   return map;
 });
 
@@ -2464,7 +2479,7 @@ async function autoOptimizarFlores(silent: boolean | Event = false) {
       // Regla de polen de la interfaz: El padre DEBE tener polen > 20
       if (Number(car?.polen2) <= 20) isBiologicallyValid = false;
 
-      if (m !== p && val !== -9999 && isBiologicallyValid) {
+      if (m !== p && isBiologicallyValid) {
         crossesForMother.push({ car, val, varB: p });
       }
     });
