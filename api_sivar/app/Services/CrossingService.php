@@ -63,6 +63,8 @@ class CrossingService
                     'vm2' => '',
                     'polen' => $florA->polen ?? null,
                     'polen2' => $florB->polen ?? null,
+                    'sxo' => $florA->sxo ?? null,
+                    'sxo2' => $florB->sxo ?? null,
                     'cantidad_flores' => $florA->cantidad_flores ?? 0,
                     'cantidad_flores2' => $florB->cantidad_flores ?? 0,
                     'proyecto' => $florA->id_pr ?? null,
