@@ -1553,6 +1553,8 @@ async function loadSuggestionCrossings() {
       });
 
       // Activar autofecundación por defecto para todos los machos (columnas)
+      // DESACTIVADO POR DEFECTO A PETICIÓN DEL USUARIO
+      /*
       if (viabilidadesMatriz.value && viabilidadesMatriz.value.length > 0) {
         viabilidadesMatriz.value[0].forEach((cell: any) => {
           if (cell && cell.varB && Number(cell.polen2) > 20) {
@@ -1560,6 +1562,7 @@ async function loadSuggestionCrossings() {
           }
         });
       }
+      */
 
 
       // 1. Restaurar EMASCULADAS primero para moverlas de columna a fila
