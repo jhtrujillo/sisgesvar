@@ -547,8 +547,12 @@ onMounted(async () => {
   if (storedMegaAmbiente.value) selectedMegaAmbiente.value = storedMegaAmbiente.value;
   if (storedCdCntble.value) {
     selectedCdCntble.value = storedCdCntble.value;
-    const proj = crossingInitialDataStore.crossingInitialDataList.find((p) => p.cd_cntble === storedCdCntble.value);
-    if (proj) fetchCaracteresProyecto(proj.id_prycto.toString());
+  }
+  
+  // Fetch caracteres siempre del proyecto seleccionado en el Paso 1
+  const idProyectoPaso1 = localStorage.getItem("selectedIdProject");
+  if (idProyectoPaso1) {
+    fetchCaracteresProyecto(idProyectoPaso1);
   }
 
   if (selectedMegaAmbiente.value || selectedCdCntble.value) {
@@ -584,12 +588,10 @@ watch(
       localStorage.setItem("lastSelectedCdCntble", newCdCntble);
       const proj = crossingInitialDataStore.crossingInitialDataList.find((p) => p.cd_cntble === newCdCntble);
       if (proj) {
-        localStorage.setItem("selectedIdProject", proj.id_prycto.toString());
-        fetchCaracteresProyecto(proj.id_prycto.toString());
+        // NO sobreescribir el proyecto del Paso 1, este dropdown es solo para Ponderados
       }
     } else {
-      caracteresProyecto.value = [];
-      caracteresSeleccionados.value = [];
+      // No limpiar los caracteres si borran el proyecto de ponderados
     }
   }
 );
