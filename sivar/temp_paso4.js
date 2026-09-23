@@ -1300,7 +1300,6 @@ const autofecundacionesSeleccionadas = ref<Set<string>>(new Set());
 const selectedVariety = ref(localStorage.getItem("selectedVariety") || "");
 const selectedIdProject = ref(localStorage.getItem("selectedIdProject") || "");
 const draftKey = computed(() => `sivarcc_draft_crossings_${selectedCdCntble.value}_${selectedMegaAmbiente.value}`);
-const emasculadasKey = computed(() => `sivarcc_draft_emasculadas_${selectedCdCntble.value}_${selectedMegaAmbiente.value}`);
 const isSaving = ref(false);
 const isFinished = ref(false);
 const resumenCrucesGuardados = ref<any[]>([]);
@@ -1561,35 +1560,6 @@ async function loadSuggestionCrossings() {
         });
       }
 
-
-      // 1. Restaurar EMASCULADAS primero para moverlas de columna a fila
-      const storedEmasc = localStorage.getItem(emasculadasKey.value);
-      if (storedEmasc) {
-        const emascSet = new Set(JSON.parse(storedEmasc));
-        const rawFlores = SuggestionCrossingPerProjectStore.suggestionCrossingsPerProjectFilter?.flores || [];
-        rawFlores.forEach((flor: any) => {
-          if (emascSet.has(flor.vrdad)) {
-            flor.polen = 0;
-            flor.sxo = 'Hembra';
-          }
-        });
-        
-        const rows = viabilidadesMatriz.value || [];
-        rows.forEach((row: any) => {
-          row.forEach((car: any) => {
-            if (car && car.varA && car.varB) {
-              if (emascSet.has(car.varA)) {
-                car.polen = 0;
-                car.sxo = 'Hembra';
-              }
-              if (emascSet.has(car.varB)) {
-                car.polen2 = 0;
-                car.sxo2 = 'Hembra';
-              }
-            }
-          });
-        });
-      }
 
       // Restaurar borrador de cruzamientos si existe
       const storedDraft = localStorage.getItem(draftKey.value);

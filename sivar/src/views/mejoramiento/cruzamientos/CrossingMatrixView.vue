@@ -418,6 +418,8 @@ const confirmGlobalEmasculate = () => {
 
   recalculateMatrixViability();
   
+  localStorage.setItem(emasculadasKey.value, JSON.stringify(Array.from(emasculadasLocales.value)));
+  
   toast.success('Variedad ' + varName + ' emasculada. Matriz recalculada.');
   showEmasculateModal.value = false;
 };
@@ -436,6 +438,9 @@ const revertEmasculate = (varName: string) => {
   }
 
   recalculateMatrixViability();
+  
+  localStorage.setItem(emasculadasKey.value, JSON.stringify(Array.from(emasculadasLocales.value)));
+  
   toast.info('Variedad ' + varName + ' restaurada a su estado original.');
 };
 
@@ -727,6 +732,7 @@ const getDistancia = (varA: string, varB: string) => {
 
 // El draftKey debe coincidir con el usado en la vista de Programacion de Cruzamientos
 const draftKey = computed(() => `sivarcc_draft_crossings_${selectedCdCntble.value}_${selectedMegaAmbiente.value}`);
+const emasculadasKey = computed(() => `sivarcc_draft_emasculadas_${selectedCdCntble.value}_${selectedMegaAmbiente.value}`);
 
 // Función para alternar el cruzamiento cuando se hace click
 const toggleCruzamiento = (car: any) => {
