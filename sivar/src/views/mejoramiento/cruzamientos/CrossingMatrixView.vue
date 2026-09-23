@@ -344,7 +344,8 @@ const handleFlowerAssigned = async () => {
     isLoading.value = true;
     try {
             const caracterFiltro = localStorage.getItem("filtroCaracterIndividual");
-      await MatrixCrossingStore.getMatrixCrossingList(activeProj, activeProj, activeVar, activeAmb, caracterFiltro);
+      const pondProj = localStorage.getItem("selectedCdCntble") || "General";
+      await MatrixCrossingStore.getMatrixCrossingList(activeProj, pondProj, activeVar, activeAmb, caracterFiltro);
     } catch (error) {
       console.error("Error al recargar matriz tras asignar flor:", error);
     } finally {
@@ -413,7 +414,8 @@ watch([selectedMegaAmbiente, selectedCdCntble, selectedVariety], async ([newMega
     isLoading.value = true;
     try {
             const caracterFiltro = localStorage.getItem("filtroCaracterIndividual");
-      await MatrixCrossingStore.getMatrixCrossingList(activeProj, activeProj, newVariety, activeAmb, caracterFiltro);
+      const pondProj = localStorage.getItem("selectedCdCntble") || "General";
+      await MatrixCrossingStore.getMatrixCrossingList(activeProj, pondProj, newVariety, activeAmb, caracterFiltro);
 
       // Restaurar el borrador para sincronizar Step 2 y Step 3 en ambas direcciones
       const storedDraft = localStorage.getItem(`sivarcc_draft_crossings_${activeProj}_${activeAmb}`);
