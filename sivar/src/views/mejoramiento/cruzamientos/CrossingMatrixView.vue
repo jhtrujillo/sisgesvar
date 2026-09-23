@@ -477,6 +477,7 @@ const isRowViable = (viabilidadRow: any[]) => {
 
 // Función para obtener la distancia entre dos variables
 const getDistancia = (varA: string, varB: string) => {
+  if (varA && varB && varA === varB) return "NA";
   const distancias = MatrixCrossingStore.matrixCrossingsFilter.distancias || {};
   return distancias[varA]?.[varB] || "NA";
 };

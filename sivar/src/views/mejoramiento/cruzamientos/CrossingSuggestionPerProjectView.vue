@@ -1692,6 +1692,7 @@ function buildDistanciasCache() {
 
 function getDistancia(varA: string, varB: string) {
   if (!varA || !varB) return "NA";
+  if (varA === varB) return "NA";
 
   if (!distanciasCache) {
     buildDistanciasCache();
