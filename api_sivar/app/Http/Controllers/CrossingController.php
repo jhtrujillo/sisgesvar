@@ -25,9 +25,10 @@ class CrossingController extends Controller
         $this->crossingService = $crossingService;
     }
 
-    public function generateMatrix(Request $request, $proyectos, $proyecto, $testigo, $ambiente = 'Semiseco')
+    public function generateMatrix(Request $request, $proyectos, $proyecto, $testigo, $ambiente = 'Semiseco', $caracter = null)
     {
-        return $this->crossingService->generateMatrix($proyectos, $proyecto, $testigo, $ambiente);
+        \Log::info("Called generateMatrix: proyectos=$proyectos, ambiente=$ambiente, caracter=" . ($caracter ?: 'NULL'));
+        return $this->crossingService->generateMatrix($proyectos, $proyecto, $testigo, $ambiente, $caracter);
     }
 
     public function suggestionCrossings(Request $request, $proyectos, $proyecto, $testigo, $ambiente)
@@ -40,9 +41,9 @@ class CrossingController extends Controller
         return $this->crossingService->sugerenciasCruzamientosBolsaComun($proyectos, $proyecto, $testigo, $ambiente);
     }
 
-    public function suggestionCrossingsPerProject(Request $request, $proyectos, $proyecto, $testigo, $ambiente)
+    public function suggestionCrossingsPerProject(Request $request, $proyectos, $proyecto, $testigo, $ambiente, $caracter = null)
     {
-        return $this->crossingService->suggestionCrossingsPerProject($proyectos, $proyecto, $testigo, $ambiente);
+        return $this->crossingService->suggestionCrossingsPerProject($proyectos, $proyecto, $testigo, $ambiente, $caracter);
     }
 
     public function crossingList(Request $request)

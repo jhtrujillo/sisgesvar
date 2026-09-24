@@ -550,7 +550,7 @@
                                 class="text-[9px] font-extrabold leading-tight"
                                 :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-white' : 'text-slate-900']"
                               >
-                                {{ car.varB }}
+                                {{ car.varA }} x {{ car.varB }}
                               </div>
                               <div
                                 class="text-[8px] font-semibold leading-tight"
@@ -575,7 +575,7 @@
                                 </span>
                                 <!-- Botón Comparador Lado a Lado -->
                                 <button
-                                  @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad)"
+                                  @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad, getCausaInviabilidad(car))"
                                   class="text-[8px] font-bold px-1.5 py-0.5 rounded transition-all duration-150 flex items-center justify-center space-x-0.5 border mx-auto"
                                   :class="[
                                     tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2)
@@ -1178,7 +1178,7 @@
       v-model:isOpen="isComparatorOpen"
       :motherName="comparatorMother"
       :fatherName="comparatorFather"
-      :initiallyViable="comparatorInitiallyViable"
+      :initiallyViable="comparatorInitiallyViable" :causaVeto="comparatorCausa"
     />
   </div>
 </template>
@@ -1394,12 +1394,14 @@ const isComparatorOpen = ref(false);
 const comparatorMother = ref("");
 const comparatorFather = ref("");
 const comparatorInitiallyViable = ref(true);
+const comparatorCausa = ref("");
 
-const openParentComparator = (mother: string, father: string, viable: boolean) => {
+const openParentComparator = (mother: string, father: string, viable: boolean, causa: string = "") => {
   if (mother && father) {
     comparatorMother.value = mother;
     comparatorFather.value = father;
     comparatorInitiallyViable.value = viable;
+    comparatorCausa.value = causa;
     isComparatorOpen.value = true;
   }
 };
@@ -1432,11 +1434,13 @@ async function loadSuggestionCrossings() {
   if ((selectedMegaAmbiente.value || selectedCdCntble.value || activeProj) && activeVariety) {
     isLoading.value = true;
     try {
+      const caracterFiltro = localStorage.getItem("filtroCaracterIndividual");
       await SuggestionCrossingPerProjectStore.getSuggestionCrossingPerProjectList(
         activeIdProj,
         activeProj,
         activeVariety,
-        activeAmb
+        activeAmb,
+        caracterFiltro
       );
 
       if (!ParametizeWeightedStore.parametizeWeightedCrossingFilter || !ParametizeWeightedStore.parametizeWeightedCrossingFilter.ponderados) {
@@ -1818,7 +1822,24 @@ function getCausaInviabilidad(cell: any): string {
           }
 
           if (lvlA !== 999 && lvlB !== 999 && lvlA + lvlB > Number(limiteMax)) {
-            motivos.push(`${p.equivalente.toUpperCase()} excede límite`);
+            
+            const nombresLegibles: Record<string, string> = {
+              'scrsa': 'Sacarosa',
+              'tchm': 'TCHM (Producción)',
+              'msco_r': 'Mosaico',
+              'rya_cfe_r': 'Roya',
+              'roya': 'Roya',
+              'roya_naranja': 'Roya Naranja',
+              'carbon': 'Carbón',
+              'volcamiento': 'Volcamiento',
+              'altura_planta': 'Altura de Planta',
+              'poblacion': 'Población',
+              'dmtro_tllo': 'Diámetro de Tallo'
+            };
+            const colName = p.equivalente.toLowerCase();
+            const nombreLegible = nombresLegibles[colName] || p.equivalente.toUpperCase();
+            motivos.push(`${nombreLegible} excede límite`);
+
           }
         }
       }

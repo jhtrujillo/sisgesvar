@@ -97,7 +97,7 @@
                     <div class="text-[10px] text-slate-400 mt-0.5 truncate max-w-[150px]" :title="vivero.nombre">{{ vivero.nombre }}</div>
                   </td>
                   <td class="py-3 px-4 text-left">
-                    <div class="text-xs font-semibold text-slate-700 whitespace-nowrap">{{ vivero.ingenio }} - {{ vivero.hacienda || "N/A" }}</div>
+                    <div class="text-xs font-semibold text-slate-700 whitespace-nowrap">{{ vivero.ingenio }} - {{ formatHaciendaName(vivero.hacienda) }}</div>
                     <div class="mt-1 flex items-center gap-1.5 whitespace-nowrap">
                       <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
                         Lote: {{ vivero.lote?.nombre_lote || "N/A" }}
@@ -111,7 +111,7 @@
                     <div class="text-xs text-gray-900 font-mono font-bold" :title="vivero.origen_parcela || 'N/A'">
                       {{ vivero.id_vivero_origen_formateado || "N/A" }}
                     </div>
-                    <div class="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1" v-if="vivero.origen_parcela">
+                    <div class="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1" v-if="vivero.origen_parcela && vivero.origen_parcela.split('-').length >= 5">
                       <span class="px-1 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
                         Prc: {{ vivero.origen_parcela.split('-').pop() }}
                       </span>
@@ -376,13 +376,13 @@
                 <span class="font-bold block uppercase">Ingenio</span> <span>{{ viveroSeleccionado?.ingenio }}</span>
               </div>
               <div>
-                <span class="font-bold block uppercase">Hacienda</span> <span>{{ viveroSeleccionado?.hacienda || "N/A" }}</span>
+                <span class="font-bold block uppercase">Hacienda</span> <span>{{ formatHaciendaName(viveroSeleccionado?.hacienda) }}</span>
               </div>
               <div>
                 <span class="font-bold block uppercase">Suerte</span> <span>{{ viveroSeleccionado?.suerte || "N/A" }}</span>
               </div>
               <div>
-                <span class="font-bold block uppercase">Corte Actual</span> <span>{{ viveroSeleccionado?.numero_corte || "N/A" }}</span>
+                <span class="font-bold block uppercase">Corte Actual</span> <span>{{ viveroSeleccionado?.numero_corte ?? "N/A" }}</span>
               </div>
 
               <div class="md:col-span-2">
@@ -594,6 +594,11 @@ const handleConfirm = () => {
   }
   confirmDialog.value.isOpen = false;
 };
+const formatHaciendaName = (name: string) => {
+  if (!name) return "N/A";
+  return name.split('_')[0].trim();
+};
+
 const router = useRouter();
 const viveros = ref<any[]>([]);
 const loading = ref(true);

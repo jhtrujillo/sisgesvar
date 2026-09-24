@@ -485,6 +485,17 @@
                 Añadir Selección
               </button>
             </div>
+            <div class="flex items-center gap-2" v-else-if="activeTab === 'testigos' || activeTab === 'testigosMoviles'">
+              <button
+                @click="openModalTestigos(activeTab === 'testigos' ? 'Si' : 'Movil')"
+                class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg shadow-2xs transition-all cursor-pointer inline-flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                + Agregar Testigo
+              </button>
+            </div>
           </div>
 
           <!-- Tabla Tratamientos Familias -->
@@ -819,6 +830,7 @@
 
           <button
             type="button"
+            @click="actualizarDiseno('F')"
             class="w-full py-2 bg-cenicana hover:bg-cenicana-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
           >
             Actualizar Diseño Familias
@@ -885,6 +897,7 @@
 
           <button
             type="button"
+            @click="actualizarDiseno('I')"
             class="w-full py-2 bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
           >
             Actualizar Diseño Individual
@@ -954,11 +967,13 @@
                       class="rounded border-slate-300 text-cenicana focus:ring-emerald-400"
                     />
                   </th>
-                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Pedigree</th>
-                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Origen</th>
-                  <th class="px-4 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">Plántulas Totales</th>
-                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Grupo Madre</th>
-                  <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Grupo Padre</th>
+                  <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">ID</th>
+                  <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Madre</th>
+                  <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Padre</th>
+                  <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Vivero</th>
+                  <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Pedigree / Cruza</th>
+                  <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">Plántulas Totales</th>
+                  <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Origen</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-50 bg-white">
@@ -966,14 +981,16 @@
                   <td class="px-3 py-2 text-center">
                     <input type="checkbox" v-model="row.selected" class="rounded border-slate-300 text-cenicana focus:ring-emerald-400" />
                   </td>
-                  <td class="px-4 py-2 text-xs font-bold text-slate-800 font-mono">{{ row.pedigree }}</td>
-                  <td class="px-4 py-2 text-xs text-slate-700">{{ row.origen }}</td>
-                  <td class="px-4 py-2 text-xs text-center font-mono font-semibold text-slate-700">{{ row.plantulasTotales }}</td>
-                  <td class="px-4 py-2 text-xs text-slate-600">{{ row.grupoMadre }}</td>
-                  <td class="px-4 py-2 text-xs text-slate-600">{{ row.grupoPadre }}</td>
+                  <td class="px-3 py-2 text-xs font-mono text-slate-500 font-extrabold">#{{ row.id }}</td>
+                  <td class="px-3 py-2 text-xs font-extrabold text-emerald-800">{{ row.madre }}</td>
+                  <td class="px-3 py-2 text-xs font-semibold text-sky-800">{{ row.padre }}</td>
+                  <td class="px-3 py-2 text-xs font-bold text-purple-800">{{ row.vivero }}</td>
+                  <td class="px-3 py-2 text-xs font-mono text-slate-700 font-semibold">{{ row.pedigree }}</td>
+                  <td class="px-3 py-2 text-xs text-center font-mono font-bold text-emerald-700">{{ row.plantulasTotales }}</td>
+                  <td class="px-3 py-2 text-xs text-slate-600">{{ row.origen }}</td>
                 </tr>
                 <tr v-if="paginatedData.length === 0">
-                  <td colspan="6" class="px-4 py-8 text-center text-slate-400 text-xs">No se encontraron tratamientos disponibles para esta temporada.</td>
+                  <td colspan="8" class="px-4 py-8 text-center text-slate-400 text-xs">No se encontraron tratamientos disponibles para esta temporada.</td>
                 </tr>
               </tbody>
             </table>
@@ -1002,6 +1019,99 @@
         </div>
       </div>
     </div>
+
+    <!-- MODAL: AGREGAR VARIADEST TESTIGO -->
+    <div v-if="isModalTestigosOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-fade-in">
+      <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden border border-slate-100">
+        <!-- Modal Header -->
+        <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+            <span class="p-1 bg-purple-100 text-purple-700 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </span>
+            Agregar Variedad Testigo ({{ currentTestigoType === "Si" ? "Fijo" : "Móvil" }})
+          </h3>
+          <button
+            @click="isModalTestigosOpen = false"
+            class="text-slate-400 hover:text-slate-600 rounded-lg p-1 hover:bg-slate-200/60 transition-all cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal Search Bar & Toolbar -->
+        <div class="p-6 overflow-y-auto space-y-4">
+          <div class="relative">
+            <input
+              type="text"
+              v-model="searchTestigosText"
+              @input="onSearchTestigosInput"
+              placeholder="Buscar variedad testigo (ej. CC 85-92, CC 93-4418)..."
+              class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-purple-100 focus:border-purple-600 bg-white"
+            />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 text-slate-400 absolute left-3 top-2.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+
+          <!-- Table of Varieties -->
+          <div class="overflow-x-auto border border-slate-100 rounded-xl max-h-[350px]">
+            <table class="min-w-full divide-y divide-slate-100">
+              <thead class="bg-slate-50 sticky top-0">
+                <tr>
+                  <th class="px-3 py-2 text-center text-[11px] font-bold uppercase text-slate-600 w-10">#</th>
+                  <th class="px-4 py-2 text-left text-[11px] font-bold uppercase text-slate-600">Variedad</th>
+                  <th class="px-4 py-2 text-left text-[11px] font-bold uppercase text-slate-600">Pedigree / Origen</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-50 bg-white">
+                <tr
+                  v-for="row in listVarietiesTestigos"
+                  :key="row.tratamiento"
+                  class="hover:bg-slate-50/60 transition-all cursor-pointer"
+                  @click="row.selected = !row.selected"
+                >
+                  <td class="px-3 py-2 text-center">
+                    <input type="checkbox" v-model="row.selected" @click.stop class="rounded border-slate-300 text-purple-600 focus:ring-purple-400" />
+                  </td>
+                  <td class="px-4 py-2 text-xs font-bold text-slate-800">{{ row.tratamiento }}</td>
+                  <td class="px-4 py-2 text-xs text-slate-600 font-mono">{{ row.name }}</td>
+                </tr>
+                <tr v-if="listVarietiesTestigos.length === 0">
+                  <td colspan="3" class="px-4 py-8 text-center text-slate-400 text-xs">No se encontraron variedades testigo.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
+          <button
+            @click="isModalTestigosOpen = false"
+            class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200/60 rounded-xl transition-all cursor-pointer"
+          >
+            Cancelar
+          </button>
+          <button
+            @click="addSelectedTestigos"
+            class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+          >
+            Añadir Testigo(s)
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -1009,6 +1119,8 @@
 import { reactive, onMounted, watch, computed, ref } from "vue";
 import BackButton from "@/components/BackButton.vue";
 import ComboBoxMultiple from "@/components/ComboBoxMultiple.vue";
+import urls from "@/services/urls";
+import api from "@/services/api";
 import { useSearchParametersStore } from "@/stores/parametersexperiments";
 import { useAreasProgramStore } from "@/stores/areasprogram";
 import { useProjectsAreaStore } from "@/stores/projectsarea";
@@ -1309,11 +1421,12 @@ const crearNuevoExperimento = async () => {
   isCreatingExperiment.value = true;
   try {
     const res = await experimentsStore.createExperiment(model.nProyecto, model.nSerie, model.nEstado);
-    if (res && (res.code === 200 || res.IdsDisenosCreados)) {
-      toast.success(res.message || "Experimento inicializado con éxito");
+    const data = res?.data || res;
+    if (data && (data.code === 200 || data.status === 200 || data.IdsDisenosCreados || res?.status === 200)) {
+      toast.success(data.message || "Experimento inicializado con éxito");
       await buscarExperimento();
     } else {
-      toast.error(res?.message || "No se pudo crear el experimento");
+      toast.error(data?.message || "No se pudo crear el experimento");
     }
   } catch (err: any) {
     console.error("Error al crear experimento:", err);
@@ -1324,8 +1437,17 @@ const crearNuevoExperimento = async () => {
 };
 
 // Carga de tratamientos y detalles
-const dataListIdDisenoF = computed(() => experimentsStore.experimentsFilter?.experimento[0]?.id_dsno_enc);
-const dataListIdDisenoI = computed(() => experimentsStore.experimentsFilter?.experimento[1]?.id_dsno_enc);
+const dataListIdDisenoF = computed(() => {
+  const exps = experimentsStore.experimentsFilter?.experimento || [];
+  const f = exps.find((e: any) => e.tpo_ensyo === "F");
+  return f ? f.id_dsno_enc : exps[0]?.id_dsno_enc;
+});
+
+const dataListIdDisenoI = computed(() => {
+  const exps = experimentsStore.experimentsFilter?.experimento || [];
+  const i = exps.find((e: any) => e.tpo_ensyo === "I");
+  return i ? i.id_dsno_enc : exps[1]?.id_dsno_enc;
+});
 const tratamientosF = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter?.tratamientosF || []);
 const tratamientosI = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter?.tratamientosI || []);
 const testigosFijosF = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter?.testigosFijosF || []);
@@ -1333,68 +1455,79 @@ const testigosFijosI = computed(() => treatmentsExperimentsStore.treatmentsExper
 const testigosMovilesF = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter?.testigosMovilesF || []);
 const testigosMovilesI = computed(() => treatmentsExperimentsStore.treatmentsExperimentsFilter?.testigosMovilesI || []);
 
+const refreshTreatmentsTables = async () => {
+  const fId = dataListIdDisenoF.value;
+  const iId = dataListIdDisenoI.value;
+  if (fId || iId) {
+    await treatmentsExperimentsStore.getTreatmentsExperimentsList(fId || 0, iId || 0);
+
+    tableDataTreatmentsExperimentsF.value = tratamientosF.value.map((item: any) => ({
+      id_dsno_det: item.id_dsno_det,
+      trtmnto: item.trtmnto,
+      id_dsno_enc: item.id_dsno_enc,
+      no_crzmnto: item.no_crzmnto || `#${item.trtmnto}`,
+      pdgree: item.pdgree || (item.vrdad_mdre && item.vrdad_pdre1 ? `${item.vrdad_mdre} x ${item.vrdad_pdre1}` : "—"),
+      orgen: item.orgen || "—",
+      nmro_clnes: item.nmro_clnes || 0,
+      plntlas_ttles: item.plntlas_ttles || 0,
+      selected: false
+    }));
+
+    tableDataTreatmentsExperimentsI.value = tratamientosI.value.map((item: any) => ({
+      id_dsno_det: item.id_dsno_det,
+      trtmnto: item.trtmnto,
+      id_dsno_enc: item.id_dsno_enc,
+      no_crzmnto: item.no_crzmnto || `#${item.trtmnto}`,
+      pdgree: item.pdgree || (item.vrdad_mdre && item.vrdad_pdre1 ? `${item.vrdad_mdre} x ${item.vrdad_pdre1}` : "—"),
+      orgen: item.orgen || "—",
+      nmro_clnes: item.nmro_clnes || 0,
+      plntlas_ttles: item.plntlas_ttles || 0,
+      selected: false
+    }));
+
+    tableDataTestigosF.value = testigosFijosF.value.map((item: any) => ({
+      id_dsno_det: item.id_dsno_det,
+      nm_vrdad: item.nm_vrdad,
+      pdgree: item.pdgree,
+      orgen: item.orgen,
+      selected: false
+    }));
+
+    tableDataTestigosM.value = testigosMovilesF.value.map((item: any) => ({
+      id_dsno_det: item.id_dsno_det,
+      nm_vrdad: item.nm_vrdad,
+      pdgree: item.pdgree,
+      orgen: item.orgen,
+      selected: false
+    }));
+
+    tableDataTestigosFI.value = testigosFijosI.value.map((item: any) => ({
+      id_dsno_det: item.id_dsno_det,
+      nm_vrdad: item.nm_vrdad,
+      pdgree: item.pdgree,
+      orgen: item.orgen,
+      selected: false
+    }));
+
+    tableDataTestigosMI.value = testigosMovilesI.value.map((item: any) => ({
+      id_dsno_det: item.id_dsno_det,
+      nm_vrdad: item.nm_vrdad,
+      pdgree: item.pdgree,
+      orgen: item.orgen,
+      selected: false
+    }));
+
+    model.nTratamientoF = tableDataTreatmentsExperimentsF.value.length;
+    model.nTestigosF = tableDataTestigosF.value.length + tableDataTestigosM.value.length;
+    model.nTratamientoI = tableDataTreatmentsExperimentsI.value.length;
+    model.nTestigosI = tableDataTestigosFI.value.length + tableDataTestigosMI.value.length;
+  }
+};
+
 watch(
   [dataListIdDisenoF, dataListIdDisenoI],
-  async ([newDataListIdDisenoF, newDataListIdDisenoI]) => {
-    if (newDataListIdDisenoF && newDataListIdDisenoI) {
-      await treatmentsExperimentsStore.getTreatmentsExperimentsList(newDataListIdDisenoF, newDataListIdDisenoI);
-
-      tableDataTreatmentsExperimentsF.value = tratamientosF.value.map((item: any) => ({
-        id_dsno_det: item.id_dsno_det,
-        trtmnto: item.trtmnto,
-        id_dsno_enc: item.id_dsno_enc,
-        no_crzmnto: item.no_crzmnto,
-        pdgree: item.pdgree,
-        orgen: item.orgen,
-        nmro_clnes: item.nmro_clnes,
-        plntlas_ttles: item.plntlas_ttles,
-        selected: false
-      }));
-
-      tableDataTreatmentsExperimentsI.value = tratamientosI.value.map((item: any) => ({
-        id_dsno_det: item.id_dsno_det,
-        trtmnto: item.trtmnto,
-        id_dsno_enc: item.id_dsno_enc,
-        no_crzmnto: item.no_crzmnto,
-        pdgree: item.pdgree,
-        orgen: item.orgen,
-        nmro_clnes: item.nmro_clnes,
-        plntlas_ttles: item.plntlas_ttles,
-        selected: false
-      }));
-
-      tableDataTestigosF.value = testigosFijosF.value.map((item: any) => ({
-        id_dsno_det: item.id_dsno_det,
-        nm_vrdad: item.nm_vrdad,
-        pdgree: item.pdgree,
-        orgen: item.orgen,
-        selected: false
-      }));
-
-      tableDataTestigosM.value = testigosMovilesF.value.map((item: any) => ({
-        id_dsno_det: item.id_dsno_det,
-        nm_vrdad: item.nm_vrdad,
-        pdgree: item.pdgree,
-        orgen: item.orgen,
-        selected: false
-      }));
-
-      tableDataTestigosFI.value = testigosFijosI.value.map((item: any) => ({
-        id_dsno_det: item.id_dsno_det,
-        nm_vrdad: item.nm_vrdad,
-        pdgree: item.pdgree,
-        orgen: item.orgen,
-        selected: false
-      }));
-
-      tableDataTestigosMI.value = testigosMovilesI.value.map((item: any) => ({
-        id_dsno_det: item.id_dsno_det,
-        nm_vrdad: item.nm_vrdad,
-        pdgree: item.pdgree,
-        orgen: item.orgen,
-        selected: false
-      }));
-    }
+  async () => {
+    await refreshTreatmentsTables();
   },
   { immediate: true }
 );
@@ -1486,11 +1619,14 @@ const tratamientosDisponibles = async () => {
       tableData.value =
         treatmentsSeasonStore.treatmentsSeasonFilter?.tratamientos.map((item: any) => ({
           id: item.id_crzmnto,
-          pedigree: item.pdgree,
-          origen: item.orgen,
-          plantulasTotales: item.plntlas_ttles,
-          grupoMadre: item.grpo_crzmnto_mdre,
-          grupoPadre: item.grpo_crzmnto_pdre,
+          madre: item.vrdad_mdre || "—",
+          padre: item.vrdad_pdre1 || "—",
+          vivero: item.vivero || "—",
+          pedigree: item.pdgree || `${item.vrdad_mdre || ""} x ${item.vrdad_pdre1 || ""}`,
+          origen: item.orgen || "—",
+          plantulasTotales: item.plntlas_ttles || 0,
+          grupoMadre: item.grpo_crzmnto_mdre || "—",
+          grupoPadre: item.grpo_crzmnto_pdre || "—",
           selected: false
         })) || [];
     } catch (error) {
@@ -1532,14 +1668,40 @@ const addSelected = async () => {
 
 const addTratamientosTemporada = async (arrayIds: Array<{ id_crzmnto: string; plntlas_ttles: number }>, testigo: string) => {
   try {
-    const { nIdDiseno, nTipoParcela, nTotalPlantas } = model;
-    if (!nIdDiseno || !nTipoParcela || !nTotalPlantas || arrayIds.length === 0 || !testigo) {
-      toast.error("Todos los campos son requeridos");
+    const { nTipoParcela, nTotalPlantas } = model;
+
+    if (arrayIds.length === 0) {
+      toast.error("Debe marcar la casilla de al menos un tratamiento.");
+      return;
+    }
+    if (!nTipoParcela) {
+      toast.error("Por favor seleccione el 'Tipo de Parcela'.");
+      return;
+    }
+    if (!nTotalPlantas || Number(nTotalPlantas) <= 0) {
+      toast.error("Por favor ingrese un valor mayor a 0 en 'Total plantas siembra'.");
       return;
     }
 
+    let targetDisenoId = model.cTipoEnsayo === "F" ? dataListIdDisenoF.value : dataListIdDisenoI.value;
+
+    if (!targetDisenoId) {
+      if (model.nProyecto && model.nSerie && model.nEstado) {
+        toast.info("Inicializando encabezado del experimento...");
+        await crearNuevoExperimento();
+        targetDisenoId = model.cTipoEnsayo === "F" ? dataListIdDisenoF.value : dataListIdDisenoI.value;
+      }
+    }
+
+    if (!targetDisenoId) {
+      toast.error("No se pudo obtener o inicializar el ID del diseño. Verifique Proyecto, Serie y Estado en el encabezado.");
+      return;
+    }
+
+    model.nIdDiseno = targetDisenoId;
+
     const data: DiseñosDetalles = {
-      nIdDiseno: nIdDiseno,
+      nIdDiseno: targetDisenoId,
       nTipoParcela: nTipoParcela,
       cTestigo: testigo,
       nTotalPlantas,
@@ -1548,7 +1710,11 @@ const addTratamientosTemporada = async (arrayIds: Array<{ id_crzmnto: string; pl
 
     const result = await addDesingsDetailsStore.SaveaddDesingsDetails(data);
     if (result) {
-      toast.success("Tratamiento guardado con éxito");
+      toast.success("Tratamientos agregados con éxito al experimento");
+      closeModal();
+      if (dataListIdDisenoF.value && dataListIdDisenoI.value) {
+        await treatmentsExperimentsStore.getTreatmentsExperimentsList(dataListIdDisenoF.value, dataListIdDisenoI.value);
+      }
     }
   } catch (error) {
     console.error("Error al guardar tratamiento:", error);
@@ -1562,6 +1728,133 @@ const limpiarCampos = () => {
     model[key] = null;
   });
 };
+
+// Modal Testigos (Variedades Testigo)
+const isModalTestigosOpen = ref(false);
+const currentTestigoType = ref<"Si" | "Movil">("Si");
+const searchTestigosText = ref("");
+const listVarietiesTestigos = ref<Array<{ tratamiento: string; name: string; selected: boolean }>>([]);
+
+const openModalTestigos = async (tipo: "Si" | "Movil") => {
+  currentTestigoType.value = tipo;
+  isModalTestigosOpen.value = true;
+  searchTestigosText.value = "";
+  await fetchVarietiesTestigos("");
+};
+
+const onSearchTestigosInput = async () => {
+  await fetchVarietiesTestigos(searchTestigosText.value);
+};
+
+const fetchVarietiesTestigos = async (search: string) => {
+  try {
+    const targetDisenoId = model.cTipoEnsayo === "F" ? dataListIdDisenoF.value : dataListIdDisenoI.value;
+    const tipoReg = currentTestigoType.value === "Si" ? "tf" : "tm";
+    const searchQuery = search.trim() !== "" ? search.trim() : "ALL";
+    const res: any = await api.get(`${urls.API_URL}getRegistros/variedad/${tipoReg}/${encodeURIComponent(searchQuery)}/${targetDisenoId || 0}`, {}, true);
+    const rawList = res?.data?.registros || res?.registros || [];
+    listVarietiesTestigos.value = rawList.map((item: any) => ({
+      tratamiento: item.tratamiento || item.nm_vrdad || "",
+      name: item.name || item.pdgree || "VARIEDAD TESTIGO",
+      selected: false
+    }));
+  } catch (err) {
+    console.error("Error al obtener variedades testigos:", err);
+    listVarietiesTestigos.value = [];
+  }
+};
+
+const addSelectedTestigos = async () => {
+  const selected = listVarietiesTestigos.value.filter((r) => r.selected);
+  if (selected.length === 0) {
+    toast.error("Debe seleccionar al menos una variedad testigo");
+    return;
+  }
+
+  const arrayIds = selected.map((row) => ({
+    id_crzmnto: row.tratamiento,
+    plntlas_ttles: Number(model.nTotalPlantas) || 0
+  }));
+
+  await addTratamientosTemporada(arrayIds, currentTestigoType.value);
+  isModalTestigosOpen.value = false;
+  await refreshTreatmentsTables();
+};
+
+const actualizarDiseno = async (tipo: "F" | "I") => {
+  try {
+    const isFamilias = tipo === "F";
+    const nIdDiseno = isFamilias ? dataListIdDisenoF.value : dataListIdDisenoI.value;
+    const rawDisenoExp = isFamilias ? model.nDisenoExpF : model.nDisenoExpI;
+    let nDisenoExp: any = rawDisenoExp;
+    if (typeof rawDisenoExp === "object" && rawDisenoExp !== null) {
+      nDisenoExp = (rawDisenoExp as any).id || (rawDisenoExp as any).value;
+    }
+    const nLocalidades = isFamilias ? model.nLocalidadesF : model.nLocalidadesI;
+    const nRepeticiones = isFamilias ? model.nRepeticionesF : model.nRepeticionesI;
+    const nTratamientos = isFamilias ? model.nTratamientoF : model.nTratamientoI;
+    const nTestigos = isFamilias ? model.nTestigosF : model.nTestigosI;
+    const cDescripcion = isFamilias ? model.cDescripcionF : model.cDescripcionI;
+
+    if (!nIdDiseno) {
+      toast.error(`No existe diseño para ${isFamilias ? "Familias" : "Individual"}. Verifique que el experimento esté creado en el Paso 1.`);
+      return;
+    }
+
+    if (!nDisenoExp) {
+      toast.error("Por favor seleccione el 'Diseño Experimental'.");
+      return;
+    }
+
+    const payload = {
+      nIdDiseno,
+      nDisenoExp,
+      nLocalidades: Number(nLocalidades) || 1,
+      nRepeticiones: Number(nRepeticiones) || 1,
+      nTratamientos: Number(nTratamientos) || 0,
+      nTestigos: Number(nTestigos) || 0,
+      cDescripcion: cDescripcion || ""
+    };
+
+    const res: any = await api.post(`${urls.API_URL}grabarDiseno`, payload, true);
+    const data = res?.data || res;
+    if (data && (data.success || data.actualizado || res?.status === 200)) {
+      toast.success(data?.message || `Diseño ${isFamilias ? "Familias" : "Individual"} actualizado correctamente.`);
+      await buscarExperimento();
+    } else {
+      toast.error(data?.message || "Error al actualizar el diseño.");
+    }
+  } catch (error: any) {
+    console.error("Error al actualizar diseño:", error);
+    const msg = error?.response?.data?.message || error?.message || "Ocurrió un error al actualizar el diseño.";
+    toast.error(msg);
+  }
+};
+
+watch(
+  () => experimentsStore.experimentsFilter,
+  (filter) => {
+    if (filter && filter.experimento && filter.experimento.length > 0) {
+      const expF = filter.experimento.find((e: any) => e.tpo_ensyo === "F") || filter.experimento[0];
+      const expI = filter.experimento.find((e: any) => e.tpo_ensyo === "I") || filter.experimento[1];
+
+      if (expF) {
+        model.nDisenoExpF = expF.id_dsno_exprmntal ? String(expF.id_dsno_exprmntal) : model.nDisenoExpF;
+        model.nLocalidadesF = expF.lclddes ?? model.nLocalidadesF ?? 1;
+        model.nRepeticionesF = expF.rptcnes ?? model.nRepeticionesF ?? 1;
+        model.cDescripcionF = expF.dscrpcion ?? model.cDescripcionF ?? "";
+      }
+
+      if (expI) {
+        model.nDisenoExpI = expI.id_dsno_exprmntal ? String(expI.id_dsno_exprmntal) : model.nDisenoExpI;
+        model.nLocalidadesI = expI.lclddes ?? model.nLocalidadesI ?? 1;
+        model.nRepeticionesI = expI.rptcnes ?? model.nRepeticionesI ?? 1;
+        model.cDescripcionI = expI.dscrpcion ?? model.cDescripcionI ?? "";
+      }
+    }
+  },
+  { immediate: true, deep: true }
+);
 </script>
 
 <style scoped>

@@ -155,70 +155,117 @@
       </div>
 
       <!-- Tabla de Ponderados -->
-      <div v-if="selectedVariety && (selectedMegaAmbiente || selectedCdCntble)" class="mt-8 space-y-3">
-        <div class="flex items-center space-x-2">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Ponderados de Características para la Matriz
-            <span v-if="selectedMegaAmbiente" class="text-emerald-600 font-semibold">(Por Mega Ambiente: {{ selectedMegaAmbiente }})</span>
-            <span v-else-if="selectedCdCntble" class="text-emerald-600 font-semibold">(Por Proyecto: {{ selectedCdCntble }})</span>
-          </h3>
-          <BaseButton
-            variant="ghost"
-            size="sm"
-            iconOnly
-            @click="isHelpModalOpen = true"
-            class="text-emerald-500 hover:text-emerald-700"
-            title="Ver ayuda sobre el cálculo de ponderados"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </BaseButton>
+      <div v-if="selectedVariety && (selectedMegaAmbiente || selectedCdCntble)" class="mt-8 space-y-6">
+
+        <!-- Estrategia de Selección -->
+        <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Estrategia de Selección</h3>
+          <div class="flex flex-col sm:flex-row gap-4">
+            <label class="flex items-center gap-3 cursor-pointer p-4 border rounded-xl hover:bg-slate-50 transition-colors w-full" :class="{'border-emerald-500 bg-emerald-50/30': estrategia === 'combinacion', 'border-slate-200': estrategia !== 'combinacion'}">
+              <input type="radio" v-model="estrategia" value="combinacion" class="text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
+              <div>
+                <div class="font-bold text-slate-800 text-sm">Combinación de caracteres</div>
+                <div class="text-xs text-slate-500 mt-1">Índice ponderado (Por defecto)</div>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer p-4 border rounded-xl hover:bg-slate-50 transition-colors w-full" :class="{'border-emerald-500 bg-emerald-50/30': estrategia === 'individual', 'border-slate-200': estrategia !== 'individual'}">
+              <input type="radio" v-model="estrategia" value="individual" class="text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
+              <div>
+                <div class="font-bold text-slate-800 text-sm">Filtrar por caracteres</div>
+                <div class="text-xs text-slate-500 mt-1">Usar solo flores de ciertos caracteres</div>
+              </div>
+            </label>
+          </div>
+
+          <!-- Checkboxes for specific characters -->
+          <div v-if="estrategia === 'individual'" class="mt-4 p-4 bg-amber-50 rounded-xl border border-amber-100">
+            <label class="block uppercase tracking-wider text-amber-800 text-[10px] font-bold mb-3">Seleccione los caracteres objetivo</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              <label v-for="car in caracteresProyecto" :key="car.id" class="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-amber-100/50 transition">
+                <input type="checkbox" v-model="caracteresSeleccionados" :value="car.id" class="w-4 h-4 text-amber-600 focus:ring-amber-500 rounded border-amber-300" />
+                <div class="flex flex-col">
+                  <span class="text-sm font-medium text-amber-900 leading-tight">{{ car.nombre }}</span>
+                  <span class="text-[10px] text-amber-700 font-semibold mt-0.5" v-if="car.total_flores > 0">
+                    {{ car.total_variedades }} vars / {{ car.total_flores }} flores
+                  </span>
+                  <span class="text-[10px] text-amber-700/50 font-semibold mt-0.5" v-else>
+                    Sin flores hoy
+                  </span>
+                </div>
+              </label>
+            </div>
+            <p class="text-[10px] text-amber-700 mt-4 font-medium flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              Solo las flores asociadas a los caracteres seleccionados serán incluidas en la matriz.
+            </p>
+          </div>
         </div>
-        <div class="border border-slate-100 rounded-xl shadow-sm">
-          <table class="table-auto w-full divide-y divide-slate-100">
-            <thead class="bg-slate-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-500 rounded-tl-xl">Nombre de la Característica</th>
-                <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-500">Nivel de Entrada</th>
-                <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-500">Valor Individual</th>
-                <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-500">Porcentaje (%)</th>
-                <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wide text-slate-500 rounded-tr-xl">Acción</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 bg-white">
-              <tr v-for="(item, index) in ponderadosFiltrados" :key="index" class="hover:bg-emerald-50/20 transition-colors duration-150">
-                <td class="whitespace-nowrap px-6 py-4 text-sm font-bold text-slate-700">
-                  <div class="flex items-center">
-                    {{ item.nombre }}
-                    <div class="relative group ml-2 flex items-center justify-center">
-                      <span class="text-slate-400 hover:text-emerald-600 cursor-help transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </span>
-                      <div
-                        class="absolute bottom-full left-0 mb-2 w-72 p-3 bg-slate-800 text-white text-xs font-medium leading-relaxed rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-pre-wrap text-left z-[100]"
-                      >
-                        {{ getTooltipText(item.nombre) }}
-                        <div class="absolute top-full left-3 border-4 border-transparent border-t-slate-800"></div>
+
+        <div class="space-y-3 mt-8">
+          <div class="flex items-center space-x-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Ponderados de Características para la Matriz
+              <span v-if="selectedMegaAmbiente" class="text-emerald-600 font-semibold">(Por Mega Ambiente: {{ selectedMegaAmbiente }})</span>
+              <span v-else-if="selectedCdCntble" class="text-emerald-600 font-semibold">(Por Proyecto: {{ selectedCdCntble }})</span>
+            </h3>
+            <BaseButton
+              variant="ghost"
+              size="sm"
+              iconOnly
+              @click="isHelpModalOpen = true"
+              class="text-emerald-500 hover:text-emerald-700"
+              title="Ver ayuda sobre el cálculo de ponderados"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </BaseButton>
+          </div>
+          <div class="border border-slate-100 rounded-xl shadow-sm">
+            <table class="table-auto w-full divide-y divide-slate-100">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-500 rounded-tl-xl">Nombre de la Característica</th>
+                  <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-500">Nivel de Entrada</th>
+                  <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-500">Valor Individual</th>
+                  <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-500">Porcentaje (%)</th>
+                  <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wide text-slate-500 rounded-tr-xl">Acción</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 bg-white">
+                <tr v-for="(item, index) in ponderadosFiltrados" :key="index" class="hover:bg-emerald-50/20 transition-colors duration-150">
+                  <td class="whitespace-nowrap px-6 py-4 text-sm font-bold text-slate-700">
+                    <div class="flex items-center">
+                      {{ item.nombre }}
+                      <div class="relative group ml-2 flex items-center justify-center">
+                        <span class="text-slate-400 hover:text-emerald-600 cursor-help transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </span>
+                        <div
+                          class="absolute bottom-full left-0 mb-2 w-72 p-3 bg-slate-800 text-white text-xs font-medium leading-relaxed rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-pre-wrap text-left z-[100]"
+                        >
+                          {{ getTooltipText(item.nombre) }}
+                          <div class="absolute top-full left-3 border-4 border-transparent border-t-slate-800"></div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td class="whitespace-nowrap px-6 py-4 text-center text-sm font-semibold text-slate-600">{{ item.nivel || "-" }}</td>
-                <td class="whitespace-nowrap px-6 py-4 text-center text-sm text-slate-600 font-medium">{{ item.ponderado || 0 }}</td>
-                <td class="whitespace-nowrap px-6 py-4 text-center text-sm font-bold text-emerald-600 bg-emerald-50/30">{{ calcularPonderado(item) }}%</td>
-                <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
-                  <BaseButton variant="outline" size="xs" @click="openModal(item, `${!item.ponderado ? 1 : 0}`)"> Modificar </BaseButton>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  </td>
+                  <td class="whitespace-nowrap px-6 py-4 text-center text-sm font-semibold text-slate-600">{{ item.nivel || "-" }}</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-center text-sm text-slate-600 font-medium">{{ item.ponderado || 0 }}</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-center text-sm font-bold text-emerald-600 bg-emerald-50/30">{{ calcularPonderado(item) }}%</td>
+                  <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
+                    <BaseButton variant="outline" size="xs" @click="openModal(item, `${!item.ponderado ? 1 : 0}`)"> Modificar </BaseButton>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -236,8 +283,8 @@
       <BaseButton
         variant="primary"
         size="md"
-        :to="{ name: 'crossing_matrix.show' }"
-        :disabled="!selectedVariety || (!selectedMegaAmbiente && !selectedCdCntble)"
+        @click="handleSiguiente"
+        :disabled="!selectedVariety || (!selectedMegaAmbiente && !selectedCdCntble) || (estrategia === 'individual' && !caracteresSeleccionados.length === 0)"
       >
         Generar Matriz
         <template #icon-right>
@@ -364,6 +411,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import { useVarietyStore } from "@/stores/variety";
 import { useCrossingInitialDataStore } from "@/stores/crossinginitialdata";
 import { useParametizeWeightedCrossingStore } from "@/stores/crossignparametizeweighted";
@@ -375,12 +423,30 @@ import api from "@/services/api";
 import urls from "@/services/urls";
 
 // Declaración de variables
+const router = useRouter();
 const varietyStore = useVarietyStore();
 const crossingInitialDataStore = useCrossingInitialDataStore();
 const parametizeWeightedCrossignStore = useParametizeWeightedCrossingStore();
 const modifyFeaturesStore = useModifyFeaturesCrossingStore();
 const toast = useToast();
 const mainStore = useMainStore();
+
+// Estrategia de Selección
+const estrategia = ref<'combinacion'|'individual'>('combinacion');
+const caracteresSeleccionados = ref<any[]>([]);
+const caracteresProyecto = ref<any[]>([]);
+
+const fetchCaracteresProyecto = async (proyectoId: string) => {
+  try {
+    console.log("Fetching caracteres from:", `${urls.API_PROYECTOS}/${proyectoId}/caracteres`);
+    const res = await api.get(`${urls.API_PROYECTOS}/${proyectoId}/caracteres`, {}, true);
+    console.log("Caracteres response:", res.data);
+    caracteresProyecto.value = res.data;
+  } catch (error) {
+    console.error("Error al obtener los caracteres del proyecto:", error);
+    caracteresProyecto.value = [];
+  }
+};
 
 // Variables para almacenar las selecciones
 const selectedVariety = ref<string | null>(null);
@@ -479,7 +545,15 @@ onMounted(async () => {
     fetchVarietyProfile(storedVariety.value);
   }
   if (storedMegaAmbiente.value) selectedMegaAmbiente.value = storedMegaAmbiente.value;
-  if (storedCdCntble.value) selectedCdCntble.value = storedCdCntble.value;
+  if (storedCdCntble.value) {
+    selectedCdCntble.value = storedCdCntble.value;
+  }
+  
+  // Fetch caracteres siempre del proyecto seleccionado en el Paso 1
+  const idProyectoPaso1 = localStorage.getItem("selectedIdProject");
+  if (idProyectoPaso1) {
+    fetchCaracteresProyecto(idProyectoPaso1);
+  }
 
   if (selectedMegaAmbiente.value || selectedCdCntble.value) {
     await fetchPonderados();
@@ -514,8 +588,10 @@ watch(
       localStorage.setItem("lastSelectedCdCntble", newCdCntble);
       const proj = crossingInitialDataStore.crossingInitialDataList.find((p) => p.cd_cntble === newCdCntble);
       if (proj) {
-        localStorage.setItem("selectedIdProject", proj.id_prycto.toString());
+        // NO sobreescribir el proyecto del Paso 1, este dropdown es solo para Ponderados
       }
+    } else {
+      // No limpiar los caracteres si borran el proyecto de ponderados
     }
   }
 );
@@ -643,6 +719,23 @@ const modificarCaracteristica = async () => {
     console.error(error);
     toast.error("Error al modificar");
   }
+};
+
+// Manejar el clic en "Generar Matriz"
+const handleSiguiente = async () => {
+  if (estrategia.value === 'individual') {
+    if (caracteresSeleccionados.value.length === 0) {
+      toast.error("Debe seleccionar al menos un carácter objetivo");
+      return;
+    }
+    // Convert array to comma-separated string for local storage
+    localStorage.setItem('filtroCaracterIndividual', caracteresSeleccionados.value.join(','));
+  } else {
+    localStorage.removeItem('filtroCaracterIndividual');
+  }
+  
+  // Continuar a la siguiente vista
+  router.push({ name: 'crossing_matrix.show' });
 };
 
 watch(

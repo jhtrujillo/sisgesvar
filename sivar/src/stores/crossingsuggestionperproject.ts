@@ -7,9 +7,9 @@ export const useSuggestionCrossingPerProjectStore = defineStore("sueggestionCros
   // Estado para almacenar el el formato de superintendencia
   const suggestionCrossingsPerProjectFilter = ref<SuggestionCrossingsPerProject[]>([]);
 
-  const getSuggestionCrossingPerProjectList = async (proyectos: string, proyecto: string, testigo: string, megaAmbiente: string): Promise<void> => {
+  const getSuggestionCrossingPerProjectList = async (proyectos: string, proyecto: string, testigo: string, megaAmbiente: string, caracter?: string | null): Promise<void> => {
     try {
-      const result = await CrossingsService.GetSuggestionCrossingsPerProject(proyectos, proyecto, testigo, megaAmbiente);
+      const result = await CrossingsService.GetSuggestionCrossingsPerProject(proyectos, proyecto, testigo, megaAmbiente, caracter);
 
       if (result.status === 200) {
         suggestionCrossingsPerProjectFilter.value = result.data;

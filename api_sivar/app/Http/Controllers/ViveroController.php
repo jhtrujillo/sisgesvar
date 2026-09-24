@@ -49,24 +49,31 @@ class ViveroController extends Controller
     {
         if ($request->query('slim') === 'true') {
             $viveros = Vivero::with(['parcelas:id,vivero_id,numero_parcela,numero_parcela_origen,id_plot_origen'])
+                ->withCount('cosechas')
                 ->whereNotNull('proyecto_id')
                 ->orderBy('created_at', 'desc')
                 ->get(['id', 'identificador_unico', 'nombre', 'lote_id', 'ingenio', 'hacienda', 'suerte', 'fecha_siembra', 'proyecto_id', 'numero_corte', 'consecutivo_vivero_ingenio']);
 
             $viveros->each(function ($v) {
                 $v->makeHidden(['nombre_proyecto', 'nombre_responsable', 'nombre_ambiente', 'consecutivo_corte']);
+                $v->corte_inicial = max(0, $v->numero_corte - $v->cosechas_count);
             });
 
             return response()->json($viveros);
         }
 
-        $viveros = Vivero::with(['proyecto', 'responsable', 'caracteres', 'parcelas.variedad', 'parcelas.caracter', 'lote', 'origenLote', 'origenVivero'])
+        $viveros = Vivero::with(['proyecto', 'responsable', 'caracteres', 'proyectos', 'proyectos', 'parcelas.variedad', 'parcelas.caracter', 'lote', 'origenLote', 'origenVivero'])
+            ->withCount('cosechas')
             ->whereNotNull('proyecto_id')
             ->orderBy('created_at', 'desc')
             ->get();
-        foreach ($viveros as $vivero) {
-            $vivero->id_vivero_origen_formateado = $this->viveroService->formatIdViveroOrigen($vivero);
-        }
+
+        $viveros->each(function ($v) {
+            $v->makeHidden(['consecutivo_corte']);
+            $v->corte_inicial = max(0, $v->numero_corte - $v->cosechas_count);
+            $v->id_vivero_origen_formateado = $this->viveroService->formatIdViveroOrigen($v);
+        });
+
         return response()->json($viveros);
     }
 
@@ -86,6 +93,25 @@ class ViveroController extends Controller
                         ->where('consecutivo_vivero_ingenio', $request->consecutivo_vivero_ingenio)
                         ->whereYear('fecha_siembra', $yearReq)
                         ->first();
+                    if ($request->origen_parcela && is_numeric($request->origen_parcela) && !$request->origen_vivero_id) {
+                        // Instanciar un vivero temporal para usar el servicio de formato
+                        $tempV = new \App\Models\Vivero();
+                        $tempV->origen_ingenio = $request->origen_ingenio;
+                        $tempV->origen_hacienda = $request->origen_hacienda;
+                        $tempV->origen_suerte = $request->origen_suerte;
+                        $tempV->origen_anio = $request->origen_anio;
+                        $tempV->origen_parcela = $request->origen_parcela;
+                        $tempV->origen_lote_id = $request->origen_lote_id;
+                        if ($tempV->origen_lote_id) {
+                            $tempV->origenLote = \App\Models\Lote::find($tempV->origen_lote_id);
+                        }
+                        
+                        $fullOrigen = $this->viveroService->formatIdViveroOrigen($tempV);
+                        if ($fullOrigen) {
+                            $request->merge(['origen_parcela' => $fullOrigen]);
+                        }
+                    }
+
                     if ($preCreated) {
                         $preCreatedId = $preCreated->id;
                     }
@@ -122,6 +148,15 @@ class ViveroController extends Controller
                 }
             }
 
+            // Lógica de herencia de cortes: si viene de otro vivero, inicia en el corte del padre + 1
+            $numeroCorteCalculado = $request->numero_corte ?? 0;
+            if ($request->origen_vivero_id) {
+                $viveroOrigen = Vivero::find($request->origen_vivero_id);
+                if ($viveroOrigen) {
+                    $numeroCorteCalculado = $viveroOrigen->numero_corte + 1;
+                }
+            }
+
             $yearRequest = date('Y', strtotime($request->fecha_siembra));
             $vivero = Vivero::withTrashed()
                 ->where('lote_id', $request->lote_id)
@@ -143,7 +178,7 @@ class ViveroController extends Controller
                     'ambiente' => $request->ambiente,
                     'responsable_id' => $request->responsable_id,
                     'fecha_siembra' => $request->fecha_siembra,
-                    'numero_corte' => $request->numero_corte ?? 1,
+                    'numero_corte' => $numeroCorteCalculado,
                     'temporada_floracion' => $request->temporada_floracion,
                     'condicion' => $request->condicion,
                     'origen_ingenio' => $request->origen_ingenio,
@@ -165,7 +200,7 @@ class ViveroController extends Controller
                     'ambiente' => $request->ambiente,
                     'responsable_id' => $request->responsable_id,
                     'fecha_siembra' => $request->fecha_siembra,
-                    'numero_corte' => $request->numero_corte ?? 1,
+                    'numero_corte' => $numeroCorteCalculado,
                     'temporada_floracion' => $request->temporada_floracion,
                     'condicion' => $request->condicion,
                     'origen_ingenio' => $request->origen_ingenio,
@@ -238,7 +273,22 @@ class ViveroController extends Controller
 
             if ($request->has('caracteres_ids')) {
                 $vivero->caracteres()->sync($request->caracteres_ids);
+                if (is_array($request->caracteres_ids) && count($request->caracteres_ids) > 0) {
+                    $vivero->caracter_id = $request->caracteres_ids[0];
+                    $vivero->save();
+                }
             }
+
+            if ($request->has('proyectos') && is_array($request->proyectos)) {
+                $vivero->proyectos()->sync($request->proyectos);
+                if (count($request->proyectos) > 0) {
+                    $vivero->proyecto_id = $request->proyectos[0];
+                    $vivero->save();
+                }
+            } else {
+                $vivero->proyectos()->sync([]);
+            }
+
 
             return response()->json($vivero, 201);
         });
@@ -246,7 +296,7 @@ class ViveroController extends Controller
 
     public function show($id)
     {
-        $vivero = Vivero::with(['proyecto', 'responsable', 'caracteres', 'lote', 'historialLotes.lote', 'origenLote', 'origenVivero'])->findOrFail($id);
+        $vivero = Vivero::with(['proyecto', 'responsable', 'caracteres', 'proyectos', 'proyectos', 'lote', 'historialLotes.lote', 'origenLote', 'origenVivero'])->findOrFail($id);
         $vivero->id_vivero_origen_formateado = $this->viveroService->formatIdViveroOrigen($vivero);
         return response()->json($vivero);
     }
@@ -294,6 +344,10 @@ class ViveroController extends Controller
             $originalIdent = $vivero->getOriginal('identificador_unico');
             $vivero->fill($request->except('identificador_unico'));
 
+            if ($vivero->origen_parcela && is_numeric($vivero->origen_parcela) && !$vivero->origen_vivero_id) {
+                $vivero->origen_parcela = $this->viveroService->formatIdViveroOrigen($vivero);
+            }
+
             if (!$vivero->suerte && $vivero->lote_id) {
                 $lote = \App\Models\Lote::find($vivero->lote_id);
                 if ($lote) {
@@ -335,6 +389,20 @@ class ViveroController extends Controller
 
             if ($request->has('caracteres_ids')) {
                 $vivero->caracteres()->sync($request->caracteres_ids);
+                if (is_array($request->caracteres_ids) && count($request->caracteres_ids) > 0) {
+                    $vivero->caracter_id = $request->caracteres_ids[0];
+                    $vivero->save();
+                }
+            }
+
+            if ($request->has('proyectos') && is_array($request->proyectos)) {
+                $vivero->proyectos()->sync($request->proyectos);
+                if (count($request->proyectos) > 0) {
+                    $vivero->proyecto_id = $request->proyectos[0];
+                    $vivero->save();
+                }
+            } else {
+                $vivero->proyectos()->sync([]);
             }
 
             return response()->json($vivero);
@@ -540,7 +608,13 @@ class ViveroController extends Controller
                 $suerte = $lote->nombre_lote ?: '00';
                 $suerteCleaned = trim(preg_replace('/\b(lote|vivero)\b/i', '', $suerte));
                 $anio = date('Y');
-                $identificadorDefault = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $haciendaCleaned, $suerteCleaned, $vivero->consecutivo_vivero_ingenio);
+                $baseIdent = sprintf('%s%s-%s-%s-%d', $ingenio, $anio, $haciendaCleaned, $suerteCleaned, $vivero->consecutivo_vivero_ingenio);
+                $identificadorDefault = $baseIdent;
+                $counter = 1;
+                while (Vivero::where('identificador_unico', $identificadorDefault)->where('id', '!=', $vivero->id)->exists()) {
+                    $identificadorDefault = $baseIdent . '-' . $counter;
+                    $counter++;
+                }
 
                 $vivero->update([
                     'identificador_unico' => $identificadorDefault,
@@ -549,7 +623,7 @@ class ViveroController extends Controller
                     'ambiente' => null,
                     'responsable_id' => null,
                     'fecha_siembra' => now()->format('Y-m-d'),
-                    'numero_corte' => 1,
+                    'numero_corte' => 0,
                     'temporada_floracion' => null,
                     'condicion' => null,
                     'caracter_id' => null,
@@ -697,7 +771,38 @@ class ViveroController extends Controller
 
     public function getCaracteresPorProyecto($id)
     {
-        $caracteres = DB::table('proyecto_caracteres')->where('proyecto_id', $id)->get();
+        $fechaf = \Carbon\Carbon::today()->format('Y-m-d');
+        $fechai = \Carbon\Carbon::yesterday()->format('Y-m-d');
+
+        $caracteres = DB::table('proyecto_caracteres')
+            ->where('proyecto_id', $id)
+            ->orWhereIn('id', function($query) use ($id, $fechai, $fechaf) {
+                $query->select('id_crcter')
+                      ->from('floracion')
+                      ->where('id_pr', $id)
+                      ->where('estado', 0)
+                      ->where('bolsa_comun', 0)
+                      ->whereBetween('fcha', [$fechai, $fechaf]);
+            })
+            ->distinct()
+            ->get();
+            
+        $conteo = DB::table('floracion')
+            ->select('id_crcter', DB::raw('count(distinct vrdad) as total_variedades'), DB::raw('count(*) as total_flores'))
+            ->where('id_pr', $id)
+            ->where('estado', 0)
+            ->where('bolsa_comun', 0)
+            ->whereBetween('fcha', [$fechai, $fechaf])
+            ->groupBy('id_crcter')
+            ->get()
+            ->keyBy('id_crcter');
+
+        foreach ($caracteres as $car) {
+            $stats = $conteo->get($car->id);
+            $car->total_variedades = $stats ? $stats->total_variedades : 0;
+            $car->total_flores = $stats ? $stats->total_flores : 0;
+        }
+            
         return response()->json($caracteres);
     }
 

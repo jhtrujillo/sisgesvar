@@ -22,6 +22,8 @@ class UpdateViveroRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'proyectos' => 'nullable|array',
+            'proyectos.*' => 'integer|exists:sivar.remote_pg_sipro,id_prycto',
             'proyecto_id' => 'nullable|integer|exists:sivar.remote_pg_sipro,id_prycto',
             'ingenio' => 'nullable|string',
             'hacienda' => 'nullable|string',

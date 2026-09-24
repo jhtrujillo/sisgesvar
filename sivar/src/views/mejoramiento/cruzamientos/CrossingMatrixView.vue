@@ -206,7 +206,7 @@
                     >
                       VM: {{ MatrixCrossingStore.matrixCrossingsFilter.viabilidad[0][indexCol].vm2 }}
                     </span>
-                    <span class="block text-[9px] text-slate-400 font-semibold mt-0.5 mb-0.5">Polen: {{ flor.polen }}</span>
+                    <span class="block text-[9px] text-slate-400 font-semibold mt-0.5 mb-0.5">Polen: {{ flor.polen }} | Flores: {{ flor.cantidad_flores || 0 }}</span>
                   </th>
                 </template>
               </tr>
@@ -227,7 +227,7 @@
                     <span class="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-50 text-slate-500 border border-slate-100">
                       VM: {{ getRowVm(viabilidadRow) }}
                     </span>
-                    <span class="block text-[9px] text-slate-400 mt-0.5 font-semibold">Polen: {{ viabilidadRow[0].polen }}</span>
+                    <span class="block text-[9px] text-slate-400 mt-0.5 font-semibold">Polen: {{ viabilidadRow[0].polen }} | Flores: {{ viabilidadRow[0].cantidad_flores || 0 }}</span>
                   </td>
 
                   <!-- Celdas de la matriz filtradas por columna -->
@@ -254,7 +254,7 @@
                           </span>
                           <!-- Botón Comparador Lado a Lado -->
                           <button
-                            @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad)"
+                            @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad, car?.causa_veto)"
                             class="text-[8px] font-bold px-1.5 py-0.5 bg-slate-100 hover:bg-emerald-50 text-slate-650 hover:text-emerald-700 rounded border border-slate-200/60 hover:border-emerald-200 transition-all duration-150 flex items-center justify-center space-x-0.5"
                             title="Comparar Progenitores Lado a Lado"
                           >
@@ -299,6 +299,7 @@
     :motherName="comparatorMother"
     :fatherName="comparatorFather"
     :initiallyViable="comparatorInitiallyViable"
+    :causaVeto="comparatorCausa"
   />
 
   <!-- Modal de Flores de Otros Proyectos / Bolsa Común -->
@@ -343,7 +344,9 @@ const handleFlowerAssigned = async () => {
   if (activeProj && activeVar) {
     isLoading.value = true;
     try {
-      await MatrixCrossingStore.getMatrixCrossingList(activeProj, activeProj, activeVar, activeAmb);
+            const caracterFiltro = localStorage.getItem("filtroCaracterIndividual");
+      const pondProj = localStorage.getItem("selectedCdCntble") || "General";
+      await MatrixCrossingStore.getMatrixCrossingList(activeProj, pondProj, activeVar, activeAmb, caracterFiltro);
     } catch (error) {
       console.error("Error al recargar matriz tras asignar flor:", error);
     } finally {
@@ -374,12 +377,14 @@ const isComparatorOpen = ref(false);
 const comparatorMother = ref("");
 const comparatorFather = ref("");
 const comparatorInitiallyViable = ref(true);
+const comparatorCausa = ref("");
 
-const openParentComparator = (mother: string, father: string, viable: boolean) => {
+const openParentComparator = (mother: string, father: string, viable: boolean, causa: string = "") => {
   if (mother && father) {
     comparatorMother.value = mother;
     comparatorFather.value = father;
     comparatorInitiallyViable.value = viable;
+    comparatorCausa.value = causa;
     isComparatorOpen.value = true;
   }
 };
@@ -411,7 +416,9 @@ watch([selectedMegaAmbiente, selectedCdCntble, selectedVariety], async ([newMega
   if ((newMegaAmbiente || newCdCntble) && newVariety) {
     isLoading.value = true;
     try {
-      await MatrixCrossingStore.getMatrixCrossingList(activeProj, activeProj, newVariety, activeAmb);
+            const caracterFiltro = localStorage.getItem("filtroCaracterIndividual");
+      const pondProj = localStorage.getItem("selectedCdCntble") || "General";
+      await MatrixCrossingStore.getMatrixCrossingList(activeProj, pondProj, newVariety, activeAmb, caracterFiltro);
 
       // Restaurar el borrador para sincronizar Step 2 y Step 3 en ambas direcciones
       const storedDraft = localStorage.getItem(`sivarcc_draft_crossings_${activeProj}_${activeAmb}`);

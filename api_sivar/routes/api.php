@@ -53,9 +53,9 @@ Route::group([
     Route::post('modifyFeatures/{caracteristica}/{proyecto}/{nivel}/{ponderado}/{ambiente}/{nuevo}', [\App\Http\Controllers\CrossingController::class, 'modifyFeatures']);
     Route::get('calcularViabilidadCaracteristica/{caracteristica}/{florA}/{florB}/{ponderado}/{testigo}', [\App\Http\Controllers\CrossingController::class, 'calcularViabilidadCaracteristica']);
     Route::get('crearOrigenCruzamiento/{id_cruzamiento}', [\App\Http\Controllers\CrossingController::class, 'crearOrigenCruzamiento']);
-    Route::get('generateMatrix/{proyectos}/{proyecto}/{testigo}/{ambiente}', [\App\Http\Controllers\CrossingController::class, 'generateMatrix']);
+    Route::get('generateMatrix/{proyectos}/{proyecto}/{testigo}/{ambiente}/{caracter?}', [\App\Http\Controllers\CrossingController::class, 'generateMatrix']);
     Route::get('suggestionCrossings/{proyectos}/{proyecto}/{testigo}/{ambiente}', [\App\Http\Controllers\CrossingController::class, 'suggestionCrossings']);
-    Route::get('suggestionCrossingsPerProject/{proyectos}/{proyecto}/{testigo}/{ambiente}', [\App\Http\Controllers\CrossingController::class, 'suggestionCrossingsPerProject']);
+    Route::get('suggestionCrossingsPerProject/{proyectos}/{proyecto}/{testigo}/{ambiente}/{caracter?}', [\App\Http\Controllers\CrossingController::class, 'suggestionCrossingsPerProject']);
     Route::get('/crossing/programming/change_proyect_flower/{variedad}/{proyecto}/{bolsa}', [\App\Http\Controllers\CrossingController::class, 'enviarFlorAProyecto']);
     Route::get('/crossing/programming/flores_otros_proyectos', [\App\Http\Controllers\CrossingController::class, 'floresOtrosProyectos']);
     Route::get('/crossing/programming/devolver_flor_bolsa_comun/{variedad}/{proyecto}', [\App\Http\Controllers\CrossingController::class, 'devolverFlorABolsaComun']);
@@ -77,22 +77,27 @@ Route::group([
     Route::get('/crossing/upload1/{proyecto}/{usuario}/{cruzamiento_id}/{madre}/{padre}/{porcentaje_germinacion}/{gramos}/{plantulas_estimadas}', [\App\Http\Controllers\CrossingController::class, 'cargarCruzamientoMexico']);
     Route::get('/crossing/modify/{id}', [\App\Http\Controllers\CrossingController::class, 'modificarCruzamiento']);
     Route::get('/crossing/modify', [\App\Http\Controllers\CrossingController::class, 'modificarCruzamientoPost']);
+    Route::post('/crossing/modify', [\App\Http\Controllers\CrossingController::class, 'modificarCruzamientoPost']);
     Route::get('/obtenerIdFlorCruzamiento/{a}/{b}/{c}', [\App\Http\Controllers\CrossingController::class, 'obtenerIdFlorCruzamiento']);
 
     //Experimentos
     Route::get('getSearchParameters', [\App\Http\Controllers\ExperimentosController::class, 'getSearchParameters']);
     Route::get('getAreasProgram/{id_area}', [\App\Http\Controllers\ExperimentosController::class, 'getAreasProgram']);
     Route::get('getProjectsArea/{id_area_trbjo}', [\App\Http\Controllers\ExperimentosController::class, 'getProjectsArea']);
-    Route::get('getExperiment/{id_pr}/{srie}/{estdo}', [\App\Http\Controllers\ExperimentosController::class, 'getExperiment']);
-    Route::get('getCriteriosSeleccion', [\App\Http\Controllers\ExperimentosController::class, 'getCriteriosSeleccion']);
-    Route::post('grabarEncabezado', [\App\Http\Controllers\ExperimentosController::class, 'grabarEncabezado']);
+    Route::get('getExperiment/{id_pr}/{srie}/{estdo}', [\App\Http\Controllers\ExperimentosController::class, 'getExperiment']);  
+    Route::get('listarExperimentosCreados', [\App\Http\Controllers\ExperimentosController::class, 'listarExperimentosCreados']);  
+    Route::get('getCriteriosSeleccion', [\App\Http\Controllers\ExperimentosController::class, 'getCriteriosSeleccion']);   
+    Route::post('grabarEncabezado', [\App\Http\Controllers\ExperimentosController::class, 'grabarEncabezado']);  
     Route::get('getTreatmentsSeason/{ano}/{id_dsno_enc}/{min_plantulas}/{plantulas_ttles}', [\App\Http\Controllers\ExperimentosController::class, 'getTreatmentsSeason']);
     Route::get('getTreatmentsExperiments/{id_dsno_enc_f}/{id_dsno_enc_i}', [\App\Http\Controllers\ExperimentosController::class, 'getTreatmentsExperiments']);
-    Route::post('addDisenoDetalle/{id_dsno_enc}/{cTestigo}/{nTipoParcela}/{nTotalPlantas}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'addDisenoDetalle']);
-    Route::post('addDisenoDetalles/{id_dsno_enc}/{nTipoParcela}/{cTestigo}/{nTotalPlantas}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'addDisenoDetalles']);
-    Route::post('removeDetalle/{id_dsno_enc}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'removeDetalle']);
+    Route::post('addDisenoDetalle/{id_dsno_enc}/{cTestigo}/{nTipoParcela}/{nTotalPlantas}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'addDisenoDetalle']);  
+    Route::post('addDisenoDetalles/{id_dsno_enc}/{nTipoParcela}/{cTestigo}/{nTotalPlantas}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'addDisenoDetalles']);  
+    Route::post('addDesingsDetails', [\App\Http\Controllers\ExperimentosController::class, 'addDisenosDetalles']);  
+    Route::post('addDisenoDetalles', [\App\Http\Controllers\ExperimentosController::class, 'addDisenosDetalles']);  
+    Route::post('removeDetalle/{id_dsno_enc}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'removeDetalle']);  
     Route::get('getRegistros/{tipo}/{tipo_registro}/{search}/{id_dsno_enc}', [\App\Http\Controllers\ExperimentosController::class, 'getRegistros']);
-    Route::post('grabarDiseno/{id_dsno_enc}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'grabarDiseno']);
+    Route::post('grabarDiseno', [\App\Http\Controllers\ExperimentosController::class, 'grabarDiseno']);  
+    Route::post('grabarDiseno/{id_dsno_enc}/{arrIds?}', [\App\Http\Controllers\ExperimentosController::class, 'grabarDiseno']);  
     Route::post('saveGenericDesign/{id_dsno_enc}', [\App\Http\Controllers\ExperimentosController::class, 'saveGenericDesign']);
     Route::post('generateDesign/{id_dsno_enc}', [\App\Http\Controllers\ExperimentosController::class, 'generateDesign']);
 

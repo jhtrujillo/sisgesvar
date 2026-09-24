@@ -224,119 +224,54 @@
                 </div>
               </div>
 
-              <!-- Proyecto -->
+              <!-- Proyectos y Caracteres Vinculados -->
               <div class="relative md:col-span-2">
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="proyecto_id">Proyecto (Mejoramiento)</label>
-                <div class="relative">
-                  <textarea
-                    v-model="searchProyecto"
-                    @focus="showProyectos = true"
-                    @blur="hideProyectosDelay"
-                    placeholder="Escribe para buscar un proyecto..."
-                    rows="2"
-                    class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm resize-none"
-                  ></textarea>
-                  <button
-                    v-if="form.proyecto_id"
-                    @click="clearProyecto"
-                    type="button"
-                    class="absolute right-3.5 top-3.5 text-slate-400 hover:text-red-500 transition-colors"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path
-                        fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
+                <div class="flex items-center justify-between mb-3">
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Proyectos y Ambientes Asignados</label>
+                  <button type="button" @click="showProyectoModal = true" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Vincular Proyecto
                   </button>
-                  <div
-                    v-if="showProyectos"
-                    class="absolute z-20 w-full mt-1 bg-white shadow-xl max-h-60 rounded-xl py-1 text-xs ring-1 ring-black/5 overflow-auto border border-slate-100"
-                  >
-                    <div v-if="filteredProyectos.length === 0" class="cursor-default select-none py-2 px-3.5 text-slate-400 font-medium">
-                      No se encontraron proyectos
-                    </div>
-                    <div
-                      v-for="pry in filteredProyectos"
-                      :key="pry.id_prycto"
-                      @mousedown="selectProyecto(pry)"
-                      class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
-                      :class="form.proyecto_id === pry.id_prycto ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
-                    >
-                      {{ formatProjectName(pry) }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Carácter -->
-              <div class="relative md:col-span-2">
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5" for="caracter_id">Carácter (Opcional)</label>
-                
-                <div class="flex flex-wrap gap-2 mb-2" v-if="form.caracteres_ids && form.caracteres_ids.length > 0">
-                  <div v-for="c_id in form.caracteres_ids" :key="c_id" class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-emerald-200">
-                    {{ getCaracterName(c_id) }}
-                    <button type="button" @click="removeCaracter(c_id)" class="text-emerald-600 hover:text-emerald-900 focus:outline-none">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                      </svg>
-                    </button>
-                  </div>
                 </div>
 
-                <div class="relative">
-                  <input
-                    type="text"
-                    v-model="searchCaracter"
-                    @focus="showCaracteres = true"
-                    @blur="hideCaracteresDelay"
-                    placeholder="Buscar o agregar..."
-                    class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-3 focus:bg-white focus:ring-4 focus:ring-cenicana/10 focus:border-cenicana transition-all outline-none shadow-sm"
-                    :disabled="!form.proyecto_id"
-                    :class="{ 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-inner': !form.proyecto_id }"
-                  />
-                  <button
-                    v-if="form.caracteres_ids && form.caracteres_ids.length > 0"
-                    @click="clearCaracter"
-                    type="button"
-                    class="absolute right-3.5 top-3 text-slate-400 hover:text-red-500 transition-colors"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path
-                        fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                  <div
-                    v-if="showCaracteres && form.proyecto_id"
-                    class="absolute z-20 w-full mt-1 bg-white shadow-xl max-h-60 rounded-xl py-1 text-xs ring-1 ring-black/5 overflow-auto border border-slate-100"
-                  >
-                    <div
-                      v-if="searchCaracter && !exactMatchCaracter"
-                      @mousedown="selectNewCaracter"
-                      class="cursor-pointer select-none py-2 px-3.5 hover:bg-emerald-50 text-cenicana font-bold border-b border-slate-100 transition-colors"
-                    >
-                      + Agregar nuevo: "{{ searchCaracter }}"
-                    </div>
-                    <div v-if="filteredCaracteres.length === 0 && !searchCaracter" class="cursor-default select-none py-2 px-3.5 text-slate-400 font-medium">
-                      No hay caracteres (escribe para crear)
-                    </div>
-                    <div
-                      v-for="car in filteredCaracteres"
-                      :key="car.id"
-                      v-show="!Array.isArray(form.caracteres_ids) || !form.caracteres_ids.includes(car.id)"
-                      @click="selectCaracter(car)"
-                      class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 text-slate-700 font-medium transition-colors"
-                      :class="form.caracteres_ids && form.caracteres_ids.includes(car.id) ? 'bg-emerald-50 text-cenicana font-bold border-l-2 border-cenicana' : ''"
-                    >
-                      {{ car.nombre }}
-                    </div>
-                  </div>
+                <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm mb-4">
+                  <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                      <tr>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Proyecto</th>
+                        <th scope="col" class="px-4 py-3 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Caracteres (Ambientes)</th>
+                        <th scope="col" class="px-4 py-3 text-right text-[10px] font-bold text-slate-500 uppercase tracking-wider w-16">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 bg-white">
+                      <tr v-if="!form.proyectos || form.proyectos.length === 0">
+                        <td colspan="3" class="px-4 py-6 text-center text-xs text-slate-400 font-medium">
+                          No hay proyectos vinculados a este vivero.
+                        </td>
+                      </tr>
+                      <tr v-for="pry_id in form.proyectos" :key="pry_id" class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-4 py-3 text-xs font-semibold text-slate-700 align-top">
+                          {{ getProyectoName(pry_id) }}
+                        </td>
+                        <td class="px-4 py-3 align-top">
+                          <div class="flex flex-wrap gap-1.5">
+                            <span v-for="c_id in getCaracteresByProyecto(pry_id)" :key="c_id" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                              {{ getCaracterNameLocal(c_id) }}
+                            </span>
+                            <span v-if="getCaracteresByProyecto(pry_id).length === 0" class="text-[10px] text-slate-400 font-medium italic">Sin caracteres</span>
+                          </div>
+                        </td>
+                        <td class="px-4 py-3 text-right align-top">
+                          <button type="button" @click="removeProyectoVinculado(pry_id)" class="text-slate-400 hover:text-red-500 transition-colors" title="Desvincular Proyecto">
+                            <svg class="w-4 h-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
+            
             </div>
           </div>
 
@@ -388,7 +323,7 @@
                 >
                   <option value="">Seleccione una Hacienda</option>
                   <option v-for="hda in haciendas" :key="hda.cd_hcnda" :value="hda.cd_hcnda">
-                    {{ decodeHTMLEntities(hda.nm_hcnda) }}
+                    {{ formatHaciendaName(hda.nm_hcnda) }}
                   </option>
                 </select>
               </div>
@@ -586,7 +521,7 @@
                 >
                   <option value="">Seleccione una Hacienda</option>
                   <option v-for="hda in haciendasOrigen" :key="'origen_hda_' + hda.cd_hcnda" :value="hda.cd_hcnda">
-                    {{ decodeHTMLEntities(hda.nm_hcnda) }}
+                    {{ formatHaciendaName(hda.nm_hcnda) }}
                   </option>
                 </select>
               </div>
@@ -764,6 +699,13 @@
           </div>
         </div>
       </form>
+
+    <AddProyectoCaracterModal
+      :is-open="showProyectoModal"
+      :proyectos="proyectos"
+      @close="showProyectoModal = false"
+      @confirm="handleConfirmProyecto"
+    />
 
       <!-- Administrar Parcelas (Solo visible en edición) -->
       <div v-show="isEditing && activeTab === 'parcelas'" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 border-t-4 border-cenicana">
@@ -950,6 +892,7 @@
                 <th class="px-4 py-3 border-b border-slate-200">Parcela</th>
                 <th class="px-4 py-3 border-b border-slate-200">Variedad</th>
                 <th class="px-4 py-3 border-b border-slate-200">Pedigree</th>
+                <th class="px-4 py-3 border-b border-slate-200">Proyecto</th>
                 <th class="px-4 py-3 border-b border-slate-200">Carácter</th>
                 <th class="px-4 py-3 border-b border-slate-200">ID Plot</th>
                 <th class="px-4 py-3 border-b border-slate-200">ID Plot Origen</th>
@@ -958,7 +901,7 @@
             </thead>
             <tbody>
               <tr v-if="loadingParcelas">
-                <td colspan="7" class="text-center py-8 text-slate-500">
+                <td colspan="8" class="text-center py-8 text-slate-500">
                   <div class="flex items-center justify-center space-x-2">
                     <div class="w-4 h-4 border-2 border-cenicana border-t-transparent rounded-full animate-spin"></div>
                     <span>Cargando parcelas...</span>
@@ -966,10 +909,10 @@
                 </td>
               </tr>
               <tr v-else-if="parcelas.length === 0">
-                <td colspan="7" class="text-center py-8 text-slate-500 bg-slate-50">No hay parcelas registradas en este vivero.</td>
+                <td colspan="8" class="text-center py-8 text-slate-500 bg-slate-50">No hay parcelas registradas en este vivero.</td>
               </tr>
               <tr v-else-if="filteredParcelas.length === 0">
-                <td colspan="7" class="text-center py-8 text-slate-500 bg-slate-50">No se encontraron parcelas que coincidan con la búsqueda.</td>
+                <td colspan="8" class="text-center py-8 text-slate-500 bg-slate-50">No se encontraron parcelas que coincidan con la búsqueda.</td>
               </tr>
               <template v-else>
                 <tr
@@ -1015,6 +958,9 @@
                     </td>
                     <td class="px-4 py-3 text-slate-400 text-xs italic">
                       {{ variedades.find((v) => v.id_nm_vrdad === editingPlotForm.variedad_id)?.pdgree || "N/A" }}
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 text-xs italic bg-slate-50">
+                      {{ getProyectoForPlot({ caracter_id: editingPlotForm.caracter_id }) }}
                     </td>
                     <td class="px-4 py-3 min-w-[150px]">
                       <select
@@ -1102,11 +1048,19 @@
                     </td>
                     <td class="px-4 py-3 text-slate-600 text-xs">{{ p.variedad?.pdgree || "N/A" }}</td>
                     <td class="px-4 py-3 text-slate-600 text-xs">
-                      <span v-if="p.caracter?.nombre">{{ p.caracter.nombre }}</span>
-                      <span v-else-if="form.caracteres_ids && form.caracteres_ids.length > 0 && getCaracterGlobalNombre()" class="text-slate-400 italic" title="Heredado del Vivero">{{
-                        getCaracterGlobalNombre()
-                      }}</span>
-                      <span v-else>N/A</span>
+                      {{ getProyectoForPlot(p) }}
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 text-xs">
+                      <template v-if="!p.variedad_id && !p.variedad">
+                        <span class="text-slate-400">N/A</span>
+                      </template>
+                      <template v-else>
+                        <span v-if="p.caracter?.nombre">{{ p.caracter.nombre }}</span>
+                        <span v-else-if="form.caracteres_ids && form.caracteres_ids.length > 0 && getCaracterGlobalNombre()" class="text-slate-400 italic" title="Heredado del Vivero">{{
+                          getCaracterGlobalNombre()
+                        }}</span>
+                        <span v-else>N/A</span>
+                      </template>
                     </td>
                     <td class="px-4 py-3 text-slate-700 font-mono text-xs font-semibold">
                       {{ (form.identificador_unico ? form.identificador_unico + '-' : '') + p.numero_parcela }}
@@ -1208,6 +1162,7 @@
         :show="showImportWizard"
         :variedades="variedades"
         :caracteres="caracteres"
+        :proyectos="proyectos"
         :viveroId="route.params.id"
         :viveroIdentificador="form.identificador_unico"
         :origenParcela="form.origen_parcela"
@@ -1260,7 +1215,7 @@
                 >
                   <option value="" disabled>Seleccione la hacienda...</option>
                   <option v-for="hac in trasladoHaciendas" :key="'traslado_hac_' + hac.cd_hcnda" :value="hac.cd_hcnda">
-                    {{ decodeHTMLEntities(hac.nm_hcnda) }}
+                    {{ formatHaciendaName(hac.nm_hcnda) }}
                   </option>
                 </select>
               </div>
@@ -1313,6 +1268,13 @@
               </button>
             </div>
           </form>
+
+    <AddProyectoCaracterModal
+      :is-open="showProyectoModal"
+      :proyectos="proyectos"
+      @close="showProyectoModal = false"
+      @confirm="handleConfirmProyecto"
+    />
         </div>
       </div>
     </template>
@@ -1320,6 +1282,7 @@
 </template>
 
 <script setup lang="ts">
+import AddProyectoCaracterModal from "@/components/viveros/AddProyectoCaracterModal.vue";
 import { ref, shallowRef, onMounted, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
@@ -1333,6 +1296,12 @@ import BaseButton from "@/components/BaseButton.vue";
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
+
+const formatHaciendaName = (name: string) => {
+  if (!name) return "";
+  const decoded = decodeHTMLEntities(name);
+  return decoded.split('_')[0].trim();
+};
 
 const decodeHTMLEntities = (text: string) => {
   if (!text) return "";
@@ -1352,9 +1321,10 @@ const form = ref({
   hacienda: "",
   suerte: "",
   fecha_siembra: "",
-  numero_corte: 1,
+  numero_corte: 0,
   temporada_floracion: "",
   proyecto_id: "",
+  proyectos: [],
   ambiente: "",
   responsable_id: "",
   condicion: "",
@@ -1639,9 +1609,10 @@ const loadAllViveros = async () => {
       expandedViveros.push(v);
 
       // Si el vivero tiene cortes registrados, agregarlos como opciones adicionales
-      // Iteramos hasta numero_corte - 1 para mostrar solo los cortes históricos generados
-      if (v.numero_corte && v.numero_corte > 1) {
-        for (let i = 1; i < v.numero_corte; i++) {
+      // Usamos corte_inicial para saber en qué corte empezó realmente este vivero
+      const startCorte = v.corte_inicial !== undefined ? v.corte_inicial : 0;
+      if (v.numero_corte && v.numero_corte > startCorte) {
+        for (let i = startCorte; i < v.numero_corte; i++) {
           expandedViveros.push({
             ...v,
             identificador_unico: `${v.identificador_unico}-${i}`,
@@ -1770,6 +1741,31 @@ const getCaracterName = (id: number | string) => {
   return c ? c.nombre : "";
 };
 
+const getProyectoGlobalNombre = () => {
+  if (!form.value.proyectos || form.value.proyectos.length === 0) return "";
+  const nombres = form.value.proyectos.map((id) => {
+    const p = proyectos.value.find((pry) => (pry.id_prycto || pry.id) == id);
+    return p ? formatProjectName(p) : "";
+  }).filter(n => n !== "");
+  return nombres.join(", ");
+};
+
+const getProyectoForPlot = (p: any) => {
+  // Si la parcela está vacía (sin variedad), no mostramos proyecto
+  if (!p.variedad_id && !p.variedad) return "N/A";
+
+  const caracterId = p.caracter_id || p.caracter?.id;
+  if (caracterId) {
+    const c = caracteres.value.find((car) => car.id == caracterId);
+    if (c && c.proyecto_id) {
+      const pry = proyectos.value.find((pry) => (pry.id_prycto || pry.id) == c.proyecto_id);
+      return pry ? formatProjectName(pry) : "N/A";
+    }
+    return "N/A";
+  }
+  return getProyectoGlobalNombre() || "N/A";
+};
+
 const selectVariedad = (v: any) => {
   parcelaForm.value.variedad_id = v.id_nm_vrdad;
   searchVariedad.value = v.nm_vrdad;
@@ -1866,6 +1862,56 @@ const ambientes = ref<any[]>([]);
 
 const searchProyecto = ref("");
 const showProyectos = ref(false);
+const showProyectoModal = ref(false);
+
+const getProyectoName = (id_prycto: number) => {
+  const p = proyectos.value.find(x => x.id_prycto === id_prycto);
+  return p ? formatProjectName(p) : id_prycto;
+};
+
+const getCaracterNameLocal = (c_id: number) => {
+  const c = caracteres.value.find(x => Number(x.id) === Number(c_id));
+  return c ? c.nombre : c_id;
+};
+
+const getCaracteresByProyecto = (id_prycto: number) => {
+  return form.value.caracteres_ids.filter(c_id => {
+    const c = caracteres.value.find(x => Number(x.id) === Number(c_id));
+    return c && c.proyecto_id == id_prycto;
+  });
+};
+
+const handleConfirmProyecto = (data: any) => {
+  const pry_id = data.proyecto.id_prycto;
+  if (!form.value.proyectos) form.value.proyectos = [];
+  if (!form.value.proyectos.includes(pry_id)) {
+    form.value.proyectos.push(pry_id);
+  }
+  
+  // Merge caracteres_ids
+  if (!form.value.caracteres_ids) form.value.caracteres_ids = [];
+  data.caracteres_ids.forEach((c_id: number) => {
+    if (!form.value.caracteres_ids.includes(c_id)) {
+      form.value.caracteres_ids.push(c_id);
+    }
+  });
+  
+  // We need to fetch the character objects so we can display their names and know their proyecto_id
+  loadCaracteresForMultipleProyectos(form.value.proyectos);
+  showProyectoModal.value = false;
+};
+
+const removeProyectoVinculado = (id_prycto: number) => {
+  form.value.proyectos = form.value.proyectos.filter((id: number) => id !== id_prycto);
+  
+  // Remove caracteres that belong to this project
+  const caracteresToKeep = form.value.caracteres_ids.filter((c_id: number) => {
+    const c = caracteres.value.find(x => Number(x.id) === Number(c_id));
+    return c && c.proyecto_id !== id_prycto;
+  });
+  form.value.caracteres_ids = caracteresToKeep;
+};
+
 
 const formatProjectName = (pry: any) => {
   let code = pry.cd_cntble;
@@ -1927,6 +1973,16 @@ const exactMatchCaracter = computed(() => {
   return caracteres.value.some((car) => car.nombre.toLowerCase() === searchCaracter.value.trim().toLowerCase());
 });
 
+const loadCaracteresForMultipleProyectos = async (proyectosIds: any[]) => {
+  try {
+    const promises = proyectosIds.map(id => viverosServices.getCaracteresPorProyecto(id));
+    const results = await Promise.all(promises);
+    caracteres.value = results.map(res => res.data).flat();
+  } catch (error) {
+    console.error("Error al cargar caracteres para multiples proyectos", error);
+  }
+};
+
 const loadCaracteres = async (proyecto_id: string | number) => {
   try {
     const res = await viverosServices.getCaracteresPorProyecto(proyecto_id);
@@ -1954,9 +2010,10 @@ const removeCaracter = (id: number) => {
 };
 
 const selectNewCaracter = async () => {
-  if (!searchCaracter.value || !form.value.proyecto_id) return;
+  if (!searchCaracter.value || form.value.proyectos.length === 0) return;
+  const targetProyecto = form.value.proyectos[0]; // create on the first one
   try {
-    const res = await viverosServices.createCaracter(form.value.proyecto_id, {
+    const res = await viverosServices.createCaracter(targetProyecto, {
       nombre: searchCaracter.value
     });
     const newCar = res.data;
@@ -2135,9 +2192,9 @@ const submitForm = async () => {
     toast.error("La Fecha de Siembra es obligatoria.");
     return;
   }
-  if (!form.value.proyecto_id) {
+  if (!form.value.proyectos || form.value.proyectos.length === 0) {
     activeTab.value = "generales";
-    toast.error("El Proyecto es obligatorio.");
+    toast.error("Debe vincular al menos un Proyecto.");
     return;
   }
 
@@ -2598,11 +2655,12 @@ const deleteParcela = async (parcelaId: string | number) => {
 };
 
 const clearAllParcelas = async () => {
-  if (!confirm("¿Está seguro de que desea limpiar las variedades de TODAS las parcelas? Esto dejará las parcelas en blanco pero no eliminará su número.? Esta acción no se puede deshacer.")) return;
+  if (!confirm("¿Está seguro de que desea limpiar las variedades de TODAS las parcelas? Esto dejará las parcelas en blanco pero no eliminará su número. Esta acción no se puede deshacer.")) return;
 
   try {
     await viverosServices.deleteAllParcelas(route.params.id as string);
     toast.success("Todas las parcelas fueron limpiadas");
+    showEmptyPlots.value = true;
     await loadParcelas();
   } catch (error: any) {
     console.error("Error al eliminar parcelas:", error);
@@ -2620,10 +2678,11 @@ const resetAndLoad = async () => {
     hacienda: "",
     suerte: "",
     proyecto_id: "",
+  proyectos: [],
     ambiente: "",
     responsable_id: "",
     fecha_siembra: "",
-    numero_corte: 1,
+    numero_corte: 0,
     temporada_floracion: "",
     condicion: "",
     caracteres_ids: [],
@@ -2662,12 +2721,27 @@ const resetAndLoad = async () => {
       if (vivero.fecha_siembra) {
         vivero.fecha_siembra = vivero.fecha_siembra.substring(0, 10);
       }
-      form.value = { ...vivero, caracteres_ids: [] };
+      
+      let mappedProyectos: number[] = vivero.proyectos && vivero.proyectos.length > 0 
+        ? vivero.proyectos.map((p: any) => Number(p.id_prycto || p.id)) 
+        : (vivero.proyecto_id ? [Number(vivero.proyecto_id)] : []);
 
-      if (form.value.ingenio && form.value.hacienda) {
-        await loadLotesForLocation();
+      if (vivero.caracteres && vivero.caracteres.length > 0) {
+        vivero.caracteres.forEach((c: any) => {
+          if (c.proyecto_id && !mappedProyectos.includes(Number(c.proyecto_id))) {
+            mappedProyectos.push(Number(c.proyecto_id));
+          }
+        });
       }
 
+      const mappedCaracteres = vivero.caracteres ? vivero.caracteres.map((c: any) => Number(c.id)) : [];
+      
+      form.value = { 
+        ...vivero, 
+        proyectos: mappedProyectos,
+        caracteres_ids: mappedCaracteres 
+      };
+      
       if (form.value.origen_vivero_id) {
         const parentVivero = allViverosList.value.find((v) => v.id == form.value.origen_vivero_id);
         if (parentVivero) {
@@ -2689,6 +2763,8 @@ const resetAndLoad = async () => {
         origenParcelaManual.value = true;
 
         const parts = form.value.origen_parcela.split("-");
+        // Los IDs de Vivero tienen 4 partes (IngenioAño-Hacienda-Lote-Consecutivo)
+        // Todo lo que pase de 4 partes es la parcela.
         if (parts.length >= 5) {
           origenViveroInput.value = parts.slice(0, 4).join("-");
           origenParcelaText.value = parts.slice(4).join("-");
@@ -2698,17 +2774,15 @@ const resetAndLoad = async () => {
         }
       }
 
-      if (form.value.proyecto_id) {
-        const pry = proyectos.value.find((p) => p.id_prycto == form.value.proyecto_id);
-        if (pry) searchProyecto.value = formatProjectName(pry);
-
-        await loadCaracteres(form.value.proyecto_id);
-        if (form.value.caracteres && form.value.caracteres.length > 0) {
-          form.value.caracteres_ids = form.value.caracteres.map((c: any) => c.id);
-        } else if (form.value.caracter_id) {
-          form.value.caracteres_ids = [form.value.caracter_id];
-        }
+      if (mappedProyectos.length > 0) {
+        await loadCaracteresForMultipleProyectos(mappedProyectos);
       }
+
+      if (form.value.ingenio && form.value.hacienda) {
+        await loadLotesForLocation();
+      }
+
+
       if (form.value.responsable_id) {
         const usr = responsables.value.find((u) => u.id_usrio == form.value.responsable_id);
         if (usr) searchResponsable.value = usr.nmbre;

@@ -18,7 +18,7 @@ class FloweringService
         ini_set('memory_limit', '512M');
         
         $query = Flowering::leftJoin('remote_pg_sipro', 'remote_pg_sipro.id_prycto', '=', 'floracion.id_pr')
-            ->leftJoin('caracteres', 'caracteres.id_crcter', '=', 'floracion.id_crcter')
+            ->leftJoin('proyecto_caracteres', 'proyecto_caracteres.id', '=', 'floracion.id_crcter')
             ->leftJoin('usuario', 'usuario.id_usrio', '=', 'floracion.usrio_edto');
             
         if (!$historico) {
@@ -31,7 +31,7 @@ class FloweringService
         return $query->select(
             'floracion.*',
             'remote_pg_sipro.nm_prycto',
-            'caracteres.nmbre_crcter',
+            'proyecto_caracteres.nombre as nmbre_crcter',
             'usuario.prmer_nmbre',
             'usuario.aplldo'
         )->get();

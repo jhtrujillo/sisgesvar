@@ -78,10 +78,18 @@ class ExperimentosController extends Controller
 
             // Obtener temporadas de cruzamiento
             $temporadasCruzamiento = DB::connection('sivar')->table('cruzamientos')
-                ->select('ano AS id', 'ano AS text')
+                ->leftJoin('floracion', 'cruzamientos.id_flrcion_mdre', '=', 'floracion.id_flrcion')
+                ->select(
+                    DB::raw("COALESCE(CAST(cruzamientos.ano AS varchar), EXTRACT(YEAR FROM cruzamientos.fcha_crzmnto)::varchar, EXTRACT(YEAR FROM floracion.fcha)::varchar) AS id"),
+                    DB::raw("COALESCE(CAST(cruzamientos.ano AS varchar), EXTRACT(YEAR FROM cruzamientos.fcha_crzmnto)::varchar, EXTRACT(YEAR FROM floracion.fcha)::varchar) AS text")
+                )
                 ->distinct()
-                ->whereNotNull('ano')
-                ->orderBy('ano', 'desc')
+                ->where(function($q) {
+                    $q->whereNotNull('cruzamientos.ano')
+                      ->orWhereNotNull('cruzamientos.fcha_crzmnto')
+                      ->orWhereNotNull('floracion.fcha');
+                })
+                ->orderBy(DB::raw("COALESCE(CAST(cruzamientos.ano AS varchar), EXTRACT(YEAR FROM cruzamientos.fcha_crzmnto)::varchar, EXTRACT(YEAR FROM floracion.fcha)::varchar)"), 'desc')
                 ->get();
 
             // Obtener diseños experimentales
@@ -253,6 +261,42 @@ class ExperimentosController extends Controller
         }
     }
 
+    public function listarExperimentosCreados()
+    {
+        try {
+            $experimentos = DisenoEncabezado::with('proyecto.area')
+                ->select('id_pr', 'srie', 'estdo')
+                ->distinct()
+                ->orderBy('srie', 'desc')
+                ->get()
+                ->map(function ($row) {
+                    $nmPrycto = $row->proyecto->nm_prycto ?? 'Sin proyecto';
+                    $idArea = $row->proyecto->id_area ?? null;
+                    $idAreaTrbjo = $row->proyecto->id_area_trbjo ?? null;
+                    return [
+                        'id_pr' => $row->id_pr,
+                        'srie' => $row->srie,
+                        'estdo' => $row->estdo,
+                        'id_area' => $idArea,
+                        'id_area_trbjo' => $idAreaTrbjo,
+                        'nm_prycto' => $nmPrycto,
+                        'text' => $row->srie . ' | ' . $row->estdo . ' | ' . $nmPrycto
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'experimentos_count' => count($experimentos),
+                'experimentos' => $experimentos,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener el listado de experimentos creados.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
     public function getCriteriosSeleccion()
     {
@@ -383,29 +427,38 @@ class ExperimentosController extends Controller
 
             // Realizar la consulta a la base de datos
             $tratamientosDisponibles = DB::connection('sivar')->table('cruzamientos')
+                ->leftJoin('floracion', 'cruzamientos.id_flrcion_mdre', '=', 'floracion.id_flrcion')
                 ->select(
-                    'id_crzmnto',
-                    'no_crzmnto',
-                    'pdgree',
-                    'orgen',
-                    DB::raw('(COALESCE(plntlas_ttles, 0) - COALESCE(plntlas_dscrtdas, 0)) AS plntlas_ttles'),
-                    'grpo_crzmnto',
-                    'grpo_crzmnto_mdre',
-                    'grpo_crzmnto_pdre'
+                    'cruzamientos.id_crzmnto',
+                    'cruzamientos.no_crzmnto',
+                    'cruzamientos.pdgree',
+                    'cruzamientos.orgen',
+                    'cruzamientos.vrdad_mdre',
+                    'cruzamientos.vrdad_pdre1',
+                    'floracion.vivero',
+                    DB::raw('(COALESCE(cruzamientos.plntlas_ttles, 0) - COALESCE(cruzamientos.plntlas_dscrtdas, 0)) AS plntlas_ttles'),
+                    'cruzamientos.grpo_crzmnto',
+                    'cruzamientos.grpo_crzmnto_mdre',
+                    'cruzamientos.grpo_crzmnto_pdre'
                 )
-                ->where('ano', $ano)
-                ->where(DB::raw('(COALESCE(plntlas_ttles, 0) - COALESCE(plntlas_dscrtdas, 0))'), '>', 0)
-                ->where(function ($query) use ($min_plantulas, $plantulas_ttles) {
-                    $query->where(DB::raw('(COALESCE(plntlas_ttles, 0) - COALESCE(plntlas_dscrtdas, 0))'), '>=', $min_plantulas)
-                        ->where(DB::raw('(COALESCE(plntlas_ttles, 0) - COALESCE(plntlas_dscrtdas, 0))'), '>=', $plantulas_ttles);
+                ->where(function ($query) use ($ano) {
+                    $query->where('cruzamientos.ano', $ano)
+                        ->orWhere(DB::raw("EXTRACT(YEAR FROM cruzamientos.fcha_crzmnto)::varchar"), (string)$ano)
+                        ->orWhere(DB::raw("EXTRACT(YEAR FROM floracion.fcha)::varchar"), (string)$ano)
+                        ->orWhere('floracion.vivero', 'ilike', '%' . $ano . '%');
                 })
-                ->whereNotIn(DB::raw('CAST(id_crzmnto AS varchar)'), function ($subQuery) use ($id_dsno_enc) {
+                ->where(DB::raw('(COALESCE(cruzamientos.plntlas_ttles, 0) - COALESCE(cruzamientos.plntlas_dscrtdas, 0))'), '>', 0)
+                ->where(function ($query) use ($min_plantulas, $plantulas_ttles) {
+                    $query->where(DB::raw('(COALESCE(cruzamientos.plntlas_ttles, 0) - COALESCE(cruzamientos.plntlas_dscrtdas, 0))'), '>=', $min_plantulas)
+                        ->where(DB::raw('(COALESCE(cruzamientos.plntlas_ttles, 0) - COALESCE(cruzamientos.plntlas_dscrtdas, 0))'), '>=', $plantulas_ttles);
+                })
+                ->whereNotIn(DB::raw('CAST(cruzamientos.id_crzmnto AS varchar)'), function ($subQuery) use ($id_dsno_enc) {
                     $subQuery->select('trtmnto')
                         ->from('diseno_det')
                         ->where('id_dsno_enc', $id_dsno_enc);
                 })
                 ->distinct()
-                ->orderBy('pdgree')
+                ->orderBy('cruzamientos.pdgree')
                 ->get();
 
             // Preparar respuesta
@@ -603,6 +656,8 @@ class ExperimentosController extends Controller
                 'cruzamientos.no_crzmnto', // Familia
                 'cruzamientos.pdgree', // Pedegree
                 'cruzamientos.orgen', // Origen
+                'cruzamientos.vrdad_mdre',
+                'cruzamientos.vrdad_pdre1',
                 'diseno_det.nmro_clnes', // No. Plantas
                 DB::raw('(COALESCE(cruzamientos.plntlas_ttles, 0) - COALESCE(cruzamientos.plntlas_dscrtdas,0)) AS plntlas_ttles')
             )
@@ -621,6 +676,8 @@ class ExperimentosController extends Controller
                 'cruzamientos.no_crzmnto', // Familia
                 'cruzamientos.pdgree', // Pedegree
                 'cruzamientos.orgen', // Origen
+                'cruzamientos.vrdad_mdre',
+                'cruzamientos.vrdad_pdre1',
                 'diseno_det.nmro_clnes', // No. Plantas
                 DB::raw('(COALESCE(cruzamientos.plntlas_ttles, 0) - COALESCE(cruzamientos.plntlas_dscrtdas,0)) AS plntlas_ttles')
             )
@@ -872,10 +929,12 @@ class ExperimentosController extends Controller
             // Inicializar la variable para los registros
             $registros = [];
 
+            $isSearchAll = (empty($search) || trim($search) === '' || strtolower(trim($search)) === 'all' || strtolower(trim($search)) === 'null');
+
             // Procesar los registros según el tipo
             switch ($tipo) {
                 case 'tratamiento':
-                    $registros = Cruzamiento::select(
+                    $query = Cruzamiento::select(
                         'no_crzmnto', // Familia
                         'id_crzmnto as tratamiento',
                         DB::raw('concat_ws(\' - \', CAST(no_crzmnto AS text), pdgree, orgen) as name'), // name
@@ -883,34 +942,48 @@ class ExperimentosController extends Controller
                         'orgen', // Origen
                         DB::raw('(COALESCE(plntlas_ttles, 0) - COALESCE(plntlas_dscrtdas,0)) AS nmro_clnes') // No. Plantas
                     )
-                        ->where(DB::raw('COALESCE(plntlas_ttles, 0)'), '>', '0')
-                        ->whereRaw('upper(concat_ws(\' - \', CAST(no_crzmnto AS text), pdgree, orgen)) like ?', ['%' . strtoupper($search) . '%'])
-                        ->whereNotIn(DB::raw('CAST(id_crzmnto AS varchar)'), function ($q) use ($id_dsno_enc) {
+                        ->where(DB::raw('COALESCE(plntlas_ttles, 0)'), '>', '0');
+
+                    if (!$isSearchAll) {
+                        $query->whereRaw('upper(concat_ws(\' - \', CAST(no_crzmnto AS text), pdgree, orgen)) like ?', ['%' . strtoupper(trim($search)) . '%']);
+                    }
+
+                    if ($id_dsno_enc && (int)$id_dsno_enc > 0) {
+                        $query->whereNotIn(DB::raw('CAST(id_crzmnto AS varchar)'), function ($q) use ($id_dsno_enc) {
                             $q->select('trtmnto')
                                 ->from('diseno_det')
                                 ->where('id_dsno_enc', $id_dsno_enc);
-                        })
-                        ->limit(100)
+                        });
+                    }
+
+                    $registros = $query->limit(100)
                         ->orderBy('no_crzmnto')
                         ->get();
                     break;
 
                 case 'variedad':
-                    $registros = DB::connection('sivar')->table('maestro_V_VIC_BG')
+                    $query = DB::connection('sivar')->table('maestro_V_VIC_BG')
                         ->select(
                             'maestro_V_VIC_BG.nm_vrdad  as tratamiento',
                             DB::raw('concat_ws(\' - \', nm_vrdad, pdgree, procedencia.nm_prcdncia) as name') // name
                         )
                         ->leftJoin('procedencia', function ($join) {
                             $join->on('maestro_V_VIC_BG.id_prcdncia', '=', 'procedencia.id_prcdncia');
-                        })
-                        ->whereRaw('upper(nm_vrdad) like ?', ['%' . strtoupper($search) . '%'])
-                        ->whereNotIn('maestro_V_VIC_BG.nm_vrdad', function ($q) use ($id_dsno_enc, $where) {
+                        });
+
+                    if (!$isSearchAll) {
+                        $query->whereRaw('upper(nm_vrdad) like ?', ['%' . strtoupper(trim($search)) . '%']);
+                    }
+
+                    if ($id_dsno_enc && (int)$id_dsno_enc > 0) {
+                        $query->whereNotIn('maestro_V_VIC_BG.nm_vrdad', function ($q) use ($id_dsno_enc, $where) {
                             $q->select('trtmnto')
                                 ->from('diseno_det')
                                 ->where([['id_dsno_enc', $id_dsno_enc], ['tstgo', $where]]);
-                        })
-                        ->limit(100)
+                        });
+                    }
+
+                    $registros = $query->limit(100)
                         ->orderBy('maestro_V_VIC_BG.nm_vrdad')
                         ->get();
                     break;
@@ -939,9 +1012,23 @@ class ExperimentosController extends Controller
     }
 
 
-    public function grabarDiseno($id_dsno_enc, $id_dsno_exprmntal, $lclddes, $rptcnes, $blques, $entrdas, $prcla_prncpal, $sub_prclas, $tstgos, $tstgos_mvil, $dscrpcion)
+    public function grabarDiseno(Request $request, $id_dsno_enc = null)
     {
         try {
+            $id_dsno_enc = $request->input('nIdDiseno', $request->input('id_dsno_enc', $id_dsno_enc));
+            $id_dsno_exprmntal = $request->input('nDisenoExp', $request->input('id_dsno_exprmntal'));
+            if (is_array($id_dsno_exprmntal)) {
+                $id_dsno_exprmntal = $id_dsno_exprmntal['id'] ?? reset($id_dsno_exprmntal);
+            }
+            $lclddes = $request->input('nLocalidades', $request->input('lclddes', 1));
+            $rptcnes = $request->input('nRepeticiones', $request->input('rptcnes', 1));
+            $blques = $request->input('nBloques', $request->input('blques', 1));
+            $entrdas = $request->input('nTratamientos', $request->input('entrdas', 0));
+            $prcla_prncpal = $request->input('nParcelaPrincipal', $request->input('prcla_prncpal'));
+            $sub_prclas = $request->input('nSubparcelas', $request->input('sub_prclas'));
+            $tstgos = $request->input('nTestigos', $request->input('tstgos', 0));
+            $tstgos_mvil = $request->input('nTestigosMovil', $request->input('tstgos_mvil', 0));
+            $dscrpcion = $request->input('cDescripcion', $request->input('dscrpcion'));
 
             // Iniciar transacción
             DB::beginTransaction();
@@ -950,50 +1037,45 @@ class ExperimentosController extends Controller
             $disenoEnc = DisenoEncabezado::find($id_dsno_enc);
 
             if (!$disenoEnc) {
-                // Si no se encuentra el encabezado, devolver error
                 return response()->json([
                     'success' => false,
-                    'message' => 'Encabezado de diseño no encontrado.',
+                    'message' => 'Encabezado de diseño no encontrado (' . $id_dsno_enc . ').',
                 ], 404);
             }
 
-            // Actualizar los valores del encabezado
-            $disenoEnc->id_dsno_exprmntal = $id_dsno_exprmntal;
-            $disenoEnc->lclddes = $lclddes;
-            $disenoEnc->rptcnes = $rptcnes;
-            $disenoEnc->blques = $blques;
-            $disenoEnc->entrdas = $entrdas;
-            $disenoEnc->prcla_prncpal = $prcla_prncpal;
-            $disenoEnc->sub_prclas = $sub_prclas;
-            $disenoEnc->tstgos = $tstgos;
-            $disenoEnc->tstgos_mvil = $tstgos_mvil;
-            $disenoEnc->dscrpcion = $dscrpcion;
+            // Actualizar los valores del encabezado con conversión explícita
+            if ($id_dsno_exprmntal !== null && $id_dsno_exprmntal !== '') $disenoEnc->id_dsno_exprmntal = (int)$id_dsno_exprmntal;
+            if ($lclddes !== null && $lclddes !== '') $disenoEnc->lclddes = (int)$lclddes;
+            if ($rptcnes !== null && $rptcnes !== '') $disenoEnc->rptcnes = (int)$rptcnes;
+            if ($blques !== null && $blques !== '') $disenoEnc->blques = (int)$blques;
+            if ($entrdas !== null && $entrdas !== '') $disenoEnc->entrdas = (int)$entrdas;
+            if ($prcla_prncpal !== null && $prcla_prncpal !== '') $disenoEnc->prcla_prncpal = (int)$prcla_prncpal;
+            if ($sub_prclas !== null && $sub_prclas !== '') $disenoEnc->sub_prclas = (int)$sub_prclas;
+            if ($tstgos !== null && $tstgos !== '') $disenoEnc->tstgos = (int)$tstgos;
+            if ($tstgos_mvil !== null && $tstgos_mvil !== '') $disenoEnc->tstgos_mvil = (int)$tstgos_mvil;
+            if ($dscrpcion !== null) $disenoEnc->dscrpcion = $dscrpcion;
 
-            // Guardar los cambios en el encabezado
             if ($disenoEnc->save()) {
-                // Si la operación fue exitosa, confirmar la transacción
                 DB::commit();
                 return response()->json([
                     'success' => true,
-                    'message' => 'Se graba con éxito',
+                    'message' => 'Diseño actualizado con éxito',
                     'tipo' => $disenoEnc->tpo_ensyo,
                     'actualizado' => true
                 ], 200);
             } else {
-                // Si falla la operación, revertir la transacción
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error grabando el diseño.',
+                    'message' => 'Error al guardar el diseño.',
                     'actualizado' => false
                 ], 400);
             }
-        } catch (Throwable $th) {
-            // En caso de error, revertir la transacción y devolver un mensaje de error
+        } catch (\Throwable $th) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Error inesperado al grabar el diseño.',
+                'message' => 'Error inesperado al grabar el diseño: ' . $th->getMessage(),
                 'error' => $th->getMessage(),
             ], 500);
         }

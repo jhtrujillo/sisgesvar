@@ -22,7 +22,9 @@ class StoreViveroRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'proyecto_id' => 'required|integer|exists:sivar.remote_pg_sipro,id_prycto',
+            'proyectos' => 'nullable|array',
+            'proyectos.*' => 'integer|exists:sivar.remote_pg_sipro,id_prycto',
+            'proyecto_id' => 'nullable|integer|exists:sivar.remote_pg_sipro,id_prycto',
             'ingenio' => 'required|string',
             'hacienda' => 'required|string',
             'nombre' => 'nullable|string|max:255',

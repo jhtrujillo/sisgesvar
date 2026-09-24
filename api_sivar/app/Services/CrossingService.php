@@ -63,6 +63,8 @@ class CrossingService
                     'vm2' => '',
                     'polen' => $florA->polen ?? null,
                     'polen2' => $florB->polen ?? null,
+                    'cantidad_flores' => $florA->cantidad_flores ?? 0,
+                    'cantidad_flores2' => $florB->cantidad_flores ?? 0,
                     'proyecto' => $florA->id_pr ?? null,
                     'proyecto2' => $florB->id_pr ?? null,
                     'caracter' => $florA->id_crcter ?? null,
@@ -115,6 +117,23 @@ class CrossingService
                             if ($hasA && $hasB) {
                                 if (!$this->calcularViabilidadCaracteristica($caracteristica, $florA_eval, $florB_eval, $ponderado, $testigoVal)) {
                                     $viabilidad['viabilidad'] = false;
+                                    
+                                    $nombresLegibles = [
+                                        'scrsa' => 'Sacarosa',
+                                        'tchm' => 'TCHM (Producción)',
+                                        'msco_r' => 'Mosaico',
+                                        'rya_cfe_r' => 'Roya',
+                                        'roya' => 'Roya',
+                                        'roya_naranja' => 'Roya Naranja',
+                                        'carbon' => 'Carbón',
+                                        'volcamiento' => 'Volcamiento',
+                                        'altura_planta' => 'Altura de Planta',
+                                        'poblacion' => 'Población',
+                                        'dmtro_tllo' => 'Diámetro de Tallo'
+                                    ];
+                                    $nombreLegible = $nombresLegibles[$caracteristica] ?? strtoupper($caracteristica);
+                                    
+                                    $viabilidad['causa_veto'] = $nombreLegible . " excede límite (" . $ponderado->nivel . ")";
                                 }
                             }
                         }
@@ -124,9 +143,11 @@ class CrossingService
                 // Otras condiciones 
                 if (($florB->sxo == "Hembra" || $florB->sxo == "HD" || $florB->sxo == "HF")) {
                     $viabilidad['viabilidad'] = false;
+                    $viabilidad['causa_veto'] = "Incompatibilidad de sexo (Ambos son Hembra)";
                 }
                 if (($florA->sxo == "Macho" || $florA->sxo == "MD" || $florA->sxo == "MF")) {
                     $viabilidad['viabilidad'] = false;
+                    $viabilidad['causa_veto'] = "Incompatibilidad de sexo (Ambos son Macho)";
                 }
 
                 $viabilidad['vm'] = round($vm, 2);
@@ -181,7 +202,7 @@ class CrossingService
 
         return $dist;
     }
-    public function generateMatrix($proy, $proyecto, $testigo, $ambiente = 'Semiseco')
+    public function generateMatrix($proy, $proyecto, $testigo, $ambiente = 'Semiseco', $caracter = null)
     {
         $fechaf = Carbon::today()->format('Y-m-d');
         $fechai = Carbon::yesterday()->format('Y-m-d');
@@ -189,7 +210,7 @@ class CrossingService
         $proyectos = explode(",", $proy);
 
         $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-            ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto, $ambiente) {
+            ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto, $ambiente) {
                 $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
                     ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto)
                     ->where('ponderados_valor_merito.ambiente', '=', $ambiente);
@@ -199,7 +220,7 @@ class CrossingService
 
         $hasSpecificProject = !in_array('General', $proyectos) && !empty($proyectos) && $proyectos[0] !== 'all';
 
-        $queryFloresBG = function ($useProjectFilter = true) use ($proyectos, $fechai, $fechaf, $hasSpecificProject) {
+        $queryFloresBG = function ($useProjectFilter = true) use ($proyectos, $fechai, $fechaf, $hasSpecificProject, $caracter) {
             $q = DB::connection('sivar')->table('floracion')
                 ->join('remote_pg_sipro', function ($join) {
                     $join->on('remote_pg_sipro.id_prycto', '=', 'floracion.id_pr');
@@ -212,10 +233,18 @@ class CrossingService
                 $q->whereIn('remote_pg_sipro.cd_cntble', $proyectos);
             }
 
+                        if ($caracter) {
+                if (strpos($caracter, ',') !== false) {
+                    $ids = explode(',', $caracter);
+                    $q->whereIn('floracion.id_crcter', $ids);
+                } else {
+                    $q->where('floracion.id_crcter', $caracter);
+                }
+            }
             return $q->whereBetween('floracion.fcha', array($fechai, $fechaf))
                 ->where('floracion.estado', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.polen")
-                ->select(DB::raw('"floracion"."vrdad", 
+                ->select(DB::raw('"floracion"."vrdad", COUNT(DISTINCT "floracion"."id_flrcion") as cantidad_flores, 
                             "floracion"."sxo", 
                             "floracion"."polen",
                             avg(CAST(REPLACE(CAST(mosaico_p AS TEXT), \',\', \'.\') AS FLOAT)) msco_r, 
@@ -238,7 +267,7 @@ class CrossingService
             $flores_BG = $queryFloresBG(false);
         }
 
-        $queryFloresPR = function ($useProjectFilter = true) use ($proyectos, $fechai, $fechaf, $hasSpecificProject) {
+        $queryFloresPR = function ($useProjectFilter = true) use ($proyectos, $fechai, $fechaf, $hasSpecificProject, $caracter) {
             $q = DB::connection('sivar')->table('floracion')
                 ->join('remote_pg_sipro', function ($join) {
                     $join->on('remote_pg_sipro.id_prycto', '=', 'floracion.id_pr');
@@ -252,10 +281,18 @@ class CrossingService
                 $q->whereIn('remote_pg_sipro.cd_cntble', $proyectos);
             }
 
+                        if ($caracter) {
+                if (strpos($caracter, ',') !== false) {
+                    $ids = explode(',', $caracter);
+                    $q->whereIn('floracion.id_crcter', $ids);
+                } else {
+                    $q->where('floracion.id_crcter', $caracter);
+                }
+            }
             return $q->whereBetween('floracion.fcha', array($fechai, $fechaf))
                 ->where('floracion.estado', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo")
-                ->select(DB::raw('"floracion"."vrdad", 
+                ->select(DB::raw('"floracion"."vrdad", COUNT(DISTINCT "floracion"."id_flrcion") as cantidad_flores, 
                             "floracion"."sxo", 
                             avg(CAST(REPLACE(CAST(polen AS TEXT), \',\', \'.\') AS FLOAT)) polen, 
                             avg(CAST(REPLACE(CAST(mosaico AS TEXT), \',\', \'.\') AS FLOAT)) msco_r, 
@@ -278,7 +315,7 @@ class CrossingService
             $flores_PR = $queryFloresPR(false);
         }
 
-        $queryFloresEIII = function ($useProjectFilter = true) use ($proyectos, $fechai, $fechaf, $hasSpecificProject) {
+        $queryFloresEIII = function ($useProjectFilter = true) use ($proyectos, $fechai, $fechaf, $hasSpecificProject, $caracter) {
             $q = DB::connection('sivar')->table('floracion')
                 ->join('remote_pg_sipro', function ($join) {
                     $join->on('remote_pg_sipro.id_prycto', '=', 'floracion.id_pr');
@@ -292,10 +329,18 @@ class CrossingService
                 $q->whereIn('remote_pg_sipro.cd_cntble', $proyectos);
             }
 
+                        if ($caracter) {
+                if (strpos($caracter, ',') !== false) {
+                    $ids = explode(',', $caracter);
+                    $q->whereIn('floracion.id_crcter', $ids);
+                } else {
+                    $q->where('floracion.id_crcter', $caracter);
+                }
+            }
             return $q->whereBetween('floracion.fcha', array($fechai, $fechaf))
                 ->where('floracion.estado', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo")
-                ->select(DB::raw('"floracion"."vrdad", 
+                ->select(DB::raw('"floracion"."vrdad", COUNT(DISTINCT "floracion"."id_flrcion") as cantidad_flores, 
                             "floracion"."sxo", 
                             avg(CAST(REPLACE(CAST(polen AS TEXT), \',\', \'.\') AS FLOAT)) polen, 
                             avg(CAST(REPLACE(CAST(mosaico AS TEXT), \',\', \'.\') AS FLOAT)) msco_r, 
@@ -382,7 +427,7 @@ class CrossingService
             ->orderBy('floracion.vrdad', 'desc')
             ->get();
         $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-            ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto, $ambiente) {
+            ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto, $ambiente) {
                 $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
                     ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto)
                     ->where('ponderados_valor_merito.ambiente', '=', $ambiente);
@@ -424,7 +469,7 @@ class CrossingService
                 ->where('floracion.estado', '=', 0)
                 ->where('floracion.bolsa_comun', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.polen", "floracion.id_pr", "caracteres.id_crcter", "caracteres.nmbre_crcter", "remote_pg_sipro.nm_prycto")
-                ->select(DB::raw("\"floracion\".\"vrdad\", 
+                ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                                         \"floracion\".\"sxo\", 
                                         \"floracion\".\"polen\",
                                         \"floracion\".\"id_pr\",
@@ -461,7 +506,7 @@ class CrossingService
                 ->where('floracion.estado', '=', 0)
                 ->where('floracion.bolsa_comun', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-                ->select(DB::raw("\"floracion\".\"vrdad\", 
+                ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                                             \"floracion\".\"sxo\", 
                                             \"floracion\".\"id_pr\",
                                             \"caracteres\".\"nmbre_crcter\" as id_crcter,
@@ -498,7 +543,7 @@ class CrossingService
                 ->where('floracion.estado', '=', 0)
                 ->where('floracion.bolsa_comun', '=', 0)
                 ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.id_crcter", "caracteres.nmbre_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-                ->select(DB::raw("\"floracion\".\"vrdad\", 
+                ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                                             \"floracion\".\"sxo\", 
                                             \"floracion\".\"id_pr\",
                                             \"caracteres\".\"nmbre_crcter\" as id_crcter,
@@ -587,7 +632,7 @@ class CrossingService
             ->get();
 
         $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-            ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto, $ambiente) {
+            ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto, $ambiente) {
                 $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
                     ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto)
                     ->where('ponderados_valor_merito.ambiente', '=', $ambiente);
@@ -625,7 +670,7 @@ class CrossingService
             //->where('caracterizacion_banco_germoplasma.sitio_seleccion', '=', $ambiente_sitio)
             //->where('caracterizacion_banco_germoplasma.estado_seleccion', '=', $ambiente_estados)
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.polen", "floracion.id_pr", "caracteres.id_crcter", "caracteres.nmbre_crcter", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw("\"floracion\".\"vrdad\", 
+            ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                         \"floracion\".\"sxo\", 
                         \"floracion\".\"polen\",
                         \"floracion\".\"id_pr\",
@@ -661,7 +706,7 @@ class CrossingService
             ->where('floracion.estado', '=', 0)
             ->where('floracion.bolsa_comun', '=', 1)
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw("\"floracion\".\"vrdad\", 
+            ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                             \"floracion\".\"sxo\", 
                             \"floracion\".\"id_pr\",
                             \"caracteres\".\"nmbre_crcter\" as id_crcter,
@@ -697,7 +742,7 @@ class CrossingService
             ->where('floracion.estado', '=', 0)
             ->where('floracion.bolsa_comun', '=', 1)
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw("\"floracion\".\"vrdad\", 
+            ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                             \"floracion\".\"sxo\", 
                             \"floracion\".\"id_pr\",
                             \"caracteres\".\"nmbre_crcter\" as id_crcter,
@@ -750,8 +795,9 @@ class CrossingService
             'flores_eiii' => $flores_EIII,
         ]);
     }
-    public function suggestionCrossingsPerProject($proy, $proyecto, $testigo, $ambiente)
+    public function suggestionCrossingsPerProject($proy, $proyecto, $testigo, $ambiente, $caracter = null)
     {
+        \Log::info("Called suggestionCrossingsPerProject: proy=$proy, proyecto=$proyecto, ambiente=$ambiente, caracter=" . ($caracter ?? 'NULL'));
         $fechaf = Carbon::today()->format('Y-m-d');
         $fechai = Carbon::yesterday()->format('Y-m-d');
 
@@ -767,6 +813,13 @@ class CrossingService
             ->whereBetween('floracion.fcha', array($fechai, $fechaf))
             ->where('floracion.estado', '=', 0)
             ->where('floracion.bolsa_comun', '=', 0)
+                        ->when($caracter, function ($q) use ($caracter) {
+                if (strpos($caracter, ',') !== false) {
+                    $ids = explode(',', $caracter);
+                    return $q->whereIn('floracion.id_crcter', $ids);
+                }
+                return $q->where('floracion.id_crcter', $caracter);
+            })
             ->select(DB::raw('count(*) as numero, floracion.vrdad, floracion.id_pr, floracion.id_crcter'))
             ->groupBy('floracion.vrdad', 'floracion.id_pr', 'floracion.id_crcter')
             //->orderBy('floracion.sxo', 'asc')
@@ -774,7 +827,7 @@ class CrossingService
             ->get();
 
         $ponderados = DB::connection('sivar')->table('caracteristicas_valor_merito')
-            ->leftJoin(DB::raw('(SELECT ponderados_valor_merito.* FROM ponderados_valor_merito JOIN remote_pg_sipro ON ponderados_valor_merito.id_proyecto = remote_pg_sipro.cd_cntble ) ponderados_valor_merito'), function ($join) use ($proyecto, $ambiente) {
+            ->leftJoin('ponderados_valor_merito', function ($join) use ($proyecto, $ambiente) {
                 $join->on('ponderados_valor_merito.id_caracteristica', '=', 'caracteristicas_valor_merito.id_caracteristica')
                     ->where('ponderados_valor_merito.id_proyecto', '=', $proyecto)
                     ->where('ponderados_valor_merito.ambiente', '=', $ambiente);
@@ -811,10 +864,17 @@ class CrossingService
             ->where('floracion.estado', '=', 0)
             ->where('floracion.bolsa_comun', '=', 0)
             ->where('remote_pg_sipro.id_prycto', $proy)
+            ->when($caracter, function ($q) use ($caracter) {
+                if (strpos($caracter, ',') !== false) {
+                    $ids = explode(',', $caracter);
+                    return $q->whereIn('floracion.id_crcter', $ids);
+                }
+                return $q->where('floracion.id_crcter', $caracter);
+            })
             //->where('caracterizacion_banco_germoplasma.sitio_seleccion', '=', $ambiente_sitio)
             //->where('caracterizacion_banco_germoplasma.estado_seleccion', '=', $ambiente_estados)
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.polen", "floracion.id_pr", "caracteres.id_crcter", "caracteres.nmbre_crcter", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw("\"floracion\".\"vrdad\", 
+            ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                     \"floracion\".\"sxo\", 
                     \"floracion\".\"polen\",
                     \"floracion\".\"id_pr\",
@@ -850,8 +910,15 @@ class CrossingService
             ->where('floracion.estado', '=', 0)
             ->where('floracion.bolsa_comun', '=', 0)
             ->where('remote_pg_sipro.id_prycto', $proy)
+                        ->when($caracter, function ($q) use ($caracter) {
+                if (strpos($caracter, ',') !== false) {
+                    $ids = explode(',', $caracter);
+                    return $q->whereIn('floracion.id_crcter', $ids);
+                }
+                return $q->where('floracion.id_crcter', $caracter);
+            })
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw("\"floracion\".\"vrdad\", 
+            ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                         \"floracion\".\"sxo\", 
                         \"floracion\".\"id_pr\",
                         \"caracteres\".\"nmbre_crcter\" as id_crcter,
@@ -887,8 +954,15 @@ class CrossingService
             ->where('floracion.estado', '=', 0)
             ->where('floracion.bolsa_comun', '=', 0)
             ->where('remote_pg_sipro.id_prycto', $proy)
+                        ->when($caracter, function ($q) use ($caracter) {
+                if (strpos($caracter, ',') !== false) {
+                    $ids = explode(',', $caracter);
+                    return $q->whereIn('floracion.id_crcter', $ids);
+                }
+                return $q->where('floracion.id_crcter', $caracter);
+            })
             ->groupBy('floracion.vrdad', "floracion.sxo", "floracion.id_pr", "caracteres.nmbre_crcter", "caracteres.id_crcter", "floracion.polen", "remote_pg_sipro.nm_prycto")
-            ->select(DB::raw("\"floracion\".\"vrdad\", 
+            ->select(DB::raw("\"floracion\".\"vrdad\", COUNT(DISTINCT \"floracion\".\"id_flrcion\") as cantidad_flores, 
                         \"floracion\".\"sxo\", 
                         \"floracion\".\"id_pr\",
                         \"caracteres\".\"nmbre_crcter\" as id_crcter,
@@ -944,19 +1018,29 @@ class CrossingService
 
     public function crossingList($perPage, $search, $filtersJson)
     {
-        $query = DB::connection('sivar')->table('cruzamientos');
+        $query = DB::connection('sivar')->table('cruzamientos')
+            ->leftJoin('floracion', 'cruzamientos.id_flrcion_mdre', '=', 'floracion.id_flrcion')
+            ->select(
+                'cruzamientos.*',
+                DB::raw("COALESCE(
+                    cruzamientos.ubccion_nvra, 
+                    cruzamientos.id_actual_nvra, 
+                    floracion.vivero
+                ) AS vivero_plot")
+            );
 
         // Búsqueda Global
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
-                $q->where('vrdad_mdre', 'ilike', '%' . $search . '%')
-                  ->orWhere('vrdad_pdre1', 'ilike', '%' . $search . '%')
-                  ->orWhere('vrdad_pdre2', 'ilike', '%' . $search . '%')
-                  ->orWhere('vrdad_pdre3', 'ilike', '%' . $search . '%')
-                  ->orWhere('vrdad_pdre4', 'ilike', '%' . $search . '%')
-                  ->orWhere('vrdad_pdre5', 'ilike', '%' . $search . '%')
-                  ->orWhere('pdgree', 'ilike', '%' . $search . '%')
-                  ->orWhere('id_crzmnto', 'like', '%' . $search . '%');
+                $q->where('cruzamientos.vrdad_mdre', 'ilike', '%' . $search . '%')
+                  ->orWhere('cruzamientos.vrdad_pdre1', 'ilike', '%' . $search . '%')
+                  ->orWhere('cruzamientos.vrdad_pdre2', 'ilike', '%' . $search . '%')
+                  ->orWhere('cruzamientos.vrdad_pdre3', 'ilike', '%' . $search . '%')
+                  ->orWhere('cruzamientos.vrdad_pdre4', 'ilike', '%' . $search . '%')
+                  ->orWhere('cruzamientos.vrdad_pdre5', 'ilike', '%' . $search . '%')
+                  ->orWhere('cruzamientos.pdgree', 'ilike', '%' . $search . '%')
+                  ->orWhere('cruzamientos.id_crzmnto', 'like', '%' . $search . '%')
+                  ->orWhere('floracion.vivero', 'ilike', '%' . $search . '%');
             });
         }
 
@@ -968,23 +1052,29 @@ class CrossingService
                     if (!empty($val)) {
                         if ($col === 'padres') {
                             $query->where(function ($q) use ($val) {
-                                $q->where('vrdad_pdre1', 'ilike', '%' . $val . '%')
-                                  ->orWhere('vrdad_pdre2', 'ilike', '%' . $val . '%')
-                                  ->orWhere('vrdad_pdre3', 'ilike', '%' . $val . '%')
-                                  ->orWhere('vrdad_pdre4', 'ilike', '%' . $val . '%')
-                                  ->orWhere('vrdad_pdre5', 'ilike', '%' . $val . '%');
+                                $q->where('cruzamientos.vrdad_pdre1', 'ilike', '%' . $val . '%')
+                                  ->orWhere('cruzamientos.vrdad_pdre2', 'ilike', '%' . $val . '%')
+                                  ->orWhere('cruzamientos.vrdad_pdre3', 'ilike', '%' . $val . '%')
+                                  ->orWhere('cruzamientos.vrdad_pdre4', 'ilike', '%' . $val . '%')
+                                  ->orWhere('cruzamientos.vrdad_pdre5', 'ilike', '%' . $val . '%');
                             });
                         } else if ($col === 'id_crzmnto') {
-                            $query->where('id_crzmnto', 'like', '%' . $val . '%');
+                            $query->where('cruzamientos.id_crzmnto', 'like', '%' . $val . '%');
+                        } else if ($col === 'vivero_plot') {
+                            $query->where(function ($q) use ($val) {
+                                $q->where('cruzamientos.ubccion_nvra', 'ilike', '%' . $val . '%')
+                                  ->orWhere('cruzamientos.id_actual_nvra', 'ilike', '%' . $val . '%')
+                                  ->orWhere('floracion.vivero', 'ilike', '%' . $val . '%');
+                            });
                         } else {
-                            $query->where($col, 'ilike', '%' . $val . '%');
+                            $query->where('cruzamientos.' . $col, 'ilike', '%' . $val . '%');
                         }
                     }
                 }
             }
         }
 
-        $query->orderBy('id_crzmnto', 'desc');
+        $query->orderBy('cruzamientos.id_crzmnto', 'desc');
         
         return $query->paginate($perPage);
     }

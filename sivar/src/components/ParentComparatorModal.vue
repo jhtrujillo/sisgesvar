@@ -461,6 +461,10 @@ const props = defineProps({
   initiallyViable: {
     type: Boolean,
     default: true
+  },
+  causaVeto: {
+    type: String,
+    default: ""
   }
 });
 
@@ -539,49 +543,22 @@ const viabilityDiagnosis = computed(() => {
   if (isViable.value) {
     return {
       title: "DIAGNÓSTICO: COMBINACIÓN VIABLE",
-      description: "Esta pareja progenitora cumple con los criterios sanitarios y de mérito para la polinización en campo.",
+      description: "Esta pareja progenitora cumple con los criterios biológicos y genéticos para la polinización en campo.",
       isViable: true
     };
   }
 
-  // Si no es viable, determinamos la causa exacta:
-  if (motherProfile.value.traits && fatherProfile.value.traits) {
-    const mTraits = motherProfile.value.traits;
-    const fTraits = fatherProfile.value.traits;
-
-    const sumaMosaico = Number(mTraits.mosaico_p || 0) + Number(fTraits.mosaico_p || 0);
-    if (sumaMosaico > 10) {
+  if (props.causaVeto && props.causaVeto !== "-") {
       return {
-        title: "DIAGNÓSTICO: CRUZAMIENTO CON VETO SANITARIO (MOSAICO)",
-        description: `La susceptibilidad acumulada para Mosaico (${sumaMosaico.toFixed(1)}) sobrepasa el umbral sanitario de seguridad (10.0).`,
-        isViable: false
+          title: "DIAGNÓSTICO: CRUZAMIENTO INVIABLE",
+          description: props.causaVeto,
+          isViable: false
       };
-    }
-
-    const sumaCarbon = Number(mTraits.carbon_p || 0) + Number(fTraits.carbon_p || 0);
-    if (sumaCarbon > 10) {
-      return {
-        title: "DIAGNÓSTICO: CRUZAMIENTO CON VETO SANITARIO (CARBÓN)",
-        description: `La susceptibilidad acumulada para Carbón (${sumaCarbon.toFixed(1)}) sobrepasa el umbral de seguridad (10.0).`,
-        isViable: false
-      };
-    }
-
-    const sumaRoyaCafe = Number(mTraits.roya_cafe_r || 0) + Number(fTraits.roya_cafe_r || 0);
-    if (sumaRoyaCafe > 11) {
-      return {
-        title: "DIAGNÓSTICO: CRUZAMIENTO CON VETO SANITARIO (ROYA CAFÉ)",
-        description: `La susceptibilidad acumulada para Roya Café (${sumaRoyaCafe.toFixed(1)}) sobrepasa el umbral de seguridad (11.0).`,
-        isViable: false
-      };
-    }
   }
 
-  // Si no hay veto sanitario pero aun así no es viable, es por umbrales de calidad agronómica:
   return {
-    title: "DIAGNÓSTICO: UMBRALES DE CALIDAD NO SATISFECHOS",
-    description:
-      "Esta combinación no cumple con los umbrales mínimos de calidad agronómica (Sacarosa, TCHM, Volcamiento, etc.) configurados para este proyecto.",
+    title: "DIAGNÓSTICO: CRUZAMIENTO INVIABLE",
+    description: "Este cruzamiento fue vetado biológica o genéticamente según los umbrales de seguridad definidos en el Paso 2.",
     isViable: false
   };
 });

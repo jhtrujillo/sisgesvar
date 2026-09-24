@@ -22,16 +22,18 @@ async function modifyFeatures(caracteristica: string, proyecto: string, nivel: s
   const url = `${urls.API_MODIFY_FEATURES_CROSSING}/${caracteristica}/${proyecto}/${nivel}/${ponderado}/${ambiente}/${nuevo}`;
   return await api.post(url, {}, true);
 }
-async function getMatrix(proyectos: string, proyecto: string, testigo: string, ambiente: string): Promise<any> {
-  const url = `${urls.API_GENERATE_MATRIX}/${proyectos}/${proyecto}/${testigo}/${ambiente}`;
+async function getMatrix(proyectos: string, proyecto: string, testigo: string, ambiente: string, caracter?: string | null): Promise<any> {
+  let url = `${urls.API_GENERATE_MATRIX}/${proyectos}/${proyecto}/${testigo}/${ambiente}`;
+  if (caracter) url += `/${caracter}`;
   return await api.get(url, {}, true);
 }
 async function GetSuggestionCrossings(proyectos: string, proyecto: string, testigo: string, megaAmbiente: string): Promise<any> {
   const url = `${urls.API_SUGGESTION_CROSSING}/${proyectos}/${proyecto}/${testigo}/${megaAmbiente}`;
   return await api.get(url, {}, true);
 }
-async function GetSuggestionCrossingsPerProject(proyectos: string, proyecto: string, testigo: string, megaAmbiente: string): Promise<any> {
-  const url = `${urls.API_SUGGESTION_CROSSING_PER_PROJECT}/${proyectos}/${proyecto}/${testigo}/${megaAmbiente}`;
+async function GetSuggestionCrossingsPerProject(proyectos: string, proyecto: string, testigo: string, megaAmbiente: string, caracter?: string | null): Promise<any> {
+  let url = `${urls.API_SUGGESTION_CROSSING_PER_PROJECT}/${proyectos}/${proyecto}/${testigo}/${megaAmbiente}`;
+  if (caracter) url += `/${caracter}`;
   return await api.get(url, {}, true);
 }
 
