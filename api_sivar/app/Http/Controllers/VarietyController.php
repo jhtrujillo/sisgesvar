@@ -49,6 +49,14 @@ class VarietyController extends Controller
         try {
             if ($var != "") {
                 $variety = Variety::where("nm_vrdad", $var)->first();
+            if ($variety && (empty($variety->pdgree) || empty($variety->vrdad_madre) || empty($variety->vrdad_pdre))) {
+                $pedigriNuevo = \DB::connection('sivar')->table('pedigri_nuevo')->where('variedad', $var)->first();
+                if ($pedigriNuevo) {
+                    if (empty($variety->pdgree) && !empty($pedigriNuevo->pedigri)) $variety->pdgree = $pedigriNuevo->pedigri;
+                    if (empty($variety->vrdad_madre) && !empty($pedigriNuevo->madre)) $variety->vrdad_madre = $pedigriNuevo->madre;
+                    if (empty($variety->vrdad_pdre) && !empty($pedigriNuevo->padre)) $variety->vrdad_pdre = $pedigriNuevo->padre;
+                }
+            }
                 if ($variety) {
                     return response()->json($variety);
                 }
@@ -265,7 +273,14 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
     private function getParentsNivelRecursionHelper($var, &$parents, $relationship, $type, $nivel)
     {
         $nivel = intval($nivel);  // Asegurar que $nivel sea un entero
-        $variety = Variety::where('nm_vrdad', '=', $var)->get()->first();  
+        $variety = Variety::where('nm_vrdad', '=', $var)->get()->first();
+        if ($variety && (empty($variety->vrdad_madre) || empty($variety->vrdad_pdre))) {
+            $pedigriNuevo = \DB::connection('sivar')->table('pedigri_nuevo')->where('variedad', $var)->first();
+            if ($pedigriNuevo) {
+                if (empty($variety->vrdad_madre) && !empty($pedigriNuevo->madre)) $variety->vrdad_madre = $pedigriNuevo->madre;
+                if (empty($variety->vrdad_pdre) && !empty($pedigriNuevo->padre)) $variety->vrdad_pdre = $pedigriNuevo->padre;
+            }
+        }  
     
         if ($var == "") {
             return $nivel;
@@ -495,6 +510,14 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
     {
         try {
             $variety = Variety::where("nm_vrdad", $var)->first();
+            if ($variety && (empty($variety->pdgree) || empty($variety->vrdad_madre) || empty($variety->vrdad_pdre))) {
+                $pedigriNuevo = \DB::connection('sivar')->table('pedigri_nuevo')->where('variedad', $var)->first();
+                if ($pedigriNuevo) {
+                    if (empty($variety->pdgree) && !empty($pedigriNuevo->pedigri)) $variety->pdgree = $pedigriNuevo->pedigri;
+                    if (empty($variety->vrdad_madre) && !empty($pedigriNuevo->madre)) $variety->vrdad_madre = $pedigriNuevo->madre;
+                    if (empty($variety->vrdad_pdre) && !empty($pedigriNuevo->padre)) $variety->vrdad_pdre = $pedigriNuevo->padre;
+                }
+            }
             
             // Construir la consulta de promedios para la variedad individual (para unir múltiples ensayos y ensayos incompletos)
             $columnsToAverage = [
