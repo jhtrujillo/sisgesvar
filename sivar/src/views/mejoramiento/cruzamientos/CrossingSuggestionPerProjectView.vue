@@ -614,7 +614,10 @@
                                         : Math.round(getIndiceCombinado(car.varA, car.varB, car.vm2))
                                     }}
                                   </template>
-                                  <template v-else> DG: {{ getDistancia(car.varA, car.varB) || "NA" }} </template>
+                                  <template v-else> 
+                                    DG: {{ getDistancia(car.varA, car.varB) || "NA" }} <br/>
+                                    K: {{ car.kinship_score !== null && car.kinship_score !== undefined ? Number(car.kinship_score).toFixed(3) : "NA" }}
+                                  </template>
                                 </span>
                                 <!-- Botón Comparador Lado a Lado -->
                                 <button
