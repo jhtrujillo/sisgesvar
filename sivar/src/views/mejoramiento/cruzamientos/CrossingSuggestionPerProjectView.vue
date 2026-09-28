@@ -928,7 +928,10 @@
             </button>
 
             <div class="flex flex-col items-end">
-              <div v-if="hasOverusedFlowers" class="text-[10px] text-rose-600 font-bold mb-1">⚠️ Excedes las flores disponibles</div>
+              <div class="flex items-center space-x-3 mb-1">
+                <span class="text-[11px] font-bold text-slate-500">Cruces seleccionados: <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded ml-1">{{ totalCrucesSeleccionados }}</span></span>
+                <div v-if="hasOverusedFlowers" class="text-[10px] text-rose-600 font-bold">⚠️ Excedes las flores disponibles</div>
+              </div>
               <button
                 type="button"
                 @click="finalizarProceso"
@@ -1788,6 +1791,19 @@ function closeFlowerAdjustmentModal() {
 function getIcon(polen: string | number) {
   return +polen <= 20 ? "fa fa-venus text-rose-500 font-bold" : "fa fa-mars text-sky-500 font-bold";
 }
+
+
+const totalCrucesSeleccionados = computed(() => {
+  let count = 0;
+  const rows = viabilidadesMatriz.value || [];
+  rows.forEach((row: any) => {
+    row.forEach((car: any) => {
+      if (car?.viabilidad) count++;
+    });
+  });
+  count += autofecundacionesSeleccionadas.value.size;
+  return count;
+});
 
 const hasOverusedFlowers = computed(() => {
   // Check Mothers
