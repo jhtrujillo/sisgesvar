@@ -249,6 +249,10 @@
               </button>
             </div>
 
+            <label class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-600 font-bold mr-3" title="Ignorar restricción biológica de sexo para sugerir cruces inversos">
+              <input type="checkbox" v-model="permitirPolicruzamientos" class="rounded h-3.5 w-3.5 border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+              <span>Policruzamientos</span>
+            </label>
             <button
               type="button"
               @click="autoOptimizarFlores"
@@ -1336,7 +1340,8 @@ async function confirmarEnviarBolsaComun() {
 const ocultarInviables = ref(false); // Vista compacta limpia por defecto
 const isLoading = ref(false); // Ref para spinner de carga
 const showICHelp = ref(false);
-const isOptimizing = ref(false); // Ref para spinner de optimización
+const isOptimizing = ref(false);
+const permitirPolicruzamientos = ref(false); // Ref para spinner de optimización
 const optimizandoMadre = ref(""); // Para mostrar en el loading qué variedad se procesa
 const isExpanded = ref(false); // Ref para modo pantalla completa
 const isDragDropView = ref(false); // Ref para alternar a Drag & Drop
@@ -2472,12 +2477,20 @@ async function autoOptimizarFlores(silent: boolean | Event = false) {
       }
 
       let isBiologicallyValid = car.original_viabilidad === true;
-      if (causa.includes("Incompatibilidad de sexo")) isBiologicallyValid = false;
+      
+      if (!permitirPolicruzamientos.value) {
+        if (causa.includes("Incompatibilidad de sexo")) isBiologicallyValid = false;
+        // Regla de polen de la interfaz: El padre DEBE tener polen > 20
+        if (Number(car?.polen2) <= 20) isBiologicallyValid = false;
+      } else {
+        // En policruzamientos, ignorar vetos de sexo, forzando a true si el único problema era el sexo
+        if (causa.includes("Incompatibilidad de sexo") && !causa.includes("excede límite") && !causa.includes("Restricción de Autogamia")) {
+           isBiologicallyValid = true;
+        }
+      }
+      
       if (causa.includes("Restricción de Autogamia")) isBiologicallyValid = false;
       if (causa.includes("excede límite")) isBiologicallyValid = false;
-
-      // Regla de polen de la interfaz: El padre DEBE tener polen > 20
-      if (Number(car?.polen2) <= 20) isBiologicallyValid = false;
 
       if (m !== p && isBiologicallyValid) {
         crossesForMother.push({ car, val, varB: p });
