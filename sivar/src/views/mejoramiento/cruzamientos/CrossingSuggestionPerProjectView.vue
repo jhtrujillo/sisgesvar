@@ -253,6 +253,24 @@
               <input type="checkbox" v-model="permitirPolicruzamientos" class="rounded h-3.5 w-3.5 border-slate-300 text-indigo-600 focus:ring-indigo-500" />
               <span>Policruzamientos</span>
             </label>
+            
+            <div class="h-4 w-px bg-slate-300 mx-2"></div>
+            
+            <label class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-600 font-bold mr-1">
+              <input type="checkbox" v-model="aplicarDG" class="rounded h-3.5 w-3.5 border-slate-300 text-green-600 focus:ring-green-500" />
+              <span>Filtro DG (></span>
+            </label>
+            <input v-if="aplicarDG" type="number" step="0.01" v-model="umbralDG" class="w-12 h-5 text-[10px] px-1 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500" title="Umbral mínimo de Distancia Genética" />
+            <span v-if="aplicarDG" class="text-[11px] text-slate-600 font-bold mr-3">)</span>
+            <span v-else class="mr-3"></span>
+
+            <label class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-600 font-bold mr-1">
+              <input type="checkbox" v-model="aplicarKinship" class="rounded h-3.5 w-3.5 border-slate-300 text-red-600 focus:ring-red-500" />
+              <span>Filtro Kinship (<</span>
+            </label>
+            <input v-if="aplicarKinship" type="number" step="0.01" v-model="umbralKinship" class="w-12 h-5 text-[10px] px-1 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-red-500" title="Umbral máximo de Kinship" />
+            <span v-if="aplicarKinship" class="text-[11px] text-slate-600 font-bold mr-3">)</span>
+            <span v-else class="mr-3"></span>
             <button
               type="button"
               @click="autoOptimizarFlores"
