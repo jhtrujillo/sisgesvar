@@ -1857,6 +1857,14 @@ function getDistancia(varA: string, varB: string) {
 }
 
 function getCausaInviabilidad(cell: any): string {
+  // Regla A: Veto por pedigrí idéntico
+  const normalize = (s: string) => s ? s.trim().toUpperCase() : null;
+  const mPed = normalize(cell.mother_pdgree);
+  const fPed = normalize(cell.father_pdgree);
+  if (mPed && fPed && mPed === fPed) {
+    return "Consanguinidad: Mismo pedigrí (hermanos completos)";
+  }
+
   if (cell.viabilidad) return "-";
 
   const filterData = SuggestionCrossingPerProjectStore.suggestionCrossingsPerProjectFilter || {};
@@ -2494,6 +2502,7 @@ async function autoOptimizarFlores(silent: boolean | Event = false) {
       }
       
       if (causa.includes("Restricción de Autogamia")) isBiologicallyValid = false;
+      if (causa.includes("Mismo pedigrí")) isBiologicallyValid = false;
       if (causa.includes("excede límite")) isBiologicallyValid = false;
 
       if (m !== p && isBiologicallyValid) {
@@ -2814,6 +2823,7 @@ function attemptManualCross(m: string, p: string) {
   const causa = getCausaInviabilidad(foundCar);
   if (causa.includes("Incompatibilidad de sexo")) isBiologicallyValid = false;
   if (causa.includes("Restricción de Autogamia")) isBiologicallyValid = false;
+  if (causa.includes("Mismo pedigrí")) isBiologicallyValid = false;
   if (causa.includes("excede límite")) isBiologicallyValid = false;
   if (Number(foundCar?.polen2) <= 20) isBiologicallyValid = false; // El padre debe ser macho
 
