@@ -450,7 +450,7 @@
                       <!-- Envoltura <template> para evaluar v-if en el scope correcto de Vue 3 -->
                       <template v-for="(flor, indexCol) in floresSeleccionadas || []" :key="indexCol">
                         <th
-                          v-if="(!ocultarInviables || isColumnViable(indexCol)) && (Number(flor.polen) > 20 || isColumnViable(indexCol))"
+                          v-if="(!ocultarInviables || isColumnViable(indexCol)) && (Number(flor.polen) > 20 || isColumnViable(indexCol) || permitirPolicruzamientos)"
                           class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-650 bg-slate-50 border-r border-slate-100 sticky top-0 z-10 min-w-[75px]"
                         >
                           <span
@@ -490,7 +490,7 @@
                     <!-- Envoltura <template> para evaluar v-if en el scope correcto de Vue 3 -->
                     <template v-for="(viabilidadRow, indexRow) in viabilidadesMatriz || []" :key="indexRow">
                       <tr
-                        v-if="(!ocultarInviables || isRowViable(viabilidadRow)) && Number(viabilidadRow[0]?.polen) <= 20"
+                        v-if="(!ocultarInviables || isRowViable(viabilidadRow)) && (Number(viabilidadRow[0]?.polen) <= 20 || isRowViable(viabilidadRow) || permitirPolicruzamientos)"
                         class="hover:bg-slate-50/40 transition-colors"
                       >
                         <!-- Celda Madre Fija a la izquierda -->
@@ -528,7 +528,7 @@
                         <!-- Celdas de la matriz filtradas por columna -->
                         <template v-for="(car, indexCol) in viabilidadRow" :key="indexCol">
                           <td
-                            v-if="(!ocultarInviables || isColumnViable(indexCol)) && (Number(car?.polen2) > 20 || isColumnViable(indexCol))"
+                            v-if="(!ocultarInviables || isColumnViable(indexCol)) && (Number(car?.polen2) > 20 || isColumnViable(indexCol) || permitirPolicruzamientos)"
                             :class="[getHeatmapClass(car?.varA, car?.varB, !!car?.viabilidad, car?.vm2)]"
                             class="p-2 text-center border-b border-slate-100 transition-all duration-200 min-w-[75px]"
                           >
