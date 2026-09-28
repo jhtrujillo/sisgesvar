@@ -74,7 +74,13 @@ class CrossingService
                     'nombre_proyecto' => $florA->nombre_proyecto ?? null,
                     'nombre_proyecto2' => $florB->nombre_proyecto ?? null,
                     'id_caracter' => $florA->id_caracter ?? null,
-                    'id_caracter2' => $florB->id_caracter ?? null
+                    'id_caracter2' => $florB->id_caracter ?? null,
+                    'mother_pdgree' => $florA->pdgree ?? ($florA_PR->pdgree ?? ($florA_EIII->pdgree ?? null)),
+                    'father_pdgree' => $florB->pdgree ?? ($florB_PR->pdgree ?? ($florB_EIII->pdgree ?? null)),
+                    'mother_madre' => $florA->vrdad_madre ?? ($florA_PR->vrdad_madre ?? ($florA_EIII->vrdad_madre ?? null)),
+                    'mother_padre' => $florA->vrdad_pdre ?? ($florA_PR->vrdad_pdre ?? ($florA_EIII->vrdad_pdre ?? null)),
+                    'father_madre' => $florB->vrdad_madre ?? ($florB_PR->vrdad_madre ?? ($florB_EIII->vrdad_madre ?? null)),
+                    'father_padre' => $florB->vrdad_pdre ?? ($florB_PR->vrdad_pdre ?? ($florB_EIII->vrdad_pdre ?? null))
                 );
                 $vm = 0;
                 $vm2 = 0;
@@ -327,6 +333,12 @@ class CrossingService
                 ->leftJoin('datos_campo_crudos', function ($join) {
                     $join->on('datos_campo_crudos.nm_vrdad', '=', 'floracion.vrdad')
                         ->where('datos_campo_crudos.estdo_slccion', '=', 3);
+                })
+                ->leftJoin('maestro_V_VIC_BG', function ($join) {
+                    $join->on('maestro_V_VIC_BG.nm_vrdad', '=', 'floracion.vrdad');
+                })
+                ->leftJoin('pedigri_nuevo', function ($join) {
+                    $join->on('pedigri_nuevo.variedad', '=', 'floracion.vrdad');
                 });
 
             if ($useProjectFilter && $hasSpecificProject) {
