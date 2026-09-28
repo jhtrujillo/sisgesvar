@@ -254,15 +254,37 @@
               <span>Policruzamientos</span>
             </label>
             
-            <div class="h-4 w-px bg-slate-300 mx-2"></div>
-            
-            <label class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-600 font-bold mr-1">
-              <input type="checkbox" v-model="aplicarDG" class="rounded h-3.5 w-3.5 border-slate-300 text-green-600 focus:ring-green-500" />
-              <span>Filtro DG (></span>
-            </label>
-            <input v-if="aplicarDG" type="number" step="0.01" v-model="umbralDG" class="w-12 h-5 text-[10px] px-1 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500" title="Umbral mínimo de Distancia Genética" />
-            <span v-if="aplicarDG" class="text-[11px] text-slate-600 font-bold mr-3">)</span>
-            <span v-else class="mr-3"></span>
+            <!-- Separator -->
+            <div class="h-6 w-px bg-slate-200 mx-3"></div>
+
+            <!-- Filtros Genéticos (UI Mejorada) -->
+            <div class="flex items-center space-x-4 bg-slate-50 border border-slate-200 rounded-md px-3 py-1 shadow-sm">
+              <span class="text-[10px] uppercase tracking-wider font-extrabold text-slate-400">Filtros Genéticos</span>
+              
+              <!-- DG Filter -->
+              <div class="flex items-center space-x-2">
+                <label class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-700 font-bold transition-opacity" :class="{ 'opacity-50': !aplicarDG }" title="Filtro de Distancia Genética Mínima">
+                  <input type="checkbox" v-model="aplicarDG" class="rounded h-3.5 w-3.5 border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                  <span>DG min.</span>
+                </label>
+                <div v-show="aplicarDG" class="relative">
+                  <input type="number" step="0.01" v-model="umbralDG" class="w-14 h-6 text-[11px] pl-1 pr-1 border border-slate-300 rounded focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white shadow-inner text-center font-mono text-emerald-700 font-bold" />
+                </div>
+              </div>
+
+              <div class="h-4 w-px bg-slate-300 mx-1"></div>
+
+              <!-- Kinship Filter -->
+              <div class="flex items-center space-x-2">
+                <label class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-700 font-bold transition-opacity" :class="{ 'opacity-50': !aplicarKinship }" title="Filtro de Parentesco Máximo (Kinship)">
+                  <input type="checkbox" v-model="aplicarKinship" class="rounded h-3.5 w-3.5 border-slate-300 text-rose-600 focus:ring-rose-500" />
+                  <span>Kinship máx.</span>
+                </label>
+                <div v-show="aplicarKinship" class="relative">
+                  <input type="number" step="0.01" v-model="umbralKinship" class="w-14 h-6 text-[11px] pl-1 pr-1 border border-slate-300 rounded focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 bg-white shadow-inner text-center font-mono text-rose-700 font-bold" />
+                </div>
+              </div>
+            </div>
 
             <label class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-600 font-bold mr-1">
               <input type="checkbox" v-model="aplicarKinship" class="rounded h-3.5 w-3.5 border-slate-300 text-red-600 focus:ring-red-500" />
