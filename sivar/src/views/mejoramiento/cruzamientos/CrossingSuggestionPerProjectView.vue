@@ -143,7 +143,7 @@
         </div>
 
         <!-- Leyenda informativa y Botón de Filtro -->
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-3 border-b border-slate-100 pb-3 no-print">
+        <div class="flex flex-col gap-4 mb-3 border-b border-slate-100 pb-3 no-print">
           <div class="flex flex-wrap items-center gap-3 text-[11px] font-semibold text-slate-500">
             <span class="flex items-center">
               <span class="w-3 h-3 bg-rose-100 border border-rose-200 rounded mr-1"></span>
@@ -213,7 +213,7 @@
           </div>
 
           <!-- Botones de Control Interactivos -->
-          <div class="flex justify-end items-center gap-3">
+          <div class="flex flex-wrap justify-between items-center w-full gap-3">
             <!-- Selector de Mapa de Calor (3 opciones) -->
             <div class="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200 shadow-inner">
               <button
@@ -286,13 +286,7 @@
               </div>
             </div>
 
-            <label class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-600 font-bold mr-1">
-              <input type="checkbox" v-model="aplicarKinship" class="rounded h-3.5 w-3.5 border-slate-300 text-red-600 focus:ring-red-500" />
-              <span>Filtro Kinship (<</span>
-            </label>
-            <input v-if="aplicarKinship" type="number" step="0.01" v-model="umbralKinship" class="w-12 h-5 text-[10px] px-1 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-red-500" title="Umbral máximo de Kinship" />
-            <span v-if="aplicarKinship" class="text-[11px] text-slate-600 font-bold mr-3">)</span>
-            <span v-else class="mr-3"></span>
+
             <button
               type="button"
               @click="autoOptimizarFlores"
@@ -1388,7 +1382,7 @@ const isOptimizing = ref(false);
 const permitirPolicruzamientos = ref(false);
 const aplicarKinship = ref(true);
 const aplicarDG = ref(true);
-const umbralKinship = ref(0.125);
+const umbralKinship = ref(0.50);
 const umbralDG = ref(0.20); // Ref para spinner de optimización
 const optimizandoMadre = ref(""); // Para mostrar en el loading qué variedad se procesa
 const isExpanded = ref(false); // Ref para modo pantalla completa
