@@ -270,6 +270,9 @@
                           @click="toggleCruzamiento(car)"
                           class="h-3.5 w-3.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-100 transition cursor-pointer"
                         />
+                        <div v-if="car?.viabilidad && (Number(car?.polen2) <= 20 || Number(car?.polen) > 20) && car?.varA !== car?.varB" class="mb-1">
+                          <span class="bg-indigo-100 text-indigo-700 text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm" title="Cruce Recíproco (Sexos Invertidos)">🔄 Recíproco</span>
+                        </div>
                         <div class="flex flex-col items-center justify-center w-full border-t border-slate-100/50 pt-1.5 mt-1 space-y-1">
                           <span class="text-[9px] font-extrabold tracking-tight leading-none text-slate-700 text-center">
                             DG: {{ getDistancia(car?.varA, car?.varB) || "NA" }}
