@@ -1345,7 +1345,11 @@ const ocultarInviables = ref(false); // Vista compacta limpia por defecto
 const isLoading = ref(false); // Ref para spinner de carga
 const showICHelp = ref(false);
 const isOptimizing = ref(false);
-const permitirPolicruzamientos = ref(false); // Ref para spinner de optimización
+const permitirPolicruzamientos = ref(false);
+const aplicarKinship = ref(true);
+const aplicarDG = ref(true);
+const umbralKinship = ref(0.125);
+const umbralDG = ref(0.20); // Ref para spinner de optimización
 const optimizandoMadre = ref(""); // Para mostrar en el loading qué variedad se procesa
 const isExpanded = ref(false); // Ref para modo pantalla completa
 const isDragDropView = ref(false); // Ref para alternar a Drag & Drop
@@ -1863,6 +1867,23 @@ function getCausaInviabilidad(cell: any): string {
   const fPed = normalize(cell.father_pdgree);
   if (mPed && fPed && mPed === fPed) {
     return "Consanguinidad: Mismo pedigrí (hermanos completos)";
+  }
+
+  // Regla B: Matriz Kinship
+  if (aplicarKinship.value && cell.kinship_score > umbralKinship.value) {
+    return `Inviable: Supera umbral de Kinship permitido (> ${umbralKinship.value})`;
+  }
+
+  // Regla C: Matriz DG (Distancia Genética)
+  if (aplicarDG.value) {
+    const dgString = getDistancia(cell.varA, cell.varB);
+    if (dgString === "NA") {
+      return "Inviable: Sin Distancia Genética (NA)";
+    }
+    const dgVal = Number(dgString);
+    if (dgVal < umbralDG.value) {
+      return `Inviable: Distancia Genética demasiado baja (< ${umbralDG.value})`;
+    }
   }
 
   if (cell.viabilidad) return "-";
@@ -2503,6 +2524,8 @@ async function autoOptimizarFlores(silent: boolean | Event = false) {
       
       if (causa.includes("Restricción de Autogamia")) isBiologicallyValid = false;
       if (causa.includes("Mismo pedigrí")) isBiologicallyValid = false;
+      if (causa.includes("Kinship")) isBiologicallyValid = false;
+      if (causa.includes("Distancia Genética")) isBiologicallyValid = false;
       if (causa.includes("excede límite")) isBiologicallyValid = false;
 
       if (m !== p && isBiologicallyValid) {
@@ -2824,6 +2847,8 @@ function attemptManualCross(m: string, p: string) {
   if (causa.includes("Incompatibilidad de sexo")) isBiologicallyValid = false;
   if (causa.includes("Restricción de Autogamia")) isBiologicallyValid = false;
   if (causa.includes("Mismo pedigrí")) isBiologicallyValid = false;
+  if (causa.includes("Kinship")) isBiologicallyValid = false;
+  if (causa.includes("Distancia Genética")) isBiologicallyValid = false;
   if (causa.includes("excede límite")) isBiologicallyValid = false;
   if (Number(foundCar?.polen2) <= 20) isBiologicallyValid = false; // El padre debe ser macho
 
