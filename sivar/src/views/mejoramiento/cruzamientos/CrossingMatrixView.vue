@@ -192,7 +192,7 @@
                 <template v-for="(flor, indexCol) in MatrixCrossingStore.matrixCrossingsFilter.flores || []" :key="flor.vrdad">
                   <th
                     v-if="!ocultarInviables || isColumnViable(indexCol)"
-                    class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-650 bg-slate-50 border-r border-slate-100 sticky top-0 z-10 min-w-[75px]"
+                    :class="['px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider border-r border-slate-100 sticky top-0 z-10 min-w-[75px]', flor.sxo === 'Hembra' || isEmasculatedLocal(flor.vrdad) ? 'bg-rose-50/80 text-rose-900' : 'bg-sky-50/80 text-sky-900']"
                   >
                     <span
                       class="block font-extrabold text-slate-800 leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors"
@@ -206,7 +206,18 @@
                     >
                       VM: {{ MatrixCrossingStore.matrixCrossingsFilter.viabilidad[0][indexCol].vm2 }}
                     </span>
-                    <span class="block text-[9px] text-slate-400 font-semibold mt-0.5 mb-0.5">Polen: {{ flor.polen }} | Flores: {{ flor.cantidad_flores || 0 }}</span>
+                    <span class="block text-[9px] text-slate-400 font-semibold mt-0.5 mb-0.5">Polen: {{ flor.polen }} ({{ flor.sxo }}) | Flores: {{ flor.cantidad_flores || 0 }}</span>
+                    <button 
+                      v-if="flor.sxo === 'Macho' && !isEmasculatedLocal(flor.vrdad)"
+                      @click="promptEmasculate(flor.vrdad)"
+                      class="mt-1 bg-rose-100 hover:bg-rose-200 text-rose-700 text-[8px] font-bold py-0.5 px-1.5 rounded uppercase mx-auto block"
+                    >
+                      Emascular
+                    </button>
+                    <span v-else-if="isEmasculatedLocal(flor.vrdad)" class="mt-1 flex flex-col items-center">
+                      <span class="text-rose-600 text-[8px] font-black uppercase block">[EMASCULADA]</span>
+                      <button @click.stop="revertEmasculate(flor.vrdad)" class="mt-0.5 text-[8px] underline text-slate-500 hover:text-slate-700">Deshacer</button>
+                    </span>
                   </th>
                 </template>
               </tr>
@@ -217,7 +228,7 @@
                 <tr v-if="!ocultarInviables || isRowViable(viabilidadRow)" class="hover:bg-slate-50/40 transition-colors">
                   <!-- Celda Madre Fija a la izquierda -->
                   <td
-                    class="whitespace-nowrap px-2 py-2 text-center text-[11px] font-bold text-slate-700 bg-white border-r border-slate-100 sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[110px]"
+                    :class="['whitespace-nowrap px-2 py-2 text-center text-[11px] font-bold border-r border-slate-100 sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)] min-w-[110px]', viabilidadRow[0].sxo === 'Hembra' || isEmasculatedLocal(viabilidadRow[0].varA) ? 'bg-rose-50/60 text-rose-900' : 'bg-sky-50/60 text-sky-900']"
                   >
                     <span
                       class="block font-extrabold text-slate-800 leading-tight cursor-pointer hover:underline hover:text-emerald-700 transition-colors"
@@ -227,7 +238,18 @@
                     <span class="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-50 text-slate-500 border border-slate-100">
                       VM: {{ getRowVm(viabilidadRow) }}
                     </span>
-                    <span class="block text-[9px] text-slate-400 mt-0.5 font-semibold">Polen: {{ viabilidadRow[0].polen }} | Flores: {{ viabilidadRow[0].cantidad_flores || 0 }}</span>
+                    <span class="block text-[9px] text-slate-400 mt-0.5 font-semibold">Polen: {{ viabilidadRow[0].polen }} ({{ viabilidadRow[0].sxo }}) | Flores: {{ viabilidadRow[0].cantidad_flores || 0 }}</span>
+                    <button 
+                      v-if="viabilidadRow[0].sxo === 'Macho' && !isEmasculatedLocal(viabilidadRow[0].varA)"
+                      @click="promptEmasculate(viabilidadRow[0].varA)"
+                      class="mt-1 bg-rose-100 hover:bg-rose-200 text-rose-700 text-[8px] font-bold py-0.5 px-1.5 rounded uppercase mx-auto block"
+                    >
+                      Emascular
+                    </button>
+                    <span v-else-if="isEmasculatedLocal(viabilidadRow[0].varA)" class="mt-1 flex flex-col items-center">
+                      <span class="text-rose-600 text-[8px] font-black uppercase block">[EMASCULADA]</span>
+                      <button @click.stop="revertEmasculate(viabilidadRow[0].varA)" class="mt-0.5 text-[8px] underline text-slate-500 hover:text-slate-700">Deshacer</button>
+                    </span>
                   </td>
 
                   <!-- Celdas de la matriz filtradas por columna -->
@@ -251,6 +273,9 @@
                         <div class="flex flex-col items-center justify-center w-full border-t border-slate-100/50 pt-1.5 mt-1 space-y-1">
                           <span class="text-[9px] font-extrabold tracking-tight leading-none text-slate-700 text-center">
                             DG: {{ getDistancia(car?.varA, car?.varB) || "NA" }}
+                          </span>
+                          <span v-if="car?.emasculado" class="text-[7.5px] font-black text-rose-600 block text-center uppercase mt-0.5 leading-none">
+                            [EMASCULADA]
                           </span>
                           <!-- Botón Comparador Lado a Lado -->
                           <button
@@ -308,6 +333,43 @@
     :currentProject="selectedCdCntble"
     @flowerAssigned="handleFlowerAssigned"
   />
+
+    <!-- Modal HTML de Emasculación -->
+    <div v-if="showEmasculateModal" class="relative z-[9999]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+      <div class="fixed inset-0 bg-slate-900/60 transition-opacity"></div>
+      <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+          <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+            <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+              <div class="sm:flex sm:items-start">
+                <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 sm:mx-0 sm:h-10 sm:w-10">
+                  <svg class="h-6 w-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                  <h3 class="text-lg font-black leading-6 text-slate-900" id="modal-title">Atención: Incompatibilidad de Sexo</h3>
+                  <div class="mt-2">
+                    <p class="text-sm text-slate-500 font-medium">
+                      Ambos parentales seleccionados son masculinos. Para que la polinización sea biológicamente viable, la variedad receptora debe ser emasculada.
+                    </p>
+                    <div class="mt-4 bg-slate-50 border border-slate-100 rounded-lg p-3">
+                      <p class="text-sm text-slate-700 font-bold">
+                        ¿Autoriza registrar a la variedad <span class="text-rose-600 font-black">{{ emasculateTargetVar }}</span> como <span class="uppercase font-black">emasculada</span> para programar este cruzamiento?
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+              <button @click="confirmEmasculateAction" type="button" class="inline-flex w-full justify-center rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-rose-500 sm:ml-3 sm:w-auto">Autorizar Emasculación</button>
+              <button @click="cancelEmasculateAction" type="button" class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-4 py-2.5 text-sm font-bold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 </div>
 </template>
 
@@ -320,6 +382,191 @@ import type { CruzamientoSeleccionado } from "@/services/types";
 import VarietyProfileDrawer from "@/components/VarietyProfileDrawer.vue";
 import ParentComparatorModal from "@/components/ParentComparatorModal.vue";
 import ExternalFlowersModal from "@/components/ExternalFlowersModal.vue";
+const showEmasculateModal = ref(false);
+const emasculateTargetVar = ref("");
+const emasculateTargetCar = ref<any>(null);
+
+const emasculadasLocales = ref(new Set<string>());
+const emasculadasOriginalData = ref(new Map<string, any>());
+
+const isEmasculatedLocal = (varName: string) => {
+  return emasculadasLocales.value.has(varName);
+};
+
+const promptEmasculate = (varName: string) => {
+  emasculateTargetVar.value = varName;
+  // Usamos el mismo modal pero sin "emasculateTargetCar", indicando que es global para la variedad
+  emasculateTargetCar.value = null; 
+  showEmasculateModal.value = true;
+};
+
+
+const confirmGlobalEmasculate = () => {
+  const varName = emasculateTargetVar.value;
+  emasculadasLocales.value.add(varName);
+
+  // Guardar datos originales
+  const flores = MatrixCrossingStore.matrixCrossingsFilter.flores || [];
+  const flor = flores.find((f: any) => f.vrdad === varName);
+  if (flor) {
+    if (!emasculadasOriginalData.value.has(varName)) {
+      emasculadasOriginalData.value.set(varName, { polen: flor.polen, sxo: flor.sxo });
+    }
+    flor.polen = 0;
+    flor.sxo = 'Hembra'; // <- Ahora dice Hembra
+  }
+
+  recalculateMatrixViability();
+  
+  localStorage.setItem(emasculadasKey.value, JSON.stringify(Array.from(emasculadasLocales.value)));
+  
+  toast.success('Variedad ' + varName + ' emasculada. Matriz recalculada.');
+  showEmasculateModal.value = false;
+};
+
+const revertEmasculate = (varName: string) => {
+  emasculadasLocales.value.delete(varName);
+  
+  const flores = MatrixCrossingStore.matrixCrossingsFilter.flores || [];
+  const flor = flores.find((f: any) => f.vrdad === varName);
+  if (flor) {
+    const orig = emasculadasOriginalData.value.get(varName);
+    if (orig) {
+      flor.polen = orig.polen;
+      flor.sxo = orig.sxo;
+    }
+  }
+
+  recalculateMatrixViability();
+  
+  localStorage.setItem(emasculadasKey.value, JSON.stringify(Array.from(emasculadasLocales.value)));
+  
+  toast.info('Variedad ' + varName + ' restaurada a su estado original.');
+};
+
+const recalculateMatrixViability = () => {
+  const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
+  viabilidades.forEach((row: any) => {
+    row.forEach((cell: any) => {
+      if (!cell || !cell.varA || !cell.varB) return;
+      
+      const motherEmasc = emasculadasLocales.value.has(cell.varA);
+      const fatherEmasc = emasculadasLocales.value.has(cell.varB);
+      
+      if (motherEmasc) {
+          cell.polen = 0;
+          cell.sxo = 'Hembra';
+      } else {
+          const origA = emasculadasOriginalData.value.get(cell.varA);
+          if (origA) {
+              cell.polen = origA.polen;
+              cell.sxo = origA.sxo;
+          }
+      }
+      
+      if (fatherEmasc) {
+          cell.polen2 = 0;
+          cell.sxo2 = 'Hembra';
+      } else {
+          const origB = emasculadasOriginalData.value.get(cell.varB);
+          if (origB) {
+              cell.polen2 = origB.polen;
+              cell.sxo2 = origB.sxo;
+          }
+      }
+
+      const motherSex = cell.sxo;
+      const fatherSex = cell.sxo2;
+
+      // Restablecer el veto primero, borrando vetos previos inyectados por emasculacion o desemasculacion
+      if (cell.causa_veto) {
+        cell.causa_veto = cell.causa_veto.replace(/\s*\|?\s*Incompatibilidad de sexo \(Ambos son Macho\)/, '');
+        cell.causa_veto = cell.causa_veto.replace(/\s*\|?\s*Incompatibilidad de sexo \(Ambas son Hembra\)/, '');
+        if (cell.causa_veto === 'Incompatibilidad de sexo (Ambos son Macho)' || cell.causa_veto === 'Incompatibilidad de sexo (Ambas son Hembra)' || cell.causa_veto === 'Cruce viable') {
+           cell.causa_veto = '';
+        }
+      }
+
+      // Re-aplicar vetos
+      if (motherSex === 'Macho' && fatherSex === 'Macho') {
+         cell.viabilidad = false;
+         cell.emasculado = false;
+         cell.causa_veto = (cell.causa_veto && cell.causa_veto !== '' ? cell.causa_veto + ' | ' : '') + 'Incompatibilidad de sexo (Ambos son Macho)';
+      } else if (motherSex === 'Hembra' && fatherSex === 'Hembra') {
+         cell.viabilidad = false;
+         cell.emasculado = false;
+         cell.causa_veto = (cell.causa_veto && cell.causa_veto !== '' ? cell.causa_veto + ' | ' : '') + 'Incompatibilidad de sexo (Ambas son Hembra)';
+      } else {
+         if (!cell.causa_veto || cell.causa_veto.trim() === '') {
+            cell.viabilidad = true;
+            if (motherEmasc) cell.emasculado = true;
+            else cell.emasculado = false;
+            cell.causa_veto = 'Cruce viable';
+         } else {
+            cell.viabilidad = false;
+            cell.emasculado = false;
+         }
+      }
+    });
+  });
+};
+
+
+
+
+const confirmEmasculateAction = () => {
+  if (!emasculateTargetCar.value) {
+    return confirmGlobalEmasculate();
+  }
+
+  if (emasculateTargetCar.value) {
+    const car = emasculateTargetCar.value;
+    car.emasculado = true;
+    
+    // Continuar con la logica original
+    car.viabilidad = true;
+    if (car.flores_madre !== undefined) {
+      car.flores_madre = 1;
+      car.flores_padre = 1;
+    }
+    
+    // Save draft
+    if (typeof draftKey !== 'undefined' && typeof viabilidadesMatriz !== 'undefined') {
+       const rows = viabilidadesMatriz.value || [];
+       const savedState = [];
+       rows.forEach((row) => {
+         if (row && Array.isArray(row)) {
+           row.forEach((c) => {
+             if (c && c.varA && c.varB) {
+               savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
+             }
+           });
+         }
+       });
+       localStorage.setItem(draftKey.value, JSON.stringify(savedState));
+    } else if (typeof draftKey !== 'undefined' && typeof MatrixCrossingStore !== 'undefined') {
+       const savedState = [];
+       const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
+       viabilidades.forEach((row) => {
+         if (row && Array.isArray(row)) {
+           row.forEach((c) => {
+             if (c && c.varA && c.varB) {
+               savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
+             }
+           });
+         }
+       });
+       localStorage.setItem(draftKey.value, JSON.stringify(savedState));
+    }
+  }
+  showEmasculateModal.value = false;
+};
+
+const cancelEmasculateAction = () => {
+  emasculateTargetCar.value = null;
+  showEmasculateModal.value = false;
+};
+
 
 const MatrixCrossingStore = useMatrixCrossingStore();
 const toast = useToast();
@@ -477,6 +724,7 @@ const isRowViable = (viabilidadRow: any[]) => {
 
 // Función para obtener la distancia entre dos variables
 const getDistancia = (varA: string, varB: string) => {
+  if (varA && varB && varA === varB) return "NA";
   const distancias = MatrixCrossingStore.matrixCrossingsFilter.distancias || {};
   return distancias[varA]?.[varB] || "NA";
 };
@@ -484,9 +732,20 @@ const getDistancia = (varA: string, varB: string) => {
 
 // El draftKey debe coincidir con el usado en la vista de Programacion de Cruzamientos
 const draftKey = computed(() => `sivarcc_draft_crossings_${selectedCdCntble.value}_${selectedMegaAmbiente.value}`);
+const emasculadasKey = computed(() => `sivarcc_draft_emasculadas_${selectedCdCntble.value}_${selectedMegaAmbiente.value}`);
 
 // Función para alternar el cruzamiento cuando se hace click
 const toggleCruzamiento = (car: any) => {
+  if (!car.viabilidad && car.causa_veto && car.causa_veto.includes("Ambos son Macho")) {
+    emasculateTargetVar.value = car.varA;
+    emasculateTargetCar.value = car;
+    showEmasculateModal.value = true;
+    return; // Esperamos la accion del modal
+  } else if (car.viabilidad) {
+    // Si se deselecciona, quitamos el flag por si acaso
+    car.emasculado = false;
+  }
+
   // Mutar la viabilidad localmente
   car.viabilidad = !car.viabilidad;
 
@@ -497,7 +756,7 @@ const toggleCruzamiento = (car: any) => {
   viabilidades.forEach((row: any) => {
     row.forEach((c: any) => {
       if (c && c.varA && c.varB) {
-        savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad });
+        savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
       }
     });
   });

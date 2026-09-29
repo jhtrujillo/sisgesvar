@@ -177,6 +177,9 @@ class CrossingController extends Controller
                     $madreVal = $cData['madre'] ?? '';
                     $padresVal = $cData['padres'] ?? '';
                     $obsVal = $cData['observaciones'] ?? 'Programacion de Cruzamientos';
+                    if (!empty($cData['emasculado']) && $cData['emasculado'] == true) {
+                        $obsVal = "[EMASCULAR MADRE] " . $obsVal;
+                    }
                     $idPondVal = $cData['id_ponderados'] ?? $request->input('id_ponderados') ?? $request->input('id_ponderado');
                     $autoVal = $cData['autofecundado'] ?? 0;
                     $cantMadre = isset($cData['flores_madre']) ? max(1, (int)$cData['flores_madre']) : 1;
