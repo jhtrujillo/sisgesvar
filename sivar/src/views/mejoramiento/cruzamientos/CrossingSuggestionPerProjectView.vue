@@ -570,11 +570,12 @@
                               <input
                                 type="checkbox"
                                 :checked="!!car?.viabilidad"
-                                @click="toggleCruzamiento(car)"
-                                class="h-3.5 w-3.5 rounded border-slate-350 text-emerald-600 focus:ring-emerald-100 transition cursor-pointer"
+                                :disabled="car.varA === car.varB"
+                                @click="toggleCruzamiento(car, $event)"
+                                class="h-3.5 w-3.5 rounded border-slate-350 text-emerald-600 focus:ring-emerald-100 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-slate-200"
                               />
                               <!-- Indicador de Policruzamiento (Cruce Invertido) -->
-                              <div v-if="car?.viabilidad && (Number(car?.polen2) <= 20 || Number(car?.polen) > 20) && car?.varA !== car?.varB" class="mb-1">
+                              <div v-if="car?.viabilidad && !car?.emasculado && (Number(car?.polen2) <= 20 || Number(car?.polen) > 20) && car?.varA !== car?.varB" class="mb-1">
                                 <span class="bg-indigo-100 text-indigo-700 text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm" title="Cruce Recíproco (Sexos Invertidos)">🔄 Recíproco</span>
                               </div>
                               <!-- Selector numérico cuando es viable -->
@@ -1247,19 +1248,26 @@
                   <h3 class="text-lg font-black leading-6 text-slate-900" id="modal-title">Atención: Incompatibilidad de Sexo</h3>
                   <div class="mt-2">
                     <p class="text-sm text-slate-500 font-medium">
-                      Ambos parentales seleccionados son masculinos. Para que la polinización sea biológicamente viable, la variedad receptora debe ser emasculada.
+                      Estás seleccionando un cruce entre dos variedades masculinas. Para que sea biológicamente viable, debes elegir cuál de las dos actuará como <strong>Hembra (Receptora)</strong>.
                     </p>
                     <div class="mt-4 bg-slate-50 border border-slate-100 rounded-lg p-3">
-                      <p class="text-sm text-slate-700 font-bold">
-                        ¿Autoriza registrar a la variedad <span class="text-rose-600 font-black">{{ emasculateTargetVar }}</span> como <span class="uppercase font-black">emasculada</span> para programar este cruzamiento?
+                      <p class="text-sm text-slate-700 font-bold mb-3 text-center">
+                        ¿A cuál de los dos deseas Emascular?
                       </p>
+                      <div class="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3 justify-center">
+                         <button @click="confirmEmasculateAction(emasculateTargetCar?.varA)" type="button" class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-500">
+                           {{ emasculateTargetCar?.varA || emasculateTargetVar }} (Fila)
+                         </button>
+                         <button v-if="emasculateTargetCar?.varB" @click="confirmEmasculateAction(emasculateTargetCar?.varB)" type="button" class="inline-flex w-full justify-center rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-rose-500">
+                           {{ emasculateTargetCar?.varB }} (Columna)
+                         </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
             <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-              <button @click="confirmEmasculateAction" type="button" class="inline-flex w-full justify-center rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-rose-500 sm:ml-3 sm:w-auto">Autorizar Emasculación</button>
               <button @click="cancelEmasculateAction" type="button" class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-4 py-2.5 text-sm font-bold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto">Cancelar</button>
             </div>
           </div>
@@ -1287,48 +1295,100 @@ const showEmasculateModal = ref(false);
 const emasculateTargetVar = ref("");
 const emasculateTargetCar = ref<any>(null);
 
-const confirmEmasculateAction = () => {
+const confirmEmasculateAction = (targetVar = null) => {
+  if (!emasculateTargetCar.value && typeof confirmGlobalEmasculate === 'function') {
+    return confirmGlobalEmasculate();
+  }
+
   if (emasculateTargetCar.value) {
-    const car = emasculateTargetCar.value;
-    car.emasculado = true;
+    let carToActivate = emasculateTargetCar.value;
     
-    // Continuar con la logica original
-    car.viabilidad = true;
-    if (car.flores_madre !== undefined) {
-      car.flores_madre = 1;
-      car.flores_padre = 1;
+    // Si eligieron al Padre (Columna) en lugar de la Madre (Fila), activamos la celda recíproca
+    
+    if (typeof emasculadasLocales !== 'undefined') {
+      emasculadasLocales.value.add(targetVar);
+      localStorage.setItem(emasculadasKey.value, JSON.stringify(Array.from(emasculadasLocales.value)));
+    }
+    if (typeof emasculatedVarieties !== 'undefined') {
+      emasculatedVarieties.value.add(targetVar);
+      localStorage.setItem(emasculadasKey.value, JSON.stringify(Array.from(emasculatedVarieties.value)));
+    }
+    if (targetVar === carToActivate.varB) {
+       let found = false;
+       
+       if (typeof viabilidadesMatriz !== 'undefined') {
+         const rows = viabilidadesMatriz.value || [];
+         for (const row of rows) {
+           if (row && Array.isArray(row)) {
+             for (const cell of row) {
+               if (cell && cell.varA === carToActivate.varB && cell.varB === carToActivate.varA) {
+                 carToActivate = cell;
+                 found = true;
+                 break;
+               }
+             }
+           }
+           if (found) break;
+         }
+       } else if (typeof MatrixCrossingStore !== 'undefined') {
+         const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
+         for (const row of viabilidades) {
+           if (row && Array.isArray(row)) {
+             for (const cell of row) {
+               if (cell && cell.varA === carToActivate.varB && cell.varB === carToActivate.varA) {
+                 carToActivate = cell;
+                 found = true;
+                 break;
+               }
+             }
+           }
+           if (found) break;
+         }
+       }
+       
+       if (found) {
+         toast.success(`Cruce recíproco activado: ${carToActivate.varA} (Hembra) x ${carToActivate.varB} (Macho)`);
+       }
+    }
+
+    carToActivate.emasculado = true;
+    carToActivate.viabilidad = true;
+    if (carToActivate.flores_madre !== undefined) {
+      carToActivate.flores_madre = 1;
+      carToActivate.flores_padre = 1;
     }
     
     // Save draft
-    if (typeof draftKey !== 'undefined' && typeof viabilidadesMatriz !== 'undefined') {
-       const rows = viabilidadesMatriz.value || [];
+    if (typeof draftKey !== 'undefined') {
        const savedState = [];
-       rows.forEach((row) => {
-         if (row && Array.isArray(row)) {
-           row.forEach((c) => {
-             if (c && c.varA && c.varB) {
-               savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
-             }
-           });
-         }
-       });
-       localStorage.setItem(draftKey.value, JSON.stringify(savedState));
-    } else if (typeof draftKey !== 'undefined' && typeof MatrixCrossingStore !== 'undefined') {
-       const savedState = [];
-       const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
-       viabilidades.forEach((row) => {
-         if (row && Array.isArray(row)) {
-           row.forEach((c) => {
-             if (c && c.varA && c.varB) {
-               savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
-             }
-           });
-         }
-       });
+       if (typeof viabilidadesMatriz !== 'undefined') {
+         const rows = viabilidadesMatriz.value || [];
+         rows.forEach((row) => {
+           if (row && Array.isArray(row)) {
+             row.forEach((c) => {
+               if (c && c.varA && c.varB) {
+                 savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
+               }
+             });
+           }
+         });
+       } else if (typeof MatrixCrossingStore !== 'undefined') {
+         const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
+         viabilidades.forEach((row) => {
+           if (row && Array.isArray(row)) {
+             row.forEach((c) => {
+               if (c && c.varA && c.varB) {
+                 savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
+               }
+             });
+           }
+         });
+       }
        localStorage.setItem(draftKey.value, JSON.stringify(savedState));
     }
   }
   showEmasculateModal.value = false;
+  emasculateTargetCar.value = null;
 };
 
 const cancelEmasculateAction = () => {
@@ -1829,8 +1889,9 @@ const hasOverusedFlowers = computed(() => {
   return false;
 });
 
-function toggleCruzamiento(car: any) {
-  if (!car.viabilidad && getCausaInviabilidad(car).includes("Ambos son Macho")) {
+function toggleCruzamiento(car: any, event: Event) {
+  if (!car.viabilidad && car.causa_veto && car.causa_veto.includes("Ambos son Macho")) {
+    if (event) event.preventDefault();
     emasculateTargetVar.value = car.varA;
     emasculateTargetCar.value = car;
     showEmasculateModal.value = true;

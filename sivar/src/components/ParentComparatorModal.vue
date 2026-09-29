@@ -540,20 +540,30 @@ const isViable = computed(() => {
 });
 
 const viabilityDiagnosis = computed(() => {
+  const hasVeto = props.causaVeto && props.causaVeto !== "-" && props.causaVeto.trim() !== "Cruce viable";
+
+  if (hasVeto) {
+    if (props.initiallyViable) {
+       return {
+          title: "DIAGNÓSTICO: FORZADO MANUALMENTE",
+          description: `El usuario autorizó este cruce a pesar de la restricción del sistema: ${props.causaVeto}`,
+          isViable: true
+       };
+    } else {
+       return {
+          title: "DIAGNÓSTICO: CRUZAMIENTO INVIABLE",
+          description: props.causaVeto,
+          isViable: false
+       };
+    }
+  }
+
   if (isViable.value) {
     return {
       title: "DIAGNÓSTICO: COMBINACIÓN VIABLE",
       description: "Esta pareja progenitora cumple con los criterios biológicos y genéticos para la polinización en campo.",
       isViable: true
     };
-  }
-
-  if (props.causaVeto && props.causaVeto !== "-") {
-      return {
-          title: "DIAGNÓSTICO: CRUZAMIENTO INVIABLE",
-          description: props.causaVeto,
-          isViable: false
-      };
   }
 
   return {
