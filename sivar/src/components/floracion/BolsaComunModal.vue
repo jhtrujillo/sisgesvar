@@ -167,7 +167,7 @@ const filterOptions = computed(() => {
       label = f.vrdad;
     } else if (form.value.tipo_filtro === 'proyecto_caracter') {
       key = f.id_crcter;
-      label = f.id_crcter; 
+      label = f.nmbre_crcter ? `${f.nmbre_crcter}` : `Carácter ${f.id_crcter}`; 
     }
 
     if (key !== null && key !== undefined && key !== '') {
