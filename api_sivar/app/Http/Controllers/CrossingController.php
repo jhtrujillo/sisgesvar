@@ -958,4 +958,52 @@ class CrossingController extends Controller
             'message' => "Se enviaron {$updatedCount} flores libres a la Bolsa Común con éxito."
         ]);
     }
+
+    public function manualSendToCommonBag(Request $request)
+    {
+        $tipoFiltro = $request->input('tipo_filtro'); // 'variedad', 'caracter', 'proyecto_caracter'
+        $valorFiltro = $request->input('valor_filtro');
+        $proyectoId = $request->input('proyecto_id');
+        $cantidad = (int)$request->input('cantidad');
+
+        if (!in_array($tipoFiltro, ['variedad', 'caracter', 'proyecto_caracter']) || empty($valorFiltro) || $cantidad <= 0) {
+            return response()->json(['error' => 'Parámetros inválidos.'], 400);
+        }
+
+        $query = DB::connection('sivar')
+            ->table('floracion')
+            ->where(function ($q) {
+                $q->where('estado', 0)->orWhere('estado', '0');
+            })
+            ->where('bolsa_comun', 0);
+
+        if ($tipoFiltro === 'variedad') {
+            $query->where('vrdad', $valorFiltro);
+        } else if ($tipoFiltro === 'caracter') {
+            $query->where('id_crcter', $valorFiltro);
+        } else if ($tipoFiltro === 'proyecto_caracter') {
+            $query->where('id_crcter', $valorFiltro)->where('id_pr', $proyectoId);
+        }
+
+        // Obtener los IDs para limitar la cantidad
+        $ids = $query->orderBy('fcha', 'asc') // Priorizar las más antiguas
+            ->limit($cantidad)
+            ->pluck('id_flrcion');
+
+        if ($ids->isEmpty()) {
+            return response()->json(['error' => 'No se encontraron flores disponibles que coincidan con la búsqueda.'], 404);
+        }
+
+        $updatedCount = DB::connection('sivar')
+            ->table('floracion')
+            ->whereIn('id_flrcion', $ids)
+            ->update(['bolsa_comun' => 1]);
+
+        return response()->json([
+            'success' => true,
+            'updated_count' => $updatedCount,
+            'message' => "Se enviaron {$updatedCount} flores a la Bolsa Común con éxito."
+        ]);
+    }
+
 }

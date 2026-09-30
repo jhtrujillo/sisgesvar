@@ -67,6 +67,8 @@ Route::group([
     Route::get('proyectosConFlores', [\App\Http\Controllers\CrossingController::class, 'proyectosConFlores']);
     Route::post('/crossing/programming/save_crossing', [\App\Http\Controllers\CrossingController::class, 'guardarCruzamiento']);
     Route::post('/crossing/programming/send_free_to_common_bag', [\App\Http\Controllers\CrossingController::class, 'enviarFloresLibresABolsaComun']);
+    Route::post('/crossing/programming/manual_send_to_common_bag', [\App\Http\Controllers\CrossingController::class, 'manualSendToCommonBag']);
+
     Route::get('consultarHistoricoCruzamiento/{madre}/{padres}', [\App\Http\Controllers\CrossingController::class, 'consultarHistoricoCruzamiento']);
     Route::get('/crossing/programming/save_weight/{proyecto?}', [\App\Http\Controllers\CrossingController::class, 'guardarPonderados']);
     Route::get('/crossing/consolidated', [\App\Http\Controllers\CrossingController::class, 'consolidado']);

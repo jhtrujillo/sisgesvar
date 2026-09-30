@@ -39,15 +39,26 @@
             ></div>
             <span class="ml-3 text-sm font-bold text-slate-600 group-hover:text-emerald-700 transition-colors">Modo Histórico</span>
           </label>
-          <button
-            @click="isImportWizardOpen = true"
-            class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm cursor-pointer"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-            </svg>
-            Importar Excel
-          </button>
+                    <div class="flex gap-2">
+            <button
+              @click="isBolsaComunModalOpen = true"
+              class="flex items-center gap-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Bolsa Común
+            </button>
+            <button
+              @click="isImportWizardOpen = true"
+              class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              Importar Excel
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -300,6 +311,12 @@
       </div>
     </div>
     
+    <BolsaComunModal
+      :isOpen="isBolsaComunModalOpen"
+      :floresDisponibles="FloweringListStore.flowering"
+      @close="isBolsaComunModalOpen = false"
+      @success="handleBolsaSuccess"
+    />
     <FloracionImportWizard
       :is-open="isImportWizardOpen"
       @close="isImportWizardOpen = false"
@@ -318,6 +335,7 @@ import TableComponent from "../../../components/app-table/TableComponent.vue";
 import type { Column } from "../../../components/app-table/models";
 import BackButton from "@/components/BackButton.vue";
 import FloracionImportWizard from "@/components/floracion/FloracionImportWizard.vue";
+import BolsaComunModal from "@/components/floracion/BolsaComunModal.vue";
 import VarietyProfileDrawer from "@/components/VarietyProfileDrawer.vue";
 import floweringService from "@/services/flowering.services";
 import { useToast } from "vue-toastification";
@@ -329,6 +347,11 @@ const activeTab = ref<"tabla" | "bolsa">("tabla");
 const verHistorico = ref(false);
 const isLoading = ref(false);
 const isImportWizardOpen = ref(false);
+const isBolsaComunModalOpen = ref(false);
+
+const handleBolsaSuccess = () => {
+  FloweringListStore.getFloweringList();
+};
 
 // State Módulo Bolsa Común
 const isLoadingBolsa = ref(false);
