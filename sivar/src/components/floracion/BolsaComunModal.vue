@@ -27,17 +27,17 @@
             <div class="flex flex-col gap-3">
               <label class="flex items-center gap-2 cursor-pointer">
                 <input type="radio" v-model="form.tipo_filtro" value="variedad" class="text-cenicana focus:ring-cenicana border-slate-300">
-                <span class="text-sm font-medium text-slate-700">Por Variedad</span>
+                <span class="text-sm font-medium text-slate-700">Por Variedad Directa</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" v-model="form.tipo_filtro" value="proyecto_caracter" class="text-cenicana focus:ring-cenicana border-slate-300">
-                <span class="text-sm font-medium text-slate-700">Por Proyecto y luego por Carácter</span>
+                <input type="radio" v-model="form.tipo_filtro" value="completo" class="text-cenicana focus:ring-cenicana border-slate-300">
+                <span class="text-sm font-medium text-slate-700">Por Proyecto -> Carácter -> Variedad</span>
               </label>
             </div>
           </div>
 
           <!-- Selector de Proyecto (Headless UI Combobox) -->
-          <div v-if="form.tipo_filtro === 'proyecto_caracter'">
+          <div v-if="form.tipo_filtro === 'completo'">
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
               Seleccione Proyecto <span class="text-rose-500">*</span>
             </label>
@@ -81,10 +81,55 @@
             </Combobox>
           </div>
 
-          <!-- Selector (Variedad o Carácter con Combobox) -->
-          <div v-if="form.tipo_filtro === 'variedad' || (form.tipo_filtro === 'proyecto_caracter' && form.proyecto_id)">
+          <!-- Selector de Carácter -->
+          <div v-if="form.tipo_filtro === 'completo' && form.proyecto_id">
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
-              {{ form.tipo_filtro === 'variedad' ? 'Seleccione Variedad' : 'Seleccione Carácter' }} <span class="text-rose-500">*</span>
+              Seleccione Carácter <span class="text-rose-500">*</span>
+            </label>
+            <Combobox v-model="form.caracter_id">
+              <div class="relative mt-1">
+                <div class="relative w-full cursor-default overflow-hidden rounded-xl border border-slate-200 bg-white text-left focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all sm:text-sm">
+                  <ComboboxInput
+                    class="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
+                    :displayValue="(optId) => characterOptions.find(o => o.id === optId)?.label || ''"
+                    @change="queryCharacter = $event.target.value"
+                    placeholder="Buscar carácter..."
+                  />
+                  <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" /></svg>
+                  </ComboboxButton>
+                </div>
+                <TransitionRoot leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0" @after-leave="queryCharacter = ''">
+                  <ComboboxOptions class="absolute mt-1 max-h-48 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-[100]">
+                    <div v-if="filteredCharacterOptions.length === 0 && queryCharacter !== ''" class="relative cursor-default select-none py-2 px-4 text-gray-700">
+                      Nada encontrado.
+                    </div>
+                    <ComboboxOption
+                      v-for="opt in filteredCharacterOptions"
+                      as="template"
+                      :key="opt.id"
+                      :value="opt.id"
+                      v-slot="{ selected, active }"
+                    >
+                      <li class="relative cursor-default select-none py-2 pl-10 pr-4" :class="{ 'bg-emerald-100 text-emerald-900': active, 'text-gray-900': !active }">
+                        <span class="block truncate" :class="{ 'font-medium': selected, 'font-normal': !selected }">
+                          {{ opt.label }}
+                        </span>
+                        <span v-if="selected" class="absolute inset-y-0 left-0 flex items-center pl-3" :class="{ 'text-emerald-600': active, 'text-emerald-600': !active }">
+                          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                        </span>
+                      </li>
+                    </ComboboxOption>
+                  </ComboboxOptions>
+                </TransitionRoot>
+              </div>
+            </Combobox>
+          </div>
+
+          <!-- Selector de Variedad -->
+          <div v-if="form.tipo_filtro === 'variedad' || (form.tipo_filtro === 'completo' && form.proyecto_id && form.caracter_id)">
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+              Seleccione Variedad <span class="text-rose-500">*</span>
             </label>
             <Combobox v-model="form.valor_filtro">
               <div class="relative mt-1">
@@ -93,7 +138,7 @@
                     class="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
                     :displayValue="(optId) => filterOptions.find(o => o.id === optId)?.label || ''"
                     @change="queryFilter = $event.target.value"
-                    placeholder="Buscar..."
+                    placeholder="Buscar variedad..."
                   />
                   <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
                     <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" /></svg>
@@ -182,35 +227,49 @@ const toast = useToast();
 
 const isSubmitting = ref(false);
 const queryProject = ref('');
+const queryCharacter = ref('');
 const queryFilter = ref('');
 
 const form = ref({
   tipo_filtro: 'variedad',
   proyecto_id: '',
+  caracter_id: '',
   valor_filtro: '',
   cantidad: 1
 });
 
-// Limpiar valor al cambiar tipo
+// Limpiar valores en cascada
 watch(() => form.value.tipo_filtro, () => {
   form.value.proyecto_id = '';
+  form.value.caracter_id = '';
   form.value.valor_filtro = '';
   form.value.cantidad = 1;
   queryProject.value = '';
+  queryCharacter.value = '';
   queryFilter.value = '';
 });
 watch(() => form.value.proyecto_id, () => {
+  form.value.caracter_id = '';
+  form.value.valor_filtro = '';
+  form.value.cantidad = 1;
+  queryCharacter.value = '';
+  queryFilter.value = '';
+});
+watch(() => form.value.caracter_id, () => {
   form.value.valor_filtro = '';
   form.value.cantidad = 1;
   queryFilter.value = '';
 });
 
 // Options logic
+const validBaseFlowers = computed(() => {
+  return props.floresDisponibles.filter(f => f.bolsa_comun === 0 && (f.estado === 0 || f.estado === '0'));
+});
+
+// Projects
 const projectOptions = computed(() => {
   const optionsMap = new Map();
-  const validFlowers = props.floresDisponibles.filter(f => f.bolsa_comun === 0 && (f.estado === 0 || f.estado === '0'));
-  
-  validFlowers.forEach(f => {
+  validBaseFlowers.value.forEach(f => {
     if (f.id_pr !== null && f.id_pr !== undefined && f.id_pr !== '') {
       if (!optionsMap.has(f.id_pr)) {
         const projectCode = f.cd_cntble ? f.cd_cntble : f.id_pr;
@@ -229,32 +288,49 @@ const filteredProjectOptions = computed(() => {
   );
 });
 
+// Characters
+const characterOptions = computed(() => {
+  const optionsMap = new Map();
+  const projFlowers = validBaseFlowers.value.filter(f => String(f.id_pr) === String(form.value.proyecto_id));
+  
+  projFlowers.forEach(f => {
+    if (f.id_crcter !== null && f.id_crcter !== undefined && f.id_crcter !== '') {
+      if (!optionsMap.has(f.id_crcter)) {
+        const label = f.nmbre_crcter ? `${f.nmbre_crcter}` : `Carácter ${f.id_crcter}`; 
+        optionsMap.set(f.id_crcter, { id: f.id_crcter, label: label });
+      }
+    }
+  });
+  return Array.from(optionsMap.values()).sort((a, b) => String(a.label).localeCompare(String(b.label)));
+});
+
+const filteredCharacterOptions = computed(() => {
+  if (queryCharacter.value === '') return characterOptions.value;
+  return characterOptions.value.filter(opt => 
+    opt.label.toLowerCase().includes(queryCharacter.value.toLowerCase())
+  );
+});
+
+// Varieties
 const filterOptions = computed(() => {
   const optionsMap = new Map();
-  
-  let validFlowers = props.floresDisponibles.filter(f => f.bolsa_comun === 0 && (f.estado === 0 || f.estado === '0'));
+  let subset = validBaseFlowers.value;
 
-  if (form.value.tipo_filtro === 'proyecto_caracter' && form.value.proyecto_id) {
-    validFlowers = validFlowers.filter(f => String(f.id_pr) === String(form.value.proyecto_id));
+  if (form.value.tipo_filtro === 'completo') {
+    if (form.value.proyecto_id) {
+      subset = subset.filter(f => String(f.id_pr) === String(form.value.proyecto_id));
+    }
+    if (form.value.caracter_id) {
+      subset = subset.filter(f => String(f.id_crcter) === String(form.value.caracter_id));
+    }
   }
 
-  validFlowers.forEach(f => {
-    let key = '';
-    let label = '';
-    
-    if (form.value.tipo_filtro === 'variedad') {
-      key = f.vrdad;
-      label = f.vrdad;
-    } else if (form.value.tipo_filtro === 'proyecto_caracter') {
-      key = f.id_crcter;
-      label = f.nmbre_crcter ? `${f.nmbre_crcter}` : `Carácter ${f.id_crcter}`; 
-    }
-
-    if (key !== null && key !== undefined && key !== '') {
-      if (!optionsMap.has(key)) {
-        optionsMap.set(key, { id: key, label: label, disponibles: 1 });
+  subset.forEach(f => {
+    if (f.vrdad) {
+      if (!optionsMap.has(f.vrdad)) {
+        optionsMap.set(f.vrdad, { id: f.vrdad, label: f.vrdad, disponibles: 1 });
       } else {
-        const item = optionsMap.get(key);
+        const item = optionsMap.get(f.vrdad);
         item.disponibles += 1;
       }
     }
@@ -278,8 +354,8 @@ const maxCantidad = computed(() => {
 
 const isValid = computed(() => {
   const baseValid = form.value.valor_filtro !== '' && form.value.cantidad > 0 && form.value.cantidad <= maxCantidad.value;
-  if (form.value.tipo_filtro === 'proyecto_caracter') {
-    return baseValid && form.value.proyecto_id !== '';
+  if (form.value.tipo_filtro === 'completo') {
+    return baseValid && form.value.proyecto_id !== '' && form.value.caracter_id !== '';
   }
   return baseValid;
 });
@@ -288,8 +364,9 @@ const closeModal = () => {
   emit('close');
   // Reset form
   setTimeout(() => {
-    form.value = { tipo_filtro: 'variedad', proyecto_id: '', valor_filtro: '', cantidad: 1 };
+    form.value = { tipo_filtro: 'variedad', proyecto_id: '', caracter_id: '', valor_filtro: '', cantidad: 1 };
     queryProject.value = '';
+    queryCharacter.value = '';
     queryFilter.value = '';
   }, 200);
 };

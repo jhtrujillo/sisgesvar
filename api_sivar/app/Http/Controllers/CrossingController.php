@@ -966,7 +966,7 @@ class CrossingController extends Controller
         $proyectoId = $request->input('proyecto_id');
         $cantidad = (int)$request->input('cantidad');
 
-        if (!in_array($tipoFiltro, ['variedad', 'caracter', 'proyecto_caracter']) || empty($valorFiltro) || $cantidad <= 0) {
+        if (!in_array($tipoFiltro, ['variedad', 'caracter', 'proyecto_caracter', 'completo']) || empty($valorFiltro) || $cantidad <= 0) {
             return response()->json(['error' => 'Parámetros inválidos.'], 400);
         }
 
@@ -983,6 +983,10 @@ class CrossingController extends Controller
             $query->where('id_crcter', $valorFiltro);
         } else if ($tipoFiltro === 'proyecto_caracter') {
             $query->where('id_crcter', $valorFiltro)->where('id_pr', $proyectoId);
+        } else if ($tipoFiltro === 'completo') {
+            $query->where('id_pr', $proyectoId)
+                  ->where('id_crcter', $request->input('caracter_id'))
+                  ->where('vrdad', $valorFiltro);
         }
 
         // Obtener los IDs para limitar la cantidad
