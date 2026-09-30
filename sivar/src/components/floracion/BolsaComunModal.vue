@@ -44,7 +44,7 @@
             <select v-model="form.proyecto_id" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all">
               <option value="" disabled>Seleccione un proyecto...</option>
               <option v-for="opt in projectOptions" :key="opt.id" :value="opt.id">
-                Proyecto: {{ opt.label }}
+                {{ opt.label }}
               </option>
             </select>
           </div>
@@ -142,7 +142,7 @@ const projectOptions = computed(() => {
   validFlowers.forEach(f => {
     if (f.id_pr !== null && f.id_pr !== undefined && f.id_pr !== '') {
       if (!optionsMap.has(f.id_pr)) {
-        optionsMap.set(f.id_pr, { id: f.id_pr, label: f.id_pr });
+        const projectName = f.nm_prycto ? `${f.id_pr} - ${f.nm_prycto}` : `Proyecto ${f.id_pr}`; optionsMap.set(f.id_pr, { id: f.id_pr, label: projectName });
       }
     }
   });
