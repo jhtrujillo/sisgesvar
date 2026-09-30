@@ -1,6 +1,6 @@
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-visible border border-slate-100 flex flex-col max-h-[90vh]">
       <!-- Header -->
       <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
         <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
@@ -15,7 +15,7 @@
       </div>
 
       <!-- Body -->
-      <div class="p-6 overflow-y-auto space-y-5">
+      <div class="p-6 overflow-y-visible space-y-5">
         <div class="text-xs text-slate-500 mb-2">
           Seleccione las flores disponibles que desea liberar para que puedan ser utilizadas en cruzamientos de cualquier proyecto.
         </div>
@@ -36,30 +36,94 @@
             </div>
           </div>
 
-          <!-- Selector de Proyecto (solo visible si tipo es proyecto_caracter) -->
+          <!-- Selector de Proyecto (Headless UI Combobox) -->
           <div v-if="form.tipo_filtro === 'proyecto_caracter'">
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
               Seleccione Proyecto <span class="text-rose-500">*</span>
             </label>
-            <select v-model="form.proyecto_id" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all">
-              <option value="" disabled>Seleccione un proyecto...</option>
-              <option v-for="opt in projectOptions" :key="opt.id" :value="opt.id">
-                {{ opt.label }}
-              </option>
-            </select>
+            <Combobox v-model="form.proyecto_id">
+              <div class="relative mt-1">
+                <div class="relative w-full cursor-default overflow-hidden rounded-xl border border-slate-200 bg-white text-left focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all sm:text-sm">
+                  <ComboboxInput
+                    class="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
+                    :displayValue="(optId) => projectOptions.find(o => o.id === optId)?.label || ''"
+                    @change="queryProject = $event.target.value"
+                    placeholder="Buscar proyecto..."
+                  />
+                  <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" /></svg>
+                  </ComboboxButton>
+                </div>
+                <TransitionRoot leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0" @after-leave="queryProject = ''">
+                  <ComboboxOptions class="absolute mt-1 max-h-48 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-[100]">
+                    <div v-if="filteredProjectOptions.length === 0 && queryProject !== ''" class="relative cursor-default select-none py-2 px-4 text-gray-700">
+                      Nada encontrado.
+                    </div>
+                    <ComboboxOption
+                      v-for="opt in filteredProjectOptions"
+                      as="template"
+                      :key="opt.id"
+                      :value="opt.id"
+                      v-slot="{ selected, active }"
+                    >
+                      <li class="relative cursor-default select-none py-2 pl-10 pr-4" :class="{ 'bg-emerald-100 text-emerald-900': active, 'text-gray-900': !active }">
+                        <span class="block truncate" :class="{ 'font-medium': selected, 'font-normal': !selected }">
+                          {{ opt.label }}
+                        </span>
+                        <span v-if="selected" class="absolute inset-y-0 left-0 flex items-center pl-3" :class="{ 'text-emerald-600': active, 'text-emerald-600': !active }">
+                          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                        </span>
+                      </li>
+                    </ComboboxOption>
+                  </ComboboxOptions>
+                </TransitionRoot>
+              </div>
+            </Combobox>
           </div>
 
-          <!-- Selector (Variedad o Carácter) -->
+          <!-- Selector (Variedad o Carácter con Combobox) -->
           <div v-if="form.tipo_filtro === 'variedad' || (form.tipo_filtro === 'proyecto_caracter' && form.proyecto_id)">
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
               {{ form.tipo_filtro === 'variedad' ? 'Seleccione Variedad' : 'Seleccione Carácter' }} <span class="text-rose-500">*</span>
             </label>
-            <select v-model="form.valor_filtro" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all">
-              <option value="" disabled>Seleccione una opción...</option>
-              <option v-for="opt in filterOptions" :key="opt.id" :value="opt.id">
-                {{ opt.label }} ({{ opt.disponibles }} disponibles)
-              </option>
-            </select>
+            <Combobox v-model="form.valor_filtro">
+              <div class="relative mt-1">
+                <div class="relative w-full cursor-default overflow-hidden rounded-xl border border-slate-200 bg-white text-left focus:ring-2 focus:ring-cenicana/20 focus:border-cenicana transition-all sm:text-sm">
+                  <ComboboxInput
+                    class="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
+                    :displayValue="(optId) => filterOptions.find(o => o.id === optId)?.label || ''"
+                    @change="queryFilter = $event.target.value"
+                    placeholder="Buscar..."
+                  />
+                  <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" /></svg>
+                  </ComboboxButton>
+                </div>
+                <TransitionRoot leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0" @after-leave="queryFilter = ''">
+                  <ComboboxOptions class="absolute mt-1 max-h-48 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-[100]">
+                    <div v-if="filteredFilterOptions.length === 0 && queryFilter !== ''" class="relative cursor-default select-none py-2 px-4 text-gray-700">
+                      Nada encontrado.
+                    </div>
+                    <ComboboxOption
+                      v-for="opt in filteredFilterOptions"
+                      as="template"
+                      :key="opt.id"
+                      :value="opt.id"
+                      v-slot="{ selected, active }"
+                    >
+                      <li class="relative cursor-default select-none py-2 pl-10 pr-4" :class="{ 'bg-emerald-100 text-emerald-900': active, 'text-gray-900': !active }">
+                        <span class="block truncate" :class="{ 'font-medium': selected, 'font-normal': !selected }">
+                          {{ opt.label }} ({{ opt.disponibles }} disponibles)
+                        </span>
+                        <span v-if="selected" class="absolute inset-y-0 left-0 flex items-center pl-3" :class="{ 'text-emerald-600': active, 'text-emerald-600': !active }">
+                          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                        </span>
+                      </li>
+                    </ComboboxOption>
+                  </ComboboxOptions>
+                </TransitionRoot>
+              </div>
+            </Combobox>
           </div>
 
           <!-- Cantidad -->
@@ -102,6 +166,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useToast } from 'vue-toastification';
+import { Combobox, ComboboxInput, ComboboxButton, ComboboxOptions, ComboboxOption, TransitionRoot } from '@headlessui/vue';
 import CrossingsService from '@/services/crossings.services';
 
 const props = defineProps({
@@ -116,6 +181,8 @@ const emit = defineEmits(['close', 'success']);
 const toast = useToast();
 
 const isSubmitting = ref(false);
+const queryProject = ref('');
+const queryFilter = ref('');
 
 const form = ref({
   tipo_filtro: 'variedad',
@@ -129,12 +196,16 @@ watch(() => form.value.tipo_filtro, () => {
   form.value.proyecto_id = '';
   form.value.valor_filtro = '';
   form.value.cantidad = 1;
+  queryProject.value = '';
+  queryFilter.value = '';
 });
 watch(() => form.value.proyecto_id, () => {
   form.value.valor_filtro = '';
   form.value.cantidad = 1;
+  queryFilter.value = '';
 });
 
+// Options logic
 const projectOptions = computed(() => {
   const optionsMap = new Map();
   const validFlowers = props.floresDisponibles.filter(f => f.bolsa_comun === 0 && (f.estado === 0 || f.estado === '0'));
@@ -142,11 +213,19 @@ const projectOptions = computed(() => {
   validFlowers.forEach(f => {
     if (f.id_pr !== null && f.id_pr !== undefined && f.id_pr !== '') {
       if (!optionsMap.has(f.id_pr)) {
-        const projectName = f.nm_prycto ? `${f.id_pr} - ${f.nm_prycto}` : `Proyecto ${f.id_pr}`; optionsMap.set(f.id_pr, { id: f.id_pr, label: projectName });
+        const projectName = f.nm_prycto ? `${f.id_pr} - ${f.nm_prycto}` : `Proyecto ${f.id_pr}`;
+        optionsMap.set(f.id_pr, { id: f.id_pr, label: projectName });
       }
     }
   });
   return Array.from(optionsMap.values()).sort((a, b) => String(a.label).localeCompare(String(b.label)));
+});
+
+const filteredProjectOptions = computed(() => {
+  if (queryProject.value === '') return projectOptions.value;
+  return projectOptions.value.filter(opt => 
+    opt.label.toLowerCase().includes(queryProject.value.toLowerCase())
+  );
 });
 
 const filterOptions = computed(() => {
@@ -183,6 +262,13 @@ const filterOptions = computed(() => {
   return Array.from(optionsMap.values()).sort((a, b) => String(a.label).localeCompare(String(b.label)));
 });
 
+const filteredFilterOptions = computed(() => {
+  if (queryFilter.value === '') return filterOptions.value;
+  return filterOptions.value.filter(opt => 
+    opt.label.toLowerCase().includes(queryFilter.value.toLowerCase())
+  );
+});
+
 const maxCantidad = computed(() => {
   if (!form.value.valor_filtro) return 0;
   const opt = filterOptions.value.find(o => o.id === form.value.valor_filtro);
@@ -202,6 +288,8 @@ const closeModal = () => {
   // Reset form
   setTimeout(() => {
     form.value = { tipo_filtro: 'variedad', proyecto_id: '', valor_filtro: '', cantidad: 1 };
+    queryProject.value = '';
+    queryFilter.value = '';
   }, 200);
 };
 
