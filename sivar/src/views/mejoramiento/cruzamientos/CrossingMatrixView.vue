@@ -394,7 +394,13 @@
       <!-- Fin Contenido Estadisticas -->
 
     <!-- Botones de Navegación -->
-    <div class="flex justify-end pt-2">
+    <div class="flex justify-between items-center pt-2">
+      <div class="text-[11px] font-bold text-slate-600 bg-emerald-50/80 px-3 py-1.5 rounded-lg border border-emerald-100 flex items-center shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Seleccionados: <span class="text-emerald-700 font-black ml-1 text-sm">{{ countSelectedCrossings }}</span>
+      </div>
       <button
         @click="submitCruzamientos"
         class="flex items-center px-5 py-2 text-xs font-bold text-white bg-cenicana hover:bg-cenicana-800 rounded-xl shadow-md transition-all duration-200"
@@ -888,6 +894,21 @@ watch([selectedMegaAmbiente, selectedCdCntble, selectedVariety], async ([newMega
 });
 
 // Helper reactivo para verificar si hay al menos UN cruce viable en toda la matriz
+const countSelectedCrossings = computed(() => {
+  let count = 0;
+  const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
+  viabilidades.forEach((row: any) => {
+    if (row && Array.isArray(row)) {
+      row.forEach((cell: any) => {
+        if (cell && cell.viabilidad && cell.varA && cell.varB && cell.varA !== cell.varB) {
+          count++;
+        }
+      });
+    }
+  });
+  return count;
+});
+
 const hasAnyViableCrossing = computed(() => {
   const viabilidad = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
   return viabilidad.some((row: any) => row.some((car: any) => car?.viabilidad));

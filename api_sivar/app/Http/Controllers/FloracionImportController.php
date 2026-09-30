@@ -9,6 +9,45 @@ use Carbon\Carbon;
 
 class FloracionImportController extends Controller
 {
+    public function downloadSheets(Request $request)
+    {
+        $request->validate([
+            'url' => 'required|url'
+        ]);
+
+        $url = $request->url;
+        
+        if (preg_match('/spreadsheets\/d\/([a-zA-Z0-9-_]+)/', $url, $matches)) {
+            $id = $matches[1];
+            $exportUrl = "https://docs.google.com/spreadsheets/d/{$id}/export?format=xlsx";
+        } else {
+            return response()->json(['message' => 'URL de Google Sheets inválida.'], 400);
+        }
+
+        try {
+            // Using Http facade or stream context
+            $opts = [
+                "http" => [
+                    "method" => "GET",
+                    "header" => "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n"
+                ]
+            ];
+            $context = stream_context_create($opts);
+            $fileContent = file_get_contents($exportUrl, false, $context);
+            
+            if ($fileContent === false) {
+                return response()->json(['message' => 'No se pudo descargar el archivo. Verifique que el enlace sea público.'], 400);
+            }
+            
+            return response($fileContent)
+                ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                ->header('Content-Disposition', 'attachment; filename="google_sheets_export.xlsx"');
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al descargar: ' . $e->getMessage()], 500);
+        }
+    }
+
     public function validateImport(Request $request)
     {
         set_time_limit(300);

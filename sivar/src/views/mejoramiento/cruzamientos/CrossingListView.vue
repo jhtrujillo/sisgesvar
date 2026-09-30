@@ -436,6 +436,10 @@ const tableColumns = [
     text: "ID"
   },
   {
+    key: "nm_fmlias",
+    text: "Familia"
+  },
+  {
     key: "vivero_plot",
     text: "ID Plot Vivero"
   },
@@ -456,7 +460,7 @@ const tableColumns = [
     text: "Plántulas Totales"
   }
 ];
-const columnsToShow = ref(["id_crzmnto", "vivero_plot", "pdgree", "vrdad_mdre", "vrdad_pdre1", "plntlas_ttles"]);
+const columnsToShow = ref(["id_crzmnto", "nm_fmlias", "vivero_plot", "pdgree", "vrdad_mdre", "vrdad_pdre1", "plntlas_ttles"]);
 onMounted(async () => {
   await CrossingsListsStore.getCrossings();
 });

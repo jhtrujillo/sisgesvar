@@ -135,7 +135,7 @@ Route::group([
     // Módulo Laboratorio - Inventario    
     // Módulo Siembra-Campo: Viveros
         Route::get('siembra-campo/viveros/search-import', [\App\Http\Controllers\ViveroController::class, 'searchForImport']);
-    Route::post('siembra-campo/floracion/validate-import', [\App\Http\Controllers\FloracionImportController::class, 'validateImport']);
+    Route::post('siembra-campo/floracion/download-sheets', [\App\Http\Controllers\FloracionImportController::class, 'downloadSheets']);    Route::post('siembra-campo/floracion/validate-import', [\App\Http\Controllers\FloracionImportController::class, 'validateImport']);
     Route::post('siembra-campo/floracion/execute-import', [\App\Http\Controllers\FloracionImportController::class, 'executeImport']);
 
     Route::get('siembra-campo/viveros', [\App\Http\Controllers\ViveroController::class, 'index']);

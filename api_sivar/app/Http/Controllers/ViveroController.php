@@ -86,9 +86,9 @@ class ViveroController extends Controller
                     ->lockForUpdate()
                     ->findOrFail($request->lote_id);
 
+                $yearReq = date('Y', strtotime($request->fecha_siembra));
                 $preCreatedId = null;
                 if ($request->consecutivo_vivero_ingenio) {
-                    $yearReq = date('Y', strtotime($request->fecha_siembra));
                     $preCreated = Vivero::where('lote_id', $lote->id)
                         ->where('consecutivo_vivero_ingenio', $request->consecutivo_vivero_ingenio)
                         ->whereYear('fecha_siembra', $yearReq)
@@ -119,6 +119,7 @@ class ViveroController extends Controller
 
                 $activeCount = Vivero::where('lote_id', $lote->id)
                     ->whereNotNull('proyecto_id')
+                    ->whereYear('fecha_siembra', $yearReq)
                     ->where('id', '!=', $preCreatedId)
                     ->count();
 
@@ -312,9 +313,11 @@ class ViveroController extends Controller
 
                 if ($request->lote_id) {
                     $lote = \App\Models\Lote::where('id', $request->lote_id)->lockForUpdate()->findOrFail($request->lote_id);
+                    $yearReqUpdate = date('Y', strtotime($request->fecha_siembra ?? $vivero->fecha_siembra));
                     $activeCount = Vivero::where('lote_id', $lote->id)
                         ->where('id', '!=', $vivero->id)
                         ->whereNotNull('proyecto_id')
+                        ->whereYear('fecha_siembra', $yearReqUpdate)
                         ->count();
                     if ($activeCount >= $lote->capacidad_maxima) {
                         return response()->json([

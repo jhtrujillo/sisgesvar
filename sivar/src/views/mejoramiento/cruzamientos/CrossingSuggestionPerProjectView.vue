@@ -1446,8 +1446,8 @@ const isLoading = ref(false); // Ref para spinner de carga
 const showICHelp = ref(false);
 const isOptimizing = ref(false);
 const permitirPolicruzamientos = ref(false);
-const aplicarKinship = ref(true);
-const aplicarDG = ref(true);
+const aplicarKinship = ref(false);
+const aplicarDG = ref(false);
 const umbralKinship = ref(0.125);
 const umbralDG = ref(0.35); // Ref para spinner de optimización
 const optimizandoMadre = ref(""); // Para mostrar en el loading qué variedad se procesa
@@ -1834,7 +1834,7 @@ function getFloresUsadas(vrdad: string, isMadre: boolean) {
   });
 
   if (!isMadre && autofecundacionesSeleccionadas.value.has(vrdad)) {
-    count += 1;
+    // count += 1; // REGLA BIOLÓGICA: La autofecundación cuesta CERO (0) flores del inventario
   }
   return count;
 }
@@ -2569,7 +2569,7 @@ async function autoOptimizarFlores(silent: boolean | Event = false) {
   for (const p in disp.padre) {
     if (usadas.padre[p] === undefined) usadas.padre[p] = 0;
     if (autofecundacionesSeleccionadas.value.has(p)) {
-      usadas.padre[p] += 1;
+      // usadas.padre[p] += 1; // REGLA BIOLÓGICA: La autofecundación cuesta CERO (0) flores del inventario
     }
   }
 
