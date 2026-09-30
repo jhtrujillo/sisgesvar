@@ -213,7 +213,8 @@ const projectOptions = computed(() => {
   validFlowers.forEach(f => {
     if (f.id_pr !== null && f.id_pr !== undefined && f.id_pr !== '') {
       if (!optionsMap.has(f.id_pr)) {
-        const projectName = f.nm_prycto ? `${f.id_pr} - ${f.nm_prycto}` : `Proyecto ${f.id_pr}`;
+        const projectCode = f.cd_cntble ? f.cd_cntble : f.id_pr;
+        const projectName = f.nm_prycto ? `${projectCode} - ${f.nm_prycto}` : `Proyecto ${projectCode}`;
         optionsMap.set(f.id_pr, { id: f.id_pr, label: projectName });
       }
     }
