@@ -188,7 +188,8 @@ class FloracionImportController extends Controller
                 ->exists();
 
             if ($duplicado) {
-                $errors[] = ['row' => $i + 1, 'message' => "Duplicado detectado: Ya existen flores registradas para la parcela {$excelParcela} (Variedad {$excelVariedad}) en la fecha {$fechaParsed}. No se puede subir el mismo dato dos veces."];
+                // En lugar de ser un error bloqueante, simplemente lo saltamos (ignoramos)
+                $ignoredCount++;
                 continue;
             }
 
@@ -305,6 +306,18 @@ class FloracionImportController extends Controller
                 } catch (\Exception $e) {
                     $fechaParsed = $now->format('Y-m-d');
                 }
+            }
+
+            // Saltar si es duplicado
+            $duplicado = DB::connection('sivar')->table('floracion')
+                ->where('id_smbra_cmpo', $viveroId)
+                ->where('prcla', $excelParcela)
+                ->where('vrdad', $excelVariedad)
+                ->whereDate('fcha', $fechaParsed)
+                ->exists();
+                
+            if ($duplicado) {
+                continue;
             }
 
             $floresCantStr = $colIndex['flores'] !== false ? trim($row[$colIndex['flores']]) : '1';
