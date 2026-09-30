@@ -167,6 +167,31 @@ class FloracionImportController extends Controller
                 continue;
             }
             
+            // Extraer y parsear la fecha para la validación de duplicados
+            $fecha = $colIndex['fecha'] !== false ? trim($row[$colIndex['fecha']]) : null;
+            if (is_numeric($fecha)) {
+                $fechaParsed = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($fecha)->format('Y-m-d');
+            } else {
+                try {
+                    $fechaParsed = \Carbon\Carbon::parse(str_replace('/', '-', $fecha))->format('Y-m-d');
+                } catch (\Exception $e) {
+                    $fechaParsed = \Carbon\Carbon::now()->format('Y-m-d');
+                }
+            }
+
+            // Verificar en base de datos si ya existen flores para esta parcela en este vivero y en esta fecha
+            $duplicado = DB::connection('sivar')->table('floracion')
+                ->where('id_smbra_cmpo', $viveroId)
+                ->where('prcla', $excelParcela)
+                ->where('vrdad', $excelVariedad)
+                ->whereDate('fcha', $fechaParsed)
+                ->exists();
+
+            if ($duplicado) {
+                $errors[] = ['row' => $i + 1, 'message' => "Duplicado detectado: Ya existen flores registradas para la parcela {$excelParcela} (Variedad {$excelVariedad}) en la fecha {$fechaParsed}. No se puede subir el mismo dato dos veces."];
+                continue;
+            }
+
             $validCount++;
         }
 
