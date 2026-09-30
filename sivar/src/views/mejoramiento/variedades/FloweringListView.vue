@@ -313,7 +313,7 @@
     
     <BolsaComunModal
       :isOpen="isBolsaComunModalOpen"
-      :floresDisponibles="FloweringListStore.flowering"
+      :floresDisponibles="floweringListsStore.FloweringList"
       @close="isBolsaComunModalOpen = false"
       @success="handleBolsaSuccess"
     />
@@ -350,7 +350,7 @@ const isImportWizardOpen = ref(false);
 const isBolsaComunModalOpen = ref(false);
 
 const handleBolsaSuccess = () => {
-  FloweringListStore.getFloweringList();
+  floweringListsStore.getFlowering(verHistorico.value);
 };
 
 // State Módulo Bolsa Común
