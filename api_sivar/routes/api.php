@@ -95,11 +95,14 @@ Route::group([
     Route::post('addDesingsDetails', [\App\Http\Controllers\ExperimentosController::class, 'addDisenosDetalles']);  
     Route::post('addDisenoDetalles', [\App\Http\Controllers\ExperimentosController::class, 'addDisenosDetalles']);  
     Route::post('removeDetalle/{id_dsno_enc}/{arrIds}', [\App\Http\Controllers\ExperimentosController::class, 'removeDetalle']);  
+    Route::post('removeDesingsDetails', [\App\Http\Controllers\ExperimentosController::class, 'removeDesingsDetails']);  
     Route::get('getRegistros/{tipo}/{tipo_registro}/{search}/{id_dsno_enc}', [\App\Http\Controllers\ExperimentosController::class, 'getRegistros']);
     Route::post('grabarDiseno', [\App\Http\Controllers\ExperimentosController::class, 'grabarDiseno']);  
     Route::post('grabarDiseno/{id_dsno_enc}/{arrIds?}', [\App\Http\Controllers\ExperimentosController::class, 'grabarDiseno']);  
     Route::post('saveGenericDesign/{id_dsno_enc}', [\App\Http\Controllers\ExperimentosController::class, 'saveGenericDesign']);
     Route::post('generateDesign/{id_dsno_enc}', [\App\Http\Controllers\ExperimentosController::class, 'generateDesign']);
+    Route::get('getMapaParcelas/{id_dsno_enc}', [\App\Http\Controllers\ExperimentosController::class, 'getMapaParcelas']);
+    Route::get('getMapaParcelasProject/{id_pr}/{srie}/{estdo}', [\App\Http\Controllers\ExperimentosController::class, 'getMapaParcelasProject']);
 
     //Libro de Campo
     Route::get('getLibroCampo/{id_pr}/{srie}/{estdo}', [\App\Http\Controllers\LibroCampoController::class, 'getLibroCampo']);

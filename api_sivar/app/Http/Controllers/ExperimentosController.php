@@ -452,11 +452,6 @@ class ExperimentosController extends Controller
                     $query->where(DB::raw('(COALESCE(cruzamientos.plntlas_ttles, 0) - COALESCE(cruzamientos.plntlas_dscrtdas, 0))'), '>=', $min_plantulas)
                         ->where(DB::raw('(COALESCE(cruzamientos.plntlas_ttles, 0) - COALESCE(cruzamientos.plntlas_dscrtdas, 0))'), '>=', $plantulas_ttles);
                 })
-                ->whereNotIn(DB::raw('CAST(cruzamientos.id_crzmnto AS varchar)'), function ($subQuery) use ($id_dsno_enc) {
-                    $subQuery->select('trtmnto')
-                        ->from('diseno_det')
-                        ->where('id_dsno_enc', $id_dsno_enc);
-                })
                 ->distinct()
                 ->orderBy('cruzamientos.pdgree')
                 ->get();
@@ -479,52 +474,49 @@ class ExperimentosController extends Controller
     public function addDisenoDetalle($id_dsno_enc, $cTestigo, $nTipoParcela, $nTotalPlantas, $arrIds)
     {
         try {
+            $plntlas_ttles = (int)($nTotalPlantas ?? 0);
+            $idTratamiento = (string)$arrIds;
 
-            // Verificar que el número total de plantas no sea nulo ni vacío
-            $plntlas_ttles = $nTotalPlantas ?? 0;
+            // Verificar si ya existe este tratamiento en el diseño actual con el mismo estado de testigo
+            $existingDetalle = DisenoDetalle::where([
+                ['id_dsno_enc', $id_dsno_enc],
+                ['trtmnto', $idTratamiento],
+                ['tstgo', $cTestigo],
+            ])->first();
 
-            // Obtener el valor máximo de 'entrda' para el diseño actual
-            $maxEntrada = DisenoDetalle::select(DB::raw('MAX(entrda) as maxentrada'))
-                ->where('id_dsno_enc', $id_dsno_enc)
-                ->first()->maxentrada;
-
-            // Si no existe ninguna entrada, iniciar en 1
-            if (!$maxEntrada) {
-                $maxEntrada = 1;
+            if ($existingDetalle) {
+                // Sumar al registro existente
+                $existingDetalle->nmro_clnes = (int)($existingDetalle->nmro_clnes ?? 0) + $plntlas_ttles;
+                if ($nTipoParcela) {
+                    $existingDetalle->tpo_prcla = $nTipoParcela;
+                }
+                $existingDetalle->save();
+                $targetDetalle = $existingDetalle;
             } else {
-                $maxEntrada++;
+                // Obtener el valor máximo de 'entrda' para el diseño actual
+                $maxEntrada = DisenoDetalle::where('id_dsno_enc', $id_dsno_enc)->max('entrda');
+                $maxEntrada = $maxEntrada ? ($maxEntrada + 1) : 1;
+
+                // Crear un nuevo detalle de diseño
+                $newDisenoDetalle = new DisenoDetalle();
+                $newDisenoDetalle->id_dsno_enc = $id_dsno_enc;
+                $newDisenoDetalle->entrda = $maxEntrada;
+                $newDisenoDetalle->trtmnto = $idTratamiento;
+                $newDisenoDetalle->nmro_clnes = $plntlas_ttles;
+                $newDisenoDetalle->tstgo = $cTestigo;
+                $newDisenoDetalle->tpo_prcla = $nTipoParcela;
+                $newDisenoDetalle->save();
+                $targetDetalle = $newDisenoDetalle;
             }
 
-            // Crear un nuevo detalle de diseño
-            $newDisenoDetalle = new DisenoDetalle();
-            $newDisenoDetalle->id_dsno_enc = $id_dsno_enc;
-            $newDisenoDetalle->entrda = $maxEntrada;
-            $newDisenoDetalle->trtmnto = $arrIds;
-            $newDisenoDetalle->nmro_clnes = $plntlas_ttles;
-            $newDisenoDetalle->tstgo = $cTestigo;
-            $newDisenoDetalle->tpo_prcla = $nTipoParcela;
-            $newDisenoDetalle->save();
+            // Actualizar las entradas del experimento
+            $experimento = $this->updateEntradasExperimento($id_dsno_enc);
 
-            // Contar las entradas y testigos
-            $entradas = DisenoDetalle::where([['id_dsno_enc', $id_dsno_enc], ['tstgo', 'No']])->count();
-            $testigos = DisenoDetalle::where([['id_dsno_enc', $id_dsno_enc], ['tstgo', 'Si']])->count();
-            $testigos_moviles = DisenoDetalle::where([['id_dsno_enc', $id_dsno_enc], ['tstgo', 'Movil']])->count();
-            $parcela_ppal = DisenoDetalle::where([['id_dsno_enc', $id_dsno_enc], ['tstgo', 'No'], ['tpo_prcla', 'pp']])->count();
-            $sub_parcela = DisenoDetalle::where([['id_dsno_enc', $id_dsno_enc], ['tstgo', 'No'], ['tpo_prcla', 'sp']])->count();
-
-            // Actualizar el encabezado de diseño con los nuevos valores
-            $disenoEnc = DisenoEncabezado::find($id_dsno_enc);
-            $disenoEnc->entrdas = $entradas;
-            $disenoEnc->tstgos = $testigos;
-            $disenoEnc->tstgos_mvil = $testigos_moviles;
-            $disenoEnc->prcla_prncpal = $parcela_ppal;
-            $disenoEnc->sub_prclas = $sub_parcela;
-            $disenoEnc->save();
-
-            // Preparar la respuesta con el nuevo detalle de diseño
+            // Preparar la respuesta con el detalle de diseño
             return response()->json([
                 'success' => true,
-                'newDisenoDetalle' => $newDisenoDetalle,
+                'newDisenoDetalle' => $targetDetalle,
+                'experimento' => $experimento,
             ], 200);
         } catch (\Exception $e) {
             // Manejo de errores
@@ -538,7 +530,6 @@ class ExperimentosController extends Controller
 
     public function addDisenosDetalles(Request $request, $id_dsno_enc = null, $nTipoParcela = null, $cTestigo = null, $nTotalPlantas = null, $arrIds = null)
     {
-
         try {
             $id_dsno_enc = $request->input('nIdDiseno', $request->input('id_dsno_enc', $id_dsno_enc));
             $nTipoParcela = $request->input('nTipoParcela', $nTipoParcela);
@@ -546,59 +537,73 @@ class ExperimentosController extends Controller
             $nTotalPlantas = $request->input('nTotalPlantas', $nTotalPlantas);
             $arrIds = $request->input('arrayIds', $request->input('arrIds', $arrIds));
 
-
             // Verificar si se van a usar todas las plantas
             $allPlantulas = false;
             if (($nTotalPlantas == NULL) || ($nTotalPlantas == '')) {
                 $allPlantulas = true;
             } else {
-                $plntlas_ttles = $nTotalPlantas;
+                $plntlas_ttles = (int)$nTotalPlantas;
             }
 
             // Obtener el valor máximo de 'entrda' para el diseño actual
-            $maxEntrada = DisenoDetalle::select(DB::raw('MAX(entrda) as maxentrada'))
-                ->where('id_dsno_enc', $id_dsno_enc)
-                ->first()->maxentrada;
-
-            // Si no existe ninguna entrada, iniciar en 1
-            if (!$maxEntrada) {
-                $maxEntrada = 1;
-            } else {
-                $maxEntrada++;
-            }
+            $maxEntrada = DisenoDetalle::where('id_dsno_enc', $id_dsno_enc)->max('entrda');
+            $maxEntrada = $maxEntrada ? ($maxEntrada + 1) : 1;
 
             $idDetalCreados = array();
 
             // Procesar cada tratamiento del array
             foreach ($arrIds as $key => $value) {
+                $idTratamiento = (string)$value['id_crzmnto'];
+                $plantulasAsignar = $allPlantulas ? (int)($value['plntlas_ttles'] ?? 0) : $plntlas_ttles;
+
                 if ($cTestigo == 'No') {
-                    // Actualizar la cantidad de plantas en el tratamiento
+                    // Actualizar la cantidad de plantas en el tratamiento (cruzamiento)
                     $tratamiento = Cruzamiento::find($value['id_crzmnto']);
-                    $tratamiento->plntlas_ttles = $tratamiento->plntlas_ttles - ($allPlantulas ? $value['plntlas_ttles'] : $plntlas_ttles);
-                    $saveTratamiento = $tratamiento->save();
+                    if ($tratamiento) {
+                        $tratamiento->plntlas_ttles = max(0, $tratamiento->plntlas_ttles - $plantulasAsignar);
+                        $saveTratamiento = $tratamiento->save();
+                    } else {
+                        $saveTratamiento = false;
+                    }
                 } else {
                     $saveTratamiento = true;
                 }
 
                 if ($saveTratamiento) {
-                    // Crear un nuevo detalle de diseño
-                    $newDisenoDetalle = new DisenoDetalle();
-                    $newDisenoDetalle->id_dsno_enc = $id_dsno_enc;
-                    $newDisenoDetalle->entrda = $maxEntrada;
-                    $newDisenoDetalle->trtmnto = $value['id_crzmnto'];
-                    $newDisenoDetalle->nmro_clnes = $allPlantulas ? $value['plntlas_ttles'] : $plntlas_ttles;
-                    $newDisenoDetalle->tstgo = $cTestigo;
-                    $newDisenoDetalle->tpo_prcla = $nTipoParcela;
-                    $idDetalCreados[] = $newDisenoDetalle->save();
+                    // Verificar si ya existe este tratamiento en el diseño actual con el mismo estado de testigo
+                    $existingDetalle = DisenoDetalle::where([
+                        ['id_dsno_enc', $id_dsno_enc],
+                        ['trtmnto', $idTratamiento],
+                        ['tstgo', $cTestigo],
+                    ])->first();
 
-                    $maxEntrada++;
+                    if ($existingDetalle) {
+                        // Sumar las plantas a la entrada existente
+                        $existingDetalle->nmro_clnes = (int)($existingDetalle->nmro_clnes ?? 0) + $plantulasAsignar;
+                        if ($nTipoParcela) {
+                            $existingDetalle->tpo_prcla = $nTipoParcela;
+                        }
+                        $idDetalCreados[] = $existingDetalle->save();
+                    } else {
+                        // Crear un nuevo detalle de diseño (nueva entrada)
+                        $newDisenoDetalle = new DisenoDetalle();
+                        $newDisenoDetalle->id_dsno_enc = $id_dsno_enc;
+                        $newDisenoDetalle->entrda = $maxEntrada;
+                        $newDisenoDetalle->trtmnto = $idTratamiento;
+                        $newDisenoDetalle->nmro_clnes = $plantulasAsignar;
+                        $newDisenoDetalle->tstgo = $cTestigo;
+                        $newDisenoDetalle->tpo_prcla = $nTipoParcela;
+                        $idDetalCreados[] = $newDisenoDetalle->save();
+
+                        $maxEntrada++;
+                    }
                 }
             }
 
             // Actualizar las entradas del experimento
             $experimento = $this->updateEntradasExperimento($id_dsno_enc);
 
-            // Preparar la respuesta con los detalles creados
+            // Preparar la respuesta con los detalles creados o actualizados
             return response()->json([
                 'success' => true,
                 'idDetalCreados' => $idDetalCreados,
@@ -614,34 +619,24 @@ class ExperimentosController extends Controller
         }
     }
 
-    public function updateEntradasExperimento($id_dsno_enc)
+   public function updateEntradasExperimento($id_dsno_enc)
     {
-        try {
-            // Contar las entradas y testigos
-            $entradas = DisenoDetalle::where([['id_dsno_enc', $id_dsno_enc], ['tstgo', 'No']])->count();
-            $testigos = DisenoDetalle::where([['id_dsno_enc', $id_dsno_enc], ['tstgo', 'Si']])->count();
-            $testigos_moviles = DisenoDetalle::where([['id_dsno_enc', $id_dsno_enc], ['tstgo', 'Movil']])->count();
-            $parcela_ppal = DisenoDetalle::where([['id_dsno_enc', $id_dsno_enc], ['tstgo', 'No'], ['tpo_prcla', 'pp']])->count();
-            $sub_parcela = DisenoDetalle::where([['id_dsno_enc', $id_dsno_enc], ['tstgo', 'No'], ['tpo_prcla', 'sp']])->count();
+        
+        $entradas = DisenoDetalle::where([['id_dsno_enc', $id_dsno_enc], ['tstgo', 'No']])->count();
+        $testigos = DisenoDetalle::where([['id_dsno_enc', $id_dsno_enc], ['tstgo', 'Si']])->count();
+        $testigos_moviles = DisenoDetalle::where([['id_dsno_enc', $id_dsno_enc], ['tstgo', 'Movil']])->count();
+        $parcela_ppal = DisenoDetalle::where([['id_dsno_enc', $id_dsno_enc], ['tstgo', 'No'], ['tpo_prcla', 'pp']])->count();
+        $sub_parcela = DisenoDetalle::where([['id_dsno_enc', $id_dsno_enc], ['tstgo', 'No'], ['tpo_prcla', 'sp']])->count();
 
-            // Actualizar el encabezado de diseño con los nuevos valores
-            $disenoEnc = DisenoEncabezado::find($id_dsno_enc);
-            $disenoEnc->entrdas = $entradas;
-            $disenoEnc->tstgos = $testigos;
-            $disenoEnc->tstgos_mvil = $testigos_moviles;
-            $disenoEnc->prcla_prncpal = $parcela_ppal;
-            $disenoEnc->sub_prclas = $sub_parcela;
-            $disenoEnc->save();
+        $disenoEnc = DisenoEncabezado::findOrFail($id_dsno_enc);
+        $disenoEnc->entrdas = $entradas;
+        $disenoEnc->tstgos = $testigos;
+        $disenoEnc->tstgos_mvil = $testigos_moviles;
+        $disenoEnc->prcla_prncpal = $parcela_ppal;
+        $disenoEnc->sub_prclas = $sub_parcela;
+        $disenoEnc->save();
 
-            return $disenoEnc;
-        } catch (\Exception $e) {
-            // Manejo de errores
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al actualizar las entradas del experimento.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        return $disenoEnc;
     }
 
     public function getTreatmentsExperiments($id_dsno_enc_f, $id_dsno_enc_i)
@@ -653,7 +648,8 @@ class ExperimentosController extends Controller
                 'diseno_det.id_dsno_det',
                 'diseno_det.id_dsno_enc',
                 'diseno_det.trtmnto',
-                'cruzamientos.no_crzmnto', // Familia
+                'cruzamientos.nm_fmlias', // Familia
+                'cruzamientos.no_crzmnto',
                 'cruzamientos.pdgree', // Pedegree
                 'cruzamientos.orgen', // Origen
                 'cruzamientos.vrdad_mdre',
@@ -667,6 +663,7 @@ class ExperimentosController extends Controller
                     ['tstgo', 'No'],
                     ['tpo_prcla', 'pp']
                 ])
+                ->orderBy('diseno_det.id_dsno_det', 'desc')
                 ->get();
 
             $tratamientoI = DisenoDetalle::select(
@@ -674,6 +671,7 @@ class ExperimentosController extends Controller
                 'diseno_det.id_dsno_enc',
                 'diseno_det.trtmnto',
                 'cruzamientos.no_crzmnto', // Familia
+                'cruzamientos.nm_fmlias',
                 'cruzamientos.pdgree', // Pedegree
                 'cruzamientos.orgen', // Origen
                 'cruzamientos.vrdad_mdre',
@@ -687,6 +685,7 @@ class ExperimentosController extends Controller
                     ['tstgo', 'No'],
                     ['tpo_prcla', 'pp']
                 ])
+                ->orderBy('diseno_det.id_dsno_det', 'desc')
                 ->get();
 
             // Obtener los testigos fijos y móviles para ambos experimentos
@@ -862,25 +861,39 @@ class ExperimentosController extends Controller
 
                 // Verificar si el detalle existe
                 if ($detalleExperimento) {
-                    // Si no es un testigo
+                    $plantasActuales = (int)($detalleExperimento->nmro_clnes ?? 0);
+                    $plantasAQuitar = isset($value['nro_plntlas']) && (int)$value['nro_plntlas'] > 0
+                        ? (int)$value['nro_plntlas']
+                        : $plantasActuales;
+
+                    // Asegurar que no se quite más de lo que tiene asignado
+                    $plantasAQuitar = min($plantasAQuitar, $plantasActuales);
+
+                    // Si no es un testigo, restaurar inventario
                     if ($detalleExperimento->tstgo == 'No') {
-                        // Buscar el tratamiento y actualizar la cantidad de plantas
                         $tratamiento = Cruzamiento::find($value['id_crzmnto']);
                         if ($tratamiento) {
-                            $tratamiento->plntlas_ttles += $value['nro_plntlas'];
+                            $tratamiento->plntlas_ttles += $plantasAQuitar;
                             $saveTratamiento = $tratamiento->save();
+                        } else {
+                            $saveTratamiento = true;
                         }
                     } else {
                         $saveTratamiento = true; // Si es un testigo, no actualizamos el tratamiento
                     }
 
-                    // Si el tratamiento se guardó correctamente, proceder con la eliminación
+                    // Si el tratamiento se guardó correctamente, proceder con la eliminación o resta
                     if ($saveTratamiento) {
-                        $detalleEliminado = $detalleExperimento->delete();
+                        if ($plantasAQuitar >= $plantasActuales) {
+                            $detalleEliminado = $detalleExperimento->delete();
+                        } else {
+                            $detalleExperimento->nmro_clnes = $plantasActuales - $plantasAQuitar;
+                            $detalleEliminado = $detalleExperimento->save();
+                        }
                     }
                 }
 
-                // Registrar si se eliminó el detalle
+                // Registrar si se eliminó o actualizó el detalle
                 $detallesEliminado[$key]['deleted'] = $detalleEliminado;
             }
 
@@ -912,7 +925,32 @@ class ExperimentosController extends Controller
         }
     }
 
+    /**
+     * Eliminar detalles de diseño (tratamientos/testigos) recibiendo JSON body.
+     * Espera: { nIdDiseno: int, arrIds: [{ id_detalle: int, id_crzmnto: string, nro_plntlas: int }] }
+     */
+    public function removeDesingsDetails(Request $request)
+    {
+        try {
+            $id_dsno_enc = $request->input('nIdDiseno');
+            $arrIds = $request->input('arrIds', []);
 
+            if (!$id_dsno_enc || empty($arrIds)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Debe enviar nIdDiseno y arrIds.',
+                ], 400);
+            }
+
+            return $this->removeDetalle($id_dsno_enc, $arrIds);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar los detalles.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
     public function getRegistros($tipo, $tipo_registro, $search, $id_dsno_enc)
     {
@@ -1362,7 +1400,11 @@ class ExperimentosController extends Controller
 
     public function iniciarParcela()
     {
-        DB::connection('sivar')->select(DB::raw("SELECT setval('incremental', 1)"));
+        try {
+            DB::connection('sivar')->statement("SELECT setval('incremental', 1)");
+        } catch (\Throwable $e) {
+           \Log::error("Error al reiniciar la secuencia incremental: " . $e->getMessage());
+        }
     }
 
     public function guardarRegistros($table, $modelo, $registros)
@@ -1730,5 +1772,98 @@ class ExperimentosController extends Controller
         }
 
         return true;
+    }
+
+    public function getMapaParcelas($id_dsno_enc)
+    {
+        try {
+            $disenoEnc = DB::connection('sivar')->table('diseno_enc as d')
+                ->leftJoin('remote_pg_sipro as p', 'd.id_pr', '=', 'p.id_prycto')
+                ->select('d.*', 'p.nm_prycto')
+                ->where('d.id_dsno_enc', $id_dsno_enc)
+                ->first();
+
+            if (!$disenoEnc) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Encabezado de experimento no encontrado.'
+                ], 404);
+            }
+
+            $parcelas = DB::connection('sivar')->table('dissalida_det')
+                ->where('id_dsno_enc', $id_dsno_enc)
+                ->orderBy('lcldad', 'asc')
+                ->orderBy('rptcion', 'asc')
+                ->orderBy('block', 'asc')
+                ->orderBy('prcla', 'asc')
+                ->get();
+
+            $totalParcelas = count($parcelas);
+            $totalTratamientos = $parcelas->where('tstgo', 'No')->count();
+            $totalTestigos = $parcelas->where('tstgo', '!=', 'No')->count();
+
+            return response()->json([
+                'success' => true,
+                'experimento' => $disenoEnc,
+                'parcelas' => $parcelas,
+                'stats' => [
+                    'totalParcelas' => $totalParcelas,
+                    'totalTratamientos' => $totalTratamientos,
+                    'totalTestigos' => $totalTestigos,
+                    'localidades' => $disenoEnc->lclddes ?? 1,
+                    'repeticiones' => $disenoEnc->rptcnes ?? 1
+                ]
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener el mapa de parcelas.',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getMapaParcelasProject($id_pr, $srie, $estdo)
+    {
+        try {
+            $disenos = DB::connection('sivar')->table('diseno_enc as d')
+                ->leftJoin('remote_pg_sipro as p', 'd.id_pr', '=', 'p.id_prycto')
+                ->select('d.*', 'p.nm_prycto')
+                ->where([
+                    ['d.id_pr', '=', $id_pr],
+                    ['d.srie', '=', $srie],
+                    ['d.estdo', '=', $estdo]
+                ])
+                ->orderBy('d.tpo_ensyo', 'asc')
+                ->get();
+
+            $ids = $disenos->pluck('id_dsno_enc')->toArray();
+
+            $parcelas = DB::connection('sivar')->table('dissalida_det')
+                ->whereIn('id_dsno_enc', $ids)
+                ->orderBy('id_dsno_enc', 'asc')
+                ->orderBy('lcldad', 'asc')
+                ->orderBy('rptcion', 'asc')
+                ->orderBy('block', 'asc')
+                ->orderBy('prcla', 'asc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'experimentos' => $disenos,
+                'parcelas' => $parcelas,
+                'stats' => [
+                    'totalParcelas' => count($parcelas),
+                    'totalTratamientos' => $parcelas->where('tstgo', 'No')->count(),
+                    'totalTestigos' => $parcelas->where('tstgo', '!=', 'No')->count()
+                ]
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener el mapa de parcelas del proyecto.',
+                'error' => $th->getMessage()
+            ], 500);
+        }
     }
 }
