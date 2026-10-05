@@ -207,6 +207,23 @@
           >
             Limpiar
           </button>
+
+          <button
+            v-if="model.nProyecto && model.nSerie && model.nEstado"
+            type="button"
+            @click.prevent="abrirMapaProyecto"
+            class="px-3.5 py-2 border border-emerald-600 shadow-sm text-xs font-bold rounded-xl text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-all cursor-pointer inline-flex items-center gap-1.5"
+            title="Visualizar mapa físico de parcelas del proyecto"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+              />
+            </svg>
+            Ver Mapa del Proyecto
+          </button>
         </div>
       </div>
     </div>
@@ -484,6 +501,19 @@
                 </svg>
                 Añadir Selección
               </button>
+              <button
+                @click="removeSelectedTreatmentsF"
+                class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg shadow-2xs transition-all cursor-pointer inline-flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+                Eliminar Selección
+              </button>
             </div>
             <div class="flex items-center gap-2" v-else-if="activeTab === 'testigos' || activeTab === 'testigosMoviles'">
               <button
@@ -516,6 +546,7 @@
                   <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Origen</th>
                   <th class="px-4 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">No. Plantas</th>
                   <th class="px-4 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">Plantas Almacenadas</th>
+                  <th class="px-4 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">Acciones</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-50 bg-white">
@@ -528,9 +559,25 @@
                   <td class="px-4 py-2 text-xs text-slate-600">{{ row.orgen }}</td>
                   <td class="px-4 py-2 text-xs text-center font-mono font-semibold text-slate-700">{{ row.nmro_clnes }}</td>
                   <td class="px-4 py-2 text-xs text-center font-mono text-slate-600">{{ row.plntlas_ttles }}</td>
+                  <td class="px-4 py-2 text-center">
+                    <button
+                      @click="removeSingleTreatmentF(row)"
+                      class="inline-flex items-center px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 text-[11px] font-bold rounded-lg transition-all cursor-pointer border border-rose-200/60"
+                      title="Quitar tratamiento"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                      Quitar
+                    </button>
+                  </td>
                 </tr>
                 <tr v-if="paginatedDataTreatmentsExperimentsF.length === 0">
-                  <td colspan="6" class="px-4 py-8 text-center text-slate-400 text-xs">No hay tratamientos asignados a Familias.</td>
+                  <td colspan="7" class="px-4 py-8 text-center text-slate-400 text-xs">No hay tratamientos asignados a Familias.</td>
                 </tr>
               </tbody>
             </table>
@@ -686,6 +733,19 @@
                 </svg>
                 Añadir Selección
               </button>
+              <button
+                @click="removeSelectedTreatmentsI"
+                class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg shadow-2xs transition-all cursor-pointer inline-flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+                Eliminar Selección
+              </button>
             </div>
           </div>
 
@@ -707,6 +767,7 @@
                   <th class="px-4 py-2.5 text-left text-[11px] font-bold uppercase text-slate-600">Origen</th>
                   <th class="px-4 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">No. Plantas</th>
                   <th class="px-4 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">Plantas Almacenadas</th>
+                  <th class="px-4 py-2.5 text-center text-[11px] font-bold uppercase text-slate-600">Acciones</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-50 bg-white">
@@ -719,9 +780,25 @@
                   <td class="px-4 py-2 text-xs text-slate-600">{{ row.orgen }}</td>
                   <td class="px-4 py-2 text-xs text-center font-mono font-semibold text-slate-700">{{ row.nmro_clnes }}</td>
                   <td class="px-4 py-2 text-xs text-center font-mono text-slate-600">{{ row.plntlas_ttles }}</td>
+                  <td class="px-4 py-2 text-center">
+                    <button
+                      @click="removeSingleTreatmentI(row)"
+                      class="inline-flex items-center px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 text-[11px] font-bold rounded-lg transition-all cursor-pointer border border-rose-200/60"
+                      title="Quitar tratamiento"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                      Quitar
+                    </button>
+                  </td>
                 </tr>
                 <tr v-if="paginatedDataTreatmentsExperimentsI.length === 0">
-                  <td colspan="6" class="px-4 py-8 text-center text-slate-400 text-xs">No hay tratamientos asignados a Individual.</td>
+                  <td colspan="7" class="px-4 py-8 text-center text-slate-400 text-xs">No hay tratamientos asignados a Individual.</td>
                 </tr>
               </tbody>
             </table>
@@ -828,13 +905,29 @@
             <textarea v-model="model.cDescripcionF" rows="2" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-white"></textarea>
           </div>
 
-          <button
-            type="button"
-            @click="actualizarDiseno('F')"
-            class="w-full py-2 bg-cenicana hover:bg-cenicana-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
-          >
-            Actualizar Diseño Familias
-          </button>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button
+              type="button"
+              @click="actualizarDiseno('F')"
+              class="w-full py-2 bg-cenicana hover:bg-cenicana-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+            >
+              Actualizar Diseño Familias
+            </button>
+            <button
+              type="button"
+              @click="abrirMapa('F')"
+              class="w-full py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer inline-flex items-center justify-center gap-1.5"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                />
+              </svg>
+              Ver Mapa Físico (F)
+            </button>
+          </div>
         </div>
 
         <!-- Diseño Individual -->
@@ -895,13 +988,29 @@
             <textarea v-model="model.cDescripcionI" rows="2" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-white"></textarea>
           </div>
 
-          <button
-            type="button"
-            @click="actualizarDiseno('I')"
-            class="w-full py-2 bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
-          >
-            Actualizar Diseño Individual
-          </button>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button
+              type="button"
+              @click="actualizarDiseno('I')"
+              class="w-full py-2 bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+            >
+              Actualizar Diseño Individual
+            </button>
+            <button
+              type="button"
+              @click="abrirMapa('I')"
+              class="w-full py-2 bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer inline-flex items-center justify-center gap-1.5"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                />
+              </svg>
+              Ver Mapa Físico (I)
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1112,6 +1221,175 @@
         </div>
       </div>
     </div>
+
+    <!-- MODAL: QUITAR CANTIDAD DE PLANTAS DE UN TRATAMIENTO -->
+    <div v-if="isModalQuitarOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-fade-in">
+      <div class="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden border border-slate-100">
+        <!-- Header -->
+        <div class="px-5 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+            <span class="p-1.5 bg-rose-100 text-rose-600 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+            </span>
+            Quitar Plantas de Tratamiento
+          </h3>
+          <button
+            @click="isModalQuitarOpen = false"
+            class="text-slate-400 hover:text-slate-600 rounded-lg p-1 hover:bg-slate-200/60 transition-all cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-5 space-y-4">
+          <!-- Info Card -->
+          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1.5">
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-slate-500 font-semibold">Tratamiento / Familia:</span>
+              <span class="font-bold font-mono text-slate-800">{{ treatmentToQuitar?.no_crzmnto }}</span>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-slate-500 font-semibold">Pedigree:</span>
+              <span class="font-medium text-slate-700 truncate max-w-[200px]" :title="treatmentToQuitar?.pdgree">{{ treatmentToQuitar?.pdgree }}</span>
+            </div>
+            <div class="flex justify-between items-center text-xs pt-1.5 border-t border-slate-200/60">
+              <span class="text-slate-500 font-semibold">Plantas Asignadas Actualmente:</span>
+              <span class="font-extrabold font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
+                {{ treatmentToQuitar?.nmro_clnes }} plantas
+              </span>
+            </div>
+          </div>
+
+          <!-- Input Plantas a Quitar -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5"> Cantidad de plantas a quitar: <span class="text-rose-500">*</span> </label>
+            <div class="flex gap-2">
+              <input
+                type="number"
+                min="1"
+                :max="Number(treatmentToQuitar?.nmro_clnes || 1)"
+                v-model.number="cantidadPlantasAQuitar"
+                class="block w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 bg-white focus:ring-2 focus:ring-rose-100 focus:border-rose-500 transition-all text-center"
+              />
+              <button
+                type="button"
+                @click="cantidadPlantasAQuitar = Number(treatmentToQuitar?.nmro_clnes || 1)"
+                class="px-3 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all whitespace-nowrap cursor-pointer"
+                title="Quitar todas las plantas asignadas"
+              >
+                Todas ({{ treatmentToQuitar?.nmro_clnes }})
+              </button>
+            </div>
+            <!-- Botones de ayuda rápida -->
+            <div class="flex items-center gap-1.5 mt-2">
+              <button
+                type="button"
+                v-if="Number(treatmentToQuitar?.nmro_clnes) > 1"
+                @click="cantidadPlantasAQuitar = 1"
+                class="px-2 py-1 text-[11px] font-semibold rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 cursor-pointer"
+              >
+                1 planta
+              </button>
+              <button
+                type="button"
+                v-if="Number(treatmentToQuitar?.nmro_clnes) > 2"
+                @click="cantidadPlantasAQuitar = Math.floor(Number(treatmentToQuitar?.nmro_clnes) / 2)"
+                class="px-2 py-1 text-[11px] font-semibold rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 cursor-pointer"
+              >
+                Mitad ({{ Math.floor(Number(treatmentToQuitar?.nmro_clnes) / 2) }})
+              </button>
+            </div>
+          </div>
+
+          <!-- Resumen de la acción -->
+          <div
+            class="p-3 rounded-xl text-xs"
+            :class="
+              cantidadPlantasAQuitar >= Number(treatmentToQuitar?.nmro_clnes)
+                ? 'bg-amber-50 text-amber-900 border border-amber-200/80'
+                : 'bg-blue-50 text-blue-900 border border-blue-200/80'
+            "
+          >
+            <p v-if="cantidadPlantasAQuitar >= Number(treatmentToQuitar?.nmro_clnes)" class="flex items-start gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-amber-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <span
+                >Se quitarán <strong>todas</strong> las plantas ({{ cantidadPlantasAQuitar }}). La fila se eliminará del experimento y volverán a estar
+                disponibles.</span
+              >
+            </p>
+            <p v-else class="flex items-start gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span
+                >Se quitarán <strong>{{ cantidadPlantasAQuitar }}</strong> plantas. El tratamiento quedará con
+                <strong>{{ Number(treatmentToQuitar?.nmro_clnes) - cantidadPlantasAQuitar }}</strong> plantas en el experimento.</span
+              >
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            @click="isModalQuitarOpen = false"
+            class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200/60 rounded-xl transition-all cursor-pointer"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            @click="confirmarQuitarPlantas"
+            :disabled="!cantidadPlantasAQuitar || cantidadPlantasAQuitar <= 0 || isRemovingPlants"
+            class="inline-flex items-center px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
+          >
+            <svg v-if="isRemovingPlants" class="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+            Confirmar y Quitar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL MAPA FÍSICO DE PARCELAS -->
+    <MapaParcelasModal
+      :is-open="isMapaModalOpen"
+      :id-dsno-enc="mapaTargetDisenoId"
+      :id-pr="mapaTargetPr"
+      :srie="mapaTargetSrie"
+      :estdo="mapaTargetEstdo"
+      @close="isMapaModalOpen = false"
+    />
   </div>
 </template>
 
@@ -1119,6 +1397,7 @@
 import { reactive, onMounted, watch, computed, ref } from "vue";
 import BackButton from "@/components/BackButton.vue";
 import ComboBoxMultiple from "@/components/ComboBoxMultiple.vue";
+import MapaParcelasModal from "@/components/MapaParcelasModal.vue";
 import urls from "@/services/urls";
 import api from "@/services/api";
 import { useSearchParametersStore } from "@/stores/parametersexperiments";
@@ -1144,6 +1423,38 @@ const addDesingsDetailsStore = useAddDesingsDetailsStore();
 
 const isSearching = ref(false);
 const activeTrialTypeTab = ref<"F" | "I">("F");
+
+// Mapa Parcelas Modal State
+const isMapaModalOpen = ref(false);
+const mapaTargetDisenoId = ref<number | string | null>(null);
+const mapaTargetPr = ref<number | string | null>(null);
+const mapaTargetSrie = ref<number | string | null>(null);
+const mapaTargetEstdo = ref<string | null>(null);
+
+const abrirMapa = (tipo: "F" | "I") => {
+  const disenoId = tipo === "F" ? dataListIdDisenoF.value : dataListIdDisenoI.value;
+  if (!disenoId) {
+    toast.error(`No existe ID de diseño para ${tipo === "F" ? "Familias" : "Individual"}. Inicialice el experimento primero.`);
+    return;
+  }
+  mapaTargetDisenoId.value = disenoId;
+  mapaTargetPr.value = null;
+  mapaTargetSrie.value = null;
+  mapaTargetEstdo.value = null;
+  isMapaModalOpen.value = true;
+};
+
+const abrirMapaProyecto = () => {
+  if (!model.nProyecto || !model.nSerie || !model.nEstado) {
+    toast.error("Seleccione Proyecto, Serie y Estado para ver el mapa del proyecto.");
+    return;
+  }
+  mapaTargetDisenoId.value = null;
+  mapaTargetPr.value = model.nProyecto;
+  mapaTargetSrie.value = model.nSerie;
+  mapaTargetEstdo.value = model.nEstado;
+  isMapaModalOpen.value = true;
+};
 
 const model = reactive<{
   nPrograma: string | null;
@@ -1582,6 +1893,109 @@ const addSelectedTreatmentsExperimentsI = async () => {
   }
 };
 
+// Eliminar tratamiento(s) de la tabla
+const removeTreatment = async (tipo: "F" | "I", rows: Array<{ id_dsno_det: string; trtmnto: string; nmro_clnes: string }>) => {
+  const targetDisenoId = tipo === "F" ? dataListIdDisenoF.value : dataListIdDisenoI.value;
+  if (!targetDisenoId) {
+    toast.error("No se encontró el diseño del experimento.");
+    return;
+  }
+
+  const arrIds = rows.map((row) => ({
+    id_detalle: row.id_dsno_det,
+    id_crzmnto: row.trtmnto,
+    nro_plntlas: Number(row.nmro_clnes) || 0
+  }));
+
+  try {
+    const result = await addDesingsDetailsStore.RemoveDesingsDetails({
+      nIdDiseno: targetDisenoId,
+      arrIds
+    });
+
+    if (result) {
+      toast.success(`${rows.length > 1 ? "Tratamientos eliminados" : "Tratamiento eliminado"} con éxito`);
+      await refreshTreatmentsTables();
+      if (model.nTemporada) {
+        await tratamientosDisponibles();
+      }
+    } else {
+      toast.error("No se pudo eliminar el tratamiento");
+    }
+  } catch (error) {
+    console.error("Error al eliminar tratamiento:", error);
+    toast.error("Error al eliminar el tratamiento");
+  }
+};
+
+// Modal Quitar Plantas State
+const isModalQuitarOpen = ref(false);
+const isRemovingPlants = ref(false);
+const treatmentToQuitar = ref<any>(null);
+const targetQuitarTipo = ref<"F" | "I">("F");
+const cantidadPlantasAQuitar = ref<number>(1);
+
+const removeSingleTreatmentF = (row: any) => {
+  treatmentToQuitar.value = row;
+  targetQuitarTipo.value = "F";
+  cantidadPlantasAQuitar.value = Number(row.nmro_clnes) || 1;
+  isModalQuitarOpen.value = true;
+};
+
+const removeSingleTreatmentI = (row: any) => {
+  treatmentToQuitar.value = row;
+  targetQuitarTipo.value = "I";
+  cantidadPlantasAQuitar.value = Number(row.nmro_clnes) || 1;
+  isModalQuitarOpen.value = true;
+};
+
+const confirmarQuitarPlantas = async () => {
+  if (!treatmentToQuitar.value) return;
+  const cant = Number(cantidadPlantasAQuitar.value);
+  const maxCant = Number(treatmentToQuitar.value.nmro_clnes) || 1;
+
+  if (!cant || cant <= 0) {
+    toast.error("Ingrese una cantidad válida mayor a 0.");
+    return;
+  }
+  if (cant > maxCant) {
+    toast.error(`La cantidad no puede superar las ${maxCant} plantas asignadas.`);
+    return;
+  }
+
+  isRemovingPlants.value = true;
+  try {
+    await removeTreatment(targetQuitarTipo.value, [
+      {
+        id_dsno_det: treatmentToQuitar.value.id_dsno_det,
+        trtmnto: treatmentToQuitar.value.trtmnto,
+        nmro_clnes: String(cant)
+      }
+    ]);
+    isModalQuitarOpen.value = false;
+  } finally {
+    isRemovingPlants.value = false;
+  }
+};
+
+const removeSelectedTreatmentsF = async () => {
+  const selectedRows = tableDataTreatmentsExperimentsF.value.filter((row) => row.selected);
+  if (selectedRows.length === 0) {
+    toast.error("No ha seleccionado tratamientos para eliminar");
+    return;
+  }
+  await removeTreatment("F", selectedRows);
+};
+
+const removeSelectedTreatmentsI = async () => {
+  const selectedRows = tableDataTreatmentsExperimentsI.value.filter((row) => row.selected);
+  if (selectedRows.length === 0) {
+    toast.error("No ha seleccionado tratamientos para eliminar");
+    return;
+  }
+  await removeTreatment("I", selectedRows);
+};
+
 // Sub-pestañas
 const activeTab = ref("tratamientos");
 const activeTabI = ref("tratamientosI");
@@ -1611,6 +2025,8 @@ const tratamientosDisponibles = async () => {
       model.nIdDiseno = dataListIdDisenoF.value || null;
     } else if (model.cTipoEnsayo === "I") {
       model.nIdDiseno = dataListIdDisenoI.value || null;
+    } else {
+      model.nIdDiseno = activeTrialTypeTab.value === "I" ? dataListIdDisenoI.value || null : dataListIdDisenoF.value || null;
     }
 
     try {
@@ -1683,13 +2099,15 @@ const addTratamientosTemporada = async (arrayIds: Array<{ id_crzmnto: string; pl
       return;
     }
 
-    let targetDisenoId = model.cTipoEnsayo === "F" ? dataListIdDisenoF.value : dataListIdDisenoI.value;
+    let targetDisenoId =
+      model.cTipoEnsayo === "I" || (!model.cTipoEnsayo && activeTrialTypeTab.value === "I") ? dataListIdDisenoI.value : dataListIdDisenoF.value;
 
     if (!targetDisenoId) {
       if (model.nProyecto && model.nSerie && model.nEstado) {
         toast.info("Inicializando encabezado del experimento...");
         await crearNuevoExperimento();
-        targetDisenoId = model.cTipoEnsayo === "F" ? dataListIdDisenoF.value : dataListIdDisenoI.value;
+        targetDisenoId =
+          model.cTipoEnsayo === "I" || (!model.cTipoEnsayo && activeTrialTypeTab.value === "I") ? dataListIdDisenoI.value : dataListIdDisenoF.value;
       }
     }
 
@@ -1712,8 +2130,10 @@ const addTratamientosTemporada = async (arrayIds: Array<{ id_crzmnto: string; pl
     if (result) {
       toast.success("Tratamientos agregados con éxito al experimento");
       closeModal();
-      if (dataListIdDisenoF.value && dataListIdDisenoI.value) {
-        await treatmentsExperimentsStore.getTreatmentsExperimentsList(dataListIdDisenoF.value, dataListIdDisenoI.value);
+      // Refrescar las tablas de tratamientos y la lista de disponibles
+      await refreshTreatmentsTables();
+      if (model.nTemporada) {
+        await tratamientosDisponibles();
       }
     }
   } catch (error) {
@@ -1819,7 +2239,18 @@ const actualizarDiseno = async (tipo: "F" | "I") => {
     const res: any = await api.post(`${urls.API_URL}grabarDiseno`, payload, true);
     const data = res?.data || res;
     if (data && (data.success || data.actualizado || res?.status === 200)) {
-      toast.success(data?.message || `Diseño ${isFamilias ? "Familias" : "Individual"} actualizado correctamente.`);
+      try {
+        const genRes: any = await api.post(`${urls.API_URL}generateDesign/${nIdDiseno}`, {}, true);
+        const genData = genRes?.data || genRes;
+        if (genData && genData.success) {
+          toast.success(`Diseño ${isFamilias ? "Familias" : "Individual"} y parcelas generadas con éxito para Libro de Campo.`);
+        } else {
+          toast.success(data?.message || `Diseño ${isFamilias ? "Familias" : "Individual"} actualizado correctamente.`);
+        }
+      } catch (genErr: any) {
+        console.warn("Generación de parcelas warning:", genErr);
+        toast.success(data?.message || `Diseño ${isFamilias ? "Familias" : "Individual"} actualizado correctamente.`);
+      }
       await buscarExperimento();
     } else {
       toast.error(data?.message || "Error al actualizar el diseño.");

@@ -34,6 +34,10 @@ async function addDesingsDetails(model: DiseñosDetalles) {
   return await api.post(urls.API_ADD_DESIGNS_DETAILS, model, true);
 }
 
+async function removeDesingsDetails(payload: { nIdDiseno: string | number; arrIds: Array<{ id_detalle: string | number; id_crzmnto: string | number; nro_plntlas: number }> }) {
+  return await api.post(urls.API_REMOVE_DESIGNS_DETAILS, payload, true);
+}
+
 async function GetSuggestionCrossings(proyectos: string, proyecto: string, testigo: string, megaAmbiente: string): Promise<any> {
   const url = `${urls.API_SUGGESTION_CROSSING}/${proyectos}/${proyecto}/${testigo}/${megaAmbiente}`;
   return await api.get(url, {}, true);
@@ -53,6 +57,7 @@ const ExperimentsService = {
   getTreatmentsSeason,
   getTreatmentsExperiments,
   addDesingsDetails,
+  removeDesingsDetails,
   GetSuggestionCrossings,
   GetSuggestionCrossingsPerProject
 };
