@@ -39,12 +39,17 @@ async function crearLibroCampo(libro: any[]): Promise<any> {
   return await api.post(urls.API_CREAR_LIBRO_CAMPO, { libro }, true);
 }
 
+async function actualizarValoresLibroCampo(idDsnoEnc: number | string, evaluaciones: any[]): Promise<any> {
+  return await api.post(urls.API_ACTUALIZAR_VALORES_LIBRO_CAMPO, { id_dsno_enc: idDsnoEnc, evaluaciones }, true);
+}
+
 const LibroCampoService = {
   getSearchParameters,
   getAreasProgram,
   getProjectsArea,
   getLibroCampo,
-  crearLibroCampo
+  crearLibroCampo,
+  actualizarValoresLibroCampo
 };
 
 export default LibroCampoService;

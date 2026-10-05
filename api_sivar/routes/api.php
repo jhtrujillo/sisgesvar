@@ -107,6 +107,7 @@ Route::group([
     //Libro de Campo
     Route::get('getLibroCampo/{id_pr}/{srie}/{estdo}', [\App\Http\Controllers\LibroCampoController::class, 'getLibroCampo']);
     Route::post('crearLibroCampo', [\App\Http\Controllers\LibroCampoController::class, 'crearLibroCampo']);
+    Route::post('actualizarValoresLibroCampo', [\App\Http\Controllers\LibroCampoController::class, 'actualizarValoresLibroCampo']);
 
     // Módulo de Registro de Ensayos
     Route::get('/ensayos/dashboard', [\App\Http\Controllers\EnsayoController::class, 'dashboard'])->name('ensayos.dashboard');

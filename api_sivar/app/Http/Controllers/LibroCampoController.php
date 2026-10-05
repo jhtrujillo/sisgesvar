@@ -74,7 +74,7 @@ class LibroCampoController extends Controller
             // Variables para el libro de campo
             $libroF = [];
             $libroI = [];
-            $listVariables = [];
+            $listVariables = $variables;
             $error = 0;
             $mensajeError = [];
 
@@ -97,10 +97,6 @@ class LibroCampoController extends Controller
                             $libroI = $dataLibro;
                         }
                     }
-                }
-
-                if (!$hasDatosCampo) {
-                    $listVariables = $variables;
                 }
             } else {
                 $error = 1;
@@ -276,7 +272,7 @@ class LibroCampoController extends Controller
         if (empty($libro)) {
             return response()->json([
                 "code" => 400,
-                "message" => 'No se recibieron datos para crear el libro de campo.'
+                "message" => 'No se recibieron datos para crear o actualizar el libro de campo.'
             ], 400);
         }
 
@@ -287,7 +283,7 @@ class LibroCampoController extends Controller
             $hasSalidas = false;
 
             foreach ($libro as $datos) {
-                if (empty($datos['id_dsno_enc']) || empty($datos['campos'])) {
+                if (empty($datos['id_dsno_enc']) || !isset($datos['campos'])) {
                     continue;
                 }
 
@@ -302,31 +298,58 @@ class LibroCampoController extends Controller
                 if ($salidas->isNotEmpty()) {
                     $hasSalidas = true;
 
-                    // Limpiar registros previos si se está re-configurando el libro
-                    DB::connection('sivar')->table('datos_campo')
-                        ->where('id_dsno_enc', $idDsnoEnc)
-                        ->delete();
+                    // Extraer códigos de campo seleccionados
+                    $selectedCampos = collect($datos['campos'])
+                        ->pluck('nmro_cmpo')
+                        ->filter()
+                        ->unique()
+                        ->values()
+                        ->toArray();
 
-                    $batchInserts = [];
-                    foreach ($salidas as $salida) {
-                        foreach ($datos['campos'] as $variable) {
-                            $batchInserts[] = [
-                                'id_dissalida_det' => $salida->id_dissalida_det,
-                                'id_dsno_enc' => $salida->id_dsno_enc,
-                                'nmro_cmpo' => $variable['nmro_cmpo']
-                            ];
-
-                            if (count($batchInserts) >= 500) {
-                                DB::connection('sivar')->table('datos_campo')->insert($batchInserts);
-                                $totalInserts += count($batchInserts);
-                                $batchInserts = [];
-                            }
-                        }
+                    // 1. Eliminar variables que ya no están seleccionadas
+                    if (!empty($selectedCampos)) {
+                        DB::connection('sivar')->table('datos_campo')
+                            ->where('id_dsno_enc', $idDsnoEnc)
+                            ->whereNotIn('nmro_cmpo', $selectedCampos)
+                            ->delete();
+                    } else {
+                        DB::connection('sivar')->table('datos_campo')
+                            ->where('id_dsno_enc', $idDsnoEnc)
+                            ->delete();
                     }
 
-                    if (!empty($batchInserts)) {
-                        DB::connection('sivar')->table('datos_campo')->insert($batchInserts);
-                        $totalInserts += count($batchInserts);
+                    // 2. Obtener variables que ya existen en datos_campo para este id_dsno_enc
+                    $existingCampos = DB::connection('sivar')->table('datos_campo')
+                        ->where('id_dsno_enc', $idDsnoEnc)
+                        ->pluck('nmro_cmpo')
+                        ->unique()
+                        ->toArray();
+
+                    // 3. Determinar variables nuevas a insertar
+                    $newCamposToInsert = array_values(array_diff($selectedCampos, $existingCampos));
+
+                    if (!empty($newCamposToInsert)) {
+                        $batchInserts = [];
+                        foreach ($salidas as $salida) {
+                            foreach ($newCamposToInsert as $nmro_cmpo) {
+                                $batchInserts[] = [
+                                    'id_dissalida_det' => $salida->id_dissalida_det,
+                                    'id_dsno_enc' => $salida->id_dsno_enc,
+                                    'nmro_cmpo' => $nmro_cmpo
+                                ];
+
+                                if (count($batchInserts) >= 500) {
+                                    DB::connection('sivar')->table('datos_campo')->insert($batchInserts);
+                                    $totalInserts += count($batchInserts);
+                                    $batchInserts = [];
+                                }
+                            }
+                        }
+
+                        if (!empty($batchInserts)) {
+                            DB::connection('sivar')->table('datos_campo')->insert($batchInserts);
+                            $totalInserts += count($batchInserts);
+                        }
                     }
                 }
             }
@@ -342,14 +365,92 @@ class LibroCampoController extends Controller
             DB::commit();
             return response()->json([
                 "code" => 200,
-                "message" => 'Se creó el libro de campo con éxito (' . $totalInserts . ' registros inicializados).',
+                "message" => 'Variables del libro de campo guardadas con éxito.',
             ], 200);
 
         } catch (\Throwable $th) {
             DB::rollBack();
             return response()->json([
                 "code" => 500,
-                "message" => 'Error al crear el libro de campo: ' . $th->getMessage(),
+                "message" => 'Error al guardar el libro de campo: ' . $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Guarda o actualiza los valores (evaluaciones) en datos_campo para un experimento.
+     */
+    public function actualizarValoresLibroCampo(Request $request)
+    {
+        $idDsnoEnc = $request->input('id_dsno_enc');
+        $evaluaciones = $request->input('evaluaciones', []); // Array de { id_dissalida_det, nmro_cmpo, vlor }
+
+        if (empty($idDsnoEnc) || empty($evaluaciones)) {
+            return response()->json([
+                'code' => 400,
+                'message' => 'No se recibieron datos o evaluaciones para actualizar.'
+            ], 400);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $updatedCount = 0;
+
+            foreach (array_chunk($evaluaciones, 200) as $chunk) {
+                foreach ($chunk as $item) {
+                    if (!isset($item['id_dissalida_det']) || !isset($item['nmro_cmpo'])) {
+                        continue;
+                    }
+
+                    $idDissalidaDet = $item['id_dissalida_det'];
+                    $nmroCmpo = $item['nmro_cmpo'];
+                    $vlor = isset($item['vlor']) && $item['vlor'] !== null ? (string)$item['vlor'] : '';
+
+                    $affected = DB::connection('sivar')->table('datos_campo')
+                        ->where([
+                            ['id_dsno_enc', '=', $idDsnoEnc],
+                            ['id_dissalida_det', '=', $idDissalidaDet],
+                            ['nmro_cmpo', '=', $nmroCmpo]
+                        ])
+                        ->update(['vlor' => $vlor]);
+
+                    if ($affected === 0) {
+                        $exists = DB::connection('sivar')->table('datos_campo')
+                            ->where([
+                                ['id_dsno_enc', '=', $idDsnoEnc],
+                                ['id_dissalida_det', '=', $idDissalidaDet],
+                                ['nmro_cmpo', '=', $nmroCmpo]
+                            ])
+                            ->exists();
+
+                        if (!$exists) {
+                            DB::connection('sivar')->table('datos_campo')->insert([
+                                'id_dsno_enc' => $idDsnoEnc,
+                                'id_dissalida_det' => $idDissalidaDet,
+                                'nmro_cmpo' => $nmroCmpo,
+                                'vlor' => $vlor
+                            ]);
+                        }
+                    }
+
+                    $updatedCount++;
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'code' => 200,
+                'message' => "Se guardaron las evaluaciones exitosamente ({$updatedCount} valores procesados).",
+                'updatedCount' => $updatedCount
+            ], 200);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'code' => 500,
+                'message' => 'Error al guardar las evaluaciones de campo: ' . $th->getMessage()
             ], 500);
         }
     }
