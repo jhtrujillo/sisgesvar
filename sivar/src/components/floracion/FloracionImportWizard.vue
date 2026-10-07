@@ -106,6 +106,26 @@
             </div>
           </div>
           
+          
+          <div class="flex items-center gap-4 my-4">
+            <div class="h-px bg-slate-200 flex-1"></div>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">O Importar desde Google Sheets</span>
+            <div class="h-px bg-slate-200 flex-1"></div>
+          </div>
+
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-3">
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider">Enlace del Google Sheet (Público)</label>
+            <div class="flex gap-3">
+              <input v-model="googleSheetsUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/..." class="flex-1 rounded-lg border-slate-300 text-sm focus:border-cenicana focus:ring-cenicana shadow-sm px-4 py-2 outline-none" />
+              <button @click="downloadFromGoogleSheets" :disabled="isDownloadingSheet || !googleSheetsUrl" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider py-2 px-6 rounded-lg transition-colors shadow-md disabled:opacity-50 flex items-center gap-2">
+                <svg v-if="isDownloadingSheet" class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                {{ isDownloadingSheet ? 'Descargando...' : 'Descargar' }}
+              </button>
+            </div>
+            <p class="text-xs text-slate-500">Recuerda configurar el documento de Sheets con permisos de <strong>"Cualquier usuario que tenga el vínculo puede leer"</strong>.</p>
+          </div>
+
           <div v-if="sheets.length > 0" class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
             <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">Seleccione la pestaña (Hoja) del archivo <span class="text-red-500">*</span></label>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -286,6 +306,51 @@ const emit = defineEmits(['close', 'imported']);
 const toast = useToast();
 
 const step = ref(1);
+
+const googleSheetsUrl = ref('');
+const isDownloadingSheet = ref(false);
+
+const downloadFromGoogleSheets = async () => {
+  if (!googleSheetsUrl.value) return;
+  
+  isDownloadingSheet.value = true;
+  try {
+    const response = await api.post('/siembra-campo/floracion/download-sheets', { url: googleSheetsUrl.value }, { responseType: 'blob' });
+    
+    // Create a File object from the Blob
+    const downloadedFile = new File([response.data], "google_sheets_import.xlsx", { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    
+    // Assign to existing file ref
+    file.value = downloadedFile;
+    
+    // Process the file using the existing logic
+    const arrayBuffer = await downloadedFile.arrayBuffer();
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(arrayBuffer);
+    workbook.value = wb;
+    
+    sheets.value = [];
+    wb.eachSheet((worksheet) => {
+      sheets.value.push(worksheet.name);
+    });
+    
+    const floracionSheet = sheets.value.find(s => s.toLowerCase().includes('floracion') || s.toLowerCase().includes('floración'));
+    if (floracionSheet) {
+      selectedSheet.value = floracionSheet;
+    } else if (sheets.value.length > 0) {
+      selectedSheet.value = sheets.value[0];
+    }
+    
+    toast.success("¡Documento de Google Sheets descargado exitosamente!");
+  } catch (error: any) {
+    console.error(error);
+    const msg = error.response?.data?.message || "Error al descargar el Google Sheet. Asegúrese de que el enlace sea público.";
+    toast.error(msg);
+  } finally {
+    isDownloadingSheet.value = false;
+  }
+};
+
 const stepTitles = ["Vivero", "Archivo", "Mapeo", "Validación"];
 
 // Step 1: Vivero Selection

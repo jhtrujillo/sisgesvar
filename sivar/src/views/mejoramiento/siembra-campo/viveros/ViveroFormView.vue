@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+  <div class="w-full xl:max-w-[95%] 2xl:max-w-[1600px] mx-auto py-8 px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between mb-8">
       <div class="flex items-center gap-4">
         <router-link

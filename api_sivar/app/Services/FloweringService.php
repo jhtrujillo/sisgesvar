@@ -31,6 +31,7 @@ class FloweringService
         return $query->select(
             'floracion.*',
             'remote_pg_sipro.nm_prycto',
+            'remote_pg_sipro.cd_cntble',
             'proyecto_caracteres.nombre as nmbre_crcter',
             'usuario.prmer_nmbre',
             'usuario.aplldo'

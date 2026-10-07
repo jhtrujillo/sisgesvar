@@ -49,6 +49,14 @@ class VarietyController extends Controller
         try {
             if ($var != "") {
                 $variety = Variety::where("nm_vrdad", $var)->first();
+            if ($variety && (empty($variety->pdgree) || empty($variety->vrdad_madre) || empty($variety->vrdad_pdre))) {
+                $pedigriNuevo = \DB::connection('sivar')->table('pedigri_nuevo')->where('variedad', $var)->first();
+                if ($pedigriNuevo) {
+                    if (empty($variety->pdgree) && !empty($pedigriNuevo->pedigri)) $variety->pdgree = $pedigriNuevo->pedigri;
+                    if (empty($variety->vrdad_madre) && !empty($pedigriNuevo->madre)) $variety->vrdad_madre = $pedigriNuevo->madre;
+                    if (empty($variety->vrdad_pdre) && !empty($pedigriNuevo->padre)) $variety->vrdad_pdre = $pedigriNuevo->padre;
+                }
+            }
                 if ($variety) {
                     return response()->json($variety);
                 }
@@ -265,7 +273,14 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
     private function getParentsNivelRecursionHelper($var, &$parents, $relationship, $type, $nivel)
     {
         $nivel = intval($nivel);  // Asegurar que $nivel sea un entero
-        $variety = Variety::where('nm_vrdad', '=', $var)->get()->first();  
+        $variety = Variety::where('nm_vrdad', '=', $var)->get()->first();
+        if ($variety && (empty($variety->vrdad_madre) || empty($variety->vrdad_pdre))) {
+            $pedigriNuevo = \DB::connection('sivar')->table('pedigri_nuevo')->where('variedad', $var)->first();
+            if ($pedigriNuevo) {
+                if (empty($variety->vrdad_madre) && !empty($pedigriNuevo->madre)) $variety->vrdad_madre = $pedigriNuevo->madre;
+                if (empty($variety->vrdad_pdre) && !empty($pedigriNuevo->padre)) $variety->vrdad_pdre = $pedigriNuevo->padre;
+            }
+        }  
     
         if ($var == "") {
             return $nivel;
@@ -495,6 +510,14 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
     {
         try {
             $variety = Variety::where("nm_vrdad", $var)->first();
+            if ($variety && (empty($variety->pdgree) || empty($variety->vrdad_madre) || empty($variety->vrdad_pdre))) {
+                $pedigriNuevo = \DB::connection('sivar')->table('pedigri_nuevo')->where('variedad', $var)->first();
+                if ($pedigriNuevo) {
+                    if (empty($variety->pdgree) && !empty($pedigriNuevo->pedigri)) $variety->pdgree = $pedigriNuevo->pedigri;
+                    if (empty($variety->vrdad_madre) && !empty($pedigriNuevo->madre)) $variety->vrdad_madre = $pedigriNuevo->madre;
+                    if (empty($variety->vrdad_pdre) && !empty($pedigriNuevo->padre)) $variety->vrdad_pdre = $pedigriNuevo->padre;
+                }
+            }
             
             // Construir la consulta de promedios para la variedad individual (para unir múltiples ensayos y ensayos incompletos)
             $columnsToAverage = [
@@ -566,14 +589,14 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
             if (!$hasAnyData) {
                 // FALLBACK 1: Pruebas Regionales (estdo_slccion = 5) en datos_campo_crudos
                 $prSelectRaw = "
-                    avg(CAST(REPLACE(CAST(mosaico AS TEXT), ',', '.') AS FLOAT)) as mosaico_p,
-                    avg(CAST(REPLACE(CAST(roya AS TEXT), ',', '.') AS FLOAT)) as roya_cafe_r,
-                    avg(CAST(REPLACE(CAST(\"179\" AS TEXT), ',', '.') AS FLOAT)) as roya_naranja_r,
-                    avg(CAST(REPLACE(CAST(carbon AS TEXT), ',', '.') AS FLOAT)) as carbon_p,
-                    avg(CAST(REPLACE(CAST(\"163\" AS TEXT), ',', '.') AS FLOAT)) as sacarosa,
-                    avg(CAST(REPLACE(CAST(\"173\" AS TEXT), ',', '.') AS FLOAT)) as tchm,
-                    avg(CAST(REPLACE(CAST(\"Tallo Altura (cm)\" AS TEXT), ',', '.') AS FLOAT)) as altura_planta,
-                    avg(CAST(REPLACE(CAST(\"DiametroTallo\" AS TEXT), ',', '.') AS FLOAT)) as diametro_tallo,
+                    AVG(CASE WHEN TRIM(REPLACE(mosaico::text, ',', '.')) ~ '^\\d+(\\.\\d+)?$' THEN TRIM(REPLACE(mosaico::text, ',', '.'))::double precision ELSE NULL END) as mosaico_p,
+                    AVG(CASE WHEN TRIM(REPLACE(roya::text, ',', '.')) ~ '^\\d+(\\.\\d+)?$' THEN TRIM(REPLACE(roya::text, ',', '.'))::double precision ELSE NULL END) as roya_cafe_r,
+                    AVG(CASE WHEN TRIM(REPLACE(\"179\"::text, ',', '.')) ~ '^\\d+(\\.\\d+)?$' THEN TRIM(REPLACE(\"179\"::text, ',', '.'))::double precision ELSE NULL END) as roya_naranja_r,
+                    AVG(CASE WHEN TRIM(REPLACE(carbon::text, ',', '.')) ~ '^\\d+(\\.\\d+)?$' THEN TRIM(REPLACE(carbon::text, ',', '.'))::double precision ELSE NULL END) as carbon_p,
+                    AVG(CASE WHEN TRIM(REPLACE(\"163\"::text, ',', '.')) ~ '^\\d+(\\.\\d+)?$' THEN TRIM(REPLACE(\"163\"::text, ',', '.'))::double precision ELSE NULL END) as sacarosa,
+                    AVG(CASE WHEN TRIM(REPLACE(\"173\"::text, ',', '.')) ~ '^\\d+(\\.\\d+)?$' THEN TRIM(REPLACE(\"173\"::text, ',', '.'))::double precision ELSE NULL END) as tchm,
+                    AVG(CASE WHEN TRIM(REPLACE(\"Tallo Altura (cm)\"::text, ',', '.')) ~ '^\\d+(\\.\\d+)?$' THEN TRIM(REPLACE(\"Tallo Altura (cm)\"::text, ',', '.'))::double precision ELSE NULL END) as altura_planta,
+                    AVG(CASE WHEN TRIM(REPLACE(\"DiametroTallo\"::text, ',', '.')) ~ '^\\d+(\\.\\d+)?$' THEN TRIM(REPLACE(\"DiametroTallo\"::text, ',', '.'))::double precision ELSE NULL END) as diametro_tallo,
                     MAX(CAST(estdo_slccion AS TEXT)) as procedencia
                 ";
                 

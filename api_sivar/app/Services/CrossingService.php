@@ -29,6 +29,28 @@ class CrossingService
     public function calcularViabilidad($flores, $flores_PR, $flores_EIII, $ponderados, $testigo)
     {
         // Indexar las flores regionales por nombre de variedad para una búsqueda exacta libre de bugs
+        // --- KINSHIP FETCH BLOCK ---
+        $allUniqueVars = [];
+        if ($flores) { foreach ($flores as $f) { $allUniqueVars[] = $f->vrdad; } }
+        if ($flores_PR) { foreach ($flores_PR as $f) { $allUniqueVars[] = $f->vrdad; } }
+        if ($flores_EIII) { foreach ($flores_EIII as $f) { $allUniqueVars[] = $f->vrdad; } }
+        $allUniqueVars = array_unique($allUniqueVars);
+
+        $kinshipMap = [];
+        if (!empty($allUniqueVars)) {
+            $kinshipList = \DB::connection('sivar')->table('matriz_kinship')
+                ->whereIn('variedad_1', $allUniqueVars)
+                ->whereIn('variedad_2', $allUniqueVars)
+                ->get();
+            foreach ($kinshipList as $k) {
+                $v1 = trim(strtoupper($k->variedad_1));
+                $v2 = trim(strtoupper($k->variedad_2));
+                $kinshipMap[$v1 . '|' . $v2] = (float)$k->kinship;
+                $kinshipMap[$v2 . '|' . $v1] = (float)$k->kinship;
+            }
+        }
+        // ---------------------------
+
         $floresPRMap = [];
         if ($flores_PR) {
             foreach ($flores_PR as $fPR) {
@@ -73,8 +95,10 @@ class CrossingService
                     'caracter2' => $florB->id_crcter ?? null,
                     'nombre_proyecto' => $florA->nombre_proyecto ?? null,
                     'nombre_proyecto2' => $florB->nombre_proyecto ?? null,
+
                     'id_caracter' => $florA->id_caracter ?? null,
-                    'id_caracter2' => $florB->id_caracter ?? null
+                    'id_caracter2' => $florB->id_caracter ?? null,
+                    'kinship_score' => isset($kinshipMap[trim(strtoupper($florA->vrdad)) . '|' . trim(strtoupper($florB->vrdad))]) ? $kinshipMap[trim(strtoupper($florA->vrdad)) . '|' . trim(strtoupper($florB->vrdad))] : 0
                 );
                 $vm = 0;
                 $vm2 = 0;

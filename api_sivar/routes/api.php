@@ -66,6 +66,8 @@ Route::group([
     Route::get('proyectosConFlores', [\App\Http\Controllers\CrossingController::class, 'proyectosConFlores']);
     Route::post('/crossing/programming/save_crossing', [\App\Http\Controllers\CrossingController::class, 'guardarCruzamiento']);
     Route::post('/crossing/programming/send_free_to_common_bag', [\App\Http\Controllers\CrossingController::class, 'enviarFloresLibresABolsaComun']);
+    Route::post('/crossing/programming/manual_send_to_common_bag', [\App\Http\Controllers\CrossingController::class, 'manualSendToCommonBag']);
+
     Route::get('consultarHistoricoCruzamiento/{madre}/{padres}', [\App\Http\Controllers\CrossingController::class, 'consultarHistoricoCruzamiento']);
     Route::get('/crossing/programming/save_weight/{proyecto?}', [\App\Http\Controllers\CrossingController::class, 'guardarPonderados']);
     Route::get('/crossing/consolidated', [\App\Http\Controllers\CrossingController::class, 'consolidado']);
@@ -138,7 +140,7 @@ Route::group([
     // Módulo Laboratorio - Inventario    
     // Módulo Siembra-Campo: Viveros
         Route::get('siembra-campo/viveros/search-import', [\App\Http\Controllers\ViveroController::class, 'searchForImport']);
-    Route::post('siembra-campo/floracion/validate-import', [\App\Http\Controllers\FloracionImportController::class, 'validateImport']);
+    Route::post('siembra-campo/floracion/download-sheets', [\App\Http\Controllers\FloracionImportController::class, 'downloadSheets']);    Route::post('siembra-campo/floracion/validate-import', [\App\Http\Controllers\FloracionImportController::class, 'validateImport']);
     Route::post('siembra-campo/floracion/execute-import', [\App\Http\Controllers\FloracionImportController::class, 'executeImport']);
 
     Route::get('siembra-campo/viveros', [\App\Http\Controllers\ViveroController::class, 'index']);

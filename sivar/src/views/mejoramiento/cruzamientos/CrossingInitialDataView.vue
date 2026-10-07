@@ -61,18 +61,18 @@
         <div v-if="filteredProject" class="mt-8 space-y-3">
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Detalle del Proyecto Seleccionado</h3>
           <div class="overflow-hidden border border-slate-100 rounded-xl shadow-sm">
-            <table class="table-auto w-full divide-y divide-slate-100">
+            <table class="table-fixed w-full divide-y divide-slate-100">
               <thead class="bg-slate-50">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Código</th>
-                  <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Nombre del Proyecto</th>
+                  <th class="w-1/4 px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Código</th>
+                  <th class="w-1/2 px-6 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Nombre del Proyecto</th>
                   <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wide text-slate-500">Cantidad</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 bg-white">
                 <tr class="hover:bg-emerald-50/30 transition-colors duration-150">
                   <td class="whitespace-nowrap px-6 py-4 text-sm font-bold text-slate-700">{{ filteredProject.cd_cntble }}</td>
-                  <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-600 font-medium">{{ filteredProject.nm_prycto }}</td>
+                  <td class="px-6 py-4 text-sm text-slate-600 font-medium break-words">{{ filteredProject.nm_prycto }}</td>
                   <td class="whitespace-nowrap px-6 py-4 text-sm text-right font-semibold text-emerald-600">
                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-100">
                       {{ filteredProject.numero }} flores

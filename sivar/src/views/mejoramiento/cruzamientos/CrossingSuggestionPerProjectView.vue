@@ -143,7 +143,7 @@
         </div>
 
         <!-- Leyenda informativa y Botón de Filtro -->
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-3 border-b border-slate-100 pb-3 no-print">
+        <div class="flex flex-col gap-4 mb-3 border-b border-slate-100 pb-3 no-print">
           <div class="flex flex-wrap items-center gap-3 text-[11px] font-semibold text-slate-500">
             <span class="flex items-center">
               <span class="w-3 h-3 bg-rose-100 border border-rose-200 rounded mr-1"></span>
@@ -213,7 +213,7 @@
           </div>
 
           <!-- Botones de Control Interactivos -->
-          <div class="flex justify-end items-center gap-3">
+          <div class="flex flex-wrap justify-between items-center w-full gap-3">
             <!-- Selector de Mapa de Calor (3 opciones) -->
             <div class="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200 shadow-inner">
               <button
@@ -248,6 +248,44 @@
                 Índice
               </button>
             </div>
+
+            <label class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-600 font-bold mr-3" title="Ignorar restricción biológica de sexo para sugerir cruces inversos">
+              <input type="checkbox" v-model="permitirPolicruzamientos" class="rounded h-3.5 w-3.5 border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+              <span>Policruzamientos</span>
+            </label>
+            
+            <!-- Separator -->
+            <div class="h-6 w-px bg-slate-200 mx-3"></div>
+
+            <!-- Filtros Genéticos (UI Mejorada) -->
+            <div class="flex items-center space-x-4 bg-slate-50 border border-slate-200 rounded-md px-3 py-1 shadow-sm">
+              <span class="text-[10px] uppercase tracking-wider font-extrabold text-slate-400">Filtros Genéticos</span>
+              
+              <!-- DG Filter -->
+              <div class="flex items-center space-x-2">
+                <label class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-700 font-bold transition-opacity" :class="{ 'opacity-50': !aplicarDG }" title="Filtro de Distancia Genética Mínima">
+                  <input type="checkbox" v-model="aplicarDG" class="rounded h-3.5 w-3.5 border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                  <span>DG min.</span>
+                </label>
+                <div v-show="aplicarDG" class="relative">
+                  <input type="number" step="0.01" v-model="umbralDG" class="w-14 h-6 text-[11px] pl-1 pr-1 border border-slate-300 rounded focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white shadow-inner text-center font-mono text-emerald-700 font-bold" />
+                </div>
+              </div>
+
+              <div class="h-4 w-px bg-slate-300 mx-1"></div>
+
+              <!-- Kinship Filter -->
+              <div class="flex items-center space-x-2">
+                <label class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-700 font-bold transition-opacity" :class="{ 'opacity-50': !aplicarKinship }" title="Filtro de Parentesco Máximo (Kinship)">
+                  <input type="checkbox" v-model="aplicarKinship" class="rounded h-3.5 w-3.5 border-slate-300 text-rose-600 focus:ring-rose-500" />
+                  <span>Kinship máx.</span>
+                </label>
+                <div v-show="aplicarKinship" class="relative">
+                  <input type="number" step="0.01" v-model="umbralKinship" class="w-14 h-6 text-[11px] pl-1 pr-1 border border-slate-300 rounded focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 bg-white shadow-inner text-center font-mono text-rose-700 font-bold" />
+                </div>
+              </div>
+            </div>
+
 
             <button
               type="button"
@@ -446,7 +484,7 @@
                       <!-- Envoltura <template> para evaluar v-if en el scope correcto de Vue 3 -->
                       <template v-for="(flor, indexCol) in floresSeleccionadas || []" :key="indexCol">
                         <th
-                          v-if="(!ocultarInviables || isColumnViable(indexCol)) && (Number(flor.polen) > 20 || isColumnViable(indexCol))"
+                          v-if="(!ocultarInviables || isColumnViable(indexCol)) && (Number(flor.polen) > 20 || isColumnViable(indexCol) || permitirPolicruzamientos)"
                           class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-650 bg-slate-50 border-r border-slate-100 sticky top-0 z-10 min-w-[75px]"
                         >
                           <span
@@ -486,7 +524,7 @@
                     <!-- Envoltura <template> para evaluar v-if en el scope correcto de Vue 3 -->
                     <template v-for="(viabilidadRow, indexRow) in viabilidadesMatriz || []" :key="indexRow">
                       <tr
-                        v-if="(!ocultarInviables || isRowViable(viabilidadRow)) && Number(viabilidadRow[0]?.polen) <= 20"
+                        v-if="(!ocultarInviables || isRowViable(viabilidadRow)) && (Number(viabilidadRow[0]?.polen) <= 20 || isRowViable(viabilidadRow) || permitirPolicruzamientos)"
                         class="hover:bg-slate-50/40 transition-colors"
                       >
                         <!-- Celda Madre Fija a la izquierda -->
@@ -524,7 +562,7 @@
                         <!-- Celdas de la matriz filtradas por columna -->
                         <template v-for="(car, indexCol) in viabilidadRow" :key="indexCol">
                           <td
-                            v-if="(!ocultarInviables || isColumnViable(indexCol)) && (Number(car?.polen2) > 20 || isColumnViable(indexCol))"
+                            v-if="(!ocultarInviables || isColumnViable(indexCol)) && (Number(car?.polen2) > 20 || isColumnViable(indexCol) || permitirPolicruzamientos)"
                             :class="[getHeatmapClass(car?.varA, car?.varB, !!car?.viabilidad, car?.vm2)]"
                             class="p-2 text-center border-b border-slate-100 transition-all duration-200 min-w-[75px]"
                           >
@@ -532,9 +570,14 @@
                               <input
                                 type="checkbox"
                                 :checked="!!car?.viabilidad"
-                                @click="toggleCruzamiento(car)"
-                                class="h-3.5 w-3.5 rounded border-slate-350 text-emerald-600 focus:ring-emerald-100 transition cursor-pointer"
+                                :disabled="car.varA === car.varB"
+                                @click="toggleCruzamiento(car, $event)"
+                                class="h-3.5 w-3.5 rounded border-slate-350 text-emerald-600 focus:ring-emerald-100 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-slate-200"
                               />
+                              <!-- Indicador de Policruzamiento (Cruce Invertido) -->
+                              <div v-if="car?.viabilidad && !car?.emasculado && (Number(car?.polen2) <= 20 || Number(car?.polen) > 20) && car?.varA !== car?.varB" class="mb-1">
+                                <span class="bg-indigo-100 text-indigo-700 text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm" title="Cruce Recíproco (Sexos Invertidos)">🔄 Recíproco</span>
+                              </div>
                               <!-- Selector numérico cuando es viable -->
                               <div v-if="car?.viabilidad" class="mt-0.5 mb-1">
                                 <button
@@ -572,7 +615,10 @@
                                         : Math.round(getIndiceCombinado(car.varA, car.varB, car.vm2))
                                     }}
                                   </template>
-                                  <template v-else> DG: {{ getDistancia(car.varA, car.varB) || "NA" }} </template>
+                                  <template v-else> 
+                                    DG: {{ getDistancia(car.varA, car.varB) || "NA" }} <br/>
+                                    K: {{ car.kinship_score !== null && car.kinship_score !== undefined ? Number(car.kinship_score).toFixed(3) : "NA" }}
+                                  </template>
                                 </span>
                                 <!-- Botón Comparador Lado a Lado -->
                                 <button
@@ -886,7 +932,10 @@
             </button>
 
             <div class="flex flex-col items-end">
-              <div v-if="hasOverusedFlowers" class="text-[10px] text-rose-600 font-bold mb-1">⚠️ Excedes las flores disponibles</div>
+              <div class="flex items-center space-x-3 mb-1">
+                <span class="text-[11px] font-bold text-slate-500">Cruces seleccionados: <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded ml-1">{{ totalCrucesSeleccionados }}</span></span>
+                <div v-if="hasOverusedFlowers" class="text-[10px] text-rose-600 font-bold">⚠️ Excedes las flores disponibles</div>
+              </div>
               <button
                 type="button"
                 @click="finalizarProceso"
@@ -1199,19 +1248,26 @@
                   <h3 class="text-lg font-black leading-6 text-slate-900" id="modal-title">Atención: Incompatibilidad de Sexo</h3>
                   <div class="mt-2">
                     <p class="text-sm text-slate-500 font-medium">
-                      Ambos parentales seleccionados son masculinos. Para que la polinización sea biológicamente viable, la variedad receptora debe ser emasculada.
+                      Estás seleccionando un cruce entre dos variedades masculinas. Para que sea biológicamente viable, debes elegir cuál de las dos actuará como <strong>Hembra (Receptora)</strong>.
                     </p>
                     <div class="mt-4 bg-slate-50 border border-slate-100 rounded-lg p-3">
-                      <p class="text-sm text-slate-700 font-bold">
-                        ¿Autoriza registrar a la variedad <span class="text-rose-600 font-black">{{ emasculateTargetVar }}</span> como <span class="uppercase font-black">emasculada</span> para programar este cruzamiento?
+                      <p class="text-sm text-slate-700 font-bold mb-3 text-center">
+                        ¿A cuál de los dos deseas Emascular?
                       </p>
+                      <div class="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3 justify-center">
+                         <button @click="confirmEmasculateAction(emasculateTargetCar?.varA)" type="button" class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-500">
+                           {{ emasculateTargetCar?.varA || emasculateTargetVar }} (Fila)
+                         </button>
+                         <button v-if="emasculateTargetCar?.varB" @click="confirmEmasculateAction(emasculateTargetCar?.varB)" type="button" class="inline-flex w-full justify-center rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-rose-500">
+                           {{ emasculateTargetCar?.varB }} (Columna)
+                         </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
             <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-              <button @click="confirmEmasculateAction" type="button" class="inline-flex w-full justify-center rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-rose-500 sm:ml-3 sm:w-auto">Autorizar Emasculación</button>
               <button @click="cancelEmasculateAction" type="button" class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-4 py-2.5 text-sm font-bold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto">Cancelar</button>
             </div>
           </div>
@@ -1239,48 +1295,100 @@ const showEmasculateModal = ref(false);
 const emasculateTargetVar = ref("");
 const emasculateTargetCar = ref<any>(null);
 
-const confirmEmasculateAction = () => {
+const confirmEmasculateAction = (targetVar = null) => {
+  if (!emasculateTargetCar.value && typeof confirmGlobalEmasculate === 'function') {
+    return confirmGlobalEmasculate();
+  }
+
   if (emasculateTargetCar.value) {
-    const car = emasculateTargetCar.value;
-    car.emasculado = true;
+    let carToActivate = emasculateTargetCar.value;
     
-    // Continuar con la logica original
-    car.viabilidad = true;
-    if (car.flores_madre !== undefined) {
-      car.flores_madre = 1;
-      car.flores_padre = 1;
+    // Si eligieron al Padre (Columna) en lugar de la Madre (Fila), activamos la celda recíproca
+    
+    if (typeof emasculadasLocales !== 'undefined') {
+      emasculadasLocales.value.add(targetVar);
+      localStorage.setItem(emasculadasKey.value, JSON.stringify(Array.from(emasculadasLocales.value)));
+    }
+    if (typeof emasculatedVarieties !== 'undefined') {
+      emasculatedVarieties.value.add(targetVar);
+      localStorage.setItem(emasculadasKey.value, JSON.stringify(Array.from(emasculatedVarieties.value)));
+    }
+    if (targetVar === carToActivate.varB) {
+       let found = false;
+       
+       if (typeof viabilidadesMatriz !== 'undefined') {
+         const rows = viabilidadesMatriz.value || [];
+         for (const row of rows) {
+           if (row && Array.isArray(row)) {
+             for (const cell of row) {
+               if (cell && cell.varA === carToActivate.varB && cell.varB === carToActivate.varA) {
+                 carToActivate = cell;
+                 found = true;
+                 break;
+               }
+             }
+           }
+           if (found) break;
+         }
+       } else if (typeof MatrixCrossingStore !== 'undefined') {
+         const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
+         for (const row of viabilidades) {
+           if (row && Array.isArray(row)) {
+             for (const cell of row) {
+               if (cell && cell.varA === carToActivate.varB && cell.varB === carToActivate.varA) {
+                 carToActivate = cell;
+                 found = true;
+                 break;
+               }
+             }
+           }
+           if (found) break;
+         }
+       }
+       
+       if (found) {
+         toast.success(`Cruce recíproco activado: ${carToActivate.varA} (Hembra) x ${carToActivate.varB} (Macho)`);
+       }
+    }
+
+    carToActivate.emasculado = true;
+    carToActivate.viabilidad = true;
+    if (carToActivate.flores_madre !== undefined) {
+      carToActivate.flores_madre = 1;
+      carToActivate.flores_padre = 1;
     }
     
     // Save draft
-    if (typeof draftKey !== 'undefined' && typeof viabilidadesMatriz !== 'undefined') {
-       const rows = viabilidadesMatriz.value || [];
+    if (typeof draftKey !== 'undefined') {
        const savedState = [];
-       rows.forEach((row) => {
-         if (row && Array.isArray(row)) {
-           row.forEach((c) => {
-             if (c && c.varA && c.varB) {
-               savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
-             }
-           });
-         }
-       });
-       localStorage.setItem(draftKey.value, JSON.stringify(savedState));
-    } else if (typeof draftKey !== 'undefined' && typeof MatrixCrossingStore !== 'undefined') {
-       const savedState = [];
-       const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
-       viabilidades.forEach((row) => {
-         if (row && Array.isArray(row)) {
-           row.forEach((c) => {
-             if (c && c.varA && c.varB) {
-               savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
-             }
-           });
-         }
-       });
+       if (typeof viabilidadesMatriz !== 'undefined') {
+         const rows = viabilidadesMatriz.value || [];
+         rows.forEach((row) => {
+           if (row && Array.isArray(row)) {
+             row.forEach((c) => {
+               if (c && c.varA && c.varB) {
+                 savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
+               }
+             });
+           }
+         });
+       } else if (typeof MatrixCrossingStore !== 'undefined') {
+         const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
+         viabilidades.forEach((row) => {
+           if (row && Array.isArray(row)) {
+             row.forEach((c) => {
+               if (c && c.varA && c.varB) {
+                 savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
+               }
+             });
+           }
+         });
+       }
        localStorage.setItem(draftKey.value, JSON.stringify(savedState));
     }
   }
   showEmasculateModal.value = false;
+  emasculateTargetCar.value = null;
 };
 
 const cancelEmasculateAction = () => {
@@ -1336,7 +1444,12 @@ async function confirmarEnviarBolsaComun() {
 const ocultarInviables = ref(false); // Vista compacta limpia por defecto
 const isLoading = ref(false); // Ref para spinner de carga
 const showICHelp = ref(false);
-const isOptimizing = ref(false); // Ref para spinner de optimización
+const isOptimizing = ref(false);
+const permitirPolicruzamientos = ref(false);
+const aplicarKinship = ref(false);
+const aplicarDG = ref(false);
+const umbralKinship = ref(0.125);
+const umbralDG = ref(0.35); // Ref para spinner de optimización
 const optimizandoMadre = ref(""); // Para mostrar en el loading qué variedad se procesa
 const isExpanded = ref(false); // Ref para modo pantalla completa
 const isDragDropView = ref(false); // Ref para alternar a Drag & Drop
@@ -1721,7 +1834,7 @@ function getFloresUsadas(vrdad: string, isMadre: boolean) {
   });
 
   if (!isMadre && autofecundacionesSeleccionadas.value.has(vrdad)) {
-    count += 1;
+    // count += 1; // REGLA BIOLÓGICA: La autofecundación cuesta CERO (0) flores del inventario
   }
   return count;
 }
@@ -1741,6 +1854,19 @@ function closeFlowerAdjustmentModal() {
 function getIcon(polen: string | number) {
   return +polen <= 20 ? "fa fa-venus text-rose-500 font-bold" : "fa fa-mars text-sky-500 font-bold";
 }
+
+
+const totalCrucesSeleccionados = computed(() => {
+  let count = 0;
+  const rows = viabilidadesMatriz.value || [];
+  rows.forEach((row: any) => {
+    row.forEach((car: any) => {
+      if (car?.viabilidad) count++;
+    });
+  });
+  count += autofecundacionesSeleccionadas.value.size;
+  return count;
+});
 
 const hasOverusedFlowers = computed(() => {
   // Check Mothers
@@ -1763,8 +1889,9 @@ const hasOverusedFlowers = computed(() => {
   return false;
 });
 
-function toggleCruzamiento(car: any) {
-  if (!car.viabilidad && getCausaInviabilidad(car).includes("Ambos son Macho")) {
+function toggleCruzamiento(car: any, event: Event) {
+  if (!car.viabilidad && car.causa_veto && car.causa_veto.includes("Ambos son Macho")) {
+    if (event) event.preventDefault();
     emasculateTargetVar.value = car.varA;
     emasculateTargetCar.value = car;
     showEmasculateModal.value = true;
@@ -1848,6 +1975,31 @@ function getDistancia(varA: string, varB: string) {
 }
 
 function getCausaInviabilidad(cell: any): string {
+  // Regla A: Veto por pedigrí idéntico
+  const normalize = (s: string) => s ? s.trim().toUpperCase() : null;
+  const mPed = normalize(cell.mother_pdgree);
+  const fPed = normalize(cell.father_pdgree);
+  if (mPed && fPed && mPed === fPed) {
+    return "Consanguinidad: Mismo pedigrí (hermanos completos)";
+  }
+
+  // Regla B: Matriz Kinship
+  if (aplicarKinship.value && cell.kinship_score > umbralKinship.value) {
+    return `Inviable: Supera umbral de Kinship permitido (> ${umbralKinship.value})`;
+  }
+
+  // Regla C: Matriz DG (Distancia Genética)
+  if (aplicarDG.value) {
+    const dgString = getDistancia(cell.varA, cell.varB);
+    if (dgString === "NA") {
+      return "Inviable: Sin Distancia Genética (NA)";
+    }
+    const dgVal = Number(dgString);
+    if (dgVal < umbralDG.value) {
+      return `Inviable: Distancia Genética demasiado baja (< ${umbralDG.value})`;
+    }
+  }
+
   if (cell.viabilidad) return "-";
 
   const filterData = SuggestionCrossingPerProjectStore.suggestionCrossingsPerProjectFilter || {};
@@ -2417,7 +2569,7 @@ async function autoOptimizarFlores(silent: boolean | Event = false) {
   for (const p in disp.padre) {
     if (usadas.padre[p] === undefined) usadas.padre[p] = 0;
     if (autofecundacionesSeleccionadas.value.has(p)) {
-      usadas.padre[p] += 1;
+      // usadas.padre[p] += 1; // REGLA BIOLÓGICA: La autofecundación cuesta CERO (0) flores del inventario
     }
   }
 
@@ -2472,12 +2624,23 @@ async function autoOptimizarFlores(silent: boolean | Event = false) {
       }
 
       let isBiologicallyValid = car.original_viabilidad === true;
-      if (causa.includes("Incompatibilidad de sexo")) isBiologicallyValid = false;
+      
+      if (!permitirPolicruzamientos.value) {
+        if (causa.includes("Incompatibilidad de sexo")) isBiologicallyValid = false;
+        // Regla de polen de la interfaz: El padre DEBE tener polen > 20
+        if (Number(car?.polen2) <= 20) isBiologicallyValid = false;
+      } else {
+        // En policruzamientos, ignorar vetos de sexo, forzando a true si el único problema era el sexo
+        if (causa.includes("Incompatibilidad de sexo") && !causa.includes("excede límite") && !causa.includes("Restricción de Autogamia")) {
+           isBiologicallyValid = true;
+        }
+      }
+      
       if (causa.includes("Restricción de Autogamia")) isBiologicallyValid = false;
+      if (causa.includes("Mismo pedigrí")) isBiologicallyValid = false;
+      if (causa.includes("Kinship")) isBiologicallyValid = false;
+      if (causa.includes("Distancia Genética")) isBiologicallyValid = false;
       if (causa.includes("excede límite")) isBiologicallyValid = false;
-
-      // Regla de polen de la interfaz: El padre DEBE tener polen > 20
-      if (Number(car?.polen2) <= 20) isBiologicallyValid = false;
 
       if (m !== p && isBiologicallyValid) {
         crossesForMother.push({ car, val, varB: p });
@@ -2797,6 +2960,9 @@ function attemptManualCross(m: string, p: string) {
   const causa = getCausaInviabilidad(foundCar);
   if (causa.includes("Incompatibilidad de sexo")) isBiologicallyValid = false;
   if (causa.includes("Restricción de Autogamia")) isBiologicallyValid = false;
+  if (causa.includes("Mismo pedigrí")) isBiologicallyValid = false;
+  if (causa.includes("Kinship")) isBiologicallyValid = false;
+  if (causa.includes("Distancia Genética")) isBiologicallyValid = false;
   if (causa.includes("excede límite")) isBiologicallyValid = false;
   if (Number(foundCar?.polen2) <= 20) isBiologicallyValid = false; // El padre debe ser macho
 
