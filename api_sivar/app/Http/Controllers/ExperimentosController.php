@@ -1260,6 +1260,34 @@ class ExperimentosController extends Controller
             DB::beginTransaction();
             $this->iniciarParcela();
 
+            // Si ya existen registros previos para este experimento, verificar si hay evaluaciones con datos registrados
+            $hasEvaluations = DB::connection('sivar')->table('datos_campo')
+                ->where('id_dsno_enc', $id_dsno_enc)
+                ->whereNotNull('vlor')
+                ->where('vlor', '!=', '')
+                ->exists();
+
+            if ($hasEvaluations) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se puede regenerar el diseño porque ya existen evaluaciones registradas en el Libro de Campo.',
+                    'errorSaving' => 'EvaluacionesExistentes'
+                ], 422);
+            }
+
+            // Respaldar variables de evaluación previamente configuradas en datos_campo
+            $existingCampos = DB::connection('sivar')->table('datos_campo')
+                ->where('id_dsno_enc', $id_dsno_enc)
+                ->pluck('nmro_cmpo')
+                ->unique()
+                ->toArray();
+
+            // Limpiar datos generados previamente en orden para respetar claves foráneas y evitar violaciones de clave única
+            DB::connection('sivar')->table('datos_campo')->where('id_dsno_enc', $id_dsno_enc)->delete();
+            DB::connection('sivar')->table('dissalida_det')->where('id_dsno_enc', $id_dsno_enc)->delete();
+            DB::connection('sivar')->table('libro_det')->where('id_dsno_enc', $id_dsno_enc)->delete();
+
             switch ($disenio) {
                 case "bloques_completamente_azar":
                     $ejecucion = $this->bloquesCompletamenteAzar($id_dsno_enc, $localidades, $repeticiones);
@@ -1362,7 +1390,31 @@ class ExperimentosController extends Controller
             }
 
             if ($ejecucion['saved']) {
-                DB::commit();
+                // Si había variables asociadas al libro de campo, restablecerlas para las nuevas parcelas generadas
+                if (!empty($existingCampos)) {
+                    $nuevasSalidas = DB::connection('sivar')->table('dissalida_det')
+                        ->select('id_dissalida_det', 'id_dsno_enc')
+                        ->where('id_dsno_enc', $id_dsno_enc)
+                        ->get();
+
+                    $batch = [];
+                    foreach ($nuevasSalidas as $ns) {
+                        foreach ($existingCampos as $nc) {
+                            $batch[] = [
+                                'id_dissalida_det' => $ns->id_dissalida_det,
+                                'id_dsno_enc' => $ns->id_dsno_enc,
+                                'nmro_cmpo' => $nc
+                            ];
+                            if (count($batch) >= 500) {
+                                DB::connection('sivar')->table('datos_campo')->insert($batch);
+                                $batch = [];
+                            }
+                        }
+                    }
+                    if (!empty($batch)) {
+                        DB::connection('sivar')->table('datos_campo')->insert($batch);
+                    }
+                }
 
                 // Actualizar el diseño
                 $disenoEnc = DisenoEncabezado::find($id_dsno_enc);
@@ -1370,6 +1422,8 @@ class ExperimentosController extends Controller
                     $disenoEnc->exste_dsno = 'Si';
                     $disenoEnc->save();
                 }
+
+                DB::commit();
 
                 $responseArray = [
                     'success' => true,
