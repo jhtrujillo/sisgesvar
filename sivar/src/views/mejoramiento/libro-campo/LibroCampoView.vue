@@ -1056,7 +1056,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import { onBeforeRouteLeave } from "vue-router";
 import * as XLSX from "xlsx";
 import BackButton from "@/components/BackButton.vue";
 import LibroCampoService from "@/services/librocampo.services";
@@ -1797,6 +1798,14 @@ const limpiarFiltros = () => {
   isEditingManual.value = false;
   dirtyCellsCount.value = 0;
 };
+
+onBeforeRouteLeave(() => {
+  limpiarFiltros();
+});
+
+onUnmounted(() => {
+  limpiarFiltros();
+});
 
 // Exportar a Excel (.xlsx)
 const exportarLibroAExcel = () => {

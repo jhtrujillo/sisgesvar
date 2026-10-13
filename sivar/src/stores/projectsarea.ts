@@ -22,8 +22,13 @@ export const useProjectsAreaStore = defineStore("projectsArea", () => {
     }
   };
 
+  const resetProjectsArea = (): void => {
+    projectsAreaFilter.value = null;
+  };
+
   return {
     getProjectsAreaList,
-    projectsAreaFilter
+    projectsAreaFilter,
+    resetProjectsArea
   };
 });

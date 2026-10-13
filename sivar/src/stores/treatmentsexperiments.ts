@@ -34,8 +34,24 @@ export const useTreatmentsExperimentsStore = defineStore("treatmentsExperiments"
     }
   };
 
+  const resetTreatmentsExperiments = (): void => {
+    treatmentsExperimentsFilter.value = {
+      tratamientosF: [],
+      tratamientosI: [],
+      testigosFijosF: [],
+      testigosFijosI: [],
+      testigosMovilesF: [],
+      testigosMovilesI: [],
+      distTratF: [],
+      distTratI: [],
+      experimentoF: [],
+      experimentoI: []
+    };
+  };
+
   return {
     treatmentsExperimentsFilter,
-    getTreatmentsExperimentsList
+    getTreatmentsExperimentsList,
+    resetTreatmentsExperiments
   };
 });

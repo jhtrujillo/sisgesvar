@@ -1390,11 +1390,101 @@
       :estdo="mapaTargetEstdo"
       @close="isMapaModalOpen = false"
     />
+
+    <div v-if="isConfirmModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-fade-in">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100">
+        <div class="p-5 bg-amber-500/10 border-b border-amber-200/60 flex items-start gap-3">
+          <div class="p-2.5 bg-amber-500 text-white rounded-xl shadow-xs shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-800">¿Actualizar diseño y regenerar parcelas?</h3>
+            <p class="text-xs text-amber-800 font-semibold mt-0.5">Ensayo de {{ tipoToActualizar === "F" ? "Familias (F)" : "Individual (I)" }}</p>
+          </div>
+        </div>
+
+        <!-- Body de Advertencia -->
+        <div class="p-6 space-y-4 text-xs text-slate-600">
+          <div class="p-3.5 bg-amber-50 border border-amber-200/80 rounded-xl space-y-2 text-amber-900">
+            <p class="font-bold flex items-center gap-1.5"><span>⚠️</span> Esta acción afecta directamente al Libro de Campo:</p>
+            <ul class="list-disc list-inside space-y-1 text-[11px] text-amber-800 leading-relaxed">
+              <li><strong>Recalculará la distribución física de parcelas</strong> y la aleatorización en campo según los nuevos parámetros.</li>
+              <li>
+                Si este ensayo <strong>ya fue sembrado</strong> o <strong>cuenta con evaluaciones tomadas</strong>, re-sortear las parcelas alterará la
+                ubicación de los tratamientos.
+              </li>
+            </ul>
+          </div>
+
+          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/70 space-y-1.5 text-[11px]">
+            <div class="font-bold text-slate-700 uppercase tracking-wider mb-1 text-[10px]">Parámetros a guardar:</div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">Localidades:</span>
+              <span class="font-bold text-slate-800">{{ tipoToActualizar === "F" ? model.nLocalidadesF : model.nLocalidadesI }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">Repeticiones:</span>
+              <span class="font-bold text-slate-800">{{ tipoToActualizar === "F" ? model.nRepeticionesF : model.nRepeticionesI }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">Tratamientos:</span>
+              <span class="font-bold text-slate-800">{{ tipoToActualizar === "F" ? model.nTratamientoF : model.nTratamientoI }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">Testigos:</span>
+              <span class="font-bold text-slate-800">{{ tipoToActualizar === "F" ? model.nTestigosF : model.nTestigosI }}</span>
+            </div>
+          </div>
+
+          <p class="text-[11px] text-slate-500 italic">
+            Solo confirme si el experimento se encuentra en etapa de diseño/planeación previa a siembra o si está seguro de generar un nuevo croquis.
+          </p>
+        </div>
+
+        <!-- Footer de Acciones -->
+        <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
+          <button
+            type="button"
+            @click="isConfirmModalOpen = false"
+            :disabled="isUpdatingDesign"
+            class="px-4 py-2 border border-slate-200 text-xs font-semibold rounded-xl text-slate-600 bg-white hover:bg-slate-100 transition-all cursor-pointer"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            @click="ejecutarActualizarDiseno"
+            :disabled="isUpdatingDesign"
+            class="inline-flex items-center px-4 py-2 bg-cenicana hover:bg-cenicana-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
+          >
+            <svg v-if="isUpdatingDesign" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            Sí, Actualizar y Regenerar
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted, watch, computed, ref } from "vue";
+import { reactive, onMounted, onUnmounted, watch, computed, ref } from "vue";
+import { onBeforeRouteLeave } from "vue-router";
 import BackButton from "@/components/BackButton.vue";
 import ComboBoxMultiple from "@/components/ComboBoxMultiple.vue";
 import MapaParcelasModal from "@/components/MapaParcelasModal.vue";
@@ -1423,6 +1513,11 @@ const addDesingsDetailsStore = useAddDesingsDetailsStore();
 
 const isSearching = ref(false);
 const activeTrialTypeTab = ref<"F" | "I">("F");
+
+// Confirmación y Advertencia de Actualización de Diseño Modal State
+const isConfirmModalOpen = ref(false);
+const isUpdatingDesign = ref(false);
+const tipoToActualizar = ref<"F" | "I">("F");
 
 // Mapa Parcelas Modal State
 const isMapaModalOpen = ref(false);
@@ -1676,13 +1771,91 @@ const closeModal = () => {
   isModalOpen.value = false;
 };
 
+// Limpiar formulario y stores por completo
+const limpiarFormularioCompleto = () => {
+  model.nPrograma = null;
+  model.nArea = null;
+  model.nProyecto = null;
+  model.nSerie = null;
+  model.nEstado = null;
+  model.nTemporada = null;
+  model.nCruzMadre = null;
+  model.nCruzPadre = null;
+  model.cTipoEnsayo = null;
+  model.nTipoParcela = null;
+  model.nMinimoPlantas = 0;
+  model.nTotalPlantas = 0;
+  model.nIdDisenoF = null;
+  model.nIdDisenoI = null;
+  model.nIdDiseno = null;
+  model.tipoTabla = null;
+  model.listRegistros = null;
+  model.selectedRegistro = null;
+  model.nPlantulasDisponibles = 0;
+  model.nPlantulasTratamiento = "";
+  model.nDisenoExpF = null;
+  model.nLocalidadesF = 0;
+  model.nRepeticionesF = 0;
+  model.nTratamientoF = 0;
+  model.nTestigosF = 0;
+  model.nTestigosMovilF = 0;
+  model.nParcelaPpalF = 0;
+  model.cDescripcionF = null;
+  model.nDisenoExpI = null;
+  model.nLocalidadesI = 0;
+  model.nRepeticionesI = 0;
+  model.nTratamientoI = 0;
+  model.nTestigosI = 0;
+  model.nTestigosMovilI = 0;
+  model.nParcelaPpalI = 0;
+  model.cDescripcionI = null;
+
+  tableData.value = [];
+  tableDataTreatmentsExperimentsF.value = [];
+  tableDataTreatmentsExperimentsI.value = [];
+  tableDataTestigosF.value = [];
+  tableDataTestigosM.value = [];
+  tableDataTestigosFI.value = [];
+  tableDataTestigosMI.value = [];
+  listVarietiesTestigos.value = [];
+
+  currentPage.value = 1;
+  currentPageTreatmentsExperimentsF.value = 1;
+  currentPageTreatmentsExperimentsI.value = 1;
+  activeTrialTypeTab.value = "F";
+  activeTab.value = "tratamientos";
+  activeTabI.value = "tratamientosI";
+  isModalOpen.value = false;
+  isModalQuitarOpen.value = false;
+  isModalTestigosOpen.value = false;
+  isMapaModalOpen.value = false;
+  isConfirmModalOpen.value = false;
+  isUpdatingDesign.value = false;
+
+  experimentsStore.resetExperiments();
+  treatmentsExperimentsStore.resetTreatmentsExperiments();
+  treatmentsSeasonStore.resetTreatmentsSeason();
+  areasProgramStore.resetAreasProgram();
+  projectsAreaStore.resetProjectsArea();
+};
+
 // Carga Inicial
 onMounted(async () => {
+  limpiarFormularioCompleto();
   try {
     await searchParametersStore.getSearchParametersResult();
   } catch (error) {
     console.error("Error al cargar datos iniciales:", error);
   }
+});
+
+// Limpieza al salir de la vista o cambiar de ruta
+onBeforeRouteLeave(() => {
+  limpiarFormularioCompleto();
+});
+
+onUnmounted(() => {
+  limpiarFormularioCompleto();
 });
 
 // Watchers de cascada
@@ -1693,6 +1866,11 @@ watch(
       model.nArea = null;
       model.nProyecto = null;
       await areasProgramStore.getAreasProgramList(newProgram);
+    } else {
+      model.nArea = null;
+      model.nProyecto = null;
+      areasProgramStore.resetAreasProgram();
+      projectsAreaStore.resetProjectsArea();
     }
   },
   { immediate: true }
@@ -1704,10 +1882,31 @@ watch(
     if (newArea) {
       model.nProyecto = null;
       await projectsAreaStore.getProjectsAreaList(newArea);
+    } else {
+      model.nProyecto = null;
+      projectsAreaStore.resetProjectsArea();
     }
   },
   { immediate: true }
 );
+
+// Resetear experimento previo si el usuario cambia los parámetros de búsqueda principales
+watch([() => model.nProyecto, () => model.nSerie, () => model.nEstado], ([newProj, newSerie, newEstado], [oldProj, oldSerie, oldEstado]) => {
+  if (oldProj !== undefined || oldSerie !== undefined || oldEstado !== undefined) {
+    if (newProj !== oldProj || newSerie !== oldSerie || newEstado !== oldEstado) {
+      experimentsStore.resetExperiments();
+      treatmentsExperimentsStore.resetTreatmentsExperiments();
+      treatmentsSeasonStore.resetTreatmentsSeason();
+      tableDataTreatmentsExperimentsF.value = [];
+      tableDataTreatmentsExperimentsI.value = [];
+      tableDataTestigosF.value = [];
+      tableDataTestigosM.value = [];
+      tableDataTestigosFI.value = [];
+      tableDataTestigosMI.value = [];
+      tableData.value = [];
+    }
+  }
+});
 
 // Buscar experimento
 const buscarExperimento = async () => {
@@ -1832,6 +2031,17 @@ const refreshTreatmentsTables = async () => {
     model.nTestigosF = tableDataTestigosF.value.length + tableDataTestigosM.value.length;
     model.nTratamientoI = tableDataTreatmentsExperimentsI.value.length;
     model.nTestigosI = tableDataTestigosFI.value.length + tableDataTestigosMI.value.length;
+  } else {
+    tableDataTreatmentsExperimentsF.value = [];
+    tableDataTreatmentsExperimentsI.value = [];
+    tableDataTestigosF.value = [];
+    tableDataTestigosM.value = [];
+    tableDataTestigosFI.value = [];
+    tableDataTestigosMI.value = [];
+    model.nTratamientoF = 0;
+    model.nTestigosF = 0;
+    model.nTratamientoI = 0;
+    model.nTestigosI = 0;
   }
 };
 
@@ -2144,9 +2354,7 @@ const addTratamientosTemporada = async (arrayIds: Array<{ id_crzmnto: string; pl
 
 // Limpiar campos
 const limpiarCampos = () => {
-  (["nPrograma", "nArea", "nProyecto", "nSerie", "nEstado"] as Array<keyof typeof model>).forEach((key) => {
-    model[key] = null;
-  });
+  limpiarFormularioCompleto();
 };
 
 // Modal Testigos (Variedades Testigo)
@@ -2201,7 +2409,34 @@ const addSelectedTestigos = async () => {
   await refreshTreatmentsTables();
 };
 
-const actualizarDiseno = async (tipo: "F" | "I") => {
+// Solicitar confirmación con advertencia antes de actualizar
+const actualizarDiseno = (tipo: "F" | "I") => {
+  const isFamilias = tipo === "F";
+  const nIdDiseno = isFamilias ? dataListIdDisenoF.value : dataListIdDisenoI.value;
+  const rawDisenoExp = isFamilias ? model.nDisenoExpF : model.nDisenoExpI;
+  let nDisenoExp: any = rawDisenoExp;
+  if (typeof rawDisenoExp === "object" && rawDisenoExp !== null) {
+    nDisenoExp = (rawDisenoExp as any).id || (rawDisenoExp as any).value;
+  }
+
+  if (!nIdDiseno) {
+    toast.error(`No existe diseño para ${isFamilias ? "Familias" : "Individual"}. Verifique que el experimento esté creado en el Paso 1.`);
+    return;
+  }
+
+  if (!nDisenoExp) {
+    toast.error("Por favor seleccione el 'Diseño Experimental'.");
+    return;
+  }
+
+  tipoToActualizar.value = tipo;
+  isConfirmModalOpen.value = true;
+};
+
+// Ejecución tras confirmar la advertencia en el modal
+const ejecutarActualizarDiseno = async () => {
+  const tipo = tipoToActualizar.value;
+  isUpdatingDesign.value = true;
   try {
     const isFamilias = tipo === "F";
     const nIdDiseno = isFamilias ? dataListIdDisenoF.value : dataListIdDisenoI.value;
@@ -2215,16 +2450,6 @@ const actualizarDiseno = async (tipo: "F" | "I") => {
     const nTratamientos = isFamilias ? model.nTratamientoF : model.nTratamientoI;
     const nTestigos = isFamilias ? model.nTestigosF : model.nTestigosI;
     const cDescripcion = isFamilias ? model.cDescripcionF : model.cDescripcionI;
-
-    if (!nIdDiseno) {
-      toast.error(`No existe diseño para ${isFamilias ? "Familias" : "Individual"}. Verifique que el experimento esté creado en el Paso 1.`);
-      return;
-    }
-
-    if (!nDisenoExp) {
-      toast.error("Por favor seleccione el 'Diseño Experimental'.");
-      return;
-    }
 
     const payload = {
       nIdDiseno,
@@ -2249,8 +2474,14 @@ const actualizarDiseno = async (tipo: "F" | "I") => {
         }
       } catch (genErr: any) {
         console.warn("Generación de parcelas warning:", genErr);
-        toast.success(data?.message || `Diseño ${isFamilias ? "Familias" : "Individual"} actualizado correctamente.`);
+        const genMsg = genErr?.response?.data?.message || genErr?.message || "";
+        if (genMsg) {
+          toast.warning(genMsg);
+        } else {
+          toast.success(data?.message || `Diseño ${isFamilias ? "Familias" : "Individual"} actualizado correctamente.`);
+        }
       }
+      isConfirmModalOpen.value = false;
       await buscarExperimento();
     } else {
       toast.error(data?.message || "Error al actualizar el diseño.");
@@ -2259,6 +2490,8 @@ const actualizarDiseno = async (tipo: "F" | "I") => {
     console.error("Error al actualizar diseño:", error);
     const msg = error?.response?.data?.message || error?.message || "Ocurrió un error al actualizar el diseño.";
     toast.error(msg);
+  } finally {
+    isUpdatingDesign.value = false;
   }
 };
 
@@ -2282,6 +2515,15 @@ watch(
         model.nRepeticionesI = expI.rptcnes ?? model.nRepeticionesI ?? 1;
         model.cDescripcionI = expI.dscrpcion ?? model.cDescripcionI ?? "";
       }
+    } else {
+      model.nDisenoExpF = null;
+      model.nLocalidadesF = 0;
+      model.nRepeticionesF = 0;
+      model.cDescripcionF = null;
+      model.nDisenoExpI = null;
+      model.nLocalidadesI = 0;
+      model.nRepeticionesI = 0;
+      model.cDescripcionI = null;
     }
   },
   { immediate: true, deep: true }

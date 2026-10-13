@@ -39,9 +39,14 @@ export const useExperimentsStore = defineStore("experiments", () => {
     }
   };
 
+  const resetExperiments = (): void => {
+    experimentsFilter.value = null;
+  };
+
   return {
     experimentsFilter,
     getExperimentsList,
-    createExperiment
+    createExperiment,
+    resetExperiments
   };
 });

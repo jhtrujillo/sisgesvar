@@ -23,8 +23,13 @@ export const useTreatmentsSeasonStore = defineStore("treatments", () => {
     }
   };
 
+  const resetTreatmentsSeason = (): void => {
+    treatmentsSeasonFilter.value = [];
+  };
+
   return {
     treatmentsSeasonFilter,
-    getTreatmentsSeasonList
+    getTreatmentsSeasonList,
+    resetTreatmentsSeason
   };
 });

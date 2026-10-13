@@ -23,8 +23,13 @@ export const useAreasProgramStore = defineStore("areasProgram", () => {
     }
   };
 
+  const resetAreasProgram = (): void => {
+    areasProgramFilter.value = null;
+  };
+
   return {
     areasProgramFilter,
-    getAreasProgramList
+    getAreasProgramList,
+    resetAreasProgram
   };
 });
