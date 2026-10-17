@@ -1,7 +1,6 @@
 // Variables de entorno de cada ruta
 export const ROUTE_HOME = "/";
 export const ROUTE_LOGIN = "/login";
-export const ROUTE_USERS = "/users";
 
 //Bioinformatica
 export const ROUTE_BIOINFORMATICA = "bioinformatica/";
@@ -54,7 +53,6 @@ export const ROUTE_SIEMBRA_CAMPO_VIVEROS_LOTES = "mejoramiento/siembra-campo/viv
 export const NON_SIGNIFICANT_ROUTES = [
   ROUTE_HOME,
   ROUTE_LOGIN,
-  ROUTE_USERS,
 
   ROUTE_BIOINFORMATICA,
   ROUTE_BIOJAVA,

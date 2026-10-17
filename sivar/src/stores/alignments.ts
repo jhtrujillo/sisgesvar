@@ -1,5 +1,3 @@
-import router from "@/router";
-import { ROUTE_ALIGNMENTS } from "../router/routes";
 import alignmentsService from "@/services/alignments.services";
 
 import { defineStore } from "pinia";

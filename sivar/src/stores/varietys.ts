@@ -10,7 +10,7 @@ export const useVarietysStore = defineStore(
   () => {
     const VarietysList = ref<Varietys[]>([]);
 
-    const getVarietys= async () => {
+    const getVarietys = async () => {
       try {
         const result = await varietyService.getVarietysList();
         console.log(result);
