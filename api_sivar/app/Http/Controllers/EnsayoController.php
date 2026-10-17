@@ -10,7 +10,6 @@ use App\Http\Requests\StoreEnsayoRequest;
 use App\Http\Requests\ConfirmImportEnsayoRequest;
 use App\Http\Requests\UpdateCellEnsayoRequest;
 use App\Http\Requests\ExecuteStandardizationRequest;
-use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
 
 class EnsayoController extends Controller

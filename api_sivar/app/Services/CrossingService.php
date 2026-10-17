@@ -4,7 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
 use App\Models\Vivero;
-use App\Models\Projects;
+use App\Models\Proyecto;
 use Carbon\Carbon;
 use App\Models\Flowering;
 // Include other necessary models if required by the logic
@@ -428,7 +428,7 @@ class CrossingService
         $fechaf = Carbon::today()->format('Y-m-d');
         $fechai = Carbon::yesterday()->format('Y-m-d');
 
-        $proyectos = Projects::selectRaw('remote_pg_sipro.nm_prycto,remote_pg_sipro.cd_cntble,remote_pg_sipro.id_prycto, count(*) as numero')
+        $proyectos = Proyecto::selectRaw('remote_pg_sipro.nm_prycto,remote_pg_sipro.cd_cntble,remote_pg_sipro.id_prycto, count(*) as numero')
             ->join('floracion', 'floracion.id_pr', '=', 'remote_pg_sipro.id_prycto')
             ->groupBy('remote_pg_sipro.id_prycto', 'remote_pg_sipro.nm_prycto', 'remote_pg_sipro.cd_cntble')
             ->havingRaw('count(*)> 0')
@@ -634,7 +634,7 @@ class CrossingService
         $fechaf = Carbon::today()->format('Y-m-d');
         $fechai = Carbon::yesterday()->format('Y-m-d');
 
-        $proyectos = Projects::selectRaw('remote_pg_sipro.nm_prycto,remote_pg_sipro.cd_cntble,remote_pg_sipro.id_prycto, count(*) as numero')
+        $proyectos = Proyecto::selectRaw('remote_pg_sipro.nm_prycto,remote_pg_sipro.cd_cntble,remote_pg_sipro.id_prycto, count(*) as numero')
             ->join('floracion', 'floracion.id_pr', '=', 'remote_pg_sipro.id_prycto')
             ->groupBy('remote_pg_sipro.id_prycto', 'remote_pg_sipro.nm_prycto', 'remote_pg_sipro.cd_cntble')
             ->havingRaw('count(*)> 0')
@@ -1109,7 +1109,7 @@ class CrossingService
 
     public function crossingInitialData()
     {
-        return Projects::selectRaw('remote_pg_sipro.nm_prycto, remote_pg_sipro.cd_cntble, remote_pg_sipro.id_prycto, count(*) as numero')
+        return Proyecto::selectRaw('remote_pg_sipro.nm_prycto, remote_pg_sipro.cd_cntble, remote_pg_sipro.id_prycto, count(*) as numero')
             ->join('floracion', 'floracion.id_pr', '=', 'remote_pg_sipro.id_prycto')
             ->groupBy('remote_pg_sipro.id_prycto', 'remote_pg_sipro.nm_prycto', 'remote_pg_sipro.cd_cntble')
             ->havingRaw('count(*) > 0')

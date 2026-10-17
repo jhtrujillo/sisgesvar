@@ -36,31 +36,11 @@ class ProcessesController extends Controller
             $output = $ssh->exec('cd /biosamba/BioDrive/sebastian '.' && sh runcluster.sh \''.$contenido.'\'');
             // $output = $ssh->exec('cd /biosamba/BioDrive/sebastian && sh test.sh '.$contenido);
     
-            // return response()->json([$nombreArchivo.' Creada']);
-            return response()->json(['Creada']);
             return response()->json(['message' => 'Archivo generado', 'archivo' => $nombreArchivo]);
         }
         catch (\Exception $e) {
             return response("error al guardar", 500);
         }
-
-
-        if (!$model) {
-            return response()->json(['message' => 'Consulta no encontrada'], 404);
-        }
-      
-
-
-        $ssh = new SSH2('192.168.153.238:53670');
-        if (!$ssh->login(env('SSH_USERNAME'), env('SSH_PASSWORD'))) {
-            throw new Exception('No se pudo conectar al servidor remoto');
-        }
-        
-        $output = $ssh->exec('cd /biosamba/BioDrive/sebastian && ls');
-        
-        return response()->json([$output]);
-            set_time_limit(900);
-
     }
 }
 

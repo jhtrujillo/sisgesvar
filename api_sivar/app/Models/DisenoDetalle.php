@@ -30,7 +30,7 @@ class DisenoDetalle extends Model
 
 
     /*public function cruzamiento(){
-        return $this->belongsTo('App\Models\Cruzamiento', 'trtmnto',  'id_crzmnto');
+        return $this->belongsTo('App\Models\Crossing', 'trtmnto',  'id_crzmnto');
     }
 
     public function toArray(){

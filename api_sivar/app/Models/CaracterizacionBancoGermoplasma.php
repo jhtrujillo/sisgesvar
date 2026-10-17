@@ -5,16 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Projects extends Model
+class CaracterizacionBancoGermoplasma extends Model
 {
     use HasFactory;
     protected $connection = 'sivar';
-    protected $table = 'remote_pg_sipro';
-    protected $primaryKey = 'id_prycto';
-    public $incrementing = true;
+    protected $table = 'caracterizacion_banco_germoplasma';
+    public $incrementing = false;
     public $timestamps = false;
+
     protected $fillable = [
-        
+        'ensayo'
     ];
 
     protected $hidden = [

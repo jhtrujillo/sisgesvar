@@ -128,12 +128,7 @@ class CrossingController extends Controller
             return response()->json(['message' => $result['message']], 404);
         }
     }
-    public function criteriosBancoGermoplasma(Request $request)
-    {
-        $bg = "";
 
-        return response()->json($bg);
-    }
     public function criteriosBancoGermoplasmaPorVariedad(Request $request, $variedad)
     {
         $criterios = $this->crossingService->criteriosBancoGermoplasmaPorVariedad($variedad);
@@ -755,34 +750,7 @@ class CrossingController extends Controller
 
         return response()->json($result);
     }
-    public function cargarCruzamientos(Request $request)
-    {
-        // Aquí manejas la carga de datos de cruzamientos externos
-        // Puedes procesar los datos y almacenarlos en tu base de datos o realizar cualquier acción necesaria
-        // Después, puedes devolver una respuesta JSON para indicar el resultado de la carga, por ejemplo:
 
-        $response = [
-            'success' => true,
-            'message' => 'Carga de cruzamientos externos exitosa',
-        ];
-
-        return response()->json($response);
-    }
-    public function modificarCruzamiento(Request $request, $idCruzamiento)
-    {
-
-        $cruzamiento = Crossing::find($idCruzamiento);
-        $ponderados = DB::connection('sivar')->table('ponderados_cruzamiento')
-            ->where('id_ponderado', '=', $cruzamiento->id_ponderados)
-            ->leftJoin('caracteristicas_valor_merito', 'caracteristicas_valor_merito.id_caracteristica', '=', 'ponderados_cruzamiento.id_caracteristica')
-            ->get();
-        $response = [
-            'success' => true,
-            'message' => 'Cruzamiento modificado con éxito',
-        ];
-
-        return response()->json($response);
-    }
     public function modificarCruzamientoPost(Request $request)
     {
         try {
@@ -926,17 +894,17 @@ class CrossingController extends Controller
             return response()->json(['error' => 'Proyecto es requerido'], 400);
         }
 
+        // Siempre buscar el id_prycto real a partir del cd_cntble primero
         $idPrycto = null;
-        if (is_numeric($proyecto) && (int)$proyecto < 100000) {
+        $projDb = DB::connection('sivar')
+            ->table('remote_pg_sipro')
+            ->where('cd_cntble', (string)$proyecto)
+            ->first();
+        if ($projDb) {
+            $idPrycto = $projDb->id_prycto;
+        } elseif (is_numeric($proyecto) && (int)$proyecto < 100000) {
+            // Fallback: si no se encuentra por cd_cntble, asumir que ya es un id_prycto
             $idPrycto = (int)$proyecto;
-        } else {
-            $projDb = DB::connection('sivar')
-                ->table('remote_pg_sipro')
-                ->where('cd_cntble', (string)$proyecto)
-                ->first();
-            if ($projDb) {
-                $idPrycto = $projDb->id_prycto;
-            }
         }
 
         $query = DB::connection('sivar')
