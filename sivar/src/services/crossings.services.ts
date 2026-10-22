@@ -82,9 +82,9 @@ async function sendManualToCommonBag(data: { tipo_filtro: string, valor_filtro: 
   return await api.post(url, data, true);
 }
 
-async function enviarFloresLibresABolsaComun(proyecto: string): Promise<any> {
+async function enviarFloresLibresABolsaComun(proyecto: string, payload?: { variedades?: any[]; fecha_i?: string; fecha_f?: string }): Promise<any> {
   const url = `${urls.API_URL}crossing/programming/send_free_to_common_bag`;
-  return await api.post(url, { proyecto }, true);
+  return await api.post(url, { proyecto, ...payload }, true);
 }
 
 async function getFloresOtrosProyectos(proyectoActual: string): Promise<any> {

@@ -907,6 +907,85 @@ class CrossingController extends Controller
             $idPrycto = (int)$proyecto;
         }
 
+        $variedades = $request->input('variedades');
+        $fechaI = $request->input('fecha_i');
+        $fechaF = $request->input('fecha_f');
+
+        // Si se especifican las variedades libres exactas con su remanente
+        if (!empty($variedades) && is_array($variedades)) {
+            $totalActualizadas = 0;
+
+            foreach ($variedades as $item) {
+                $vrdad = is_array($item) ? ($item['vrdad'] ?? null) : null;
+                $cantidad = is_array($item) ? (int)($item['cantidad'] ?? 0) : 0;
+
+                if (!$vrdad || $cantidad <= 0) {
+                    continue;
+                }
+
+                $query = DB::connection('sivar')
+                    ->table('floracion')
+                    ->where(function ($q) {
+                        $q->where('estado', 0)->orWhere('estado', '0');
+                    })
+                    ->where('bolsa_comun', 0)
+                    ->where('vrdad', $vrdad);
+
+                if ($idPrycto) {
+                    $query->where('id_pr', $idPrycto);
+                }
+
+                if (!empty($fechaI) && !empty($fechaF)) {
+                    $query->whereBetween('fcha', [$fechaI, $fechaF]);
+                }
+
+                $ids = $query->orderBy('fcha', 'desc')
+                    ->limit($cantidad)
+                    ->pluck('id_flrcion');
+
+                // Si por rango estricto de fecha no alcanzó la cantidad esperada, buscar las más recientes disponibles sin restricción de fecha
+                if ($ids->count() < $cantidad) {
+                    $faltantes = $cantidad - $ids->count();
+                    $fallbackQuery = DB::connection('sivar')
+                        ->table('floracion')
+                        ->where(function ($q) {
+                            $q->where('estado', 0)->orWhere('estado', '0');
+                        })
+                        ->where('bolsa_comun', 0)
+                        ->where('vrdad', $vrdad);
+
+                    if ($idPrycto) {
+                        $fallbackQuery->where('id_pr', $idPrycto);
+                    }
+
+                    if ($ids->isNotEmpty()) {
+                        $fallbackQuery->whereNotIn('id_flrcion', $ids);
+                    }
+
+                    $moreIds = $fallbackQuery->orderBy('fcha', 'desc')
+                        ->limit($faltantes)
+                        ->pluck('id_flrcion');
+
+                    $ids = $ids->merge($moreIds);
+                }
+
+                if ($ids->isNotEmpty()) {
+                    $updated = DB::connection('sivar')
+                        ->table('floracion')
+                        ->whereIn('id_flrcion', $ids)
+                        ->update(['bolsa_comun' => 1]);
+
+                    $totalActualizadas += $updated;
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'updated_count' => $totalActualizadas,
+                'message' => "Se enviaron {$totalActualizadas} flores libres a la Bolsa Común con éxito."
+            ]);
+        }
+
         $query = DB::connection('sivar')
             ->table('floracion')
             ->where(function ($q) {
@@ -916,6 +995,10 @@ class CrossingController extends Controller
 
         if ($idPrycto) {
             $query->where('id_pr', $idPrycto);
+        }
+
+        if (!empty($fechaI) && !empty($fechaF)) {
+            $query->whereBetween('fcha', [$fechaI, $fechaF]);
         }
 
         $updatedCount = $query->update(['bolsa_comun' => 1]);
