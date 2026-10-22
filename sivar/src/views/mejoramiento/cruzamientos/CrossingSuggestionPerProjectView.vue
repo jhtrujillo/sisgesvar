@@ -249,26 +249,38 @@
               </button>
             </div>
 
-            <label class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-600 font-bold mr-3" title="Ignorar restricción biológica de sexo para sugerir cruces inversos">
+            <label
+              class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-600 font-bold mr-3"
+              title="Ignorar restricción biológica de sexo para sugerir cruces inversos"
+            >
               <input type="checkbox" v-model="permitirPolicruzamientos" class="rounded h-3.5 w-3.5 border-slate-300 text-indigo-600 focus:ring-indigo-500" />
               <span>Policruzamientos</span>
             </label>
-            
+
             <!-- Separator -->
             <div class="h-6 w-px bg-slate-200 mx-3"></div>
 
             <!-- Filtros Genéticos (UI Mejorada) -->
             <div class="flex items-center space-x-4 bg-slate-50 border border-slate-200 rounded-md px-3 py-1 shadow-sm">
               <span class="text-[10px] uppercase tracking-wider font-extrabold text-slate-400">Filtros Genéticos</span>
-              
+
               <!-- DG Filter -->
               <div class="flex items-center space-x-2">
-                <label class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-700 font-bold transition-opacity" :class="{ 'opacity-50': !aplicarDG }" title="Filtro de Distancia Genética Mínima">
+                <label
+                  class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-700 font-bold transition-opacity"
+                  :class="{ 'opacity-50': !aplicarDG }"
+                  title="Filtro de Distancia Genética Mínima"
+                >
                   <input type="checkbox" v-model="aplicarDG" class="rounded h-3.5 w-3.5 border-slate-300 text-emerald-600 focus:ring-emerald-500" />
                   <span>DG min.</span>
                 </label>
                 <div v-show="aplicarDG" class="relative">
-                  <input type="number" step="0.01" v-model="umbralDG" class="w-14 h-6 text-[11px] pl-1 pr-1 border border-slate-300 rounded focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white shadow-inner text-center font-mono text-emerald-700 font-bold" />
+                  <input
+                    type="number"
+                    step="0.01"
+                    v-model="umbralDG"
+                    class="w-14 h-6 text-[11px] pl-1 pr-1 border border-slate-300 rounded focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white shadow-inner text-center font-mono text-emerald-700 font-bold"
+                  />
                 </div>
               </div>
 
@@ -276,16 +288,24 @@
 
               <!-- Kinship Filter -->
               <div class="flex items-center space-x-2">
-                <label class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-700 font-bold transition-opacity" :class="{ 'opacity-50': !aplicarKinship }" title="Filtro de Parentesco Máximo (Kinship)">
+                <label
+                  class="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-700 font-bold transition-opacity"
+                  :class="{ 'opacity-50': !aplicarKinship }"
+                  title="Filtro de Parentesco Máximo (Kinship)"
+                >
                   <input type="checkbox" v-model="aplicarKinship" class="rounded h-3.5 w-3.5 border-slate-300 text-rose-600 focus:ring-rose-500" />
                   <span>Kinship máx.</span>
                 </label>
                 <div v-show="aplicarKinship" class="relative">
-                  <input type="number" step="0.01" v-model="umbralKinship" class="w-14 h-6 text-[11px] pl-1 pr-1 border border-slate-300 rounded focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 bg-white shadow-inner text-center font-mono text-rose-700 font-bold" />
+                  <input
+                    type="number"
+                    step="0.01"
+                    v-model="umbralKinship"
+                    class="w-14 h-6 text-[11px] pl-1 pr-1 border border-slate-300 rounded focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 bg-white shadow-inner text-center font-mono text-rose-700 font-bold"
+                  />
                 </div>
               </div>
             </div>
-
 
             <button
               type="button"
@@ -484,7 +504,9 @@
                       <!-- Envoltura <template> para evaluar v-if en el scope correcto de Vue 3 -->
                       <template v-for="(flor, indexCol) in floresSeleccionadas || []" :key="indexCol">
                         <th
-                          v-if="(!ocultarInviables || isColumnViable(indexCol)) && (Number(flor.polen) > 20 || isColumnViable(indexCol) || permitirPolicruzamientos)"
+                          v-if="
+                            (!ocultarInviables || isColumnViable(indexCol)) && (Number(flor.polen) > 20 || isColumnViable(indexCol) || permitirPolicruzamientos)
+                          "
                           class="px-2 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-650 bg-slate-50 border-r border-slate-100 sticky top-0 z-10 min-w-[75px]"
                         >
                           <span
@@ -524,7 +546,10 @@
                     <!-- Envoltura <template> para evaluar v-if en el scope correcto de Vue 3 -->
                     <template v-for="(viabilidadRow, indexRow) in viabilidadesMatriz || []" :key="indexRow">
                       <tr
-                        v-if="(!ocultarInviables || isRowViable(viabilidadRow)) && (Number(viabilidadRow[0]?.polen) <= 20 || isRowViable(viabilidadRow) || permitirPolicruzamientos)"
+                        v-if="
+                          (!ocultarInviables || isRowViable(viabilidadRow)) &&
+                          (Number(viabilidadRow[0]?.polen) <= 20 || isRowViable(viabilidadRow) || permitirPolicruzamientos)
+                        "
                         class="hover:bg-slate-50/40 transition-colors"
                       >
                         <!-- Celda Madre Fija a la izquierda -->
@@ -562,7 +587,10 @@
                         <!-- Celdas de la matriz filtradas por columna -->
                         <template v-for="(car, indexCol) in viabilidadRow" :key="indexCol">
                           <td
-                            v-if="(!ocultarInviables || isColumnViable(indexCol)) && (Number(car?.polen2) > 20 || isColumnViable(indexCol) || permitirPolicruzamientos)"
+                            v-if="
+                              (!ocultarInviables || isColumnViable(indexCol)) &&
+                              (Number(car?.polen2) > 20 || isColumnViable(indexCol) || permitirPolicruzamientos)
+                            "
                             :class="[getHeatmapClass(car?.varA, car?.varB, !!car?.viabilidad, car?.vm2)]"
                             class="p-2 text-center border-b border-slate-100 transition-all duration-200 min-w-[75px]"
                           >
@@ -575,8 +603,15 @@
                                 class="h-3.5 w-3.5 rounded border-slate-350 text-emerald-600 focus:ring-emerald-100 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-slate-200"
                               />
                               <!-- Indicador de Policruzamiento (Cruce Invertido) -->
-                              <div v-if="car?.viabilidad && !car?.emasculado && (Number(car?.polen2) <= 20 || Number(car?.polen) > 20) && car?.varA !== car?.varB" class="mb-1">
-                                <span class="bg-indigo-100 text-indigo-700 text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm" title="Cruce Recíproco (Sexos Invertidos)">🔄 Recíproco</span>
+                              <div
+                                v-if="car?.viabilidad && !car?.emasculado && (Number(car?.polen2) <= 20 || Number(car?.polen) > 20) && car?.varA !== car?.varB"
+                                class="mb-1"
+                              >
+                                <span
+                                  class="bg-indigo-100 text-indigo-700 text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm"
+                                  title="Cruce Recíproco (Sexos Invertidos)"
+                                  >🔄 Recíproco</span
+                                >
                               </div>
                               <!-- Selector numérico cuando es viable -->
                               <div v-if="car?.viabilidad" class="mt-0.5 mb-1">
@@ -594,7 +629,12 @@
                                 :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-white' : 'text-slate-900']"
                               >
                                 {{ car.varA }} x {{ car.varB }}
-                                <span v-if="car.emasculado" class="block text-[8.5px] mt-0.5" :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-rose-200' : 'text-rose-600']">[EMASCULADA]</span>
+                                <span
+                                  v-if="car.emasculado"
+                                  class="block text-[8.5px] mt-0.5"
+                                  :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-rose-200' : 'text-rose-600']"
+                                  >[EMASCULADA]</span
+                                >
                               </div>
                               <div
                                 class="text-[8px] font-semibold leading-tight"
@@ -615,8 +655,8 @@
                                         : Math.round(getIndiceCombinado(car.varA, car.varB, car.vm2))
                                     }}
                                   </template>
-                                  <template v-else> 
-                                    DG: {{ getDistancia(car.varA, car.varB) || "NA" }} <br/>
+                                  <template v-else>
+                                    DG: {{ getDistancia(car.varA, car.varB) || "NA" }} <br />
                                     K: {{ car.kinship_score !== null && car.kinship_score !== undefined ? Number(car.kinship_score).toFixed(3) : "NA" }}
                                   </template>
                                 </span>
@@ -933,7 +973,9 @@
 
             <div class="flex flex-col items-end">
               <div class="flex items-center space-x-3 mb-1">
-                <span class="text-[11px] font-bold text-slate-500">Cruces seleccionados: <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded ml-1">{{ totalCrucesSeleccionados }}</span></span>
+                <span class="text-[11px] font-bold text-slate-500"
+                  >Cruces seleccionados: <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded ml-1">{{ totalCrucesSeleccionados }}</span></span
+                >
                 <div v-if="hasOverusedFlowers" class="text-[10px] text-rose-600 font-bold">⚠️ Excedes las flores disponibles</div>
               </div>
               <button
@@ -962,7 +1004,8 @@
         <h2 class="text-3xl font-extrabold text-slate-800 mb-2">¡Cruzamientos Programados Exitosamente!</h2>
         <p class="text-slate-500 mb-8 max-w-lg">
           Se han guardado y oficializado <strong class="text-emerald-700">{{ resumenCrucesGuardados.length }} cruzamientos</strong> para el proyecto
-          <strong class="text-emerald-700">{{ selectedCdCntble }}</strong>. Ahora forman parte del historial de Cenicaña.
+          <strong class="text-emerald-700">{{ selectedCdCntble }}</strong
+          >. Ahora forman parte del historial de Cenicaña.
         </p>
 
         <!-- Tabla Resumen -->
@@ -1007,7 +1050,12 @@
             class="w-full sm:w-auto px-6 py-3 text-sm font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-xl shadow-md transition-all duration-200 flex items-center justify-center"
           >
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              ></path>
             </svg>
             Descargar Programación (Excel)
           </button>
@@ -1055,9 +1103,7 @@
             </svg>
           </div>
           <h2 class="text-2xl font-black tracking-tight">¡Programación Finalizada!</h2>
-          <p class="text-xs text-emerald-100 font-medium mt-1">
-            Los cruzamientos han sido guardados con éxito en la base de datos de Cenicaña.
-          </p>
+          <p class="text-xs text-emerald-100 font-medium mt-1">Los cruzamientos han sido guardados con éxito en la base de datos de Cenicaña.</p>
         </div>
 
         <!-- Cuerpo del Modal -->
@@ -1094,21 +1140,43 @@
             <div class="flex items-start space-x-3">
               <div class="p-2 bg-emerald-100 text-emerald-700 rounded-xl mt-0.5 shadow-sm">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                  ></path>
                 </svg>
               </div>
               <div class="flex-1">
                 <h4 class="text-sm font-bold text-slate-800">Bolsa Común de Flores</h4>
                 <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">
-                  Quedan <strong class="text-emerald-700 font-extrabold">{{ totalFloresLibres }} flores libres</strong> en este proyecto.
+                  Quedan <strong class="text-emerald-700 font-extrabold">{{ totalFloresLibres }} flores libres</strong> no utilizadas en este cruzamiento.
                   ¿Deseas enviarlas a la <strong>Bolsa Común</strong> para que estén disponibles en otros proyectos?
                 </p>
+
+                <div
+                  v-if="variedadesLibresList.length > 0"
+                  class="mt-2 max-h-28 overflow-y-auto bg-white/80 rounded-xl p-2 border border-emerald-100 text-[11px] space-y-1"
+                >
+                  <div v-for="item in variedadesLibresList" :key="item.vrdad" class="flex justify-between items-center text-slate-700 px-1 py-0.5">
+                    <span class="font-medium truncate mr-2">{{ item.vrdad }}</span>
+                    <span class="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 shrink-0"
+                      >{{ item.cantidad }} {{ item.cantidad === 1 ? "flor libre" : "flores libres" }}</span
+                    >
+                  </div>
+                </div>
               </div>
             </div>
 
             <!-- Estado de confirmación enviado a Bolsa Común -->
-            <div v-if="floresEnviadasABolsa" class="bg-emerald-100/80 border border-emerald-300 text-emerald-800 px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 animate-fade-in">
-              <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+            <div
+              v-if="floresEnviadasABolsa"
+              class="bg-emerald-100/80 border border-emerald-300 text-emerald-800 px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center space-x-2 animate-fade-in"
+            >
+              <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+              </svg>
               <span>¡{{ totalFloresLibres }} flores libres enviadas a la Bolsa Común con éxito!</span>
             </div>
 
@@ -1119,8 +1187,13 @@
                 :disabled="isSendingBolsa"
                 class="w-full sm:flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-extrabold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center"
               >
-                <svg v-if="isSendingBolsa" class="animate-spin h-3.5 w-3.5 mr-2 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                <svg v-else class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                <svg v-if="isSendingBolsa" class="animate-spin h-3.5 w-3.5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                <svg v-else class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
                 {{ isSendingBolsa ? "Enviando..." : "Sí, Enviar a Bolsa Común" }}
               </button>
 
@@ -1144,7 +1217,9 @@
               class="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white text-xs font-black rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center space-x-2"
             >
               <span>Ver Resumen Detallado de Cruzamientos</span>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+              </svg>
             </button>
           </div>
         </div>
@@ -1228,9 +1303,10 @@
       v-model:isOpen="isComparatorOpen"
       :motherName="comparatorMother"
       :fatherName="comparatorFather"
-      :initiallyViable="comparatorInitiallyViable" :causaVeto="comparatorCausa"
+      :initiallyViable="comparatorInitiallyViable"
+      :causaVeto="comparatorCausa"
     />
-  
+
     <!-- Modal HTML de Emasculación -->
     <div v-if="showEmasculateModal" class="relative z-[9999]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
       <div class="fixed inset-0 bg-slate-900/60 transition-opacity"></div>
@@ -1241,26 +1317,38 @@
               <div class="sm:flex sm:items-start">
                 <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 sm:mx-0 sm:h-10 sm:w-10">
                   <svg class="h-6 w-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
                   </svg>
                 </div>
                 <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                   <h3 class="text-lg font-black leading-6 text-slate-900" id="modal-title">Atención: Incompatibilidad de Sexo</h3>
                   <div class="mt-2">
                     <p class="text-sm text-slate-500 font-medium">
-                      Estás seleccionando un cruce entre dos variedades masculinas. Para que sea biológicamente viable, debes elegir cuál de las dos actuará como <strong>Hembra (Receptora)</strong>.
+                      Estás seleccionando un cruce entre dos variedades masculinas. Para que sea biológicamente viable, debes elegir cuál de las dos actuará
+                      como <strong>Hembra (Receptora)</strong>.
                     </p>
                     <div class="mt-4 bg-slate-50 border border-slate-100 rounded-lg p-3">
-                      <p class="text-sm text-slate-700 font-bold mb-3 text-center">
-                        ¿A cuál de los dos deseas Emascular?
-                      </p>
+                      <p class="text-sm text-slate-700 font-bold mb-3 text-center">¿A cuál de los dos deseas Emascular?</p>
                       <div class="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3 justify-center">
-                         <button @click="confirmEmasculateAction(emasculateTargetCar?.varA)" type="button" class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-500">
-                           {{ emasculateTargetCar?.varA || emasculateTargetVar }} (Fila)
-                         </button>
-                         <button v-if="emasculateTargetCar?.varB" @click="confirmEmasculateAction(emasculateTargetCar?.varB)" type="button" class="inline-flex w-full justify-center rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-rose-500">
-                           {{ emasculateTargetCar?.varB }} (Columna)
-                         </button>
+                        <button
+                          @click="confirmEmasculateAction(emasculateTargetCar?.varA)"
+                          type="button"
+                          class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-500"
+                        >
+                          {{ emasculateTargetCar?.varA || emasculateTargetVar }} (Fila)
+                        </button>
+                        <button
+                          v-if="emasculateTargetCar?.varB"
+                          @click="confirmEmasculateAction(emasculateTargetCar?.varB)"
+                          type="button"
+                          class="inline-flex w-full justify-center rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-rose-500"
+                        >
+                          {{ emasculateTargetCar?.varB }} (Columna)
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -1268,13 +1356,19 @@
               </div>
             </div>
             <div class="bg-slate-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-              <button @click="cancelEmasculateAction" type="button" class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-4 py-2.5 text-sm font-bold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto">Cancelar</button>
+              <button
+                @click="cancelEmasculateAction"
+                type="button"
+                class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-4 py-2.5 text-sm font-bold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:mt-0 sm:w-auto"
+              >
+                Cancelar
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
-</div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -1296,59 +1390,59 @@ const emasculateTargetVar = ref("");
 const emasculateTargetCar = ref<any>(null);
 
 const confirmEmasculateAction = (targetVar = null) => {
-  if (!emasculateTargetCar.value && typeof confirmGlobalEmasculate === 'function') {
+  if (!emasculateTargetCar.value && typeof confirmGlobalEmasculate === "function") {
     return confirmGlobalEmasculate();
   }
 
   if (emasculateTargetCar.value) {
     let carToActivate = emasculateTargetCar.value;
-    
+
     // Si eligieron al Padre (Columna) en lugar de la Madre (Fila), activamos la celda recíproca
-    
-    if (typeof emasculadasLocales !== 'undefined') {
+
+    if (typeof emasculadasLocales !== "undefined") {
       emasculadasLocales.value.add(targetVar);
       localStorage.setItem(emasculadasKey.value, JSON.stringify(Array.from(emasculadasLocales.value)));
     }
-    if (typeof emasculatedVarieties !== 'undefined') {
+    if (typeof emasculatedVarieties !== "undefined") {
       emasculatedVarieties.value.add(targetVar);
       localStorage.setItem(emasculadasKey.value, JSON.stringify(Array.from(emasculatedVarieties.value)));
     }
     if (targetVar === carToActivate.varB) {
-       let found = false;
-       
-       if (typeof viabilidadesMatriz !== 'undefined') {
-         const rows = viabilidadesMatriz.value || [];
-         for (const row of rows) {
-           if (row && Array.isArray(row)) {
-             for (const cell of row) {
-               if (cell && cell.varA === carToActivate.varB && cell.varB === carToActivate.varA) {
-                 carToActivate = cell;
-                 found = true;
-                 break;
-               }
-             }
-           }
-           if (found) break;
-         }
-       } else if (typeof MatrixCrossingStore !== 'undefined') {
-         const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
-         for (const row of viabilidades) {
-           if (row && Array.isArray(row)) {
-             for (const cell of row) {
-               if (cell && cell.varA === carToActivate.varB && cell.varB === carToActivate.varA) {
-                 carToActivate = cell;
-                 found = true;
-                 break;
-               }
-             }
-           }
-           if (found) break;
-         }
-       }
-       
-       if (found) {
-         toast.success(`Cruce recíproco activado: ${carToActivate.varA} (Hembra) x ${carToActivate.varB} (Macho)`);
-       }
+      let found = false;
+
+      if (typeof viabilidadesMatriz !== "undefined") {
+        const rows = viabilidadesMatriz.value || [];
+        for (const row of rows) {
+          if (row && Array.isArray(row)) {
+            for (const cell of row) {
+              if (cell && cell.varA === carToActivate.varB && cell.varB === carToActivate.varA) {
+                carToActivate = cell;
+                found = true;
+                break;
+              }
+            }
+          }
+          if (found) break;
+        }
+      } else if (typeof MatrixCrossingStore !== "undefined") {
+        const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
+        for (const row of viabilidades) {
+          if (row && Array.isArray(row)) {
+            for (const cell of row) {
+              if (cell && cell.varA === carToActivate.varB && cell.varB === carToActivate.varA) {
+                carToActivate = cell;
+                found = true;
+                break;
+              }
+            }
+          }
+          if (found) break;
+        }
+      }
+
+      if (found) {
+        toast.success(`Cruce recíproco activado: ${carToActivate.varA} (Hembra) x ${carToActivate.varB} (Macho)`);
+      }
     }
 
     carToActivate.emasculado = true;
@@ -1357,34 +1451,34 @@ const confirmEmasculateAction = (targetVar = null) => {
       carToActivate.flores_madre = 1;
       carToActivate.flores_padre = 1;
     }
-    
+
     // Save draft
-    if (typeof draftKey !== 'undefined') {
-       const savedState = [];
-       if (typeof viabilidadesMatriz !== 'undefined') {
-         const rows = viabilidadesMatriz.value || [];
-         rows.forEach((row) => {
-           if (row && Array.isArray(row)) {
-             row.forEach((c) => {
-               if (c && c.varA && c.varB) {
-                 savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
-               }
-             });
-           }
-         });
-       } else if (typeof MatrixCrossingStore !== 'undefined') {
-         const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
-         viabilidades.forEach((row) => {
-           if (row && Array.isArray(row)) {
-             row.forEach((c) => {
-               if (c && c.varA && c.varB) {
-                 savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
-               }
-             });
-           }
-         });
-       }
-       localStorage.setItem(draftKey.value, JSON.stringify(savedState));
+    if (typeof draftKey !== "undefined") {
+      const savedState = [];
+      if (typeof viabilidadesMatriz !== "undefined") {
+        const rows = viabilidadesMatriz.value || [];
+        rows.forEach((row) => {
+          if (row && Array.isArray(row)) {
+            row.forEach((c) => {
+              if (c && c.varA && c.varB) {
+                savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
+              }
+            });
+          }
+        });
+      } else if (typeof MatrixCrossingStore !== "undefined") {
+        const viabilidades = MatrixCrossingStore.matrixCrossingsFilter.viabilidad || [];
+        viabilidades.forEach((row) => {
+          if (row && Array.isArray(row)) {
+            row.forEach((c) => {
+              if (c && c.varA && c.varB) {
+                savedState.push({ varA: c.varA.trim(), varB: c.varB.trim(), viabilidad: !!c.viabilidad, emasculado: !!c.emasculado });
+              }
+            });
+          }
+        });
+      }
+      localStorage.setItem(draftKey.value, JSON.stringify(savedState));
     }
   }
   showEmasculateModal.value = false;
@@ -1395,7 +1489,6 @@ const cancelEmasculateAction = () => {
   emasculateTargetCar.value = null;
   showEmasculateModal.value = false;
 };
-
 
 const SuggestionCrossingPerProjectStore = useSuggestionCrossingPerProjectStore();
 const ParametizeWeightedStore = useParametizeWeightedCrossingStore();
@@ -1417,6 +1510,7 @@ const resumenCrucesGuardados = ref<any[]>([]);
 const showFinalizeModal = ref(false);
 const totalFloresUsadas = ref(0);
 const totalFloresLibres = ref(0);
+const variedadesLibresList = ref<{ vrdad: string; cantidad: number }[]>([]);
 const floresEnviadasABolsa = ref(false);
 const isSendingBolsa = ref(false);
 
@@ -1427,10 +1521,19 @@ function cerrarModalFinalizado() {
 
 async function confirmarEnviarBolsaComun() {
   if (totalFloresLibres.value <= 0) return;
+  const projCode = selectedCdCntble.value || localStorage.getItem("lastSelectedCdCntble") || localStorage.getItem("selectedCdCntble") || "";
+  if (!projCode) {
+    toast.error("Debe seleccionar un proyecto antes de enviar flores a la Bolsa Común.");
+    return;
+  }
   isSendingBolsa.value = true;
   try {
-    const projCode = selectedCdCntble.value || localStorage.getItem("lastSelectedCdCntble") || localStorage.getItem("selectedCdCntble") || "010105";
-    const res = await CrossingsService.enviarFloresLibresABolsaComun(projCode);
+    const filterData = SuggestionCrossingPerProjectStore.suggestionCrossingsPerProjectFilter || {};
+    const res = await CrossingsService.enviarFloresLibresABolsaComun(projCode, {
+      variedades: variedadesLibresList.value,
+      fecha_i: filterData.fecha_i,
+      fecha_f: filterData.fecha_f
+    });
     floresEnviadasABolsa.value = true;
     toast.success(res?.data?.message || `¡${totalFloresLibres.value} flores libres fueron enviadas a la Bolsa Común!`);
   } catch (err: any) {
@@ -1640,21 +1743,15 @@ async function loadSuggestionCrossings() {
     isLoading.value = true;
     try {
       const caracterFiltro = localStorage.getItem("filtroCaracterIndividual");
-      await SuggestionCrossingPerProjectStore.getSuggestionCrossingPerProjectList(
-        activeIdProj,
-        activeProj,
-        activeVariety,
-        activeAmb,
-        caracterFiltro
-      );
+      await SuggestionCrossingPerProjectStore.getSuggestionCrossingPerProjectList(activeIdProj, activeProj, activeVariety, activeAmb, caracterFiltro);
 
       if (!ParametizeWeightedStore.parametizeWeightedCrossingFilter || !ParametizeWeightedStore.parametizeWeightedCrossingFilter.ponderados) {
         await ParametizeWeightedStore.getParametizeWeightedCrossingList(activeProj, activeAmb);
       }
-      
+
       // Invalidar caché de distancias para forzar reconstrucción con los nuevos datos
       distanciasCache = null;
-      
+
       // Respaldar viabilidad biológica pura dictaminada por el servidor
       const rowsToBackup = viabilidadesMatriz.value || [];
       rowsToBackup.forEach((row: any) => {
@@ -1677,7 +1774,6 @@ async function loadSuggestionCrossings() {
       }
       */
 
-
       // 1. Restaurar EMASCULADAS primero para moverlas de columna a fila
       const storedEmasc = localStorage.getItem(emasculadasKey.value);
       if (storedEmasc) {
@@ -1686,21 +1782,21 @@ async function loadSuggestionCrossings() {
         rawFlores.forEach((flor: any) => {
           if (emascSet.has(flor.vrdad)) {
             flor.polen = 0;
-            flor.sxo = 'Hembra';
+            flor.sxo = "Hembra";
           }
         });
-        
+
         const rows = viabilidadesMatriz.value || [];
         rows.forEach((row: any) => {
           row.forEach((car: any) => {
             if (car && car.varA && car.varB) {
               if (emascSet.has(car.varA)) {
                 car.polen = 0;
-                car.sxo = 'Hembra';
+                car.sxo = "Hembra";
               }
               if (emascSet.has(car.varB)) {
                 car.polen2 = 0;
-                car.sxo2 = 'Hembra';
+                car.sxo2 = "Hembra";
               }
             }
           });
@@ -1715,7 +1811,6 @@ async function loadSuggestionCrossings() {
         rows.forEach((row: any) => {
           row.forEach((car: any) => {
             if (car && car.varA && car.varB) {
-
               const match = savedState.find((d: any) => d.varA === car.varA.trim() && d.varB === car.varB.trim());
               if (match) {
                 if (car.varA === "CP 67-412" && car.varB === "CP 80-1827") {
@@ -1734,12 +1829,10 @@ async function loadSuggestionCrossings() {
                   console.log("❌ NO ESTÁ EN DRAFT CP 67-412 x CP 80-1827!");
                 }
               }
-
             }
           });
         });
       } else {
-
         // Si no hay borrador, optimizar automáticamente por defecto para no desbordar el inventario
         await autoOptimizarFlores(true);
       }
@@ -1754,15 +1847,15 @@ async function loadSuggestionCrossings() {
 const cantidadesMap = computed(() => {
   const filterData = SuggestionCrossingPerProjectStore.suggestionCrossingsPerProjectFilter || {};
   const rawFlores = filterData.flores || [];
-  
+
   const map: Record<string, number> = {};
-  
-  // En Paso 4, 'flores' contiene el inventario real (f.numero). 
+
+  // En Paso 4, 'flores' contiene el inventario real (f.numero).
   // flores_bg, flores_pr, etc., son clones con joins agronómicos, sumarlos duplicaría el inventario.
   rawFlores.forEach((f: any) => {
     map[f.vrdad] = f.numero || 0;
   });
-  
+
   return map;
 });
 
@@ -1855,7 +1948,6 @@ function getIcon(polen: string | number) {
   return +polen <= 20 ? "fa fa-venus text-rose-500 font-bold" : "fa fa-mars text-sky-500 font-bold";
 }
 
-
 const totalCrucesSeleccionados = computed(() => {
   let count = 0;
   const rows = viabilidadesMatriz.value || [];
@@ -1910,7 +2002,6 @@ function toggleCruzamiento(car: any, event: Event) {
     car.flores_padre = 0;
   }
 
-
   // Guardar estado actual de cruzamientos en localStorage (Auto-save)
   const rows = viabilidadesMatriz.value || [];
   const savedState: Array<{ varA: string; varB: string; viabilidad: boolean }> = [];
@@ -1922,7 +2013,6 @@ function toggleCruzamiento(car: any, event: Event) {
     });
   });
   localStorage.setItem(draftKey.value, JSON.stringify(savedState));
-
 }
 
 function toggleAutofecundar(varName: string) {
@@ -1976,7 +2066,7 @@ function getDistancia(varA: string, varB: string) {
 
 function getCausaInviabilidad(cell: any): string {
   // Regla A: Veto por pedigrí idéntico
-  const normalize = (s: string) => s ? s.trim().toUpperCase() : null;
+  const normalize = (s: string) => (s ? s.trim().toUpperCase() : null);
   const mPed = normalize(cell.mother_pdgree);
   const fPed = normalize(cell.father_pdgree);
   if (mPed && fPed && mPed === fPed) {
@@ -2114,24 +2204,22 @@ function getCausaInviabilidad(cell: any): string {
           }
 
           if (lvlA !== 999 && lvlB !== 999 && lvlA + lvlB > Number(limiteMax)) {
-            
             const nombresLegibles: Record<string, string> = {
-              'scrsa': 'Sacarosa',
-              'tchm': 'TCHM (Producción)',
-              'msco_r': 'Mosaico',
-              'rya_cfe_r': 'Roya',
-              'roya': 'Roya',
-              'roya_naranja': 'Roya Naranja',
-              'carbon': 'Carbón',
-              'volcamiento': 'Volcamiento',
-              'altura_planta': 'Altura de Planta',
-              'poblacion': 'Población',
-              'dmtro_tllo': 'Diámetro de Tallo'
+              scrsa: "Sacarosa",
+              tchm: "TCHM (Producción)",
+              msco_r: "Mosaico",
+              rya_cfe_r: "Roya",
+              roya: "Roya",
+              roya_naranja: "Roya Naranja",
+              carbon: "Carbón",
+              volcamiento: "Volcamiento",
+              altura_planta: "Altura de Planta",
+              poblacion: "Población",
+              dmtro_tllo: "Diámetro de Tallo"
             };
             const colName = p.equivalente.toLowerCase();
             const nombreLegible = nombresLegibles[colName] || p.equivalente.toUpperCase();
             motivos.push(`${nombreLegible} excede límite`);
-
           }
         }
       }
@@ -2624,7 +2712,7 @@ async function autoOptimizarFlores(silent: boolean | Event = false) {
       }
 
       let isBiologicallyValid = car.original_viabilidad === true;
-      
+
       if (!permitirPolicruzamientos.value) {
         if (causa.includes("Incompatibilidad de sexo")) isBiologicallyValid = false;
         // Regla de polen de la interfaz: El padre DEBE tener polen > 20
@@ -2632,10 +2720,10 @@ async function autoOptimizarFlores(silent: boolean | Event = false) {
       } else {
         // En policruzamientos, ignorar vetos de sexo, forzando a true si el único problema era el sexo
         if (causa.includes("Incompatibilidad de sexo") && !causa.includes("excede límite") && !causa.includes("Restricción de Autogamia")) {
-           isBiologicallyValid = true;
+          isBiologicallyValid = true;
         }
       }
-      
+
       if (causa.includes("Restricción de Autogamia")) isBiologicallyValid = false;
       if (causa.includes("Mismo pedigrí")) isBiologicallyValid = false;
       if (causa.includes("Kinship")) isBiologicallyValid = false;
@@ -2660,7 +2748,7 @@ async function autoOptimizarFlores(silent: boolean | Event = false) {
       madeAssignment = false;
       for (let i = 0; i < crossesForMother.length; i++) {
         if (usadas.madre[m] >= disp.madre[m]) break;
-        
+
         const item = crossesForMother[i];
         const p = item.varB;
 
@@ -2697,7 +2785,11 @@ async function finalizarProceso() {
     // 2. Guardar pesos ponderados en la base de datos y obtener el idPonderado
     const projCode = selectedCdCntble.value || localStorage.getItem("lastSelectedCdCntble") || localStorage.getItem("selectedCdCntble") || "010105";
     const responseWeight = await CrossingsService.saveWeight(projCode);
-    const idPonderado = responseWeight ? (typeof responseWeight.data === "string" ? responseWeight.data : responseWeight.data?.id_ponderado || responseWeight.data) : null;
+    const idPonderado = responseWeight
+      ? typeof responseWeight.data === "string"
+        ? responseWeight.data
+        : responseWeight.data?.id_ponderado || responseWeight.data
+      : null;
     if (!idPonderado) {
       throw new Error("No se pudo obtener el ID del ponderado");
     }
@@ -2768,72 +2860,90 @@ async function finalizarProceso() {
 
     toast.success("¡Programación de cruzamientos guardada con éxito!");
 
-    // 6. Calcular estadísticas de resumen de flores usadas y libres
+    // 6. Calcular estadísticas de resumen de flores usadas y libres por variedad
     let usadasCount = 0;
+    const usadasPorVariedad: Record<string, number> = {};
+
     batchPayload.forEach((c: any) => {
-      usadasCount += Number(c.flores_madre ?? 1) + Number(c.flores_padre ?? 1);
+      const cantM = Number(c.flores_madre ?? 1);
+      const cantP = Number(c.flores_padre ?? 1);
+      usadasCount += cantM + cantP;
+
+      if (c.varA) {
+        usadasPorVariedad[c.varA] = (usadasPorVariedad[c.varA] || 0) + cantM;
+      }
+      if (c.varB) {
+        usadasPorVariedad[c.varB] = (usadasPorVariedad[c.varB] || 0) + cantP;
+      }
     });
     totalFloresUsadas.value = usadasCount;
 
     let totalDisponiblesInicial = 0;
+    const libresCalculadas: { vrdad: string; cantidad: number }[] = [];
+
     Object.keys(cantidadesMap.value || {}).forEach((v: string) => {
-      totalDisponiblesInicial += Number(cantidadesMap.value[v] || 0);
+      const disp = Number(cantidadesMap.value[v] || 0);
+      totalDisponiblesInicial += disp;
+      const usadasVar = Number(usadasPorVariedad[v] || 0);
+      const libresVar = Math.max(0, disp - usadasVar);
+      if (libresVar > 0) {
+        libresCalculadas.push({
+          vrdad: v,
+          cantidad: libresVar
+        });
+      }
     });
-    totalFloresLibres.value = Math.max(0, totalDisponiblesInicial - usadasCount);
+
+    variedadesLibresList.value = libresCalculadas;
+    totalFloresLibres.value = libresCalculadas.reduce((acc, curr) => acc + curr.cantidad, 0);
 
     resumenCrucesGuardados.value = batchPayload;
     floresEnviadasABolsa.value = false;
     showFinalizeModal.value = true;
   } catch (error: any) {
     console.error("Error al guardar la programación de cruzamientos:", error);
-    const apiErrorMsg = error?.response?.data?.error || error?.response?.data?.message || error?.message || "Ocurrió un error al guardar la programación de cruzamientos en la base de datos.";
+    const apiErrorMsg =
+      error?.response?.data?.error ||
+      error?.response?.data?.message ||
+      error?.message ||
+      "Ocurrió un error al guardar la programación de cruzamientos en la base de datos.";
     toast.error(`Error al guardar: ${apiErrorMsg}`);
   } finally {
     isSaving.value = false;
   }
 }
 
-
 async function exportarProgramacionExcel() {
   if (resumenCrucesGuardados.value.length === 0) {
     toast.warning("No hay datos para exportar.");
     return;
   }
-  
+
   const idPonderado = resumenCrucesGuardados.value[0].id_ponderados;
   try {
     toast.info("Generando Excel, por favor espera...");
     const response = await CrossingsService.getCrossingsByPonderado(idPonderado);
     const dbCrossings = response.data || [];
-    
+
     if (dbCrossings.length === 0) {
       toast.warning("No se encontraron registros en la base de datos para este proyecto.");
       return;
     }
-    
+
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("Programacion Cruzamientos");
-    
+
     // Exact columns requested by user
-    sheet.addRow([
-      "Fecha_programacion", 
-      "Año", 
-      "Estacion", 
-      "Programa", 
-      "Cruzamiento", 
-      "VariedadMadre", 
-      "VariedadPadre", 
-      "Cruce"
-    ]);
+    sheet.addRow(["Fecha_programacion", "Año", "Estacion", "Programa", "Cruzamiento", "VariedadMadre", "VariedadPadre", "Cruce"]);
 
     let cruzaId = 1;
     const yearCode = new Date().getFullYear().toString().substring(2);
-    const dateFormatted = new Date().toISOString().split('T')[0];
+    const dateFormatted = new Date().toISOString().split("T")[0];
 
-    dbCrossings.forEach(c => {
+    dbCrossings.forEach((c) => {
       const cruzamientoCode = `${cruzaId}CNC${yearCode}`;
       const cruce = `${c.vrdad_mdre} x ${c.vrdad_pdre1}`;
-      
+
       const row = [
         dateFormatted, // Fecha_programacion
         yearCode, // Año
