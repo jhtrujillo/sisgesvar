@@ -7,27 +7,28 @@ use Illuminate\Http\Request;
 class LinksController extends Controller
 {
     public function links(Request $request){
-        
+        $baseUrl = config('services.biotools.base_url');
+
         return response()->json([
             array(
                 "id" => 1,
                 "name" => "Blastn",
-                "url" => "http://192.168.153.238:4567",
+                "url" => "{$baseUrl}:4567",
             ),
             array(
                 "id" => 2,
                 "name" => "Wiki Cenicaña",
-                "url" => "http://192.168.153.238/bioinformatica/",
+                "url" => "{$baseUrl}/bioinformatica/",
             ),
             array(
                 "id" => 3,
                 "name" => "JBrowse",
-                "url" => "http://192.168.153.238/jbrowse2/",
+                "url" => "{$baseUrl}/jbrowse2/",
             ),
             array(
                 "id" => 4,
                 "name" => "RStudio Server",
-                "url" => "http://192.168.153.238:8002/",
+                "url" => "{$baseUrl}:8002/",
             ),
             array(
                 "id" => 5,
@@ -37,7 +38,7 @@ class LinksController extends Controller
             array(
                 "id" => 6,
                 "name" => "Bash",
-                "url" => "http://192.168.153.238/rscripts/runR.php",
+                "url" => "{$baseUrl}/rscripts/runR.php",
             )
             
         ]);

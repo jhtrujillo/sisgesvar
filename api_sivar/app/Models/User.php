@@ -1,11 +1,6 @@
 <?php
 
-
 /*ESTE ES UN MODELO PERSONALIZADO PARA AUTH DE USUARIO EN EL API */
-
-
-
-
 
 namespace App\Models;
 
@@ -49,39 +44,68 @@ class User extends Authenticatable implements JWTSubject, AuthenticatableContrac
      */
     public function getRoleAttribute()
     {
-        $lgin = strtolower($this->lgin ?? '');
-        if ($lgin === 'estuvar4') {
+        // Buscar si el usuario tiene rol ADMIN en algún proyecto (equivale a JEFE)
+        $hasAdmin = DB::connection('sivar')->table('proyecto_permisos')
+            ->where('usuario_id', $this->id_usrio)
+            ->where('rol', 'ADMIN')
+            ->exists();
+
+        if ($hasAdmin) {
             return 'JEFE';
         }
 
-        $email = strtolower($this->email ?? '');
-        if ($email === 'lolopez@cenicana.org' || $email === 'jhtrujillo@cenicana.org') {
+        // Buscar si tiene rol EDITOR (equivale a LIDER)
+        $hasEditor = DB::connection('sivar')->table('proyecto_permisos')
+            ->where('usuario_id', $this->id_usrio)
+            ->where('rol', 'EDITOR')
+            ->exists();
+
+        if ($hasEditor) {
             return 'LIDER';
         }
+
+        // Por defecto, rol JEFE (mantiene comportamiento anterior)
         return 'JEFE';
     }
 
     /**
      * Get the user's permitted environments.
+     * Determina los ambientes permitidos según los proyectos asignados.
      */
     public function getAmbienteAttribute()
     {
-        $lgin = strtolower($this->lgin ?? '');
-        if ($lgin === 'estuvar4') {
-            // JEFE: has access to all configured environments
+        // Buscar si el usuario tiene rol ADMIN en algún proyecto → acceso a todos los ambientes
+        $hasAdmin = DB::connection('sivar')->table('proyecto_permisos')
+            ->where('usuario_id', $this->id_usrio)
+            ->where('rol', 'ADMIN')
+            ->exists();
+
+        if ($hasAdmin) {
             return \App\Models\Catalogo::where('categoria', 'AMBIENTE')
                 ->orderBy('valor')
                 ->pluck('valor')
                 ->toArray();
         }
 
-        $email = strtolower($this->email ?? '');
-        if ($email === 'lolopez@cenicana.org') {
-            return ['Pie de monte', 'PIEDEMONTE'];
+        // Buscar ambientes de los proyectos donde el usuario tiene permisos
+        $proyectoIds = DB::connection('sivar')->table('proyecto_permisos')
+            ->where('usuario_id', $this->id_usrio)
+            ->pluck('proyecto_id');
+
+        if ($proyectoIds->isNotEmpty()) {
+            // Obtener ambientes asociados a los viveros de esos proyectos
+            $ambientes = DB::connection('sivar')->table('viveros')
+                ->whereIn('proyecto_id', $proyectoIds)
+                ->whereNotNull('ambiente')
+                ->distinct()
+                ->pluck('ambiente')
+                ->toArray();
+
+            if (!empty($ambientes)) {
+                return $ambientes;
+            }
         }
-        if ($email === 'jhtrujillo@cenicana.org') {
-            return ['Húmedo'];
-        }
+
         return [];
     }
 

@@ -10,14 +10,19 @@ use App\Models\User;
 class ProjectManagementController extends Controller
 {
     /**
-     * Verificar si el usuario es Super-Administrador Global de Proyectos
+     * Verificar si el usuario es Super-Administrador Global de Proyectos.
+
      */
     private function isSuperAdmin($user)
     {
         if (!$user) return false;
-        $email = strtolower($user->email ?? '');
-        $login = strtolower($user->lgin ?? '');
-        return ($email === 'jhtrujillo@cenicana.org' || $login === 'estuvar4');
+
+        $hasSuperRole = DB::connection('sivar')->table('proyecto_permisos')
+            ->where('usuario_id', $user->id_usrio)
+            ->where('rol', 'SUPER_ADMIN')
+            ->exists();
+
+        return $hasSuperRole;
     }
 
     /**

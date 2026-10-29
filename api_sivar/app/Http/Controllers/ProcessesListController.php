@@ -11,7 +11,7 @@ class ProcessesListController extends Controller
 {
      private function connectSSH()
     {
-        $ssh = new SSH2('192.168.153.184:53670');
+        $ssh = new SSH2(config('services.cluster.host') . ':' . config('services.cluster.port'));
         if (!$ssh->login(env('SSH_USERNAME'), env('SSH_PASSWORD'))) {
             throw new Exception('No se pudo conectar al servidor remoto');
         }
@@ -22,7 +22,7 @@ class ProcessesListController extends Controller
     public function processesList(Request $request)
     {
         $ssh = $this->connectSSH();
-        $output = $ssh->exec('condor_history estuvar4 | head');
+        $output = $ssh->exec('condor_history ' . env('SSH_USERNAME') . ' | head');
         $outputLines = explode("\n", trim($output));
         $data = [];
         foreach ($outputLines as $line) {

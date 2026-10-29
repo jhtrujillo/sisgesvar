@@ -1498,7 +1498,7 @@ class ExperimentosController extends Controller
         $message = '';
         $models = array();
 
-        $client = new Client(['base_uri' => 'http://192.168.153.119']);
+        $client = new Client(['base_uri' => config('services.sivardb.base_uri')]);
         $request = $client->request('GET', '/rwebService.php', ['query' => $parametros]);
         $status = $request->getStatusCode();
 

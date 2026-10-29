@@ -29,7 +29,7 @@ class ProcessesController extends Controller
             $contenido = $model;
             date_default_timezone_set('America/Bogota');
             $nombreArchivo = 'Consulta_' . date('Ymd_His') . '.txt';
-            $ssh = new SSH2('192.168.153.184:53670');
+            $ssh = new SSH2(config('services.cluster.host') . ':' . config('services.cluster.port'));
             if (!$ssh->login(env('SSH_USERNAME'), env('SSH_PASSWORD'))) {
                 throw new Exception('No se pudo conectar al servidor remoto');
             }
