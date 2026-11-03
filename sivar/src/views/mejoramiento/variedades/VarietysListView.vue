@@ -3,7 +3,7 @@
     <div class="flex justify-start mb-4">
       <BaseButton variant="violet" size="sm" :to="{ name: 'variedades.show' }"> Volver </BaseButton>
     </div>
-    
+
     <div class="grid grid-cols-1 mb-8">
       <!-- Search Bar using SIVAR Card Style -->
       <div class="group grid font-medium rounded-md m-2 bg-white border-none shadow-xl py-8 px-4 sm:rounded-lg sm:px-10">
@@ -11,7 +11,7 @@
           <h1 class="text-emerald-500 text-2xl font-bold">Buscar Variedad</h1>
         </div>
         <div class="relative w-full max-w-md mx-auto mt-4">
-          <input 
+          <input
             type="text"
             v-model="searchQuery"
             @focus="showDropdown = true"
@@ -20,21 +20,21 @@
             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 sm:text-sm px-4 py-3 border text-center"
           />
           <!-- Dropdown list -->
-          <div 
-            v-if="showDropdown && filteredVarieties.length > 0" 
+          <div
+            v-if="showDropdown && filteredVarieties.length > 0"
             class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-2xl max-h-60 overflow-y-auto text-left"
           >
-            <div 
-              v-for="v in filteredVarieties" 
-              :key="v.nm_vrdad" 
+            <div
+              v-for="v in filteredVarieties"
+              :key="v.nm_vrdad"
               @mousedown="onSelectDropdownItem(v.nm_vrdad)"
               class="px-4 py-3 hover:bg-violet-100 cursor-pointer text-sm text-gray-700 border-b border-gray-50"
             >
               {{ v.nm_vrdad }}
             </div>
           </div>
-          <div 
-            v-else-if="showDropdown && searchQuery && filteredVarieties.length === 0" 
+          <div
+            v-else-if="showDropdown && searchQuery && filteredVarieties.length === 0"
             class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-2xl p-4 text-sm text-gray-500 text-center"
           >
             No se encontraron resultados
@@ -47,13 +47,15 @@
     <div v-if="selectedVarietyData" class="grid grid-cols-1 m-2 bg-white border-none shadow-xl rounded-md sm:rounded-lg overflow-hidden">
       <!-- Tabs Header -->
       <div class="flex border-b border-gray-100 flex-wrap">
-        <button 
-          v-for="tab in tabs" 
+        <button
+          v-for="tab in tabs"
           :key="tab.id"
           @click="currentTab = tab.id"
           :class="[
             'flex-1 py-5 px-6 text-center text-sm font-bold transition-colors cursor-pointer',
-            currentTab === tab.id ? 'bg-white text-emerald-500 border-b-4 border-emerald-500' : 'text-gray-400 hover:text-emerald-400 hover:bg-gray-50 border-b-4 border-transparent'
+            currentTab === tab.id
+              ? 'bg-white text-emerald-500 border-b-4 border-emerald-500'
+              : 'text-gray-400 hover:text-emerald-400 hover:bg-gray-50 border-b-4 border-transparent'
           ]"
         >
           {{ tab.name }}
@@ -62,7 +64,6 @@
 
       <!-- Tab Content -->
       <div class="p-8 sm:px-10">
-        
         <!-- TAB 1: General Info -->
         <div v-if="currentTab === 'general'" class="space-y-6 animate-fade-in">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
@@ -79,11 +80,11 @@
             </div>
             <div class="py-6 px-4 bg-emerald-50 rounded-lg">
               <h3 class="text-sm font-bold text-emerald-600 mb-2 uppercase tracking-wide">Madre (Hembra)</h3>
-              <p class="text-2xl font-bold text-emerald-900">{{ selectedVarietyData.vrdad_madre || 'Desconocida' }}</p>
+              <p class="text-2xl font-bold text-emerald-900">{{ selectedVarietyData.vrdad_madre || "Desconocida" }}</p>
             </div>
             <div class="py-6 px-4 bg-violet-50 rounded-lg">
               <h3 class="text-sm font-bold text-violet-600 mb-2 uppercase tracking-wide">Padre (Macho)</h3>
-              <p class="text-2xl font-bold text-violet-900">{{ selectedVarietyData.vrdad_pdre || 'Desconocido' }}</p>
+              <p class="text-2xl font-bold text-violet-900">{{ selectedVarietyData.vrdad_pdre || "Desconocido" }}</p>
             </div>
           </div>
         </div>
@@ -107,14 +108,23 @@
               <tbody class="divide-y divide-gray-50">
                 <tr v-for="h in crossingsHistory" :key="h.id" class="hover:bg-gray-50 transition-colors">
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">{{ h.fecha }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ h.proyecto || '-' }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-700 max-w-xs">
+                    <div class="font-medium text-gray-800" :title="h.id_proyecto ? 'Código / ID: ' + h.id_proyecto : ''">
+                      {{ h.proyecto || "-" }}
+                    </div>
+                    <div v-if="h.id_proyecto && h.id_proyecto !== h.proyecto" class="text-xs text-gray-400 mt-0.5">Cód: {{ h.id_proyecto }}</div>
+                  </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <span :class="[
-                      'px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full',
-                      h.rol === 'Madre' ? 'bg-emerald-100 text-emerald-700' : 
-                      h.rol === 'Padre' ? 'bg-violet-100 text-violet-700' : 
-                      'bg-gray-100 text-gray-700'
-                    ]">
+                    <span
+                      :class="[
+                        'px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full',
+                        h.rol === 'Madre'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : h.rol === 'Padre'
+                            ? 'bg-violet-100 text-violet-700'
+                            : 'bg-gray-100 text-gray-700'
+                      ]"
+                    >
                       {{ h.rol }}
                     </span>
                   </td>
@@ -128,28 +138,26 @@
         <!-- TAB 3: Traits Profile -->
         <div v-if="currentTab === 'profile'" class="animate-fade-in">
           <div v-if="isLoadingProfile" class="text-center py-12 text-violet-500 font-medium text-lg">Cargando perfil...</div>
-          <div v-else-if="!varietyProfile" class="text-center py-12 text-gray-400 font-medium text-lg">
-            No se encontraron datos agroindustriales.
-          </div>
+          <div v-else-if="!varietyProfile" class="text-center py-12 text-gray-400 font-medium text-lg">No se encontraron datos agroindustriales.</div>
           <div v-else class="space-y-8">
             <div class="text-center">
               <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Origen de datos: </span>
-              <span class="bg-violet-50 text-violet-700 px-3 py-1 rounded-full text-xs font-bold ml-2">{{ varietyProfile.origen_datos || 'BG' }}</span>
+              <span class="bg-violet-50 text-violet-700 px-3 py-1 rounded-full text-xs font-bold ml-2">{{ varietyProfile.origen_datos || "BG" }}</span>
             </div>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               <div v-for="trait in agroTraits" :key="trait.key" class="bg-gray-50 p-6 rounded-lg relative overflow-hidden group">
-                <div 
-                  class="absolute bottom-0 left-0 h-2 transition-all duration-1000 ease-out" 
-                  :class="trait.bgClass" 
-                  :style="`width: ${globalAverages && globalAverages[trait.key] ? calculatePercentage(varietyProfile[trait.key], globalAverages[trait.key]) : 0}%`">
-                </div>
-                
+                <div
+                  class="absolute bottom-0 left-0 h-2 transition-all duration-1000 ease-out"
+                  :class="trait.bgClass"
+                  :style="`width: ${globalAverages && globalAverages[trait.key] ? calculatePercentage(varietyProfile[trait.key], globalAverages[trait.key]) : 0}%`"
+                ></div>
+
                 <div class="flex flex-col items-center text-center mb-4">
                   <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">{{ trait.label }}</h4>
                   <span class="text-4xl font-black" :class="trait.colorClass">{{ formatNumber(varietyProfile[trait.key]) }}</span>
                 </div>
-                
+
                 <div v-if="globalAverages && globalAverages[trait.key] !== null" class="mt-4 border-t border-gray-200 pt-3 text-center">
                   <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Promedio BG</div>
                   <div class="font-bold text-gray-600 text-lg">{{ formatNumber(globalAverages[trait.key]) }}</div>
@@ -158,7 +166,6 @@
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
@@ -169,8 +176,14 @@
   animation: fadeIn 0.3s ease-in-out;
 }
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
 
@@ -218,9 +231,7 @@ onMounted(async () => {
 const filteredVarieties = computed(() => {
   const query = searchQuery.value.toLowerCase().trim();
   if (!query) return varietysListsStore.VarietysList;
-  return varietysListsStore.VarietysList.filter((v: any) => 
-    v.nm_vrdad.toLowerCase().includes(query)
-  );
+  return varietysListsStore.VarietysList.filter((v: any) => v.nm_vrdad.toLowerCase().includes(query));
 });
 
 const onBlurInput = () => {
@@ -242,7 +253,7 @@ const onVarietySelected = async () => {
     selectedVarietyData.value = null;
     return;
   }
-  
+
   // Find in store
   const found = varietysListsStore.VarietysList.find((v: any) => v.nm_vrdad === val);
   if (found) {
@@ -288,9 +299,9 @@ const fetchHistory = async (varName: string) => {
 };
 
 const formatNumber = (val: any) => {
-  if (val === null || val === undefined) return '-';
+  if (val === null || val === undefined) return "-";
   const num = Number(val);
-  return isNaN(num) ? '-' : num.toFixed(2);
+  return isNaN(num) ? "-" : num.toFixed(2);
 };
 
 const calculatePercentage = (val: any, avg: any) => {
@@ -298,9 +309,9 @@ const calculatePercentage = (val: any, avg: any) => {
   const num = Number(val);
   const avgNum = Number(avg);
   if (avgNum === 0) return 0;
-  
-  const pct = (num / avgNum) * 50; 
+
+  const pct = (num / avgNum) * 50;
   // Limit to 100% max for the visual bar
-  return Math.min(Math.max(pct, 5), 100); 
+  return Math.min(Math.max(pct, 5), 100);
 };
 </script>

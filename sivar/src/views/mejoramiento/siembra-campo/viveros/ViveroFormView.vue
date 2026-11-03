@@ -1477,6 +1477,7 @@ const loadLotesOrigen = async () => {
 };
 
 watch([() => form.value.origen_ingenio, () => form.value.origen_hacienda], () => {
+  if (isLoadingInfo.value) return;
   if (!isEditing.value) {
     form.value.origen_lote_id = "";
   }
@@ -2511,6 +2512,7 @@ const loadLotesForLocation = async () => {
 };
 
 watch([() => form.value.ingenio, () => form.value.hacienda], () => {
+  if (isLoadingInfo.value) return;
   if (!isEditing.value) {
     form.value.lote_id = "";
   }
@@ -2778,11 +2780,6 @@ const resetAndLoad = async () => {
         await loadCaracteresForMultipleProyectos(mappedProyectos);
       }
 
-      if (form.value.ingenio && form.value.hacienda) {
-        await loadLotesForLocation();
-      }
-
-
       if (form.value.responsable_id) {
         const usr = responsables.value.find((u) => u.id_usrio == form.value.responsable_id);
         if (usr) searchResponsable.value = usr.nmbre;
@@ -2795,12 +2792,26 @@ const resetAndLoad = async () => {
       if (form.value.hacienda) {
         await loadSuertes(false);
       }
-      await loadLotesForLocation();
+      if (form.value.ingenio && form.value.hacienda) {
+        await loadLotesForLocation();
+      }
 
       // Load origin cascading data
       if (form.value.origen_ingenio) {
-        await loadHaciendasOrigen(false);
-        await loadLotesOrigen();
+        if (form.value.origen_ingenio === form.value.ingenio) {
+          haciendasOrigen.value = [...haciendas.value];
+        } else {
+          await loadHaciendasOrigen(false);
+        }
+
+        if (
+          form.value.origen_ingenio === form.value.ingenio &&
+          form.value.origen_hacienda === form.value.hacienda
+        ) {
+          lotesOrigen.value = [...lotes.value];
+        } else {
+          await loadLotesOrigen();
+        }
       }
 
       // Load Parcelas
@@ -2904,5 +2915,12 @@ const resetAndLoad = async () => {
 
 onMounted(resetAndLoad);
 
-watch(() => route.path, resetAndLoad);
+watch(
+  () => route.path,
+  (newPath, oldPath) => {
+    if (newPath !== oldPath && !isLoadingInfo.value) {
+      resetAndLoad();
+    }
+  }
+);
 </script>

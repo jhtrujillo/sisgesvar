@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 use App\Models\Variety;
 use App\Models\Crossing;
@@ -388,60 +389,6 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
             return response($ex->getMessage(), 500);
         }
     }
-    // public function historyDatatable(Request $request)
-    // {
-    //     try {
-    //         // Obtener los valores del request
-    //         $tipo = $request->input('tipo');
-    //         $var = $request->input('var');
-    //         $estado = $request->input('estado');
-    //         if($tipo==1){
-    //             $model = DB::connection('aplicacion')->table('cruzamientos')
-    //                     ->join('datos_campo_crudos', 'cruzamientos.nm_fmlias', '=', 'datos_campo_crudos.crzmnto')
-    //                     -> select('cruzamientos.*')
-    //                     ->where('cruzamientos.vrdad_mdre', $var)
-    //                     ->where('datos_campo_crudos.estdo_slccion', $estado)
-    //                     ->distinct();
-    //             $dictionary = [];
-    //             return $this->buildDatatable($model,$dictionary);
-    //         }
-    
-    //         $model = Crossing::join('datos_campo_crudos', 'cruzamientos.nm_fmlias', '=', 'datos_campo_crudos.crzmnto')
-    //             ->select('cruzamientos.*');
-    
-    //         // Aplicar filtro de estado si está presente
-    //         if (!empty($estado)) {
-    //             $model->where('datos_campo_crudos.estdo_slccion', $estado);
-    //         }
-    
-    //         // Aplicar filtros según el tipo
-    //         switch ($tipo) {
-    //             case 1:
-    //                 $model->where('cruzamientos.vrdad_mdre', $var);
-    //                 break;
-    //             case 2:
-    //                 $model->where('cruzamientos.vrdad_pdre1', $var);
-    //                 break;
-    //             case 3:
-    //                 $model->join('maestro_V_VIC_BG', function ($join) use ($var) {
-    //                     $join->on('cruzamientos.pdgree', 'LIKE', DB::raw("CONCAT('%', \"maestro_V_VIC_BG\".\"pdgree\", '%')"))
-    //                         ->where('maestro_V_VIC_BG.nm_vrdad', $var);
-    //                 });
-    //                 break;
-    //             default:
-    //                 // Enviar una respuesta de error si el tipo no es válido
-    //                 // return response()->json(['error' => 'Tipo de solicitud no válido'], 400);
-    //         }
-    
-    //         // Ejecutar la consulta y obtener los resultados
-    //         $results = $model->distinct()->get();
-    
-    //         // Devolver los resultados como respuesta JSON
-    //         return response()->json($results);
-    //     } catch (Exception $ex) {
-    //         return response($ex->getMessage(), 500);
-    //     }
-    // }
     public function historyDatatable(Request $request, $var, $estado, $tipo)
     {
         try {
@@ -699,7 +646,7 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
     public function getVarietyCrossingsHistory(Request $request, $var)
     {
         try {
-            $crossings = \DB::connection('sivar')->table('cruzamientos')
+            $crossings = DB::connection('sivar')->table('cruzamientos')
                 ->where(function($query) use ($var) {
                     $query->where('vrdad_mdre', $var)
                           ->orWhere('vrdad_pdre1', $var)
@@ -713,9 +660,24 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
                 ->orderBy('fcha_crzmnto', 'desc')
                 ->get();
 
-            // Formatear los datos para indicar el rol
-            $history = $crossings->map(function($c) use ($var) {
-                // Verificar si fue autofecundación
+            $proyectosMap = Cache::remember('sipro_projects_map_dict', 3600, function () {
+                $rows = DB::connection('sivar')->table('remote_pg_sipro')
+                    ->select('id_prycto', 'cd_cntble', 'nm_prycto')
+                    ->get();
+
+                $map = [];
+                foreach ($rows as $r) {
+                    if ($r->id_prycto !== null) {
+                        $map[(string)$r->id_prycto] = $r->nm_prycto;
+                    }
+                    if ($r->cd_cntble !== null) {
+                        $map[(string)$r->cd_cntble] = $r->nm_prycto;
+                    }
+                }
+                return $map;
+            });
+
+            $history = $crossings->map(function($c) use ($var, $proyectosMap) {
                 $isAuto = ($c->vrdad_mdre === $var && $c->vrdad_pdre1 === $var);
                 
                 if ($isAuto) {
@@ -730,12 +692,19 @@ private function getParentsRecursionHelper($var, &$parents, $relationship, $type
                     $other = $c->vrdad_mdre;
                 }
 
+                $rawProy = $c->proyecto !== null ? trim((string)$c->proyecto) : null;
+                $nombreProyecto = null;
+                if ($rawProy !== null && $rawProy !== '') {
+                    $nombreProyecto = $proyectosMap[$rawProy] ?? $rawProy;
+                }
+
                 return [
                     'id' => $c->id_crzmnto,
                     'fecha' => $c->fcha_crzmnto ? date('Y-m-d', strtotime($c->fcha_crzmnto)) : 'N/A',
                     'rol' => $role,
                     'otro_parental' => $other,
-                    'proyecto' => $c->proyecto
+                    'id_proyecto' => $c->proyecto,
+                    'proyecto' => $nombreProyecto ?: ($c->proyecto ?: '-')
                 ];
             });
 
