@@ -78,20 +78,14 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { useLinksStore } from "@/stores/links";
 import { useMatrixCrossingStore } from "@/stores/crossingmatrix";
 import BackButton from "@/components/BackButton.vue";
 import ModuleCardComponent from "@/components/ModuleCardComponent.vue";
 
 const router = useRouter();
-const linksStore = useLinksStore();
 const MatrixCrossingStore = useMatrixCrossingStore();
 
-onMounted(async () => {
-  await linksStore.getLinks();
-});
 
 function iniciarProgramacion() {
   // 1. Borrar todas las variables temporales de localStorage asociadas al asistente

@@ -1,8 +1,20 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, onMounted } from "vue";
+import { useLinksStore } from "@/stores/links";
 
 const isLoading = ref(true);
+const linksStore = useLinksStore();
 
+onMounted(async () => {
+  if (!linksStore.linkList || linksStore.linkList.length === 0) {
+    await linksStore.getLinks();
+  }
+});
+
+const jbrowseUrl = computed(() => {
+  const jbLink = linksStore.linkList.find((l) => l.name.toLowerCase().includes("jbrowse"));
+  return jbLink?.url || "http://192.168.153.238:8080/";
+});
 </script>
 
 <template>
@@ -20,7 +32,7 @@ const isLoading = ref(true);
       </div>
       <div class="flex space-x-3">
         <a 
-          href="http://192.168.153.238:8080/" 
+          :href="jbrowseUrl" 
           target="_blank"
           class="inline-flex items-center px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-50 hover:shadow-sm transition-all"
         >
@@ -42,7 +54,7 @@ const isLoading = ref(true);
       
       <!-- Iframe apuntando al jbrowse alojado en el servidor Linux -->
       <iframe 
-        src="http://192.168.153.238:8080/" 
+        :src="jbrowseUrl" 
         class="w-full h-full border-none"
         @load="isLoading = false"
       ></iframe>

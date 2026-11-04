@@ -107,15 +107,9 @@
 <script setup lang="ts">
 import BackButton from "@/components/BackButton.vue";
 import { ref } from "vue";
-import { onMounted } from "vue";
-import { useLinksStore } from "@/stores/links";
 import ModuleCardComponent from "@/components/ModuleCardComponent.vue";
 
-const linksStore = useLinksStore();
 
-onMounted(async () => {
-  await linksStore.getLinks();
-});
 
 const data = ref({
   puedeAcceder: false,

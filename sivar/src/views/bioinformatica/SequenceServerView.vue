@@ -36,7 +36,7 @@
           Por razones de seguridad del navegador y para garantizar el máximo rendimiento durante el procesamiento de los alineamientos, SequenceServer debe ejecutarse en una ventana independiente.
         </p>
         <a 
-          href="http://192.168.153.238:4567" 
+          :href="sequenceServerUrl" 
           target="_blank"
           rel="noopener noreferrer"
           class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 hover:shadow-lg transition-all transform hover:-translate-y-0.5"
@@ -52,9 +52,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, onMounted } from "vue";
+import { useLinksStore } from "@/stores/links";
 
 const isLoading = ref(true);
+const linksStore = useLinksStore();
+
+onMounted(async () => {
+  if (!linksStore.linkList || linksStore.linkList.length === 0) {
+    await linksStore.getLinks();
+  }
+});
+
+const sequenceServerUrl = computed(() => {
+  const blastLink = linksStore.linkList.find((l) => l.name.toLowerCase().includes("blast"));
+  return blastLink?.url || "http://192.168.153.238:4567";
+});
 </script>
 
 <style scoped>

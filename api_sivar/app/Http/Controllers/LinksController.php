@@ -23,7 +23,7 @@ class LinksController extends Controller
             array(
                 "id" => 3,
                 "name" => "JBrowse",
-                "url" => "{$baseUrl}/jbrowse2/",
+                "url" => "{$baseUrl}:8080/",
             ),
             array(
                 "id" => 4,

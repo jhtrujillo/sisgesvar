@@ -98,15 +98,7 @@ import { useUserStore } from "@/stores/user";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";
 import { RouterLink } from "vue-router";
 
-import { onMounted } from "vue";
-import { useLinksStore } from "@/stores/links";
 
-const linksStore = useLinksStore();
-
-onMounted(async () => {
-  await linksStore.getLinks();
-});
-onMounted(async () => {});
 const userStore = useUserStore();
 const logout = () => {
   userStore.logout();

@@ -171,16 +171,6 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
-import { useLinksStore } from "@/stores/links";
 import BackButton from "@/components/BackButton.vue";
 import ModuleCardComponent from "@/components/ModuleCardComponent.vue";
-
-const linksStore = useLinksStore();
-
-onMounted(async () => {
-  console.log("carga los links");
-
-  await linksStore.getLinks();
-});
 </script>
