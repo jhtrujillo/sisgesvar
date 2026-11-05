@@ -62,7 +62,13 @@ class ViveroController extends Controller
             return response()->json($viveros);
         }
 
-        $viveros = Vivero::with(['proyecto', 'responsable', 'caracteres', 'proyectos', 'proyectos', 'parcelas.variedad', 'parcelas.caracter', 'lote', 'origenLote', 'origenVivero'])
+        $withRelations = ['proyecto', 'responsable', 'caracteres', 'proyectos', 'lote', 'origenLote', 'origenVivero'];
+        if ($request->query('with_parcelas') === 'true') {
+            $withRelations[] = 'parcelas.variedad';
+            $withRelations[] = 'parcelas.caracter';
+        }
+
+        $viveros = Vivero::with($withRelations)
             ->withCount('cosechas')
             ->whereNotNull('proyecto_id')
             ->orderBy('created_at', 'desc')
@@ -770,6 +776,15 @@ class ViveroController extends Controller
             return DB::connection('sivar')->table('mega_ambiente')->get()->toArray();
         });
         return response()->json($ambientes);
+    }
+
+    public function getAllCaracteres()
+    {
+        $caracteres = DB::table('proyecto_caracteres')
+            ->select('id', 'proyecto_id', 'nombre')
+            ->orderBy('nombre')
+            ->get();
+        return response()->json($caracteres);
     }
 
     public function getCaracteresPorProyecto($id)

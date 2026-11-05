@@ -13,7 +13,7 @@ class ViveroParcelaController extends Controller
     public function index($vivero_id)
     {
         $vivero = Vivero::findOrFail($vivero_id);
-        $parcelas = $vivero->parcelas()->with(['variedad', 'caracter'])->orderBy('numero_parcela')->get();
+        $parcelas = $vivero->parcelas()->with(['variedad', 'caracter', 'proyecto'])->orderBy('numero_parcela')->get();
         return response()->json($parcelas);
     }
 
@@ -32,6 +32,7 @@ class ViveroParcelaController extends Controller
         $validator = Validator::make($data, [
             'numero_parcela' => 'required|numeric',
             'variedad_id' => 'nullable',
+            'proyecto_id' => 'nullable|numeric',
             'numero_parcela_origen' => 'nullable|numeric',
             'id_plot_origen' => 'nullable',
             'caracter_id' => 'nullable|numeric',
@@ -57,13 +58,14 @@ class ViveroParcelaController extends Controller
         $parcela = $vivero->parcelas()->create([
             'numero_parcela' => $data['numero_parcela'],
             'variedad_id' => $data['variedad_id'],
+            'proyecto_id' => $data['proyecto_id'] ?? null,
             'numero_parcela_origen' => $data['numero_parcela_origen'] ?? null,
             'id_plot_origen' => $data['id_plot_origen'] ?? null,
             'caracter_id' => $data['caracter_id'] ?? null,
         ]);
 
         // Load relationships before returning
-        $parcela->load(['variedad', 'caracter']);
+        $parcela->load(['variedad', 'caracter', 'proyecto']);
 
         return response()->json($parcela, 201);
     }
@@ -77,6 +79,7 @@ class ViveroParcelaController extends Controller
             'parcelas' => 'required|array',
             'parcelas.*.numero_parcela' => 'required|numeric',
             'parcelas.*.variedad_id' => 'nullable',
+            'parcelas.*.proyecto_id' => 'nullable|numeric',
             'parcelas.*.numero_parcela_origen' => 'nullable|numeric',
             'parcelas.*.id_plot_origen' => 'nullable',
             'parcelas.*.caracter_id' => 'nullable|numeric',
@@ -86,6 +89,7 @@ class ViveroParcelaController extends Controller
 
         $parcelasData = $request->input('parcelas');
         $insertedIds = [];
+        $proyectosIds = [];
 
         DB::beginTransaction();
         try {
@@ -94,29 +98,44 @@ class ViveroParcelaController extends Controller
                 $numero_parcela_origen = (isset($data['numero_parcela_origen']) && $data['numero_parcela_origen'] !== '') ? $data['numero_parcela_origen'] : null;
                 $id_plot_origen = (isset($data['id_plot_origen']) && $data['id_plot_origen'] !== '') ? $data['id_plot_origen'] : null;
                 $caracter_id = (isset($data['caracter_id']) && $data['caracter_id'] !== '') ? $data['caracter_id'] : null;
+                $proyecto_id = (isset($data['proyecto_id']) && $data['proyecto_id'] !== '') ? $data['proyecto_id'] : null;
+
+                if (!$proyecto_id && isset($data['proyecto_nombre']) && $data['proyecto_nombre'] !== '') {
+                    $proyecto = \App\Models\Proyecto::where('nm_prycto', trim($data['proyecto_nombre']))->first();
+                    if ($proyecto) {
+                        $proyecto_id = $proyecto->id_prycto;
+                    }
+                }
+
+                if (!$proyecto_id && $caracter_id) {
+                    $car = \App\Models\ProyectoCaracter::find($caracter_id);
+                    if ($car) {
+                        $proyecto_id = $car->proyecto_id;
+                    }
+                }
 
                 // Resolve caracter_id dynamically if names are provided
-                if (!$caracter_id && isset($data['caracter_nombre']) && $data['caracter_nombre'] !== '' && isset($data['proyecto_nombre']) && $data['proyecto_nombre'] !== '') {
-                    $proyecto_nombre = trim($data['proyecto_nombre']);
+                if (!$caracter_id && isset($data['caracter_nombre']) && $data['caracter_nombre'] !== '') {
                     $caracter_nombre = trim($data['caracter_nombre']);
-                    
-                    // Buscar proyecto por nombre
-                    $proyecto = \App\Models\Proyecto::where('nm_prycto', $proyecto_nombre)->first();
-                    if ($proyecto) {
-                        // Buscar o crear caracter
+                    if ($proyecto_id) {
                         $caracter = \App\Models\ProyectoCaracter::firstOrCreate(
-                            ['proyecto_id' => $proyecto->id_prycto, 'nombre' => $caracter_nombre]
+                            ['proyecto_id' => $proyecto_id, 'nombre' => $caracter_nombre]
                         );
                         $caracter_id = $caracter->id;
                     }
                 }
 
-                \Log::info("Updating plot: " . $data['numero_parcela'] . " with variedad_id: " . $data['variedad_id']);
+                if ($proyecto_id) {
+                    $proyectosIds[] = $proyecto_id;
+                }
+
+                \Log::info("Updating plot: " . $data['numero_parcela'] . " with variedad_id: " . $data['variedad_id'] . " and proyecto_id: " . $proyecto_id);
 
                 $parcela = $vivero->parcelas()->updateOrCreate(
                     ['numero_parcela' => $data['numero_parcela']],
                     [
                         'variedad_id' => $data['variedad_id'],
+                        'proyecto_id' => $proyecto_id,
                         'numero_parcela_origen' => $numero_parcela_origen,
                         'id_plot_origen' => $id_plot_origen,
                         'caracter_id' => $caracter_id,
@@ -125,6 +144,11 @@ class ViveroParcelaController extends Controller
                 
                 $insertedIds[] = $parcela->id;
             }
+
+            if (!empty($proyectosIds)) {
+                $vivero->proyectos()->syncWithoutDetaching(array_unique($proyectosIds));
+            }
+
             DB::commit();
             return response()->json(['message' => 'Parcelas importadas correctamente', 'inserted_count' => count($insertedIds)], 200);
         } catch (\Exception $e) {
@@ -190,6 +214,7 @@ class ViveroParcelaController extends Controller
         $validator = Validator::make($data, [
             'numero_parcela' => 'required|numeric',
             'variedad_id' => 'nullable',
+            'proyecto_id' => 'nullable|numeric',
             'numero_parcela_origen' => 'nullable|numeric',
             'id_plot_origen' => 'nullable',
             'caracter_id' => 'nullable|numeric',
@@ -223,12 +248,13 @@ class ViveroParcelaController extends Controller
         $parcela->update([
             'numero_parcela' => $data['numero_parcela'],
             'variedad_id' => $data['variedad_id'],
+            'proyecto_id' => $data['proyecto_id'] ?? null,
             'numero_parcela_origen' => $data['numero_parcela_origen'] ?? null,
             'id_plot_origen' => $data['id_plot_origen'] ?? null,
             'caracter_id' => $data['caracter_id'] ?? null,
         ]);
 
-        $parcela->load(['variedad', 'caracter']);
+        $parcela->load(['variedad', 'caracter', 'proyecto']);
 
         return response()->json($parcela);
     }

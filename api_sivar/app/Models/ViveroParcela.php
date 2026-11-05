@@ -16,6 +16,7 @@ class ViveroParcela extends Model
         'numero_parcela',
         'numero_parcela_origen',
         'variedad_id',
+        'proyecto_id',
         'id_plot_origen',
         'caracter_id',
     ];
@@ -60,5 +61,10 @@ class ViveroParcela extends Model
     public function caracter()
     {
         return $this->belongsTo(ProyectoCaracter::class, 'caracter_id');
+    }
+
+    public function proyecto()
+    {
+        return $this->belongsTo(Proyecto::class, 'proyecto_id', 'id_prycto');
     }
 }

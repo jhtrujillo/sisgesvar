@@ -173,6 +173,7 @@ Route::group([
     Route::get('siembra-campo/suertes/{hacienda}', [\App\Http\Controllers\ViveroController::class, 'getSuertes']);
 
     Route::get('siembra-campo/proyectos', [\App\Http\Controllers\ViveroController::class, 'getProyectos']);
+    Route::get('siembra-campo/caracteres', [\App\Http\Controllers\ViveroController::class, 'getAllCaracteres']);
     Route::get('siembra-campo/proyectos/{id}/caracteres', [\App\Http\Controllers\ViveroController::class, 'getCaracteresPorProyecto']);
     Route::post('siembra-campo/proyectos/{id}/caracteres', [\App\Http\Controllers\ViveroController::class, 'storeCaracter']);
 
