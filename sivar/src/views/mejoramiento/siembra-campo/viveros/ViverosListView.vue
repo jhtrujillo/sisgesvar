@@ -76,7 +76,7 @@
                 <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
                   <td class="py-3 px-4 text-center whitespace-nowrap">
                     <button
-                      @click="toggleRow(vivero.id)"
+                      @click="toggleRow(vivero)"
                       class="text-slate-400 hover:text-cenicana transition-all p-1 hover:bg-slate-100 rounded"
                       title="Ver distribución de parcelas"
                     >
@@ -241,7 +241,17 @@
                         Distribución de Parcelas y Trazabilidad de Cortes
                       </h4>
                       <div
-                        v-if="!vivero.parcelas || vivero.parcelas.length === 0"
+                        v-if="loadingParcelas[vivero.id]"
+                        class="text-xs text-slate-500 italic py-4 text-center bg-slate-50 rounded-lg flex items-center justify-center gap-2"
+                      >
+                        <svg class="animate-spin h-4 w-4 text-cenicana" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Cargando parcelas...</span>
+                      </div>
+                      <div
+                        v-else-if="!vivero.parcelas || vivero.parcelas.length === 0"
                         class="text-xs text-slate-400 italic py-2 text-center bg-slate-50 rounded-lg"
                       >
                         Este vivero no tiene parcelas agregadas.
@@ -603,8 +613,23 @@ const router = useRouter();
 const viveros = ref<any[]>([]);
 const loading = ref(true);
 const expandedViveros = ref<Record<string | number, boolean>>({});
-const toggleRow = (id: string | number) => {
+const loadingParcelas = ref<Record<string | number, boolean>>({});
+const toggleRow = async (vivero: any) => {
+  const id = vivero.id;
   expandedViveros.value[id] = !expandedViveros.value[id];
+
+  if (expandedViveros.value[id] && !vivero.parcelas) {
+    loadingParcelas.value[id] = true;
+    try {
+      const res = await viverosServices.getParcelas(id);
+      vivero.parcelas = res.data;
+    } catch (error) {
+      console.error("Error al cargar parcelas:", error);
+      toast.error("Error al cargar las parcelas del vivero");
+    } finally {
+      loadingParcelas.value[id] = false;
+    }
+  }
 };
 
 const isEstructuraModalOpen = ref(false);

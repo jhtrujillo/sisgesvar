@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="w-full xl:max-w-[95%] 2xl:max-w-[1600px] mx-auto py-8 px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between mb-8">
       <div class="flex items-center gap-4">
@@ -228,8 +228,14 @@
               <div class="relative md:col-span-2">
                 <div class="flex items-center justify-between mb-3">
                   <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Proyectos y Ambientes Asignados</label>
-                  <button type="button" @click="showProyectoModal = true" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  <button
+                    type="button"
+                    @click="showProyectoModal = true"
+                    class="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
                     Vincular Proyecto
                   </button>
                 </div>
@@ -245,9 +251,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-200 bg-white">
                       <tr v-if="!form.proyectos || form.proyectos.length === 0">
-                        <td colspan="3" class="px-4 py-6 text-center text-xs text-slate-400 font-medium">
-                          No hay proyectos vinculados a este vivero.
-                        </td>
+                        <td colspan="3" class="px-4 py-6 text-center text-xs text-slate-400 font-medium">No hay proyectos vinculados a este vivero.</td>
                       </tr>
                       <tr v-for="pry_id in form.proyectos" :key="pry_id" class="hover:bg-slate-50/50 transition-colors">
                         <td class="px-4 py-3 text-xs font-semibold text-slate-700 align-top">
@@ -255,15 +259,33 @@
                         </td>
                         <td class="px-4 py-3 align-top">
                           <div class="flex flex-wrap gap-1.5">
-                            <span v-for="c_id in getCaracteresByProyecto(pry_id)" :key="c_id" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            <span
+                              v-for="c_id in getCaracteresByProyecto(pry_id)"
+                              :key="c_id"
+                              class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200"
+                            >
                               {{ getCaracterNameLocal(c_id) }}
                             </span>
-                            <span v-if="getCaracteresByProyecto(pry_id).length === 0" class="text-[10px] text-slate-400 font-medium italic">Sin caracteres</span>
+                            <span v-if="getCaracteresByProyecto(pry_id).length === 0" class="text-[10px] text-slate-400 font-medium italic"
+                              >Sin caracteres</span
+                            >
                           </div>
                         </td>
                         <td class="px-4 py-3 text-right align-top">
-                          <button type="button" @click="removeProyectoVinculado(pry_id)" class="text-slate-400 hover:text-red-500 transition-colors" title="Desvincular Proyecto">
-                            <svg class="w-4 h-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                          <button
+                            type="button"
+                            @click="removeProyectoVinculado(pry_id)"
+                            class="text-slate-400 hover:text-red-500 transition-colors"
+                            title="Desvincular Proyecto"
+                          >
+                            <svg class="w-4 h-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              ></path>
+                            </svg>
                           </button>
                         </td>
                       </tr>
@@ -271,7 +293,6 @@
                   </table>
                 </div>
               </div>
-            
             </div>
           </div>
 
@@ -343,7 +364,9 @@
                   >
                     <option value="">Seleccione un Lote</option>
                     <option v-for="lote in lotes" :key="lote.id" :value="lote.id">
-                      {{ lote.nombre_lote }} (Año: {{ lote.viveros && lote.viveros.length ? lote.viveros[lote.viveros.length - 1].fecha_siembra.split('-')[0] : 'N/A' }} | Viveros: {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
+                      {{ lote.nombre_lote }} (Año:
+                      {{ lote.viveros && lote.viveros.length ? lote.viveros[lote.viveros.length - 1].fecha_siembra.split("-")[0] : "N/A" }} | Viveros:
+                      {{ lote.viveros_activos_count }}/{{ lote.capacidad_maxima }})
                     </option>
                   </select>
                   <button
@@ -467,7 +490,9 @@
                   class="cursor-pointer select-none py-2.5 px-3.5 hover:bg-slate-50 border-b border-slate-100 last:border-0 transition-colors"
                 >
                   <div class="font-bold font-mono text-xs text-slate-800">{{ v.identificador_unico }}</div>
-                  <div class="text-[10px] text-slate-400 mt-0.5">{{ getIngenioName(v.ingenio) }} - {{ decodeHTMLEntities(v.hacienda) || "N/A" }} - {{ decodeHTMLEntities(v.suerte) || "N/A" }}</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">
+                    {{ getIngenioName(v.ingenio) }} - {{ decodeHTMLEntities(v.hacienda) || "N/A" }} - {{ decodeHTMLEntities(v.suerte) || "N/A" }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -700,12 +725,7 @@
         </div>
       </form>
 
-    <AddProyectoCaracterModal
-      :is-open="showProyectoModal"
-      :proyectos="proyectos"
-      @close="showProyectoModal = false"
-      @confirm="handleConfirmProyecto"
-    />
+      <AddProyectoCaracterModal :is-open="showProyectoModal" :proyectos="proyectos" @close="showProyectoModal = false" @confirm="handleConfirmProyecto" />
 
       <!-- Administrar Parcelas (Solo visible en edición) -->
       <div v-show="isEditing && activeTab === 'parcelas'" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 border-t-4 border-cenicana">
@@ -861,7 +881,9 @@
             <h4 class="text-sm font-bold text-slate-700">
               Parcelas Agregadas <span class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs ml-1">{{ parcelas.length }}</span>
             </h4>
-            <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors">
+            <label
+              class="flex items-center gap-2 cursor-pointer text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors"
+            >
               <input type="checkbox" v-model="showEmptyPlots" class="rounded text-cenicana focus:ring-cenicana w-3.5 h-3.5" />
               <span class="font-semibold">Ver parcelas vacías</span>
             </label>
@@ -972,7 +994,7 @@
                       </select>
                     </td>
                     <td class="px-4 py-3 text-slate-700 font-mono text-xs font-semibold">
-                      {{ (form.identificador_unico ? form.identificador_unico + '-' : '') + p.numero_parcela }}
+                      {{ (form.identificador_unico ? form.identificador_unico + "-" : "") + p.numero_parcela }}
                     </td>
                     <td class="px-4 py-3 min-w-[220px] relative">
                       <input
@@ -1001,10 +1023,12 @@
                           <div class="font-bold font-mono text-xs text-slate-800 flex items-center justify-between">
                             <span>{{ opt.label }}</span>
                             <span
-                              :class="opt.type === 'vivero' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200'"
+                              :class="
+                                opt.type === 'vivero' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                              "
                               class="px-1.5 py-0.5 rounded text-[9px] font-sans font-medium border"
                             >
-                              {{ opt.type === 'vivero' ? 'Vivero' : 'Parcela' }}
+                              {{ opt.type === "vivero" ? "Vivero" : "Parcela" }}
                             </span>
                           </div>
                           <div class="text-[10px] text-slate-400 mt-0.5 truncate">{{ opt.sublabel }}</div>
@@ -1056,14 +1080,17 @@
                       </template>
                       <template v-else>
                         <span v-if="p.caracter?.nombre">{{ p.caracter.nombre }}</span>
-                        <span v-else-if="form.caracteres_ids && form.caracteres_ids.length > 0 && getCaracterGlobalNombre()" class="text-slate-400 italic" title="Heredado del Vivero">{{
-                          getCaracterGlobalNombre()
-                        }}</span>
+                        <span
+                          v-else-if="form.caracteres_ids && form.caracteres_ids.length > 0 && getCaracterGlobalNombre()"
+                          class="text-slate-400 italic"
+                          title="Heredado del Vivero"
+                          >{{ getCaracterGlobalNombre() }}</span
+                        >
                         <span v-else>N/A</span>
                       </template>
                     </td>
                     <td class="px-4 py-3 text-slate-700 font-mono text-xs font-semibold">
-                      {{ (form.identificador_unico ? form.identificador_unico + '-' : '') + p.numero_parcela }}
+                      {{ (form.identificador_unico ? form.identificador_unico + "-" : "") + p.numero_parcela }}
                     </td>
                     <td class="px-4 py-3 text-slate-600 font-mono text-xs">{{ getParcIdPlotOrigen(p) }}</td>
                     <td class="px-4 py-3 text-center">
@@ -1169,7 +1196,7 @@
         :consecutivoCorte="form.consecutivo_corte"
         :caracterId="form.caracteres_ids && form.caracteres_ids.length > 0 ? form.caracteres_ids[0] : ''"
         @close="showImportWizard = false"
-        @imported="loadParcelas"
+        @imported="onParcelasImported"
       />
       <!-- Drawer de Hoja de Vida de la Variedad (Quick Drawer) -->
       <VarietyProfileDrawer v-model:isOpen="isDrawerOpen" :varietyName="selectedVarietyForDrawer" />
@@ -1269,12 +1296,7 @@
             </div>
           </form>
 
-    <AddProyectoCaracterModal
-      :is-open="showProyectoModal"
-      :proyectos="proyectos"
-      @close="showProyectoModal = false"
-      @confirm="handleConfirmProyecto"
-    />
+          <AddProyectoCaracterModal :is-open="showProyectoModal" :proyectos="proyectos" @close="showProyectoModal = false" @confirm="handleConfirmProyecto" />
         </div>
       </div>
     </template>
@@ -1300,7 +1322,7 @@ const toast = useToast();
 const formatHaciendaName = (name: string) => {
   if (!name) return "";
   const decoded = decodeHTMLEntities(name);
-  return decoded.split('_')[0].trim();
+  return decoded.split("_")[0].trim();
 };
 
 const decodeHTMLEntities = (text: string) => {
@@ -1433,9 +1455,9 @@ const availableViveroNumbers = computed(() => {
   if (isEditing.value && form.value.consecutivo_vivero_ingenio) {
     options.push(form.value.consecutivo_vivero_ingenio);
   }
-  
+
   for (const v of selectedLote.viveros) {
-    if (!v.proyecto_id && v.estado !== 'Cosechado') {
+    if (!v.proyecto_id && v.estado !== "Cosechado") {
       if (!options.includes(v.consecutivo_vivero_ingenio)) {
         options.push(v.consecutivo_vivero_ingenio);
       }
@@ -1571,7 +1593,7 @@ const filteredOrigenViveros = computed(() => {
 const selectOrigenVivero = async (v: any) => {
   viveroSeleccionadoOrigen.value = v;
   form.value.origen_ingenio = v.ingenio || "";
-  form.value.origen_anio = v.fecha_siembra ? Number(v.fecha_siembra.split('-')[0]) : null;
+  form.value.origen_anio = v.fecha_siembra ? Number(v.fecha_siembra.split("-")[0]) : null;
 
   await loadHaciendasOrigen(false);
   form.value.origen_hacienda = v.hacienda || "";
@@ -1677,7 +1699,7 @@ const parcelaForm = ref({
 
 const filteredParcelas = computed(() => {
   let filtered = parcelas.value;
-  
+
   if (!showEmptyPlots.value) {
     filtered = filtered.filter((p) => p.variedad_id || p.variedad);
   }
@@ -1700,7 +1722,7 @@ const filteredParcelas = computed(() => {
       );
     });
   }
-  
+
   return filtered;
 });
 
@@ -1733,7 +1755,7 @@ const filteredVariedades = computed(() => {
 
 const getCaracterGlobalNombre = () => {
   if (!form.value.caracteres_ids || form.value.caracteres_ids.length === 0) return "";
-  const nombres = form.value.caracteres_ids.map((id) => getCaracterName(id)).filter(n => n !== "");
+  const nombres = form.value.caracteres_ids.map((id) => getCaracterName(id)).filter((n) => n !== "");
   return nombres.join(", ");
 };
 
@@ -1744,10 +1766,12 @@ const getCaracterName = (id: number | string) => {
 
 const getProyectoGlobalNombre = () => {
   if (!form.value.proyectos || form.value.proyectos.length === 0) return "";
-  const nombres = form.value.proyectos.map((id) => {
-    const p = proyectos.value.find((pry) => (pry.id_prycto || pry.id) == id);
-    return p ? formatProjectName(p) : "";
-  }).filter(n => n !== "");
+  const nombres = form.value.proyectos
+    .map((id) => {
+      const p = proyectos.value.find((pry) => (pry.id_prycto || pry.id) == id);
+      return p ? formatProjectName(p) : "";
+    })
+    .filter((n) => n !== "");
   return nombres.join(", ");
 };
 
@@ -1755,15 +1779,31 @@ const getProyectoForPlot = (p: any) => {
   // Si la parcela está vacía (sin variedad), no mostramos proyecto
   if (!p.variedad_id && !p.variedad) return "N/A";
 
+  if (p.proyecto?.nm_prycto) {
+    return p.proyecto.nm_prycto;
+  }
+
+  const parcelaPryId = p.proyecto_id;
+  if (parcelaPryId) {
+    const pry = proyectos.value.find((pr) => (pr.id_prycto || pr.id) == parcelaPryId);
+    if (pry) return formatProjectName(pry);
+  }
+
+  const caracterPryId = p.caracter?.proyecto_id;
+  if (caracterPryId) {
+    const pry = proyectos.value.find((pr) => (pr.id_prycto || pr.id) == caracterPryId);
+    if (pry) return formatProjectName(pry);
+  }
+
   const caracterId = p.caracter_id || p.caracter?.id;
   if (caracterId) {
     const c = caracteres.value.find((car) => car.id == caracterId);
     if (c && c.proyecto_id) {
       const pry = proyectos.value.find((pry) => (pry.id_prycto || pry.id) == c.proyecto_id);
-      return pry ? formatProjectName(pry) : "N/A";
+      if (pry) return formatProjectName(pry);
     }
-    return "N/A";
   }
+
   return getProyectoGlobalNombre() || "N/A";
 };
 
@@ -1798,11 +1838,11 @@ const getBaseOrigen = () => {
     }
   }
 
-  if (form.value.origen_parcela && form.value.origen_parcela.trim() !== '') {
+  if (form.value.origen_parcela && form.value.origen_parcela.trim() !== "") {
     const orig = form.value.origen_parcela.trim();
-    const parts = orig.split('-');
+    const parts = orig.split("-");
     if (parts.length >= 4) {
-      return parts.slice(0, 4).join('-');
+      return parts.slice(0, 4).join("-");
     }
     return orig;
   }
@@ -1813,7 +1853,7 @@ const getBaseOrigen = () => {
 const getParcIdPlotOrigen = (p: any) => {
   const baseOrigen = getBaseOrigen();
 
-  if (p.id_plot_origen && p.id_plot_origen.trim() !== '') {
+  if (p.id_plot_origen && p.id_plot_origen.trim() !== "") {
     let raw = p.id_plot_origen.trim();
 
     if (form.value.identificador_unico && raw.startsWith(form.value.identificador_unico) && baseOrigen && baseOrigen !== form.value.identificador_unico) {
@@ -1821,9 +1861,9 @@ const getParcIdPlotOrigen = (p: any) => {
     }
 
     if (!p.numero_parcela_origen) {
-      const parts = raw.split('-');
+      const parts = raw.split("-");
       if (parts.length === 5 && parts[4] === String(p.numero_parcela)) {
-        return parts.slice(0, 4).join('-');
+        return parts.slice(0, 4).join("-");
       }
     }
     return raw;
@@ -1866,18 +1906,18 @@ const showProyectos = ref(false);
 const showProyectoModal = ref(false);
 
 const getProyectoName = (id_prycto: number) => {
-  const p = proyectos.value.find(x => x.id_prycto === id_prycto);
+  const p = proyectos.value.find((x) => x.id_prycto === id_prycto);
   return p ? formatProjectName(p) : id_prycto;
 };
 
 const getCaracterNameLocal = (c_id: number) => {
-  const c = caracteres.value.find(x => Number(x.id) === Number(c_id));
+  const c = caracteres.value.find((x) => Number(x.id) === Number(c_id));
   return c ? c.nombre : c_id;
 };
 
 const getCaracteresByProyecto = (id_prycto: number) => {
-  return form.value.caracteres_ids.filter(c_id => {
-    const c = caracteres.value.find(x => Number(x.id) === Number(c_id));
+  return form.value.caracteres_ids.filter((c_id) => {
+    const c = caracteres.value.find((x) => Number(x.id) === Number(c_id));
     return c && c.proyecto_id == id_prycto;
   });
 };
@@ -1888,7 +1928,7 @@ const handleConfirmProyecto = (data: any) => {
   if (!form.value.proyectos.includes(pry_id)) {
     form.value.proyectos.push(pry_id);
   }
-  
+
   // Merge caracteres_ids
   if (!form.value.caracteres_ids) form.value.caracteres_ids = [];
   data.caracteres_ids.forEach((c_id: number) => {
@@ -1896,7 +1936,7 @@ const handleConfirmProyecto = (data: any) => {
       form.value.caracteres_ids.push(c_id);
     }
   });
-  
+
   // We need to fetch the character objects so we can display their names and know their proyecto_id
   loadCaracteresForMultipleProyectos(form.value.proyectos);
   showProyectoModal.value = false;
@@ -1904,15 +1944,14 @@ const handleConfirmProyecto = (data: any) => {
 
 const removeProyectoVinculado = (id_prycto: number) => {
   form.value.proyectos = form.value.proyectos.filter((id: number) => id !== id_prycto);
-  
+
   // Remove caracteres that belong to this project
   const caracteresToKeep = form.value.caracteres_ids.filter((c_id: number) => {
-    const c = caracteres.value.find(x => Number(x.id) === Number(c_id));
+    const c = caracteres.value.find((x) => Number(x.id) === Number(c_id));
     return c && c.proyecto_id !== id_prycto;
   });
   form.value.caracteres_ids = caracteresToKeep;
 };
-
 
 const formatProjectName = (pry: any) => {
   let code = pry.cd_cntble;
@@ -1976,9 +2015,9 @@ const exactMatchCaracter = computed(() => {
 
 const loadCaracteresForMultipleProyectos = async (proyectosIds: any[]) => {
   try {
-    const promises = proyectosIds.map(id => viverosServices.getCaracteresPorProyecto(id));
+    const promises = proyectosIds.map((id) => viverosServices.getCaracteresPorProyecto(id));
     const results = await Promise.all(promises);
-    caracteres.value = results.map(res => res.data).flat();
+    caracteres.value = results.map((res) => res.data).flat();
   } catch (error) {
     console.error("Error al cargar caracteres para multiples proyectos", error);
   }
@@ -2228,7 +2267,6 @@ const submitForm = async () => {
 
   isSubmitting.value = true;
   try {
-
     if (isEditing.value) {
       await viverosServices.updateVivero(route.params.id as string, form.value);
       toast.success("Vivero actualizado correctamente");
@@ -2324,7 +2362,7 @@ const selectEditPlotOrigenOption = (optionValue: string, numParcelaOrigen?: numb
   if (numParcelaOrigen !== undefined && numParcelaOrigen !== null) {
     editingPlotForm.value.numero_parcela_origen = numParcelaOrigen;
   } else {
-    const parts = optionValue.split('-');
+    const parts = optionValue.split("-");
     if (parts.length === 5 && !isNaN(Number(parts[4]))) {
       editingPlotForm.value.numero_parcela_origen = Number(parts[4]);
     } else {
@@ -2341,13 +2379,13 @@ const allPlotOrigenOptions = computed(() => {
   for (const v of allViverosList.value) {
     if (!v.identificador_unico) continue;
 
-    const statusText = v.estado ? `(${v.estado})` : '';
-    const locText = [getIngenioName(v.ingenio), v.hacienda, v.suerte].filter(Boolean).join(' - ');
+    const statusText = v.estado ? `(${v.estado})` : "";
+    const locText = [getIngenioName(v.ingenio), v.hacienda, v.suerte].filter(Boolean).join(" - ");
     options.push({
       id: v.identificador_unico,
       label: v.identificador_unico,
-      sublabel: `Vivero ${statusText} ${locText ? '• ' + locText : ''}`,
-      type: 'vivero'
+      sublabel: `Vivero ${statusText} ${locText ? "• " + locText : ""}`,
+      type: "vivero"
     });
 
     if (v.parcelas && Array.isArray(v.parcelas)) {
@@ -2358,7 +2396,7 @@ const allPlotOrigenOptions = computed(() => {
             id: parcPlotId,
             label: parcPlotId,
             sublabel: `Parcela ${p.numero_parcela} del vivero ${v.identificador_unico}`,
-            type: 'parcela',
+            type: "parcela",
             numParcela: p.numero_parcela
           });
         }
@@ -2370,13 +2408,11 @@ const allPlotOrigenOptions = computed(() => {
 });
 
 const filteredEditPlotOrigenOptions = computed(() => {
-  const query = (editingPlotForm.value.id_plot_origen || '').trim().toLowerCase();
+  const query = (editingPlotForm.value.id_plot_origen || "").trim().toLowerCase();
   if (!query) {
     return allPlotOrigenOptions.value.slice(0, 50);
   }
-  return allPlotOrigenOptions.value
-    .filter((opt) => opt.label.toLowerCase().includes(query) || opt.sublabel.toLowerCase().includes(query))
-    .slice(0, 100);
+  return allPlotOrigenOptions.value.filter((opt) => opt.label.toLowerCase().includes(query) || opt.sublabel.toLowerCase().includes(query)).slice(0, 100);
 });
 
 const isSubmittingEditingPlot = ref(false);
@@ -2384,7 +2420,11 @@ const saveEditingPlot = async () => {
   if (!editingPlotForm.value.variedad_id) {
     if (editingPlotForm.value.variedad_name && editingPlotForm.value.variedad_name.trim() !== "") {
       const varietyName = editingPlotForm.value.variedad_name.trim().toUpperCase();
-      if (confirm(`La variedad "${varietyName}" no está registrada en la base de datos maestra. ¿Deseas registrarla ahora mismo para que quede disponible en el sistema?`)) {
+      if (
+        confirm(
+          `La variedad "${varietyName}" no está registrada en la base de datos maestra. ¿Deseas registrarla ahora mismo para que quede disponible en el sistema?`
+        )
+      ) {
         try {
           const res = await varietysServices.createVariety(varietyName);
           editingPlotForm.value.variedad_id = res.data.id_nm_vrdad;
@@ -2423,6 +2463,23 @@ const saveEditingPlot = async () => {
   }
 };
 
+const onParcelasImported = async () => {
+  await loadParcelas();
+  if (route.params.id) {
+    try {
+      const response = await viverosServices.getVivero(route.params.id as string);
+      const vivero = response.data;
+      if (vivero.proyectos && vivero.proyectos.length > 0) {
+        const mappedProyectos = vivero.proyectos.map((p: any) => Number(p.id_prycto || p.id));
+        form.value.proyectos = mappedProyectos;
+        await loadCaracteresForMultipleProyectos(mappedProyectos);
+      }
+    } catch (e) {
+      console.warn("Error refreshing vivero projects after import:", e);
+    }
+  }
+};
+
 const loadParcelas = async () => {
   if (!isEditing.value) return;
   loadingParcelas.value = true;
@@ -2458,7 +2515,11 @@ const submitParcela = async () => {
   if (!parcelaForm.value.variedad_id) {
     if (searchVariedad.value.trim() !== "") {
       const varietyName = searchVariedad.value.trim().toUpperCase();
-      if (confirm(`La variedad "${varietyName}" no está registrada en la base de datos maestra. ¿Deseas registrarla ahora mismo para que quede disponible en el sistema?`)) {
+      if (
+        confirm(
+          `La variedad "${varietyName}" no está registrada en la base de datos maestra. ¿Deseas registrarla ahora mismo para que quede disponible en el sistema?`
+        )
+      ) {
         try {
           const res = await varietysServices.createVariety(varietyName);
           parcelaForm.value.variedad_id = res.data.id_nm_vrdad;
@@ -2657,7 +2718,12 @@ const deleteParcela = async (parcelaId: string | number) => {
 };
 
 const clearAllParcelas = async () => {
-  if (!confirm("¿Está seguro de que desea limpiar las variedades de TODAS las parcelas? Esto dejará las parcelas en blanco pero no eliminará su número. Esta acción no se puede deshacer.")) return;
+  if (
+    !confirm(
+      "¿Está seguro de que desea limpiar las variedades de TODAS las parcelas? Esto dejará las parcelas en blanco pero no eliminará su número. Esta acción no se puede deshacer."
+    )
+  )
+    return;
 
   try {
     await viverosServices.deleteAllParcelas(route.params.id as string);
@@ -2680,7 +2746,7 @@ const resetAndLoad = async () => {
     hacienda: "",
     suerte: "",
     proyecto_id: "",
-  proyectos: [],
+    proyectos: [],
     ambiente: "",
     responsable_id: "",
     fecha_siembra: "",
@@ -2723,10 +2789,13 @@ const resetAndLoad = async () => {
       if (vivero.fecha_siembra) {
         vivero.fecha_siembra = vivero.fecha_siembra.substring(0, 10);
       }
-      
-      let mappedProyectos: number[] = vivero.proyectos && vivero.proyectos.length > 0 
-        ? vivero.proyectos.map((p: any) => Number(p.id_prycto || p.id)) 
-        : (vivero.proyecto_id ? [Number(vivero.proyecto_id)] : []);
+
+      let mappedProyectos: number[] =
+        vivero.proyectos && vivero.proyectos.length > 0
+          ? vivero.proyectos.map((p: any) => Number(p.id_prycto || p.id))
+          : vivero.proyecto_id
+            ? [Number(vivero.proyecto_id)]
+            : [];
 
       if (vivero.caracteres && vivero.caracteres.length > 0) {
         vivero.caracteres.forEach((c: any) => {
@@ -2737,13 +2806,13 @@ const resetAndLoad = async () => {
       }
 
       const mappedCaracteres = vivero.caracteres ? vivero.caracteres.map((c: any) => Number(c.id)) : [];
-      
-      form.value = { 
-        ...vivero, 
+
+      form.value = {
+        ...vivero,
         proyectos: mappedProyectos,
-        caracteres_ids: mappedCaracteres 
+        caracteres_ids: mappedCaracteres
       };
-      
+
       if (form.value.origen_vivero_id) {
         const parentVivero = allViverosList.value.find((v) => v.id == form.value.origen_vivero_id);
         if (parentVivero) {
@@ -2804,10 +2873,7 @@ const resetAndLoad = async () => {
           await loadHaciendasOrigen(false);
         }
 
-        if (
-          form.value.origen_ingenio === form.value.ingenio &&
-          form.value.origen_hacienda === form.value.hacienda
-        ) {
+        if (form.value.origen_ingenio === form.value.ingenio && form.value.origen_hacienda === form.value.hacienda) {
           lotesOrigen.value = [...lotes.value];
         } else {
           await loadLotesOrigen();

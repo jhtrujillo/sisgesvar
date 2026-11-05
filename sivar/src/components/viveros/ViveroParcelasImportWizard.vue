@@ -198,10 +198,12 @@
                           :class="{ 'bg-emerald-50/50': conflict.resolvedId }"
                         >
                           <td class="px-4 py-3 font-mono text-slate-500">{{ conflict.row[mapping.plot] }}</td>
-                          
+
                           <!-- Variedad Cell -->
                           <td class="px-4 py-3 relative">
-                            <div class="text-xs mb-1 font-semibold" :class="conflict.isVariedadResolved ? 'text-emerald-600' : 'text-rose-600'">Excel: {{ conflict.excelVariedad }}</div>
+                            <div class="text-xs mb-1 font-semibold" :class="conflict.isVariedadResolved ? 'text-emerald-600' : 'text-rose-600'">
+                              Excel: {{ conflict.excelVariedad }}
+                            </div>
                             <div v-if="!conflict.resolvedId">
                               <div class="flex gap-2">
                                 <input
@@ -217,24 +219,38 @@
                                   type="button"
                                   title="Registrar"
                                   class="bg-slate-800 hover:bg-slate-700 text-white text-[10px] font-bold px-2 py-1 rounded"
-                                >Crear</button>
+                                >
+                                  Crear
+                                </button>
                               </div>
-                              <div v-if="conflict.showDropdown" class="absolute z-50 w-full mt-1 bg-white shadow-2xl max-h-60 rounded-lg py-1 text-xs overflow-auto border border-slate-300 left-0">
+                              <div
+                                v-if="conflict.showDropdown"
+                                class="absolute z-50 w-full mt-1 bg-white shadow-2xl max-h-60 rounded-lg py-1 text-xs overflow-auto border border-slate-300 left-0"
+                              >
                                 <div v-if="getFilteredVarieties(conflict.searchTerm).length === 0" class="px-3 py-2 text-slate-400">Sin resultados</div>
-                                <div v-for="v in getFilteredVarieties(conflict.searchTerm)" :key="v.id_nm_vrdad" @mousedown="resolveConflict(conflict, v)" class="cursor-pointer px-3 py-2 hover:bg-cenicana hover:text-white border-b border-slate-50 transition-colors">
+                                <div
+                                  v-for="v in getFilteredVarieties(conflict.searchTerm)"
+                                  :key="v.id_nm_vrdad"
+                                  @mousedown="resolveConflict(conflict, v)"
+                                  class="cursor-pointer px-3 py-2 hover:bg-cenicana hover:text-white border-b border-slate-50 transition-colors"
+                                >
                                   <span class="font-bold">{{ v.nm_vrdad }}</span> <span class="opacity-75 text-[10px] ml-1">{{ v.pdgree }}</span>
                                 </div>
                               </div>
                             </div>
                             <div v-else class="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded px-2 py-1">
                               <span class="text-xs text-emerald-700 font-bold flex items-center gap-1">{{ conflict.resolvedName }}</span>
-                              <BaseButton v-if="!conflict.isVariedadResolved" variant="link" size="xs" class="!text-[10px]" @click="conflict.resolvedId = null">Cambiar</BaseButton>
+                              <BaseButton v-if="!conflict.isVariedadResolved" variant="link" size="xs" class="!text-[10px]" @click="conflict.resolvedId = null"
+                                >Cambiar</BaseButton
+                              >
                             </div>
                           </td>
 
                           <!-- Proyecto Cell -->
                           <td v-if="mapping.proyecto" class="px-4 py-3 relative">
-                            <div class="text-xs mb-1 font-semibold" :class="conflict.isProyectoResolved ? 'text-emerald-600' : 'text-rose-600'">Excel: {{ conflict.excelProyecto }}</div>
+                            <div class="text-xs mb-1 font-semibold" :class="conflict.isProyectoResolved ? 'text-emerald-600' : 'text-rose-600'">
+                              Excel: {{ conflict.excelProyecto }}
+                            </div>
                             <div v-if="!conflict.resolvedProyectoId">
                               <input
                                 type="text"
@@ -244,41 +260,64 @@
                                 placeholder="Buscar Proyecto..."
                                 class="w-full border border-slate-300 rounded-lg px-2 py-1 text-xs focus:ring-1 focus:ring-cenicana outline-none shadow-sm"
                               />
-                              <div v-if="conflict.showProyectoDropdown" class="absolute z-50 w-full mt-1 bg-white shadow-2xl max-h-60 rounded-lg py-1 text-xs overflow-auto border border-slate-300 left-0">
+                              <div
+                                v-if="conflict.showProyectoDropdown"
+                                class="absolute z-50 w-full mt-1 bg-white shadow-2xl max-h-60 rounded-lg py-1 text-xs overflow-auto border border-slate-300 left-0"
+                              >
                                 <div v-if="getFilteredProyectos(conflict.searchProyectoTerm).length === 0" class="px-3 py-2 text-slate-400">Sin resultados</div>
-                                <div v-for="p in getFilteredProyectos(conflict.searchProyectoTerm)" :key="p.id_prycto || p.id" @mousedown="resolveProyectoConflict(conflict, p)" class="cursor-pointer px-3 py-2 hover:bg-cenicana hover:text-white border-b border-slate-50 transition-colors">
+                                <div
+                                  v-for="p in getFilteredProyectos(conflict.searchProyectoTerm)"
+                                  :key="p.id_prycto || p.id"
+                                  @mousedown="resolveProyectoConflict(conflict, p)"
+                                  class="cursor-pointer px-3 py-2 hover:bg-cenicana hover:text-white border-b border-slate-50 transition-colors"
+                                >
                                   <span class="font-bold">{{ p.nm_prycto }}</span>
                                 </div>
                               </div>
                             </div>
                             <div v-else class="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded px-2 py-1">
                               <span class="text-xs text-emerald-700 font-bold flex items-center gap-1">{{ conflict.resolvedProyectoName }}</span>
-                              <BaseButton v-if="!conflict.isProyectoResolved" variant="link" size="xs" class="!text-[10px]" @click="conflict.resolvedProyectoId = null">Cambiar</BaseButton>
+                              <BaseButton variant="link" size="xs" class="!text-[10px]" @click="clearProyectoConflict(conflict)">Cambiar</BaseButton>
                             </div>
                           </td>
 
                           <!-- Carácter Cell -->
                           <td v-if="mapping.caracter" class="px-4 py-3 relative">
-                            <div class="text-xs mb-1 font-semibold" :class="conflict.isCaracterResolved ? 'text-emerald-600' : 'text-rose-600'">Excel: {{ conflict.excelCaracter }}</div>
+                            <div class="text-xs mb-1 font-semibold" :class="conflict.isCaracterResolved ? 'text-emerald-600' : 'text-rose-600'">
+                              Excel: {{ conflict.excelCaracter }}
+                            </div>
                             <div v-if="!conflict.resolvedCaracterId">
                               <input
                                 type="text"
                                 v-model="conflict.searchCaracterTerm"
-                                @focus="conflict.showCaracterDropdown = true"
+                                @focus="onFocusCaracter(conflict)"
                                 @blur="hideCaracterDropdown(conflict)"
-                                placeholder="Buscar Carácter..."
+                                :placeholder="conflict.resolvedProyectoId ? 'Buscar Carácter del Proyecto...' : 'Buscar Carácter General...'"
                                 class="w-full border border-slate-300 rounded-lg px-2 py-1 text-xs focus:ring-1 focus:ring-cenicana outline-none shadow-sm"
                               />
-                              <div v-if="conflict.showCaracterDropdown" class="absolute z-50 w-full mt-1 bg-white shadow-2xl max-h-60 rounded-lg py-1 text-xs overflow-auto border border-slate-300 left-0">
-                                <div v-if="getFilteredCaracteres(conflict.searchCaracterTerm).length === 0" class="px-3 py-2 text-slate-400">Sin resultados</div>
-                                <div v-for="c in getFilteredCaracteres(conflict.searchCaracterTerm)" :key="c.id" @mousedown="resolveCaracterConflict(conflict, c)" class="cursor-pointer px-3 py-2 hover:bg-cenicana hover:text-white border-b border-slate-50 transition-colors">
+                              <div
+                                v-if="conflict.showCaracterDropdown"
+                                class="absolute z-50 w-full mt-1 bg-white shadow-2xl max-h-60 rounded-lg py-1 text-xs overflow-auto border border-slate-300 left-0"
+                              >
+                                <div v-if="getFilteredCaracteres(conflict.searchCaracterTerm, conflict).length === 0" class="px-3 py-2 text-slate-400">
+                                  {{ conflict.resolvedProyectoId ? "Sin caracteres para este proyecto" : "Sin resultados" }}
+                                </div>
+                                <div
+                                  v-for="c in getFilteredCaracteres(conflict.searchCaracterTerm, conflict)"
+                                  :key="c.id"
+                                  @mousedown="resolveCaracterConflict(conflict, c)"
+                                  class="cursor-pointer px-3 py-2 hover:bg-cenicana hover:text-white border-b border-slate-50 transition-colors"
+                                >
                                   <span class="font-bold">{{ c.nombre }}</span>
+                                  <span v-if="!conflict.resolvedProyectoId && getProjectNameById(c.proyecto_id)" class="opacity-75 text-[10px] ml-1"
+                                    >({{ getProjectNameById(c.proyecto_id) }})</span
+                                  >
                                 </div>
                               </div>
                             </div>
                             <div v-else class="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded px-2 py-1">
                               <span class="text-xs text-emerald-700 font-bold flex items-center gap-1">{{ conflict.resolvedCaracterName }}</span>
-                              <BaseButton v-if="!conflict.isCaracterResolved" variant="link" size="xs" class="!text-[10px]" @click="conflict.resolvedCaracterId = null">Cambiar</BaseButton>
+                              <BaseButton variant="link" size="xs" class="!text-[10px]" @click="clearCaracterConflict(conflict)">Cambiar</BaseButton>
                             </div>
                           </td>
                           <td class="px-2 py-3 text-center">
@@ -327,7 +366,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from "vue";
+import { ref, computed, nextTick, onMounted, watch } from "vue";
 import * as XLSX from "xlsx";
 import { useToast } from "vue-toastification";
 import viverosServices from "@/services/viveros.services";
@@ -365,10 +404,103 @@ const isAnalyzing = ref(false);
 const showOnlyUnresolved = ref(false);
 const isRegisteringAll = ref(false);
 
+const allCaracteres = ref<any[]>([]);
+const caracteresCache = ref<Map<number, any[]>>(new Map());
+
+const getProjectNameById = (id: number | string) => {
+  if (!id) return "";
+  const p = props.proyectos?.find((pr) => Number(pr.id_prycto || pr.id) === Number(id));
+  return p ? p.nm_prycto : "";
+};
+
+const loadAllCaracteres = async () => {
+  try {
+    const res = await viverosServices.getAllCaracteres();
+    allCaracteres.value = res.data || [];
+  } catch (error) {
+    console.warn("No se pudieron cargar todos los caracteres, usando props:", error);
+    allCaracteres.value = props.caracteres || [];
+  }
+};
+
+const ensureCaracteresForProyecto = async (proyectoId: number | string) => {
+  const pId = Number(proyectoId);
+  if (!pId) return;
+  if (caracteresCache.value.has(pId) && (caracteresCache.value.get(pId)?.length || 0) > 0) return;
+  try {
+    const res = await viverosServices.getCaracteresPorProyecto(pId);
+    if (res.data && res.data.length > 0) {
+      caracteresCache.value.set(pId, res.data);
+      res.data.forEach((c: any) => {
+        if (!allCaracteres.value.some((ac: any) => ac.id === c.id)) {
+          allCaracteres.value.push(c);
+        }
+      });
+    }
+  } catch (e) {
+    console.error("Error fetching caracteres for project:", pId, e);
+  }
+};
+
+const getCaracteresListForProject = (proyectoId?: number | string | null) => {
+  if (!proyectoId) {
+    return allCaracteres.value.length > 0 ? allCaracteres.value : props.caracteres || [];
+  }
+  const pId = Number(proyectoId);
+  if (caracteresCache.value.has(pId)) {
+    return caracteresCache.value.get(pId) || [];
+  }
+  if (allCaracteres.value.length > 0) {
+    const filtered = allCaracteres.value.filter((c: any) => Number(c.proyecto_id) === pId);
+    if (filtered.length > 0) {
+      caracteresCache.value.set(pId, filtered);
+      return filtered;
+    }
+  }
+  const fromProps = (props.caracteres || []).filter((c: any) => Number(c.proyecto_id) === pId);
+  if (fromProps.length > 0) {
+    caracteresCache.value.set(pId, fromProps);
+    return fromProps;
+  }
+  return [];
+};
+
+const onFocusCaracter = async (conflict: any) => {
+  conflict.showCaracterDropdown = true;
+  if (conflict.resolvedProyectoId) {
+    await ensureCaracteresForProyecto(conflict.resolvedProyectoId);
+  }
+};
+
+const clearProyectoConflict = (conflict: any) => {
+  conflict.resolvedProyectoId = null;
+  conflict.resolvedProyectoName = "";
+  conflict.searchProyectoTerm = "";
+  conflict.isProyectoResolved = false;
+};
+
+const clearCaracterConflict = (conflict: any) => {
+  conflict.resolvedCaracterId = null;
+  conflict.resolvedCaracterName = "";
+  conflict.searchCaracterTerm = "";
+  conflict.isCaracterResolved = false;
+};
+
+onMounted(() => {
+  loadAllCaracteres();
+});
+
+watch(
+  () => props.show,
+  (newVal) => {
+    if (newVal) {
+      loadAllCaracteres();
+    }
+  }
+);
+
 const isRowResolved = (c: any) => {
-  return c.resolvedId && 
-         (!mapping.value.proyecto || c.resolvedProyectoId) && 
-         (!mapping.value.caracter || c.resolvedCaracterId);
+  return c.resolvedId && (!mapping.value.proyecto || c.resolvedProyectoId) && (!mapping.value.caracter || c.resolvedCaracterId);
 };
 
 const displayedConflicts = computed(() => {
@@ -448,7 +580,10 @@ const processSheet = () => {
   headers.value = (data[0] as string[]).map((h) => String(h).trim()).filter((h) => h);
 
   // Auto-guess columns
-  const plotCol = headers.value.find((h) => (h.toLowerCase().includes("plot") || h.toLowerCase().includes("parcela")) && !h.toLowerCase().includes("origen") && !h.toLowerCase().includes("iorigen"));
+  const plotCol = headers.value.find(
+    (h) =>
+      (h.toLowerCase().includes("plot") || h.toLowerCase().includes("parcela")) && !h.toLowerCase().includes("origen") && !h.toLowerCase().includes("iorigen")
+  );
   if (plotCol) mapping.value.plot = plotCol;
 
   const varCol = headers.value.find((h) => h.toLowerCase().includes("variedad"));
@@ -537,7 +672,7 @@ const findBestProjectMatch = (term: string) => {
   return minDistance <= 3 ? bestMatch : null;
 };
 
-const findBestCaracterMatch = (term: string) => {
+const findBestCaracterMatch = (term: string, list?: any[]) => {
   if (!term) return null;
   const cleanTerm = term.toLowerCase().replace(/[^a-z0-9]/g, "");
   if (!cleanTerm) return null;
@@ -545,7 +680,9 @@ const findBestCaracterMatch = (term: string) => {
   let bestMatch = null;
   let minDistance = Infinity;
 
-  for (const c of props.caracteres) {
+  const targetList = list && list.length > 0 ? list : allCaracteres.value.length > 0 ? allCaracteres.value : props.caracteres;
+  for (const c of targetList) {
+    if (!c || !c.nombre) continue;
     const cleanC = c.nombre.toLowerCase().replace(/[^a-z0-9]/g, "");
     if (cleanC === cleanTerm) return c;
 
@@ -564,6 +701,7 @@ const validateData = async () => {
   isAnalyzing.value = true;
   await nextTick();
   await new Promise((resolve) => setTimeout(resolve, 50));
+  await loadAllCaracteres();
 
   conflicts.value = [];
   readyToImport.value = [];
@@ -577,14 +715,14 @@ const validateData = async () => {
   // Get unique rows based on the plot column
   const uniqueRows = [];
   const seenPlots = new Set();
-  
+
   rawData.value.forEach((row) => {
     // Filter by Vivero/ID Plot if mapped
     if (mapping.value.vivero_id) {
       const rowViveroVal = row[mapping.value.vivero_id] ? String(row[mapping.value.vivero_id]).trim() : "";
       const normalizedRowVal = rowViveroVal.replace(/[^A-Za-z0-9]/g, "").toLowerCase();
       const normalizedViveroId = (props.viveroIdentificador || "").replace(/[^A-Za-z0-9]/g, "").toLowerCase();
-      
+
       if (!normalizedRowVal.startsWith(normalizedViveroId)) {
         return; // Skip row, belongs to another Vivero
       }
@@ -592,7 +730,7 @@ const validateData = async () => {
 
     const plotVal = row[mapping.value.plot];
     if (plotVal === undefined || plotVal === null || plotVal === "") return; // Skip empty rows
-    
+
     if (seenPlots.has(plotVal)) return; // Skip duplicates
     seenPlots.add(plotVal);
 
@@ -600,7 +738,7 @@ const validateData = async () => {
     const plotOrigenVal = mapping.value.plot_origen ? row[mapping.value.plot_origen] : null;
 
     const exactMatch = varMap.get(varVal.toLowerCase());
-    
+
     // Find caracter match if mapped
     let resolvedCaracterId = props.caracterId || null;
     let caracterNombre = null;
@@ -611,19 +749,25 @@ const validateData = async () => {
     if (mapping.value.caracter && row[mapping.value.caracter]) {
       const carText = String(row[mapping.value.caracter]).trim().toLowerCase();
       caracterNombre = String(row[mapping.value.caracter]).trim();
-      const carMatch = props.caracteres.find(c => c.nombre.toLowerCase() === carText || c.nombre.toLowerCase().includes(carText));
+      const rowProjMatch =
+        mapping.value.proyecto && row[mapping.value.proyecto]
+          ? props.proyectos.find((p) => p.nm_prycto.toLowerCase() === String(row[mapping.value.proyecto]).trim().toLowerCase())
+          : null;
+      const targetPId = rowProjMatch ? rowProjMatch.id_prycto || rowProjMatch.id : null;
+      const availableCars = getCaracteresListForProject(targetPId);
+      const carMatch = availableCars.find((c) => c.nombre.toLowerCase() === carText || c.nombre.toLowerCase().includes(carText));
       if (carMatch) {
         resolvedCaracterId = carMatch.id;
       } else {
         isCaracterResolved = false;
       }
     }
-    
+
     let resolvedProyectoId = null;
     if (mapping.value.proyecto && row[mapping.value.proyecto]) {
       proyectoNombre = String(row[mapping.value.proyecto]).trim();
       const pryText = proyectoNombre.toLowerCase();
-      const pryMatch = props.proyectos.find(p => p.nm_prycto.toLowerCase() === pryText || p.nm_prycto.toLowerCase().includes(pryText));
+      const pryMatch = props.proyectos.find((p) => p.nm_prycto.toLowerCase() === pryText || p.nm_prycto.toLowerCase().includes(pryText));
       if (pryMatch) {
         resolvedProyectoId = pryMatch.id_prycto || pryMatch.id;
       } else {
@@ -641,13 +785,16 @@ const validateData = async () => {
         id_plot_origen: `${props.viveroIdentificador}-${plotVal}`,
         caracter_id: resolvedCaracterId,
         caracter_nombre: caracterNombre,
+        proyecto_id: resolvedProyectoId,
         proyecto_nombre: proyectoNombre
       });
     } else {
       // Try to find fuzzy best matches
       const bestMatch = findBestMatch(varVal);
       const bestProjectMatch = isProyectoResolved ? null : findBestProjectMatch(proyectoNombre || "");
-      const bestCaracterMatch = isCaracterResolved ? null : findBestCaracterMatch(caracterNombre || "");
+      const targetConflictPId = resolvedProyectoId || (bestProjectMatch ? bestProjectMatch.id_prycto || bestProjectMatch.id : null);
+      const availableConflictCars = getCaracteresListForProject(targetConflictPId);
+      const bestCaracterMatch = isCaracterResolved ? null : findBestCaracterMatch(caracterNombre || "", availableConflictCars);
 
       conflicts.value.push({
         row: row,
@@ -655,25 +802,25 @@ const validateData = async () => {
         excelVariedad: varVal || "(Vacío)",
         searchTerm: bestMatch ? bestMatch.nm_vrdad : varVal,
         showDropdown: false,
-        resolvedId: isVariedadResolved ? exactMatch.id_nm_vrdad : (bestMatch ? bestMatch.id_nm_vrdad : null),
-        resolvedName: isVariedadResolved ? exactMatch.nm_vrdad : (bestMatch ? bestMatch.nm_vrdad : ""),
+        resolvedId: isVariedadResolved ? exactMatch.id_nm_vrdad : bestMatch ? bestMatch.id_nm_vrdad : null,
+        resolvedName: isVariedadResolved ? exactMatch.nm_vrdad : bestMatch ? bestMatch.nm_vrdad : "",
         isVariedadResolved: isVariedadResolved,
-        
+
         // Proyecto
         excelProyecto: proyectoNombre || "(Vacío)",
-        searchProyectoTerm: bestProjectMatch ? bestProjectMatch.nm_prycto : (proyectoNombre || ""),
+        searchProyectoTerm: bestProjectMatch ? bestProjectMatch.nm_prycto : proyectoNombre || "",
         showProyectoDropdown: false,
-        resolvedProyectoId: isProyectoResolved ? resolvedProyectoId : (bestProjectMatch ? (bestProjectMatch.id_prycto || bestProjectMatch.id) : null),
-        resolvedProyectoName: isProyectoResolved ? proyectoNombre : (bestProjectMatch ? bestProjectMatch.nm_prycto : ""),
+        resolvedProyectoId: isProyectoResolved ? resolvedProyectoId : bestProjectMatch ? bestProjectMatch.id_prycto || bestProjectMatch.id : null,
+        resolvedProyectoName: isProyectoResolved ? proyectoNombre : bestProjectMatch ? bestProjectMatch.nm_prycto : "",
         isProyectoResolved: isProyectoResolved,
 
         // Caracter
         excelCaracter: caracterNombre || "(Vacío)",
-        searchCaracterTerm: bestCaracterMatch ? bestCaracterMatch.nombre : (caracterNombre || ""),
+        searchCaracterTerm: bestCaracterMatch ? bestCaracterMatch.nombre : caracterNombre || "",
         showCaracterDropdown: false,
-        resolvedCaracterId: isCaracterResolved ? resolvedCaracterId : (bestCaracterMatch ? bestCaracterMatch.id : null),
-        resolvedCaracterName: isCaracterResolved ? caracterNombre : (bestCaracterMatch ? bestCaracterMatch.nombre : ""),
-        isCaracterResolved: isCaracterResolved,
+        resolvedCaracterId: isCaracterResolved ? resolvedCaracterId : bestCaracterMatch ? bestCaracterMatch.id : null,
+        resolvedCaracterName: isCaracterResolved ? caracterNombre : bestCaracterMatch ? bestCaracterMatch.nombre : "",
+        isCaracterResolved: isCaracterResolved
       });
     }
   });
@@ -685,19 +832,24 @@ const validateData = async () => {
 const getFilteredVarieties = (term: string) => {
   if (!term) return props.variedades.slice(0, 50);
   const q = term.toLowerCase();
+
   return props.variedades.filter((v) => v.nm_vrdad.toLowerCase().includes(q) || (v.pdgree && v.pdgree.toLowerCase().includes(q))).slice(0, 50);
 };
 
 const getFilteredProyectos = (term: string) => {
   if (!term) return props.proyectos.slice(0, 50);
   const q = term.toLowerCase();
+
   return props.proyectos.filter((p) => p.nm_prycto.toLowerCase().includes(q)).slice(0, 50);
 };
 
-const getFilteredCaracteres = (term: string) => {
-  if (!term) return props.caracteres.slice(0, 50);
+const getFilteredCaracteres = (term: string, conflict?: any) => {
+  const pId = conflict?.resolvedProyectoId;
+  const list = getCaracteresListForProject(pId);
+  if (!term) return list.slice(0, 50);
   const q = term.toLowerCase();
-  return props.caracteres.filter((c) => c.nombre.toLowerCase().includes(q)).slice(0, 50);
+
+  return list.filter((c) => c && c.nombre && c.nombre.toLowerCase().includes(q)).slice(0, 50);
 };
 
 const hideConflictDropdown = (conflict: any) => {
@@ -711,7 +863,6 @@ const hideProyectoDropdown = (conflict: any) => {
     conflict.showProyectoDropdown = false;
   }, 200);
 };
-
 const hideCaracterDropdown = (conflict: any) => {
   setTimeout(() => {
     conflict.showCaracterDropdown = false;
@@ -725,11 +876,45 @@ const resolveConflict = (conflict: any, variety: any) => {
   conflict.showDropdown = false;
 };
 
-const resolveProyectoConflict = (conflict: any, proyecto: any) => {
-  conflict.resolvedProyectoId = proyecto.id_prycto || proyecto.id;
+const resolveProyectoConflict = async (conflict: any, proyecto: any) => {
+  const newProyectoId = proyecto.id_prycto || proyecto.id;
+  conflict.resolvedProyectoId = newProyectoId;
   conflict.resolvedProyectoName = proyecto.nm_prycto;
   conflict.searchProyectoTerm = proyecto.nm_prycto;
   conflict.showProyectoDropdown = false;
+  conflict.isProyectoResolved = true;
+
+  // Cargar dinámicamente los caracteres del nuevo proyecto
+  await ensureCaracteresForProyecto(newProyectoId);
+  const projectCaracteres = getCaracteresListForProject(newProyectoId);
+
+  if (conflict.resolvedCaracterId) {
+    const exists = projectCaracteres.some((c: any) => c.id === conflict.resolvedCaracterId);
+    if (!exists) {
+      conflict.resolvedCaracterId = null;
+      conflict.resolvedCaracterName = "";
+      conflict.isCaracterResolved = false;
+      conflict.searchCaracterTerm = "";
+    }
+  }
+
+  if (!conflict.resolvedCaracterId && conflict.excelCaracter && conflict.excelCaracter !== "(Vacío)") {
+    const carText = conflict.excelCaracter.toLowerCase().trim();
+    const exact = projectCaracteres.find((c: any) => c.nombre.toLowerCase().trim() === carText);
+    if (exact) {
+      conflict.resolvedCaracterId = exact.id;
+      conflict.resolvedCaracterName = exact.nombre;
+      conflict.searchCaracterTerm = exact.nombre;
+      conflict.isCaracterResolved = true;
+    } else {
+      const best = findBestCaracterMatch(conflict.excelCaracter, projectCaracteres);
+      if (best) {
+        conflict.resolvedCaracterId = best.id;
+        conflict.resolvedCaracterName = best.nombre;
+        conflict.searchCaracterTerm = best.nombre;
+      }
+    }
+  }
 };
 
 const resolveCaracterConflict = (conflict: any, caracter: any) => {

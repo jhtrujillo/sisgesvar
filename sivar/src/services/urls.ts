@@ -117,6 +117,7 @@ export default {
   API_FLORACION_VALIDATE,
   API_FLORACION_EXECUTE,
   API_PROYECTOS: API_URL + "siembra-campo/proyectos",
+  API_CARACTERES: API_URL + "siembra-campo/caracteres",
   API_RESPONSABLES: API_URL + "siembra-campo/responsables",
   API_AMBIENTES: API_URL + "siembra-campo/ambientes",
   API_SIEMBRA_CAMPO_IMPORT

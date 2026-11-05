@@ -82,6 +82,9 @@ export default {
     return api.get(urls.API_AMBIENTES);
   },
 
+  getAllCaracteres() {
+    return api.get(urls.API_CARACTERES);
+  },
   getCaracteresPorProyecto(id: string | number) {
     return api.get(`${urls.API_PROYECTOS}/${id}/caracteres`);
   },
