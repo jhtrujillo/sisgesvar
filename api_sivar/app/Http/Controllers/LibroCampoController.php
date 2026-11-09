@@ -96,6 +96,46 @@ class LibroCampoController extends Controller
                         } elseif ($diseno->tpo_ensyo == 'I') {
                             $libroI = $dataLibro;
                         }
+                    } else {
+                        $camposHermano = DB::connection('sivar')->table('datos_campo as dc')
+                            ->join('diseno_enc as de', 'dc.id_dsno_enc', '=', 'de.id_dsno_enc')
+                            ->where([['de.id_pr', $id_pr], ['de.srie', $srie], ['de.estdo', $estdo]])
+                            ->pluck('dc.nmro_cmpo')
+                            ->unique()
+                            ->toArray();
+
+                        $salidas = DB::connection('sivar')->table('dissalida_det')
+                            ->select('id_dissalida_det', 'id_dsno_enc')
+                            ->where('id_dsno_enc', $idDsnoEnc)
+                            ->get();
+
+                        if (!empty($camposHermano) && $salidas->isNotEmpty()) {
+                            $batch = [];
+                            foreach ($salidas as $s) {
+                                foreach ($camposHermano as $c) {
+                                    $batch[] = [
+                                        'id_dissalida_det' => $s->id_dissalida_det,
+                                        'id_dsno_enc' => $s->id_dsno_enc,
+                                        'nmro_cmpo' => $c
+                                    ];
+                                    if (count($batch) >= 500) {
+                                        DB::connection('sivar')->table('datos_campo')->insert($batch);
+                                        $batch = [];
+                                    }
+                                }
+                            }
+                            if (!empty($batch)) {
+                                DB::connection('sivar')->table('datos_campo')->insert($batch);
+                            }
+
+                            $hasDatosCampo = true;
+                            $dataLibro = $this->makeLibroCampoData($idDsnoEnc);
+                            if ($diseno->tpo_ensyo == 'F') {
+                                $libroF = $dataLibro;
+                            } elseif ($diseno->tpo_ensyo == 'I') {
+                                $libroI = $dataLibro;
+                            }
+                        }
                     }
                 }
             } else {

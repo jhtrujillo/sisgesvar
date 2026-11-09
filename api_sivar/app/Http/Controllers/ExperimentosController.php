@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Models\DisenoEncabezado;
 use App\Models\DisenoDetalle;
-use App\Models\Cruzamiento;
+use App\Models\Crossing as Cruzamiento;
 use App\Models\Proyecto;
 use App\Models\Area;
 use App\Models\ConfCampo;
@@ -1282,6 +1282,25 @@ class ExperimentosController extends Controller
                 ->pluck('nmro_cmpo')
                 ->unique()
                 ->toArray();
+
+            // Si este diseño específico no tenía campos registrados aún, intentar heredar los del diseño hermano del mismo experimento
+            if (empty($existingCampos)) {
+                $encabezadoActual = DB::connection('sivar')->table('diseno_enc')
+                    ->where('id_dsno_enc', $id_dsno_enc)
+                    ->first();
+                if ($encabezadoActual) {
+                    $existingCampos = DB::connection('sivar')->table('datos_campo as dc')
+                        ->join('diseno_enc as de', 'dc.id_dsno_enc', '=', 'de.id_dsno_enc')
+                        ->where([
+                            ['de.id_pr', '=', $encabezadoActual->id_pr],
+                            ['de.srie', '=', $encabezadoActual->srie],
+                            ['de.estdo', '=', $encabezadoActual->estdo]
+                        ])
+                        ->pluck('dc.nmro_cmpo')
+                        ->unique()
+                        ->toArray();
+                }
+            }
 
             // Limpiar datos generados previamente en orden para respetar claves foráneas y evitar violaciones de clave única
             DB::connection('sivar')->table('datos_campo')->where('id_dsno_enc', $id_dsno_enc)->delete();

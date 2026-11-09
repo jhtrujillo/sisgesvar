@@ -239,11 +239,7 @@
           </div>
 
           <div class="flex items-center gap-2">
-            <button
-              type="button"
-              @click="seleccionarTodasGlobal"
-              class="text-xs font-bold text-cenicana hover:underline cursor-pointer"
-            >
+            <button type="button" @click="seleccionarTodasGlobal" class="text-xs font-bold text-cenicana hover:underline cursor-pointer">
               Seleccionar todas
             </button>
             <span class="text-slate-300">|</span>
@@ -380,10 +376,22 @@
             "
             :title="isEditingManual ? 'Desactivar modo edición' : 'Editar evaluaciones directamente en la tabla'"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" :class="isEditingManual ? 'text-white' : 'text-amber-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-3.5 w-3.5 mr-1.5"
+              :class="isEditingManual ? 'text-white' : 'text-amber-600'"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+              />
             </svg>
-            {{ isEditingManual ? 'Modo Edición Activo' : 'Edición Manual' }}
+            {{ isEditingManual ? "Modo Edición Activo" : "Edición Manual" }}
           </button>
 
           <!-- Botón: Importar Excel -->
@@ -393,7 +401,14 @@
             class="inline-flex items-center px-3 py-1.5 border border-slate-200 shadow-sm text-xs font-bold rounded-lg text-slate-700 bg-white hover:bg-slate-50 hover:border-cenicana transition-all shrink-0 cursor-pointer"
             title="Importar evaluaciones desde archivo Excel (.xlsx)"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-3.5 w-3.5 mr-1.5 text-blue-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
             Importar Excel
@@ -419,8 +434,19 @@
             class="inline-flex items-center px-3 py-1.5 border border-slate-200 shadow-sm text-xs font-bold rounded-lg text-slate-700 bg-white hover:bg-slate-50 hover:border-cenicana transition-all shrink-0 cursor-pointer"
             title="Editar o modificar las variables / columnas a evaluar en el libro de campo"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5 text-cenicana" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-3.5 w-3.5 mr-1.5 text-cenicana"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
             </svg>
             Columnas
             <span class="ml-1.5 py-0.5 px-1.5 rounded-full text-[10px] bg-emerald-100 text-cenicana font-black">
@@ -431,11 +457,18 @@
       </div>
 
       <!-- Banner cuando el Modo Edición Manual está Activo -->
-      <div v-if="isEditingManual" class="px-5 py-3 bg-amber-50/90 border-b border-amber-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-amber-900 animate-fade-in">
+      <div
+        v-if="isEditingManual"
+        class="px-5 py-3 bg-amber-50/90 border-b border-amber-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-amber-900 animate-fade-in"
+      >
         <div class="flex items-center gap-2">
           <span class="p-1 bg-amber-200 rounded-md text-amber-800">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
             </svg>
           </span>
           <span>
@@ -460,7 +493,11 @@
           >
             <svg v-if="isSavingValues" class="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
             </svg>
             <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
@@ -684,22 +721,24 @@
       class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-fade-in"
       @click.self="cerrarModalEditarVariables"
     >
-      <div class="relative bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-scale-in">
+      <div
+        class="relative bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-scale-in"
+      >
         <!-- Modal Header -->
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
           <div class="flex items-center gap-3">
             <div class="p-2 bg-emerald-100/80 text-cenicana rounded-xl border border-emerald-200/60 shadow-xs">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
               </svg>
             </div>
             <div>
-              <h3 class="text-base font-extrabold text-slate-800">
-                Editar Columnas y Variables a Evaluar
-              </h3>
-              <p class="text-xs text-slate-500">
-                Seleccione las variables que desea evaluar o desmarque las no deseadas para el libro de campo.
-              </p>
+              <h3 class="text-base font-extrabold text-slate-800">Editar Columnas y Variables a Evaluar</h3>
+              <p class="text-xs text-slate-500">Seleccione las variables que desea evaluar o desmarque las no deseadas para el libro de campo.</p>
             </div>
           </div>
           <button
@@ -735,11 +774,7 @@
               <span class="font-extrabold text-cenicana">{{ selectedVariablesFamilia.length }}</span> variables seleccionadas
             </span>
             <div class="flex items-center gap-2">
-              <button
-                type="button"
-                @click="seleccionarTodasGlobal"
-                class="text-xs font-bold text-cenicana hover:underline cursor-pointer"
-              >
+              <button type="button" @click="seleccionarTodasGlobal" class="text-xs font-bold text-cenicana hover:underline cursor-pointer">
                 Seleccionar todas
               </button>
               <span class="text-slate-300">|</span>
@@ -756,11 +791,7 @@
 
         <!-- Modal Body (Areas & Variables) -->
         <div class="p-6 overflow-y-auto max-h-[55vh] space-y-5 scrollbar-custom">
-          <div
-            v-for="(areaGroup, gIdx) in filteredModalVariables"
-            :key="gIdx"
-            class="border border-slate-100 rounded-xl p-4 bg-slate-50/40"
-          >
+          <div v-for="(areaGroup, gIdx) in filteredModalVariables" :key="gIdx" class="border border-slate-100 rounded-xl p-4 bg-slate-50/40">
             <div class="flex items-center justify-between border-b border-slate-200/60 pb-2 mb-3">
               <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
@@ -787,9 +818,10 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              <label
+              <div
                 v-for="v in areaGroup.variables"
                 :key="v.nmro_cmpo"
+                @click="onVariableCheckboxClick(v)"
                 class="flex items-center gap-2.5 p-2.5 rounded-lg border text-xs cursor-pointer transition-all select-none"
                 :class="
                   isVariableSelected(v.nmro_cmpo)
@@ -801,12 +833,18 @@
                   type="checkbox"
                   :value="v.nmro_cmpo"
                   :checked="isVariableSelected(v.nmro_cmpo)"
-                  @change="toggleVariable(v)"
-                  class="rounded border-slate-300 text-cenicana focus:ring-emerald-400 h-4 w-4 cursor-pointer"
+                  class="rounded border-slate-300 text-cenicana focus:ring-emerald-400 h-4 w-4 cursor-pointer pointer-events-none"
                 />
                 <span class="truncate flex-1" :title="v.nmbre_cmpo">{{ v.nmbre_cmpo }}</span>
+                <span
+                  v-if="variableTieneDatos(v.nmro_cmpo)"
+                  class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 shrink-0"
+                  title="Esta variable ya cuenta con evaluaciones registradas en el experimento"
+                >
+                  Tiene datos
+                </span>
                 <span class="text-[10px] text-slate-400 font-mono">({{ v.nmro_cmpo }})</span>
-              </label>
+              </div>
             </div>
           </div>
 
@@ -817,9 +855,7 @@
 
         <!-- Modal Footer -->
         <div class="px-6 py-4 bg-slate-50/80 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p class="text-[11px] text-slate-500">
-            Los cambios se aplicarán inmediatamente a las columnas del libro de campo.
-          </p>
+          <p class="text-[11px] text-slate-500">Los cambios se aplicarán inmediatamente a las columnas del libro de campo.</p>
           <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
             <button
               type="button"
@@ -853,13 +889,82 @@
       </div>
     </div>
 
+    <!-- MODAL DE ADVERTENCIA: Confirmación de Eliminación de Columnas con Datos -->
+    <div
+      v-if="showConfirmDeleteColumnModal"
+      class="fixed inset-0 z-[60] overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-fade-in"
+      @click.self="cancelarAccionEliminacion"
+    >
+      <div class="relative bg-white rounded-2xl shadow-2xl border border-rose-100 w-full max-w-lg overflow-hidden animate-scale-in">
+        <!-- Header -->
+        <div class="px-6 pt-6 pb-4 flex items-start gap-4">
+          <div class="p-3 bg-rose-100 text-rose-600 rounded-2xl border border-rose-200 shadow-xs shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <div class="space-y-1">
+            <h3 class="text-base font-extrabold text-slate-800">
+              {{ deleteConfirmTitle }}
+            </h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              {{ deleteConfirmDescription }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Lista de columnas afectadas -->
+        <div v-if="variablesToDeleteWithData.length > 0" class="px-6 py-3 bg-slate-50 border-y border-slate-100 space-y-2">
+          <span class="text-[11px] font-bold text-slate-700 uppercase tracking-wider block"> Columnas afectadas con evaluaciones: </span>
+          <div class="max-h-36 overflow-y-auto space-y-1.5 pr-1 scrollbar-custom">
+            <div
+              v-for="v in variablesToDeleteWithData"
+              :key="v.nmro_cmpo"
+              class="flex items-center justify-between px-3 py-1.5 bg-white rounded-lg border border-rose-200/80 text-xs shadow-2xs"
+            >
+              <div class="flex items-center gap-2 truncate">
+                <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                <span class="font-bold text-slate-800 truncate">{{ v.nmbre_cmpo }}</span>
+                <span class="text-[10px] text-slate-400 font-mono">({{ v.nmro_cmpo }})</span>
+              </div>
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200 shrink-0"> Tiene datos </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 bg-slate-50/60 flex items-center justify-end gap-2.5">
+          <button
+            type="button"
+            @click="cancelarAccionEliminacion"
+            class="px-4 py-2 border border-slate-200 text-xs font-semibold rounded-xl text-slate-700 bg-white hover:bg-slate-50 transition-all cursor-pointer"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            @click="confirmarAccionEliminacion"
+            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-xs font-bold rounded-xl text-white bg-rose-600 hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all cursor-pointer"
+          >
+            Sí, continuar y eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- MODAL: Importar Evaluaciones desde Excel -->
     <div
       v-if="showImportExcelModal"
       class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-fade-in"
       @click.self="cerrarModalImportarExcel"
     >
-      <div class="relative bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-scale-in">
+      <div
+        class="relative bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-scale-in"
+      >
         <!-- Modal Header -->
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
           <div class="flex items-center gap-3">
@@ -869,12 +974,8 @@
               </svg>
             </div>
             <div>
-              <h3 class="text-base font-extrabold text-slate-800">
-                Importar Evaluaciones desde Excel
-              </h3>
-              <p class="text-xs text-slate-500">
-                Cargue el archivo Excel diligenciado para actualizar automáticamente las columnas del libro.
-              </p>
+              <h3 class="text-base font-extrabold text-slate-800">Importar Evaluaciones desde Excel</h3>
+              <p class="text-xs text-slate-500">Cargue el archivo Excel diligenciado para actualizar automáticamente las columnas del libro.</p>
             </div>
           </div>
           <button
@@ -893,11 +994,19 @@
         <div class="p-6 overflow-y-auto max-h-[60vh] space-y-5 scrollbar-custom">
           <!-- Info Alert -->
           <div class="p-3.5 bg-blue-50 border border-blue-200/80 rounded-xl flex items-start gap-2.5 text-xs text-blue-900">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 text-blue-600 shrink-0 mt-0.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <strong>Formato compatible:</strong> Puede utilizar el mismo archivo obtenido desde <strong>"Exportar Excel"</strong> con los valores diligenciados en las columnas correspondientes a las variables.
+              <strong>Formato compatible:</strong> Puede utilizar el mismo archivo obtenido desde <strong>"Exportar Excel"</strong> con los valores
+              diligenciados en las columnas correspondientes a las variables.
             </div>
           </div>
 
@@ -908,22 +1017,20 @@
             @drop.prevent="handleExcelDrop"
             class="border-2 border-dashed border-slate-300 hover:border-cenicana hover:bg-emerald-50/20 rounded-2xl p-6 text-center cursor-pointer transition-all space-y-2 group"
           >
-            <input
-              type="file"
-              ref="excelFileInputRef"
-              accept=".xlsx, .xls, .csv"
-              @change="onExcelFileSelected"
-              class="hidden"
-            />
-            <div class="w-12 h-12 mx-auto rounded-xl bg-slate-100 group-hover:bg-emerald-100 text-slate-500 group-hover:text-cenicana flex items-center justify-center transition-all">
+            <input type="file" ref="excelFileInputRef" accept=".xlsx, .xls, .csv" @change="onExcelFileSelected" class="hidden" />
+            <div
+              class="w-12 h-12 mx-auto rounded-xl bg-slate-100 group-hover:bg-emerald-100 text-slate-500 group-hover:text-cenicana flex items-center justify-center transition-all"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                />
               </svg>
             </div>
             <div>
-              <p class="text-xs font-bold text-slate-700">
-                <span class="text-cenicana underline">Haga clic para seleccionar</span> o arrastre el archivo aquí
-              </p>
+              <p class="text-xs font-bold text-slate-700"><span class="text-cenicana underline">Haga clic para seleccionar</span> o arrastre el archivo aquí</p>
               <p class="text-[11px] text-slate-400 mt-0.5">Soporta archivos .xlsx, .xls y .csv</p>
             </div>
           </div>
@@ -932,7 +1039,11 @@
           <div v-if="isProcessingExcel" class="py-6 text-center text-xs text-slate-500 flex items-center justify-center gap-2">
             <svg class="animate-spin h-5 w-5 text-cenicana" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
             </svg>
             Analizando y validando estructura del archivo...
           </div>
@@ -943,7 +1054,11 @@
             <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
               <div class="flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
                 <span class="font-bold text-slate-700 truncate max-w-xs">{{ excelFileName }}</span>
               </div>
@@ -987,20 +1102,14 @@
 
             <!-- Preview of First Rows -->
             <div v-if="excelImportSummary.previewRows.length > 0" class="space-y-1.5">
-              <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                Vista Previa de Datos (primeras filas):
-              </label>
+              <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider"> Vista Previa de Datos (primeras filas): </label>
               <div class="overflow-x-auto border border-slate-200 rounded-xl">
                 <table class="min-w-full divide-y divide-slate-200 text-xs">
                   <thead class="bg-slate-50">
                     <tr>
                       <th class="px-3 py-1.5 text-center font-bold text-slate-600">Parcela</th>
                       <th class="px-3 py-1.5 text-left font-bold text-slate-600">Tratamiento</th>
-                      <th
-                        v-for="col in excelImportSummary.matchedColumns"
-                        :key="col"
-                        class="px-3 py-1.5 text-center font-bold text-cenicana bg-emerald-50/50"
-                      >
+                      <th v-for="col in excelImportSummary.matchedColumns" :key="col" class="px-3 py-1.5 text-center font-bold text-cenicana bg-emerald-50/50">
                         {{ col }}
                       </th>
                     </tr>
@@ -1042,7 +1151,11 @@
           >
             <svg v-if="isSavingValues" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
             </svg>
             <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
@@ -1075,6 +1188,13 @@ const showEditVariablesModal = ref(false);
 const modalFilterSearch = ref("");
 const configFilterSearch = ref("");
 const backupSelectedVariables = ref<any[]>([]);
+
+// Modal de confirmación para eliminar variables con datos
+const showConfirmDeleteColumnModal = ref(false);
+const deleteConfirmTitle = ref("");
+const deleteConfirmDescription = ref("");
+const variablesToDeleteWithData = ref<any[]>([]);
+const deleteConfirmCallback = ref<(() => void | Promise<void>) | null>(null);
 
 // Edición manual en tabla
 const isEditingManual = ref(false);
@@ -1180,7 +1300,9 @@ const filteredConfigVariables = computed(() => {
         return (
           areaMatches ||
           (v.nmbre_cmpo || "").toLowerCase().includes(q) ||
-          String(v.nmro_cmpo || "").toLowerCase().includes(q)
+          String(v.nmro_cmpo || "")
+            .toLowerCase()
+            .includes(q)
         );
       });
       return {
@@ -1203,7 +1325,9 @@ const filteredModalVariables = computed(() => {
         return (
           areaMatches ||
           (v.nmbre_cmpo || "").toLowerCase().includes(q) ||
-          String(v.nmro_cmpo || "").toLowerCase().includes(q)
+          String(v.nmro_cmpo || "")
+            .toLowerCase()
+            .includes(q)
         );
       });
       return {
@@ -1416,13 +1540,68 @@ const isVariableSelected = (nmroCmpo: any) => {
   return selectedVariablesFamilia.value.some((v) => String(v.nmro_cmpo) === String(nmroCmpo));
 };
 
-const toggleVariable = (variable: any) => {
-  const idx = selectedVariablesFamilia.value.findIndex((v) => String(v.nmro_cmpo) === String(variable.nmro_cmpo));
-  if (idx >= 0) {
-    selectedVariablesFamilia.value.splice(idx, 1);
+// Comprueba si una variable tiene evaluaciones o datos registrados en las parcelas
+const variableTieneDatos = (nmroCmpo: any): boolean => {
+  const code = String(nmroCmpo);
+  const rows = [...libroFRows.value, ...libroIRows.value];
+  return rows.some((row: any) => {
+    const val = row[code];
+    return val !== undefined && val !== null && String(val).trim() !== "";
+  });
+};
+
+const pedirConfirmacionEliminacion = (titulo: string, descripcion: string, variables: any[], callback: () => void | Promise<void>) => {
+  deleteConfirmTitle.value = titulo;
+  deleteConfirmDescription.value = descripcion;
+  variablesToDeleteWithData.value = variables;
+  deleteConfirmCallback.value = callback;
+  showConfirmDeleteColumnModal.value = true;
+};
+
+const confirmarAccionEliminacion = async () => {
+  showConfirmDeleteColumnModal.value = false;
+  if (deleteConfirmCallback.value) {
+    const cb = deleteConfirmCallback.value;
+    deleteConfirmCallback.value = null;
+    await cb();
+  }
+};
+
+const cancelarAccionEliminacion = () => {
+  showConfirmDeleteColumnModal.value = false;
+  deleteConfirmCallback.value = null;
+  variablesToDeleteWithData.value = [];
+};
+
+const onVariableCheckboxClick = (variable: any) => {
+  const isSelected = isVariableSelected(variable.nmro_cmpo);
+  if (isSelected) {
+    // Si la variable ya contiene datos registrados, advertir al usuario antes de desmarcarla
+    if (variableTieneDatos(variable.nmro_cmpo)) {
+      pedirConfirmacionEliminacion(
+        "Advertencia: Columna con datos registrados",
+        `La columna "${variable.nmbre_cmpo}" ya cuenta con evaluaciones registradas en las parcelas. Quitar esta columna puede afectar sus resultados y no se podrá revertir. Los registros se borrarán permanentemente de la base de datos (tabla datos_campo). ¿Está seguro de que desea desmarcarla?`,
+        [variable],
+        () => {
+          const idx = selectedVariablesFamilia.value.findIndex((v) => String(v.nmro_cmpo) === String(variable.nmro_cmpo));
+          if (idx >= 0) {
+            selectedVariablesFamilia.value.splice(idx, 1);
+          }
+        }
+      );
+      return;
+    }
+    const idx = selectedVariablesFamilia.value.findIndex((v) => String(v.nmro_cmpo) === String(variable.nmro_cmpo));
+    if (idx >= 0) {
+      selectedVariablesFamilia.value.splice(idx, 1);
+    }
   } else {
     selectedVariablesFamilia.value.push(variable);
   }
+};
+
+const toggleVariable = (variable: any) => {
+  onVariableCheckboxClick(variable);
 };
 
 const seleccionarTodasDelArea = (areaGroup: any) => {
@@ -1436,6 +1615,21 @@ const seleccionarTodasDelArea = (areaGroup: any) => {
 
 const deseleccionarTodasDelArea = (areaGroup: any) => {
   if (!areaGroup.variables) return;
+  const varsWithData = areaGroup.variables.filter((v: any) => isVariableSelected(v.nmro_cmpo) && variableTieneDatos(v.nmro_cmpo));
+
+  if (varsWithData.length > 0) {
+    pedirConfirmacionEliminacion(
+      "Advertencia al desmarcar columnas del área",
+      `Una o más columnas del área "${areaGroup.area || "General"}" ya cuentan con evaluaciones registradas. Quitar estas columnas puede afectar sus resultados y no se podrá revertir. Los registros se borrarán permanentemente de la base de datos (tabla datos_campo).`,
+      varsWithData,
+      () => {
+        const idsToRemove = new Set(areaGroup.variables.map((v: any) => String(v.nmro_cmpo)));
+        selectedVariablesFamilia.value = selectedVariablesFamilia.value.filter((v) => !idsToRemove.has(String(v.nmro_cmpo)));
+      }
+    );
+    return;
+  }
+
   const idsToRemove = new Set(areaGroup.variables.map((v: any) => String(v.nmro_cmpo)));
   selectedVariablesFamilia.value = selectedVariablesFamilia.value.filter((v) => !idsToRemove.has(String(v.nmro_cmpo)));
 };
@@ -1455,6 +1649,20 @@ const seleccionarTodasGlobal = () => {
 };
 
 const deseleccionarTodasGlobal = () => {
+  const varsWithData = selectedVariablesFamilia.value.filter((v: any) => variableTieneDatos(v.nmro_cmpo));
+
+  if (varsWithData.length > 0) {
+    pedirConfirmacionEliminacion(
+      "Advertencia al desmarcar todas las columnas",
+      "Varias de las columnas seleccionadas ya cuentan con datos registrados. Quitar estas columnas puede afectar sus resultados y no se podrá revertir. Los registros se borrarán permanentemente de la base de datos (tabla datos_campo).",
+      varsWithData,
+      () => {
+        selectedVariablesFamilia.value = [];
+      }
+    );
+    return;
+  }
+
   selectedVariablesFamilia.value = [];
 };
 
@@ -1473,6 +1681,26 @@ const cerrarModalEditarVariables = () => {
 };
 
 const guardarCambiosModalVariables = async () => {
+  // Identificar qué variables estaban en el libro previamente y ya no están seleccionadas
+  const removedVars = backupSelectedVariables.value.filter(
+    (oldVar) => !selectedVariablesFamilia.value.some((newVar) => String(newVar.nmro_cmpo) === String(oldVar.nmro_cmpo))
+  );
+
+  // Filtrar aquellas variables removidas que efectivamente tienen datos registrados
+  const removedWithData = removedVars.filter((v) => variableTieneDatos(v.nmro_cmpo));
+
+  if (removedWithData.length > 0) {
+    pedirConfirmacionEliminacion(
+      "Confirmar eliminación definitiva de columnas con datos",
+      "Las siguientes columnas contienen evaluaciones registradas en las parcelas del experimento. Eliminar estas columnas puede afectar sus resultados y no se podrá revertir. Los registros se borrarán permanentemente de la base de datos (tabla datos_campo). ¿Desea proceder?",
+      removedWithData,
+      async () => {
+        await guardarLibroDeCampo(true);
+      }
+    );
+    return;
+  }
+
   await guardarLibroDeCampo(true);
 };
 
@@ -1510,9 +1738,7 @@ const guardarLibroDeCampo = async (isFromModal = false) => {
   try {
     const res = await LibroCampoService.crearLibroCampo(payload);
     if (res.data && res.data.code === 200) {
-      feedbackMessage.value = isFromModal
-        ? "Columnas del libro de campo actualizadas con éxito."
-        : "Libro de campo creado con éxito. Actualizando vista...";
+      feedbackMessage.value = isFromModal ? "Columnas del libro de campo actualizadas con éxito." : "Libro de campo creado con éxito. Actualizando vista...";
       feedbackType.value = "success";
       if (isFromModal) {
         showEditVariablesModal.value = false;
@@ -1671,11 +1897,7 @@ const procesarArchivoExcel = async (file: File) => {
     const firstRowKeys = Object.keys(jsonRows[0]);
     firstRowKeys.forEach((header) => {
       const trimmed = header.trim().toLowerCase();
-      const foundCampo = activeCampos.find(
-        (c: any) =>
-          c.nmbre_cmpo.trim().toLowerCase() === trimmed ||
-          String(c.nmro_cmpo).trim().toLowerCase() === trimmed
-      );
+      const foundCampo = activeCampos.find((c: any) => c.nmbre_cmpo.trim().toLowerCase() === trimmed || String(c.nmro_cmpo).trim().toLowerCase() === trimmed);
       if (foundCampo) {
         matchedColumns.push({ excelHeader: header, campo: foundCampo });
       }
@@ -1751,10 +1973,7 @@ const confirmarImportacionExcel = async () => {
   feedbackMessage.value = "";
 
   try {
-    const res = await LibroCampoService.actualizarValoresLibroCampo(
-      currentActiveDsnoEnc.value,
-      excelParsedUpdates.value
-    );
+    const res = await LibroCampoService.actualizarValoresLibroCampo(currentActiveDsnoEnc.value, excelParsedUpdates.value);
 
     if (res.data && res.data.code === 200) {
       feedbackMessage.value = `Importación exitosa: ${res.data.updatedCount || excelParsedUpdates.value.length} valores de variables actualizados en el libro de campo.`;
@@ -1794,6 +2013,7 @@ const limpiarFiltros = () => {
   feedbackMessage.value = "";
   isParamsLocked.value = false;
   showEditVariablesModal.value = false;
+  showConfirmDeleteColumnModal.value = false;
   showImportExcelModal.value = false;
   isEditingManual.value = false;
   dirtyCellsCount.value = 0;
