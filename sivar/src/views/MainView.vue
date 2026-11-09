@@ -80,7 +80,7 @@
                   title="Bitácora"
                   description="Acceda al sistema de bitácora para registrar y consultar las actividades diarias."
                   actionText="Abrir Bitácora"
-                  href="http://192.168.153.119/bitacora/"
+                  href="http://10.75.109.119/bitacora/"
                   target="_blank"
                   rel="noopener noreferrer"
                   variant="amber"
@@ -123,7 +123,6 @@
                     </span>
                   </div>
                 </ModuleCardComponent>
-
 
                 <!-- Especificaciones Module Card -->
                 <router-link
