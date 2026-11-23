@@ -97,40 +97,30 @@
         </div>
       </div>
 
-      <!-- Consolidado de Cruzamientos Card -->
-      <router-link
-        class="group relative flex flex-col bg-white border border-slate-100 hover:border-emerald-100 rounded-2xl p-6 shadow-premium hover:shadow-premium-hover hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
-        :to="{ name: 'mejoramiento.show' }"
+      <!-- Consolidado de Cruzamientos Card (Próximamente) -->
+      <div
+        class="group relative flex flex-col bg-slate-50/70 border border-slate-200/80 rounded-2xl p-6 shadow-sm overflow-hidden opacity-75 cursor-not-allowed"
+        title="Módulo de Consolidado en desarrollo"
       >
-        <div class="absolute top-0 left-0 w-full h-1 bg-emerald-400 group-hover:bg-cenicana transition-colors duration-300"></div>
+        <div class="absolute top-0 left-0 w-full h-1 bg-slate-300"></div>
 
         <div class="flex flex-col h-full items-center text-center">
-          <div class="p-3.5 bg-emerald-50 rounded-xl text-cenicana group-hover:bg-cenicana group-hover:text-white transition-all duration-300 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 16 16" class="transition-transform duration-500 group-hover:scale-105">
+          <div class="p-3.5 bg-slate-100 rounded-xl text-slate-400 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 16 16">
               <path
                 fill="currentColor"
                 d="M2.5 1.75v11.5c0 .138.112.25.25.25h3.17a.75.75 0 0 1 0 1.5H2.75A1.75 1.75 0 0 1 1 13.25V1.75C1 .784 1.784 0 2.75 0h8.5C12.216 0 13 .784 13 1.75v7.736a.75.75 0 0 1-1.5 0V1.75a.25.25 0 0 0-.25-.25h-8.5a.25.25 0 0 0-.25.25m13.274 9.537l-4.557 4.45a.75.75 0 0 1-1.055-.008l-1.943-1.95a.75.75 0 0 1 1.062-1.058l1.419 1.425l4.026-3.932a.75.75 0 1 1 1.048 1.074M4.75 4h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5M4 7.75A.75.75 0 0 1 4.75 7h2a.75.75 0 0 1 0 1.5h-2A.75.75 0 0 1 4 7.75"
               />
             </svg>
           </div>
-          <h3 class="text-lg font-bold text-slate-800 mb-2 group-hover:text-cenicana transition-colors">Consolidado</h3>
-          <p class="text-slate-500 text-xs leading-relaxed mb-4">Visualice alineamientos y resúmenes estadísticos consolidados de la campaña actual.</p>
+          <h3 class="text-lg font-bold text-slate-600 mb-2">Consolidado</h3>
+          <p class="text-slate-400 text-xs leading-relaxed mb-4">Visualice alineamientos y resúmenes estadísticos consolidados de la campaña actual.</p>
 
-          <span class="inline-flex items-center text-xs font-semibold text-emerald-600 mt-auto">
-            Ver Consolidado
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-3.5 w-3.5 ml-1 transform transition-transform group-hover:translate-x-1"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
+          <span class="inline-flex items-center text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-500 mt-auto">
+            Próximamente
           </span>
         </div>
-      </router-link>
+      </div>
     </div>
   </div>
 </template>

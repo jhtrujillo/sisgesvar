@@ -233,7 +233,7 @@ class CrossingController extends Controller
 
                             $crossingRecord[$caracteristica] = $varPadre;
                             $crossingRecord[$origen] = $idPrPadre;
-                            $crossingRecord["grpo_crzmnto_pdre"] = $caracter_padre;
+                            $crossingRecord["grpo_crzmnto_pdre"] = ltrim($caracter_padre, ',');
                             $crossingRecord[$id_flrcion_col] = $idFlrPadre;
                         }
                     }
@@ -272,8 +272,9 @@ class CrossingController extends Controller
                     }
                 }
 
-                if (count($crossingsToInsert) > 0) {
-                    DB::connection('sivar')->table('cruzamientos')->insert($crossingsToInsert);
+                // Insertar fila por fila dentro de la transacción para soportar distinta cantidad de padres/columnas en el mismo lote
+                foreach ($crossingsToInsert as $record) {
+                    DB::connection('sivar')->table('cruzamientos')->insert($record);
                 }
 
                 DB::connection('sivar')->commit();
@@ -291,9 +292,7 @@ class CrossingController extends Controller
                     'crossings' => $crossings
                 ]);
                 return response()->json([
-                    'error' => $ex->getMessage(),
-                    'file' => $ex->getFile(),
-                    'line' => $ex->getLine()
+                    'error' => 'Error al guardar los cruzamientos. Revise los logs del servidor para más detalles.'
                 ], 500);
             }
         }
@@ -425,7 +424,9 @@ class CrossingController extends Controller
             ->where('vrdad', $vrdad)
             ->where(function ($q) {
                 $q->where('estado', 0)->orWhere('estado', '0');
-            });
+            })
+            ->orderBy('fcha', 'desc')
+            ->orderBy('id_flrcion', 'desc');
 
         if (!empty($usedIdsInBatch)) {
             $query->whereNotIn('id_flrcion', $usedIdsInBatch);
@@ -597,8 +598,10 @@ class CrossingController extends Controller
             return "--";
         }
 
-        // Obtener el registro de la flor madre
-        $florMadre = Flowering::where('id_flrcion', $cruzamiento->id_pr_mdre)->first();
+        // Obtener el registro de la flor madre usando id_flrcion_mdre
+        $florMadre = $cruzamiento->id_flrcion_mdre
+            ? Flowering::where('id_flrcion', $cruzamiento->id_flrcion_mdre)->first()
+            : null;
         if (!$florMadre) {
             return "--";
         }
@@ -606,10 +609,10 @@ class CrossingController extends Controller
         // Inicializar el origen con la información de la madre
         $origen = "CN" . $florMadre->vivero . "-" . $florMadre->prcla;
 
-        // Agregar la información de los padres en un loop
+        // Agregar la información de los padres en un loop usando id_flrcion_pdre{i}
         $padresExistentes = false;
         for ($i = 1; $i <= 15; $i++) {
-            $origenPadre = "id_pr_pdre" . $i;
+            $origenPadre = "id_flrcion_pdre" . $i;
 
             // Verificar si el padre actual tiene un valor asignado
             if (!empty($cruzamiento->$origenPadre)) {
@@ -634,8 +637,8 @@ class CrossingController extends Controller
         $anoActual = date('2019-01-01');
         $result = [];
 
-        // Cruzamiento múltiple === muchos padres
-        if (sizeof($padre) > 3) {
+        // Cruzamiento múltiple === más de un padre
+        if (sizeof($padre) > 1) {
             $cruzamientos = DB::connection('sivar')->table('cruzamientos')
                 ->where('vrdad_mdre', "=", $madre)
                 ->whereNotNull('vrdad_pdre1')
@@ -674,34 +677,47 @@ class CrossingController extends Controller
                 $proyectoMadre = str_replace("9999", "", $madre[1]);
                 $variedadMadreProyecto = DB::connection('sivar')->table('remote_pg_sipro')
                     ->where('id_prycto', "=", $proyectoMadre)->select('nm_prycto')->first();
-                $variedadMadreCaracter = DB::connection('sivar')->table('caracteres')
-                    ->where('id_crcter', "=", $madre[2])->select('nmbre_crcter')->first();
+                $variedadMadreCaracter = isset($madre[2]) ? DB::connection('sivar')->table('proyecto_caracteres')
+                    ->where('id', "=", $madre[2])->select('nombre')->first() : null;
 
-                $nuevoCruzamiento = $variedadMadre . "_" . $variedadMadreProyecto->nm_prycto . "_" . $variedadMadreCaracter->nmbre_crcter . "+++";
+                $nomProyMadre = $variedadMadreProyecto->nm_prycto ?? 'N/A';
+                $nomCarMadre = $variedadMadreCaracter->nombre ?? 'N/A';
+                $nuevoCruzamiento = $variedadMadre . "_" . $nomProyMadre . "_" . $nomCarMadre . "+++";
 
-                $padres = explode(",", $c[1]);
-                $nuevosPadres = [];
+                $padres = explode(",", $c[1] ?? '');
                 foreach ($padres as $k => $p) {
                     if ($p != "") {
                         $padre = explode("_", $p);
-                        $variedadPadre = $padre[0];
-                        $proyectoPadre = str_replace("9999", "", $padre[1]);
-                        $variedadPadreProyecto = DB::connection('sivar')->table('remote_pg_sipro')
-                            ->where('id_prycto', "=", $proyectoPadre)->select('nm_prycto')->first();
-                        $variedadPadreCaracter = DB::connection('sivar')->table('caracteres')
-                            ->where('id_crcter', "=", $padre[2])->select('nmbre_crcter')->first();
+                        $variedadPadre = $padre[0] ?? '';
+                        $proyectoPadre = isset($padre[1]) ? str_replace("9999", "", $padre[1]) : null;
+                        $variedadPadreProyecto = $proyectoPadre ? DB::connection('sivar')->table('remote_pg_sipro')
+                            ->where('id_prycto', "=", $proyectoPadre)->select('nm_prycto')->first() : null;
+                        $variedadPadreCaracter = isset($padre[2]) ? DB::connection('sivar')->table('proyecto_caracteres')
+                            ->where('id', "=", $padre[2])->select('nombre')->first() : null;
 
-                        $nuevoCruzamiento .= "" . $variedadPadre . "_" . $variedadPadreProyecto->nm_prycto . "_" . $variedadPadreCaracter->nmbre_crcter . ",";
+                        $nomProyPadre = $variedadPadreProyecto->nm_prycto ?? 'N/A';
+                        $nomCarPadre = $variedadPadreCaracter->nombre ?? 'N/A';
+                        $nuevoCruzamiento .= "" . $variedadPadre . "_" . $nomProyPadre . "_" . $nomCarPadre . ",";
                     }
                 }
 
-                $nuevoCruzamiento .= "+++1+++" . $c[3];
+                $nuevoCruzamiento .= "+++1+++" . ($c[3] ?? '');
                 $nuevosCruzamientos[] = $nuevoCruzamiento;
             }
         }
-        Mail::to('lfbedoya@cenicana.org')->send(new ProgramacionCruzamientos($correoData));
+        $correoData = [
+            'usuario' => $usuario,
+            'cruzamientos' => $nuevosCruzamientos,
+        ];
 
-        return response()->json(['message' => 'Datos de cruzamientos enviados correctamente', 'cruzamientos' => $nuevosCruzamientos]);
+        if (class_exists(\App\Mail\ProgramacionCruzamientos::class)) {
+            $destinatario = config('mail.crossings_recipient', env('MAIL_CROSSINGS_TO', 'lfbedoya@cenicana.org'));
+            Mail::to($destinatario)->send(new \App\Mail\ProgramacionCruzamientos($correoData));
+        } else {
+            \Log::warning('Mailable App\\Mail\\ProgramacionCruzamientos no encontrado; correo omitido.');
+        }
+
+        return response()->json(['message' => 'Datos de cruzamientos procesados correctamente', 'cruzamientos' => $nuevosCruzamientos]);
     }
 
     public function consolidadoDatatable(Request $request, $tipo)
@@ -725,7 +741,7 @@ class CrossingController extends Controller
                 ->get();
         } elseif ($tipo == 3) {
             $cruzamientos = Crossing::where('fcha_crzmnto', '>', '2018-01-01')
-                ->whereRaw('vrdad_mdre <> vrdad_pdre1')
+                ->whereRaw('vrdad_mdre = vrdad_pdre1')
                 ->get();
         }
 
@@ -770,38 +786,44 @@ class CrossingController extends Controller
     }
     public function modificarCruzamiento(Request $request, $idCruzamiento)
     {
-
         $cruzamiento = Crossing::find($idCruzamiento);
+        if (!$cruzamiento) {
+            return response()->json(['success' => false, 'message' => 'Cruzamiento no encontrado'], 404);
+        }
+
         $ponderados = DB::connection('sivar')->table('ponderados_cruzamiento')
             ->where('id_ponderado', '=', $cruzamiento->id_ponderados)
             ->leftJoin('caracteristicas_valor_merito', 'caracteristicas_valor_merito.id_caracteristica', '=', 'ponderados_cruzamiento.id_caracteristica')
             ->get();
-        $response = [
-            'success' => true,
-            'message' => 'Cruzamiento modificado con éxito',
-        ];
 
-        return response()->json($response);
+        return response()->json([
+            'success' => true,
+            'cruzamiento' => $cruzamiento,
+            'ponderados' => $ponderados,
+        ]);
     }
     public function modificarCruzamientoPost(Request $request)
     {
         try {
             $cruzamiento = Crossing::find($request->id_cruzamiento);
+            if (!$cruzamiento) {
+                return response()->json(['success' => false, 'message' => 'Cruzamiento no encontrado'], 404);
+            }
+
             $cruzamiento->cngldor = $request->nevera;
             $cruzamiento->pso_smlla_actual = $request->peso;
-            if ($cruzamiento->fcha_cscha != "") {
+            if ($request->filled('fecha_cosecha')) {
                 $cruzamiento->fcha_cscha = $request->fecha_cosecha;
             }
-            if ($cruzamiento->fcha_smbra_smllro != "") {
+            if ($request->filled('fecha_siembra')) {
                 $cruzamiento->fcha_smbra_smllro = $request->fecha_siembra;
             }
-            if ($cruzamiento->fcha_grmncion != "") {
+            if ($request->filled('fecha_germinacion')) {
                 $cruzamiento->fcha_grmncion = $request->fecha_germinacion;
             }
-            if ($cruzamiento->fcha_slccion != "") {
+            if ($request->filled('fecha_seleccion')) {
                 $cruzamiento->fcha_slccion = $request->fecha_seleccion;
             }
-            $cruzamiento->plntlas_ttles = $request->numero_plantas_sembradas;
             $cruzamiento->plntlas_ttles = $request->numero_plantas_sembradas;
             $cruzamiento->plntlas_grmndas = $request->numero_plantas_germinadas;
             $cruzamiento->plntlas_trrzas = $request->numero_plantas_terrazas;
@@ -939,8 +961,12 @@ class CrossingController extends Controller
             }
         }
 
+        $fechai = Carbon::yesterday()->format('Y-m-d');
+        $fechaf = Carbon::today()->format('Y-m-d');
+
         $query = DB::connection('sivar')
             ->table('floracion')
+            ->whereBetween('fcha', [$fechai, $fechaf])
             ->where(function ($q) {
                 $q->where('estado', 0)->orWhere('estado', '0');
             })
@@ -970,8 +996,12 @@ class CrossingController extends Controller
             return response()->json(['error' => 'Parámetros inválidos.'], 400);
         }
 
+        $fechai = Carbon::yesterday()->format('Y-m-d');
+        $fechaf = Carbon::today()->format('Y-m-d');
+
         $query = DB::connection('sivar')
             ->table('floracion')
+            ->whereBetween('fcha', [$fechai, $fechaf])
             ->where(function ($q) {
                 $q->where('estado', 0)->orWhere('estado', '0');
             })

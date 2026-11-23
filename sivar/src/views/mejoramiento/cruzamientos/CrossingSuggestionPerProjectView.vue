@@ -563,7 +563,7 @@
                         <template v-for="(car, indexCol) in viabilidadRow" :key="indexCol">
                           <td
                             v-if="(!ocultarInviables || isColumnViable(indexCol)) && (Number(car?.polen2) > 20 || isColumnViable(indexCol) || permitirPolicruzamientos)"
-                            :class="[getHeatmapClass(car?.varA, car?.varB, !!car?.viabilidad, car?.vm2)]"
+                            :class="[getHeatmapClass(car?.varA, car?.varB, !!car?.viabilidad, car?.vm, car?.vm2)]"
                             class="p-2 text-center border-b border-slate-100 transition-all duration-200 min-w-[75px]"
                           >
                             <div class="flex flex-col items-center justify-center space-y-1">
@@ -591,28 +591,28 @@
                               </div>
                               <div
                                 class="text-[9px] font-extrabold leading-tight"
-                                :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-white' : 'text-slate-900']"
+                                :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm, car.vm2) ? 'text-white' : 'text-slate-900']"
                               >
                                 {{ car.varA }} x {{ car.varB }}
-                                <span v-if="car.emasculado" class="block text-[8.5px] mt-0.5" :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-rose-200' : 'text-rose-600']">[EMASCULADA]</span>
+                                <span v-if="car.emasculado" class="block text-[8.5px] mt-0.5" :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm, car.vm2) ? 'text-rose-200' : 'text-rose-600']">[EMASCULADA]</span>
                               </div>
                               <div
                                 class="text-[8px] font-semibold leading-tight"
-                                :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-emerald-100' : 'text-slate-700']"
+                                :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm, car.vm2) ? 'text-emerald-100' : 'text-slate-700']"
                               >
-                                Polen: {{ car.polen2 }} | VM: {{ car.vm2 }}
+                                Polen: {{ car.polen2 }} | VM: {{ car.vm2 ?? "N/D" }}
                               </div>
                               <div class="flex flex-col items-center justify-center w-full border-t border-slate-100/50 pt-1 mt-1 space-y-1">
                                 <span
                                   class="text-[9px] font-extrabold tracking-tight leading-none text-center"
-                                  :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2) ? 'text-white' : 'text-slate-900']"
+                                  :class="[tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm, car.vm2) ? 'text-white' : 'text-slate-900']"
                                 >
                                   <template v-if="tipoMapaCalor === 'ic'">
                                     IC:
                                     {{
-                                      isNaN(getIndiceCombinado(car.varA, car.varB, car.vm2))
+                                      isNaN(getIndiceCombinado(car.varA, car.varB, car.vm, car.vm2))
                                         ? "NA"
-                                        : Math.round(getIndiceCombinado(car.varA, car.varB, car.vm2))
+                                        : Math.round(getIndiceCombinado(car.varA, car.varB, car.vm, car.vm2))
                                     }}
                                   </template>
                                   <template v-else> 
@@ -625,7 +625,7 @@
                                   @click.stop="openParentComparator(car?.varA, car?.varB, car?.viabilidad, getCausaInviabilidad(car))"
                                   class="text-[8px] font-bold px-1.5 py-0.5 rounded transition-all duration-150 flex items-center justify-center space-x-0.5 border mx-auto"
                                   :class="[
-                                    tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm2)
+                                    tipoMapaCalor !== 'none' && isDarkBackground(car.varA, car.varB, car.vm, car.vm2)
                                       ? 'bg-white/20 hover:bg-white/30 text-white border-white/25'
                                       : 'bg-slate-100 hover:bg-emerald-50 text-slate-900 hover:text-emerald-700 border-slate-300 hover:border-emerald-300'
                                   ]"
@@ -1482,9 +1482,9 @@ const assistantSortedMales = computed(() => {
 
   males.sort((a: any, b: any) => {
     if (tipoMapaCalor.value === "ic") {
-      const icA = getIndiceCombinado(a.varA, a.varB, a.vm2);
-      const icB = getIndiceCombinado(b.varA, b.varB, b.vm2);
-      return (isNaN(icB) ? 0 : icB) - (isNaN(icA) ? 0 : icA);
+      const icA = getIndiceCombinado(a.varA, a.varB, a.vm, a.vm2);
+      const icB = getIndiceCombinado(b.varA, b.varB, b.vm, b.vm2);
+      return (isNaN(icB) ? -1 : icB) - (isNaN(icA) ? -1 : icA);
     } else {
       // Sort by DG (Distancia Genética) by default
       const dgA = Number(getDistancia(a.varA, a.varB));
@@ -1504,9 +1504,21 @@ const pendingMother = ref<any>(null);
 const pendingFather = ref<any>(null);
 const tipoMapaCalor = ref("dg"); // Vista con mapa de calor por defecto
 
-function getIndiceCombinado(varA: string, varB: string, vm: number | string) {
-  const dgVal = Number(getDistancia(varA, varB));
-  const vmVal = Number(vm);
+function getIndiceCombinado(varA: string, varB: string, vmA: number | string | null | undefined, vmB?: number | string | null) {
+  const dgRaw = getDistancia(varA, varB);
+  const dgVal = dgRaw === null || dgRaw === undefined || dgRaw === "" || dgRaw === "-" ? NaN : Number(dgRaw);
+
+  const validA = vmA !== null && vmA !== undefined && vmA !== "" && !isNaN(Number(vmA));
+  const validB = vmB !== null && vmB !== undefined && vmB !== "" && !isNaN(Number(vmB));
+
+  let vmVal = NaN;
+  if (validA && validB) {
+    vmVal = (Number(vmA) + Number(vmB)) / 2;
+  } else if (validA) {
+    vmVal = Number(vmA);
+  } else if (validB) {
+    vmVal = Number(vmB);
+  }
 
   if (isNaN(dgVal) || isNaN(vmVal)) return NaN;
 
@@ -1524,9 +1536,9 @@ function getIndiceCombinado(varA: string, varB: string, vm: number | string) {
   return puntajeVM * 0.6 + puntajeDG * 0.4;
 }
 
-function isDarkBackground(varA: string, varB: string, vm: number | string) {
+function isDarkBackground(varA: string, varB: string, vmA: number | string | null | undefined, vmB?: number | string | null) {
   if (tipoMapaCalor.value === "ic") {
-    const ic = getIndiceCombinado(varA, varB, vm);
+    const ic = getIndiceCombinado(varA, varB, vmA, vmB);
     return !isNaN(ic) && (ic >= 80 || ic < 50); // Indigo y Rose son oscuros
   } else if (tipoMapaCalor.value === "dg") {
     const dgVal = getDistancia(varA, varB);
@@ -1537,7 +1549,7 @@ function isDarkBackground(varA: string, varB: string, vm: number | string) {
   return false;
 }
 
-function getHeatmapClass(varA: string, varB: string, viabilidad: boolean, vm: number | string) {
+function getHeatmapClass(varA: string, varB: string, viabilidad: boolean, vmA: number | string | null | undefined, vmB?: number | string | null) {
   // Sin opacidad para personas daltónicas, el contraste completo ayuda a diferenciar
   const unselectedClasses = !viabilidad ? "" : "";
 
@@ -1547,7 +1559,7 @@ function getHeatmapClass(varA: string, varB: string, viabilidad: boolean, vm: nu
   }
 
   if (tipoMapaCalor.value === "ic") {
-    const ic = getIndiceCombinado(varA, varB, vm);
+    const ic = getIndiceCombinado(varA, varB, vmA, vmB);
     if (isNaN(ic)) return "bg-emerald-50/50 border-r border-emerald-100/50 text-emerald-800 hover:bg-emerald-100/50" + unselectedClasses;
 
     if (ic >= 80) return "bg-indigo-600/90 text-white font-black border-r border-indigo-700/50 shadow-inner hover:bg-indigo-700" + unselectedClasses;

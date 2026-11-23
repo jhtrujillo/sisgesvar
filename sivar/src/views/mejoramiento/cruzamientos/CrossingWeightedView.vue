@@ -284,7 +284,7 @@
         variant="primary"
         size="md"
         @click="handleSiguiente"
-        :disabled="!selectedVariety || (!selectedMegaAmbiente && !selectedCdCntble) || (estrategia === 'individual' && !caracteresSeleccionados.length === 0)"
+        :disabled="!selectedVariety || (!selectedMegaAmbiente && !selectedCdCntble) || (estrategia === 'individual' && caracteresSeleccionados.length === 0)"
       >
         Generar Matriz
         <template #icon-right>
