@@ -286,9 +286,9 @@ const ocultarInviables = ref(true); // Vista compacta limpia por defecto
 const isLoading = ref(false); // Ref para spinner de carga
 
 const getRowVm = (row: any[]) => {
-  if (!row || row.length === 0) return "0";
-  const validCell = row.find((cell) => cell && cell.vm !== 1 && cell.vm !== "1" && cell.vm !== 0 && cell.vm !== "0");
-  return validCell ? validCell.vm : row[0]?.vm || "0";
+  if (!row || row.length === 0) return "N/D";
+  const validCell = row.find((cell) => cell && cell.vm !== null && cell.vm !== undefined && cell.vm !== "");
+  return validCell ? validCell.vm : "N/D";
 };
 
 // Estados para el Drawer de variedades

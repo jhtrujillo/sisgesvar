@@ -47,12 +47,10 @@ Route::group([
     Route::get('getParents/{var}', [\App\Http\Controllers\VarietyController::class, 'getParents']);
 
     Route::get('crossingList', [\App\Http\Controllers\CrossingController::class, 'crossingList']);
-    Route::get('/crossing/programming', [\App\Http\Controllers\CrossingController::class, 'list']);
     Route::get('crossingInitialData', [\App\Http\Controllers\CrossingController::class, 'crossingInitialData']);
     Route::get('listarFlores/{proyectos}/{fechai}/{fechaf}', [\App\Http\Controllers\CrossingController::class, 'listarFlores']);
     Route::get('parametizeWeightedCrossing/{proyecto}/{mega_ambiente}', [\App\Http\Controllers\CrossingController::class, 'parametizeWeightedCrossing']);
     Route::post('modifyFeatures/{caracteristica}/{proyecto}/{nivel}/{ponderado}/{ambiente}/{nuevo}', [\App\Http\Controllers\CrossingController::class, 'modifyFeatures']);
-    Route::get('calcularViabilidadCaracteristica/{caracteristica}/{florA}/{florB}/{ponderado}/{testigo}', [\App\Http\Controllers\CrossingController::class, 'calcularViabilidadCaracteristica']);
     Route::get('crearOrigenCruzamiento/{id_cruzamiento}', [\App\Http\Controllers\CrossingController::class, 'crearOrigenCruzamiento']);
     Route::get('generateMatrix/{proyectos}/{proyecto}/{testigo}/{ambiente}/{caracter?}', [\App\Http\Controllers\CrossingController::class, 'generateMatrix']);
     Route::get('suggestionCrossings/{proyectos}/{proyecto}/{testigo}/{ambiente}', [\App\Http\Controllers\CrossingController::class, 'suggestionCrossings']);
@@ -75,11 +73,10 @@ Route::group([
     Route::get('/crossing/programming/get_by_ponderado/{idPonderado}', [\App\Http\Controllers\CrossingController::class, 'obtenerCruzamientosPorPonderado']);
     Route::get('/crossing/programming/send_mail/{string}', [\App\Http\Controllers\CrossingController::class, 'enviarCorreoPracticos']);
     Route::get('/consolidadoDatatable/{tipo}', [\App\Http\Controllers\CrossingController::class, 'consolidadoDatatable']);
-    Route::get('/crossing/upload/', [\App\Http\Controllers\CrossingController::class, 'cargarCruzamientos']);
-    Route::get('/crossing/upload', [\App\Http\Controllers\CrossingController::class, 'cargarCruzamientosPost']);
+    Route::get('/crossing/upload', [\App\Http\Controllers\CrossingController::class, 'cargarCruzamientos']);
+    Route::post('/crossing/upload', [\App\Http\Controllers\CrossingController::class, 'cargarCruzamientosPost']);
     Route::get('/crossing/upload1/{proyecto}/{usuario}/{cruzamiento_id}/{madre}/{padre}/{porcentaje_germinacion}/{gramos}/{plantulas_estimadas}', [\App\Http\Controllers\CrossingController::class, 'cargarCruzamientoMexico']);
     Route::get('/crossing/modify/{id}', [\App\Http\Controllers\CrossingController::class, 'modificarCruzamiento']);
-    Route::get('/crossing/modify', [\App\Http\Controllers\CrossingController::class, 'modificarCruzamientoPost']);
     Route::post('/crossing/modify', [\App\Http\Controllers\CrossingController::class, 'modificarCruzamientoPost']);
     Route::get('/obtenerIdFlorCruzamiento/{a}/{b}/{c}', [\App\Http\Controllers\CrossingController::class, 'obtenerIdFlorCruzamiento']);
 
