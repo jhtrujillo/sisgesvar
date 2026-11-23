@@ -232,7 +232,7 @@
                       v-if="MatrixCrossingStore.matrixCrossingsFilter.viabilidad?.[0]?.[indexCol]?.vm2 !== undefined"
                       class="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-50 text-slate-500 border border-slate-100"
                     >
-                      VM: {{ MatrixCrossingStore.matrixCrossingsFilter.viabilidad[0][indexCol].vm2 }}
+                      VM: {{ MatrixCrossingStore.matrixCrossingsFilter.viabilidad[0][indexCol].vm2 ?? "N/D" }}
                     </span>
                     <span class="block text-[9px] text-slate-400 font-semibold mt-0.5 mb-0.5">Polen: {{ flor.polen }} ({{ flor.sxo }}) | Flores: {{ flor.cantidad_flores || 0 }}</span>
                     <button 
@@ -807,9 +807,9 @@ const isDrawerOpen = ref(false);
 const selectedVarietyForDrawer = ref("");
 
 const getRowVm = (row: any[]) => {
-  if (!row || row.length === 0) return "0";
-  const validCell = row.find((cell) => cell && cell.vm !== 1 && cell.vm !== "1" && cell.vm !== 0 && cell.vm !== "0");
-  return validCell ? validCell.vm : row[0]?.vm || "0";
+  if (!row || row.length === 0) return "N/D";
+  const validCell = row.find((cell) => cell && cell.vm !== null && cell.vm !== undefined && cell.vm !== "");
+  return validCell ? validCell.vm : "N/D";
 };
 
 const openVarietyProfile = (name: string) => {

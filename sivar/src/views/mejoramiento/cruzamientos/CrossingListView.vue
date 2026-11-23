@@ -326,7 +326,6 @@ const editingCrossing = ref<any>(null);
 const editForm = ref({
   id_cruzamiento: null,
   numero_plantas_sembradas: 0,
-  numero_plantas_germinadas: 0,
   observaciones: ""
 });
 
@@ -335,7 +334,6 @@ const openEditModal = (crossing: any) => {
   editForm.value = {
     id_cruzamiento: crossing.id_crzmnto,
     numero_plantas_sembradas: crossing.plntlas_ttles || 0,
-    numero_plantas_germinadas: crossing.plntlas_ttles || 0,
     observaciones: crossing.obsrvcnes || ""
   };
   isEditModalOpen.value = true;

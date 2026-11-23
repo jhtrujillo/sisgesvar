@@ -810,8 +810,12 @@ class CrossingController extends Controller
                 return response()->json(['success' => false, 'message' => 'Cruzamiento no encontrado'], 404);
             }
 
-            $cruzamiento->cngldor = $request->nevera;
-            $cruzamiento->pso_smlla_actual = $request->peso;
+            if ($request->has('nevera')) {
+                $cruzamiento->cngldor = $request->nevera;
+            }
+            if ($request->has('peso')) {
+                $cruzamiento->pso_smlla_actual = $request->peso;
+            }
             if ($request->filled('fecha_cosecha')) {
                 $cruzamiento->fcha_cscha = $request->fecha_cosecha;
             }
@@ -824,15 +828,33 @@ class CrossingController extends Controller
             if ($request->filled('fecha_seleccion')) {
                 $cruzamiento->fcha_slccion = $request->fecha_seleccion;
             }
-            $cruzamiento->plntlas_ttles = $request->numero_plantas_sembradas;
-            $cruzamiento->plntlas_grmndas = $request->numero_plantas_germinadas;
-            $cruzamiento->plntlas_trrzas = $request->numero_plantas_terrazas;
-            $cruzamiento->plantas_finales_seleccion = $request->numero_plantas_finales;
-            $cruzamiento->plntas_con_rya = $request->numero_plantas_roya;
-            $cruzamiento->plntas_con_msco = $request->numero_plantas_mosaico;
-            $cruzamiento->plntas_con_crbon = $request->numero_plantas_carbon;
-            $cruzamiento->plntas_con_rya_nrnja = $request->numero_plantas_roya_naranja;
-            $cruzamiento->obsrvcnes = $request->observaciones;
+            if ($request->has('numero_plantas_sembradas')) {
+                $cruzamiento->plntlas_ttles = $request->numero_plantas_sembradas;
+            }
+            if ($request->has('numero_plantas_germinadas')) {
+                $cruzamiento->plntlas_grmndas = $request->numero_plantas_germinadas;
+            }
+            if ($request->has('numero_plantas_terrazas')) {
+                $cruzamiento->plntlas_trrzas = $request->numero_plantas_terrazas;
+            }
+            if ($request->has('numero_plantas_finales')) {
+                $cruzamiento->plantas_finales_seleccion = $request->numero_plantas_finales;
+            }
+            if ($request->has('numero_plantas_roya')) {
+                $cruzamiento->plntas_con_rya = $request->numero_plantas_roya;
+            }
+            if ($request->has('numero_plantas_mosaico')) {
+                $cruzamiento->plntas_con_msco = $request->numero_plantas_mosaico;
+            }
+            if ($request->has('numero_plantas_carbon')) {
+                $cruzamiento->plntas_con_crbon = $request->numero_plantas_carbon;
+            }
+            if ($request->has('numero_plantas_roya_naranja')) {
+                $cruzamiento->plntas_con_rya_nrnja = $request->numero_plantas_roya_naranja;
+            }
+            if ($request->has('observaciones')) {
+                $cruzamiento->obsrvcnes = $request->observaciones;
+            }
             $cruzamiento->save();
 
             $response = [
